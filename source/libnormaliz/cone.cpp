@@ -4526,7 +4526,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         setComputed(ConeProperty::ExcludedFaces);
     }
 
-    if(ToCompute.test(ConeProperty::MarkovBasis) || ToCompute.test(ConeProperty::GroebnerBasis){
+    if(ToCompute.test(ConeProperty::MarkovBasis) || ToCompute.test(ConeProperty::GroebnerBasis)){
 
         compute(ConeProperty::HilbertBasis, ConeProperty::IsPointed);
         if(!pointed)

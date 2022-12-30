@@ -351,13 +351,11 @@ inline bool is_inequalities(InputType type) {
     return false;
 }
 
+// generators definiong something convex
 inline bool is_generators(InputType type) {
-    if (type == Type::cone || type == Type::cone_and_lattice || type == Type::vertices
-           || type == Type::lattice || type == Type::offset || type == Type::polyhedron
-           || type == Type::rational_offset || type == Type::rational_lattice
+    if (type == Type::cone || type == Type::cone_and_lattice
+           || type == Type::polyhedron  || type == Type::vertices
            || type == Type::polytope || type == Type::rees_algebra
-           || type == Type::subspace || type == Type::saturation
-           || type == Type::rational_lattice || type == Type::monoid
            || type == Type::monoid || type == Type::integral_closure
            || type == Type::normalization) {
         return true;
