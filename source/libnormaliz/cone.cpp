@@ -4535,6 +4535,8 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         compute(ToCompute);
     }
 
+    ToCompute.reset(is_Computed);
+
     if (!ToCompute.test(ConeProperty::DefaultMode) && ToCompute.goals().any()) {
         throw NotComputableException(ToCompute.goals());
     }
