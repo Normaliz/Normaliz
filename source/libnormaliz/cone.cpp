@@ -9375,6 +9375,12 @@ const Matrix<Integer>& Cone<Integer>::getMatrixConePropertyMatrix(ConeProperty::
             return this->getSublattice().getEquationsMatrix();
         case ConeProperty::Congruences:
             return this->getSublattice().getCongruencesMatrix();
+        case ConeProperty::MarkovBasis:
+            return this->getMarkovBasisMatrix();
+        case ConeProperty::GroebnerBasis:
+            return this->getGroebnerBasisMatrix();
+        case ConeProperty::Representations:
+            return this->getRepresentationsMatrix();
         default:
             throw FatalException("Matrix property without output");
     }

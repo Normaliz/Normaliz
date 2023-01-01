@@ -146,7 +146,7 @@ public:
                                 binomial_tree& red_tree);
 
     // combinatorial minimization of Markov
-    binomial_list  graph_minimize(const vector<long long>& weight); // const vector<long long>& grading);
+    binomial_list  graph_minimize(const vector<long long>& weight, bool& success); // const vector<long long>& grading);
     // minimization by degree controlled Buchberger
     binomial_list  bb_and_minimize(const vector<long long>& weight); // const vector<long long>& grading);
     vector<mpz_class> compute_HilbertSeries(const vector<long long>& given_grading);

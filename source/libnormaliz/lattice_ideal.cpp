@@ -202,8 +202,11 @@ MarkovProjectAndLift::MarkovProjectAndLift(Matrix<Integer>& LatticeIdeal, const 
 
     StartPerm = LItranspose.perm_by_weights(Weights, absolute);
     LItranspose.order_rows_by_perm(StartPerm);
-    if(verbose)
+    if(verbose){
+        verboseOutput() << "---------------------------------------------------" << endl;
+        verboseOutput() << "Starting project-and-lift for Markov basis" << endl << endl;
         verboseOutput() << "Columns reordered "<< StartPerm << endl;
+    }
     LatticeIdeal = LItranspose.transpose();
 
     // LatticeIdeal.pretty_print(cout);
@@ -435,9 +438,14 @@ bool MarkovProjectAndLift::lift_next_not_yet_lifted(bool allow_revlex){
     if(verbose)
         verboseOutput() << "Computing minimal Markov basis" << endl;
     gr = binomial_list(CurrentMarkov);
+    gr.set_verbose(verbose);
     binomial_list dummy;
     // binomial_list min_markov = gr.bb_and_minimize(LiftedWeight, true, dummy);
-    binomial_list min_markov = gr.graph_minimize(LiftedWeight); // , LiftedWeight);
+    bool graph_success;
+    binomial_list min_markov = gr.graph_minimize(LiftedWeight, graph_success);
+    if(!graph_success){
+        min_markov = gr.bb_and_minimize(LiftedWeight);
+    }
     MinimalMarkov = min_markov.to_matrix();
 
     /*binomial_list min_markovGB = gr.bb_and_minimizeGB(LiftedWeight);
@@ -651,9 +659,6 @@ void MarkovProjectAndLift::find_projection(){
 
 
 void MarkovProjectAndLift::compute(Matrix<long long>& Mark, Matrix<long long>& MinMark){
-
-    if(verbose)
-        verboseOutput() << "Start project and lift" << endl;
 
     find_projection();
     lift_unbounded(); // straight no longer used

@@ -1121,9 +1121,10 @@ void s_poly_insert(binomial_list& G, binomial_list_by_degrees& B){
     }
 }
 
-binomial_list binomial_list::graph_minimize(const vector<long long>& grading){
+binomial_list binomial_list::graph_minimize(const vector<long long>& grading, bool& success){
 
     StartTime();
+    success = true;
 
     if(size() <= 1)
         return *this;
@@ -1137,6 +1138,7 @@ binomial_list binomial_list::graph_minimize(const vector<long long>& grading){
     Min_red_tree.set_minimization_tree();
 
     binomial_list Vmin; // minimal Markov
+    binomial_list Vstopped; //returned in case of failure
 
     binomial_list_by_degrees  W(*this, grading); // ordered version of *this
     set<exponent_vec> G_set;
@@ -1160,7 +1162,12 @@ binomial_list binomial_list::graph_minimize(const vector<long long>& grading){
         Min_red_tree.insert(b1);
     }
 
+    size_t nnn = 0;
     for(auto& b: W){
+
+        INTERRUPT_COMPUTATION_BY_EXCEPTION
+        nnn++;
+        // cout << "********************************** " << nnn << endl;
         bool is_minimal = true;
         if(b.first == min_degree)
             continue;
@@ -1173,12 +1180,27 @@ binomial_list binomial_list::graph_minimize(const vector<long long>& grading){
         // old_neighbors.insert(bpos);
         new_neighbors.insert(bpos);
         while(!new_neighbors.empty()){
+
+            INTERRUPT_COMPUTATION_BY_EXCEPTION
+
             exponent_vec next = *new_neighbors.begin();
             old_neighbors.insert(next);
+            if(old_neighbors.size() > 2000){
+                success = false;
+                MeasureTime(verbose, "graph_minimize stopped");
+                return Vstopped;
+            }
+            /* if( old_neighbors.size() % 100000 == 0)
+                cout << "OOOOO " << old_neighbors.size() << endl;*/
             new_neighbors.erase(next);
             if(Min_red_tree.collect_neighbors(next, bneg, old_neighbors, new_neighbors)){
                 is_minimal =false;
                 break;
+            }
+            if(new_neighbors.size() > 2000){
+                MeasureTime(verbose, "graph_minimize stopped");
+                success = false;
+                return Vstopped;
             }
         }
         if(is_minimal){
