@@ -3865,8 +3865,12 @@ void Cone<Integer>::compute_monoid_basic_data(const Matrix<long long>& InputGens
                 throw BadInputException("Implicit grading not positive on monoid");
             GCD = gcd(GCD, ValuesGradingOnMonoid[i]);
         }
-        v_scalar_division(ValuesGradingOnMonoid, GCD);
-        GradingDenom = convertTo<Integer>(GCD);
+        if(!ToCompute.test(ConeProperty::NoGradingDenom)){
+            v_scalar_division(ValuesGradingOnMonoid, GCD);
+            GradingDenom = convertTo<Integer>(GCD);
+        }
+        else
+            GradingDenom = 1;
         setComputed(ConeProperty::GradingDenom);
         convert(Grading,ExternalGrading);
         setComputed(ConeProperty::Grading);
@@ -3956,6 +3960,10 @@ ConeProperties Cone<Integer>::monoid_compute(ConeProperties ToCompute) {
         Cone<Integer> HSCompute(Type::cone_and_lattice, HilbertBasis);
         // HSCompute.setVerbose(false);
         HSCompute.setGrading(Grading);
+        if(ToCompute.test(ConeProperty::NoGradingDenom))
+            HSCompute.compute(ConeProperty::HilbertSeries, ConeProperty::NoGradingDenom);
+        else
+            HSCompute.compute(ConeProperty::HilbertSeries);
         HSeries = HSCompute.getHilbertSeries();
         multiplicity = HSCompute.getMultiplicity();
         setComputed(ConeProperty::Multiplicity);
@@ -3993,12 +4001,16 @@ ConeProperties Cone<Integer>::monoid_compute(ConeProperties ToCompute) {
         return ConeProperties();
     }
 
-    if(ToCompute.test(ConeProperty::Multiplicity)){
+    if(ToCompute.test(ConeProperty::Multiplicity) && !isComputed(ConeProperty::Multiplicity)){
         if(verbose)
             verboseOutput() << "Cimputing multiplicity via triangulation" << endl;
         Cone<Integer> HSCompute(Type::cone_and_lattice, HilbertBasis);
         // HSCompute.setVerbose(false);
         HSCompute.setGrading(Grading);
+        if(ToCompute.test(ConeProperty::NoGradingDenom))
+            HSCompute.compute(ConeProperty::NoGradingDenom, ConeProperty::Multiplicity);
+        else
+            HSCompute.compute(ConeProperty::Multiplicity);
         multiplicity = HSCompute.getMultiplicity();
         setComputed(ConeProperty::Multiplicity);
     }

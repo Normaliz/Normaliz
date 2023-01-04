@@ -328,13 +328,13 @@ bool MarkovProjectAndLift::compute_current_weight(){
 
     size_t new_coord = LatticeBasisReordered.nr_of_columns()-1;
 
-    bool save_global_verbose = libnormaliz::verbose;
-    libnormaliz::verbose = false;
+    // bool save_global_verbose = libnormaliz::verbose;
+    // libnormaliz::verbose = false;
     Matrix<BigInt> LBR_Big;
     convert(LBR_Big, LatticeBasisReordered);
     Cone<BigInt> WeightCone(Type::equations, LBR_Big); // intersects with positive orthant
-    libnormaliz::verbose = save_global_verbose;
-    // WeightCone.setVerbose(true);
+    WeightCone.setVerbose(false);
+    // libnormaliz::verbose = save_global_verbose;
     Matrix<BigInt> ER_big = WeightCone.getExtremeRaysMatrix();
     Matrix<Integer> ExtRays;
     convert(ExtRays, ER_big);
@@ -498,14 +498,14 @@ bool MarkovProjectAndLift::find_and_lift_next_unbounded(){
 
     //  Find  cone of coefficient vectors that give nonnegative linear combination of alltice basis
     // within the already done columns
-    bool save_global_verbose = libnormaliz::verbose;
-    libnormaliz::verbose = false;
+    // bool save_global_verbose = libnormaliz::verbose;
+    // libnormaliz::verbose = false;
     Matrix<BigInt> LBRT_Big;
     convert(LBRT_Big, LatticeBasisReorderedTranspose);
     Cone<BigInt> CheckBounded(Type::inequalities, LBRT_Big);  // TODO Use Normaliz dynamic -- we must add
     //  one inequality only to last inequalities
-    libnormaliz::verbose = save_global_verbose;
-    // CheckBounded.setVerbose(true);
+    CheckBounded.setVerbose(false);
+    //libnormaliz::verbose = save_global_verbose;
     Matrix<BigInt> ER_big = CheckBounded.getExtremeRaysMatrix();
     Matrix<Integer> ExtRays;
     convert(ExtRays, ER_big);
@@ -828,10 +828,10 @@ void LatticeIdeal::computeHilbertSeries(){
     convert(Grading_long, Grading);
     HilbSer = HilbertSeries(numerator, Grading_long);
     HilbSer.simplify();
-    if(verbose){
+    /* if(verbose){
         verboseOutput() << "Hilbert series numerator  " << HilbSer.getNum();
         verboseOutput() << "Hilbert series denominator " <<  HilbSer.getDenom();
-    }
+    }*/
     MeasureTime(verbose, "Hilbert series");
 
     if(verbose)

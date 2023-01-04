@@ -1454,10 +1454,10 @@ void Output<Integer>::write_files() {
         }
 
         if(Result->isComputed(ConeProperty::MarkovBasis)){
-            out << Result->getNrMarkovBasis() << " Markov basis elements" << endl;
+            out << Result->getNrMarkovBasis() << " Markov basis elements" << endl << endl;
         }
         if(Result->isComputed(ConeProperty::GroebnerBasis)){
-            out << Result->getNrGroebnerBasis() << " Gröbner basis elements" << endl;
+            out << Result->getNrGroebnerBasis() << " Gröbner basis elements" << endl << endl;
         }
         if (Result->isComputed(ConeProperty::Multiplicity)) {
             string mult_string = "multiplicity ";

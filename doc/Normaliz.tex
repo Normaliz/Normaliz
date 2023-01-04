@@ -125,7 +125,7 @@
 
 \makeindex
 
-\def\version{3.9.4}
+\def\version{3.10.0}
 \def\NmzDir{normaliz-\version}
 
 \hyphenation{semi-open}
@@ -7321,7 +7321,7 @@ For the control of computations and communication with interfaces the following 
 
 \section{Optional output files}\label{optionaloutput}
 
-Note that the options \verb|-T, Triangulation| and \verb|-y, StanleyDec| also write files in addition to \verb|<project>.out|, as well as \verb|FaceLattice|, \verb|Incidence| or the various automorphism groups. Also symmetrization, \verb|IntegerHull|, and \verb|ProjectCone| produce extra output files for the derived cones. But these are \emph{not} optional.
+In addition nto the output file with suffix \verb|out| several computation goals write their results into extra files. But these are \emph{not} optional. They are explained together with the pertaining computationn goals, and Section \ref{forced_out} gives an overview. 
 
 The main purpose of the optional output files is to provide an interface to Normaliz by files that can more easily be parsed than the main output file.
 
@@ -7439,6 +7439,8 @@ One can generate a file with the data needed for an input file with precomputed 
 	\itemtt[WritePreComp]
 \end{itemize}
 The suffix is \verb|precomp.in|. It contains the data that can (and must) go into a file redefining the present cone (except \verb|hilbert_basis_rec_cone|).
+
+\subsection{Overview: Output files forced by computation goals}\label{forced_out}
 .
 \section{Performance}\label{Perf}
 
