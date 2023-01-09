@@ -4,6 +4,7 @@
 # ignore normaliz executables
 normaliz
 normaliz_*
+normaliz-*
 
 # ignore executable tools
 collectcols
@@ -53,6 +54,8 @@ test/*/*.out_1
 *.ilg
 *.idx
 *.ind
+*.mrk
+*.grb
 
 # ignore gperftools
 source/gperftools/*
