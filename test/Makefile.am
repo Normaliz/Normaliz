@@ -1692,7 +1692,36 @@ NMZTESTS +=						\
 	test-Int/Condorcet-v-sd-dd.in			\
 	test-Int/Condorcet-v-sd-dd.ref			\
 	test-Int/Condorcet-v-sd-dd.in			\
-	test-Int/Condorcet-v-sd-dd.ref
-
+	test-Int/Condorcet-v-sd-dd.ref			\
+	test-mrk/Kwak10.in				\
+	test-mrk/Kwak10.ref				\
+	test-mrk/Kwak10.mrk.ref				\
+	test-mrk/Kwak10-mrk.in				\
+	test-mrk/Kwak10-mrk.ref				\
+	test-mrk/Kwak10-mrk.mrk.ref			\
+	test-mrk/latt_ideal.in				\
+	test-mrk/latt_ideal.ref				\
+	test-mrk/latt_ideal.mrk.ref			\
+	test-mrk/polytope.in				\
+	test-mrk/polytope.ref				\
+	test-mrk/polytope.mrk.ref			\
+	test-mrk/PowerSum-80.in				\
+	test-mrk/PowerSum-80.ref			\
+	test-mrk/PowerSum-80.mrk.ref			\
+	test-grb/latt_ideal.in				\
+	test-grb/latt_ideal.ref				\
+	test-grb/latt_ideal.grb.ref			\
+	test-grb/polytope.in				\
+	test-grb/polytope.ref				\
+	test-grb/polytope.grb.ref			\
+	test-grb/PowerSum-80.in				\
+	test-grb/PowerSum-80.ref			\
+	test-grb/PowerSum-80.grb.ref			\
+	test-mrk/3x7.in					\
+	test-mrk/3x7.ref				\
+	test-mrk/3x7.mrk.ref				\
+	test-grb/3x7.in					\
+	test-grb/3x7.ref				\
+	test-grb/3x7.grb.ref
 
 EXTRA_DIST += $(NMZTESTS)

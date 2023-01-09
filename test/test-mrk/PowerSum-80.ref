@@ -1,0 +1,72 @@
+13 Hilbert basis elements
+2 support hyperplanes
+
+embedding dimension = 3
+rank = 2
+external index = 1
+internal index = 1
+original monoid is not integrally closed in chosen lattice
+
+grading:
+1 1 1 
+
+
+57 Markov basis elements
+
+Hilbert series:
+1 -1 0 0 0 0 1 0 0 -1 0 0 1 0 0 0 0 -1 1 0 0 0 0 0 1 -1 0 0 0 0 1 0 0 -1 0 0 1 0 0 0 0 -1 1 0 0 0 0 0 1 -1 0 0 0 0 1 0 0 -1 0 0 1 0 0 0 0 -1 1 0 0 0 0 0 1 -1 0 0 0 0 1 0 0 -1 0 0 1 0 0 0 0 -1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 -1 1 -1 1 -1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 -1 1 -1 1 -1 1 
+denominator with 2 factors:
+1:1  14:1  
+
+degree of Hilbert Series as rational function = 123
+
+Hilbert series with cyclotomic denominator:
+1 0 -1 0 0 0 1 0 0 0 -1 0 1 0 0 0 0 0 0 0 0 0 0 0 1 0 -1 0 0 0 1 0 0 0 -1 0 1 0 0 0 0 0 0 0 0 0 0 0 1 0 -1 0 0 0 1 0 0 0 -1 0 1 0 0 0 0 0 0 0 0 0 0 0 1 0 -1 0 0 0 1 0 0 0 -1 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+cyclotomic denominator:
+1:2  2:1  7:1  
+
+Hilbert quasi-polynomial of period 14:
+  0:  -175 3
+  1:  -199 3
+  2:  -181 3
+  3:  -198 3
+  4:  -187 3
+  5:  -204 3
+  6:  -179 3
+  7:  -196 3
+  8:  -178 3
+  9:  -202 3
+ 10:  -177 3
+ 11:  -208 3
+ 12:  -183 3
+ 13:  -200 3
+with common denominator = 7
+
+***********************************************************************
+
+13 Hilbert basis elements:
+  6  0 0
+  7  0 0
+  8  0 0
+  8  6 0
+ 18  6 0
+ 23  7 0
+ 25  7 0
+ 35 13 0
+ 40 14 0
+ 42 14 0
+ 52 20 0
+ 57 21 0
+ 59 21 0
+
+2 support hyperplanes:
+ 0  1 0
+ 3 -4 0
+
+1 equations:
+ 0 0 1
+
+2 basis elements of generated  lattice:
+ 1 0 0
+ 0 1 0
+

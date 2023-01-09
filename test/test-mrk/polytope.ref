@@ -1,0 +1,74 @@
+19 Hilbert basis elements
+18 lattice points in polytope (Hilbert basis elements of degree 1)
+4 extreme rays
+4 support hyperplanes
+
+embedding dimension = 4
+rank = 4 (maximal)
+external index = 1
+internal index = 30
+original monoid is not integrally closed in chosen lattice
+
+size of triangulation   = 1
+resulting sum of |det|s = 30
+
+grading:
+0 0 0 1 
+
+degrees of extreme rays:
+1:4  
+
+Hilbert basis elements are not of degree 1
+
+107 Markov basis elements
+
+multiplicity = 30
+
+Hilbert series:
+1 14 15 
+denominator with 4 factors:
+1:4  
+
+degree of Hilbert Series as rational function = -2
+
+Hilbert polynomial:
+1 4 8 5 
+with common denominator = 1
+
+***********************************************************************
+
+18 lattice points in polytope (Hilbert basis elements of degree 1):
+ 0 0 0 1
+ 0 0 1 1
+ 0 0 2 1
+ 0 0 3 1
+ 0 0 4 1
+ 0 0 5 1
+ 0 1 0 1
+ 0 1 1 1
+ 0 1 2 1
+ 0 1 3 1
+ 0 2 0 1
+ 0 2 1 1
+ 0 3 0 1
+ 1 0 0 1
+ 1 0 1 1
+ 1 0 2 1
+ 1 1 0 1
+ 2 0 0 1
+
+1 further Hilbert basis elements of higher degree:
+ 1 2 4 2
+
+4 extreme rays:
+ 0 0 0 1
+ 0 0 5 1
+ 0 3 0 1
+ 2 0 0 1
+
+4 support hyperplanes:
+ -15 -10 -6 30
+   0   0  1  0
+   0   1  0  0
+   1   0  0  0
+

@@ -1,0 +1,52 @@
+4 original generators of the toric ring
+5 Hilbert basis elements
+2 lattice points in polytope (Hilbert basis elements of degree 1)
+4 extreme rays
+4 support hyperplanes
+
+embedding dimension = 3
+rank = 3 (maximal)
+external index = 1
+internal index = 1
+original monoid is not integrally closed in chosen lattice
+
+size of partial triangulation   = 1
+resulting sum of |det|s = 2
+
+grading:
+1 1 1 
+
+degrees of extreme rays:
+1:2  2:1  3:1  
+
+3 Markov basis elements
+
+***********************************************************************
+
+4 original generators:
+ 0 1 1
+ 1 0 0
+ 0 0 1
+ 1 2 0
+
+2 lattice points in polytope (Hilbert basis elements of degree 1):
+ 0 0 1
+ 1 0 0
+
+3 further Hilbert basis elements of higher degree:
+ 0 1 1
+ 1 1 0
+ 1 2 0
+
+4 extreme rays:
+ 0 0 1
+ 1 0 0
+ 0 1 1
+ 1 2 0
+
+4 support hyperplanes:
+ 0  0 1
+ 0  1 0
+ 1  0 0
+ 2 -1 1
+
