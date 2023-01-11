@@ -146,8 +146,11 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
         T.resize(omp_get_max_threads());
 
     NrRemainingLP.resize(EmbDim,0);
+    NrDoneLP.resize(EmbDim,0);
     AllLocalSolutions_by_intersecion.resize(EmbDim);
     AllLocalSolutions.resize(EmbDim);
+
+    poly_equs_minimized.resize(EmbDim);
 
     // First we compute the patches
     for(size_t coord = 1; coord < EmbDim; coord++){
@@ -232,8 +235,10 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
         AllNew_coords_key[coord] = new_coords_key;
 
 #ifdef NMZ_DEVELOP
-        if(verbose)
+        if(verbose){
+            verboseOutput() << "level " << LevelPatches[coord] << endl;
             verboseOutput() << "new coords " << new_coords_key;
+        }
 #endif
         // for the "local" project-and-lift we need their suport hyperplanes
         vector<key_t> LocalKey = bitset_to_key(AllPatches[coord]);
@@ -487,12 +492,15 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_latt_points_by_patching() {
     }
 }
 
+const size_t max_nr_new_latt_points_total = 1000000;
+const size_t nr_new_latt_points_for_elimination_equs = 10000;
+
 //---------------------------------------------------------------------------
 
 template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vector<IntegerRet> >& LatticePoints, const key_t this_patch) {
 
-    size_t max_nr_per_thread = 1000000 / omp_get_max_threads();
+    size_t max_nr_per_thread =  max_nr_new_latt_points_total/ omp_get_max_threads();
 
     size_t coord = InsertionOrderPatches[this_patch]; // the coord marking the next patch
 
@@ -607,6 +615,15 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
 
         size_t nr_latt_points_total = 0;  //statistics for this run of the while loop
 
+        vector<vector<size_t> > poly_stat;
+        vector<size_t> poly_stat_total;
+        if(!poly_equs_minimized[coord]){
+            poly_stat.resize(omp_get_max_threads());  // counts the number of "successful". iu.e. != 0,
+            for(auto& p:poly_stat)                    // evaluations of a mpolynomial erquationj
+                p.resize(PolyEqusThread[0].size());
+            poly_stat_total.resize(poly_stat[0].size());
+        }
+
 #pragma omp parallel
         {
 
@@ -673,7 +690,10 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                     for(auto pp = order_poly_equs.begin(); pp!= order_poly_equs.end(); ++pp){
                         if(PolyEqusThread[tn][*pp].evaluate(NewLattPoint) != 0){
                             can_be_inserted = false;
-                            order_poly_equs.splice(order_poly_equs.begin(), order_poly_equs, pp);
+                            if(!poly_equs_minimized[coord])
+                                poly_stat[tn][*pp]++;
+                            else
+                                order_poly_equs.splice(order_poly_equs.begin(), order_poly_equs, pp);
                             break;
                         }
                     }
@@ -716,6 +736,14 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
 
         list<vector<IntegerRet> > NewLatticePoints;  // lattice points computed in this round
 
+        if(!poly_equs_minimized[coord]){
+            for(size_t i = 0; i< poly_stat.size(); ++i){
+                    for(size_t j = 0; j < poly_stat[0].size(); ++j)
+                        poly_stat_total[j] += poly_stat[i][j];
+            }
+            // cout << "PPPP " << poly_stat_total;
+        }
+
         for (size_t i = 0; i < Deg1Thread.size(); ++i)
             NewLatticePoints.splice(NewLatticePoints.end(), Deg1Thread[i]);
 
@@ -723,10 +751,25 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
 
         if(last_coord)
             collect_results(NewLatticePoints); // clears NewLatticePoints
-        /*
-        if(verbose){
-            verboseOutput() << "ext " << nr_latt_points_total << endl;
-            verboseOutput() << "cst " << nr_new_latt_points << endl;
+
+        NrDoneLP[coord] += nr_latt_points_total;
+
+        // Discard ineffective polynomial equations
+        if(!poly_equs_minimized[coord] &&  nr_latt_points_total > nr_new_latt_points_for_elimination_equs){
+            poly_equs_minimized[coord] = true;
+            OurPolynomialSystem<IntegerRet> EffectivePolys;
+            for(size_t i = 0; i < PolyEqusThread[0].size(); ++i){
+                if(poly_stat_total[i] > 0)
+                    EffectivePolys.push_back(PolyEqusThread[0][i]);
+            }
+
+            for(size_t thr = 0; thr < PolyEqusThread.size(); ++thr)
+                PolyEqusThread[thr] = EffectivePolys;
+        }
+
+        /*if(verbose){
+            // verboseOutput() << " --- ext " << nr_latt_points_total << endl;
+            // verboseOutput() << " cst " << nr_new_latt_points << endl;
             // verboseOutput() << "rtd " << nr_caught_by_restricted << endl;
         }*/
 
@@ -1350,6 +1393,9 @@ void ProjectAndLift<IntegerPL, IntegerRet>::finalize_latt_point(const vector<Int
                 return;
             }
         }
+        // and we check all polynomial equations because we have suppressed the "noneffective" ones
+        if(!PolyEquations.check(NewPoint, true, false)) // true = equations, fasle = any length
+            return;
     }
 
     if (!Congs.check_congruences(NewPoint))

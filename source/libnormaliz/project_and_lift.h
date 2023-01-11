@@ -124,8 +124,10 @@ class ProjectAndLift {
     vector<vector<OurPolynomialSystem<IntegerRet> > > AllPolyEqusThread; // a copy for each thread
     vector<vector<OurPolynomialSystem<IntegerRet> > > AllPolyInequsThread; // ditto for inequalities
     dynamic_bitset used_supps; // registers which inequalities are used in the patching process
+    dynamic_bitset poly_equs_minimized; // redisters whether the polynomial equations at a coord have been minimized
 
     vector<size_t> NrRemainingLP;
+    vector<size_t> NrDoneLP;
 
     vector<size_t> order_supps(const Matrix<IntegerPL>& Supps);
     bool fiber_interval(IntegerRet& MinInterval, IntegerRet& MaxInterval, const vector<IntegerRet>& base_point);
