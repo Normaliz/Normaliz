@@ -1720,6 +1720,9 @@ NMZTESTS +=						\
 	test-mrk/3x7.in					\
 	test-mrk/3x7.ref				\
 	test-mrk/3x7.mrk.ref				\
+	test-grb/gr_test.in				\
+	test-grb/gr_test.ref				\
+	test-grb/gr_test.grb.ref			\
 	test-grb/3x7.in					\
 	test-grb/3x7.ref				\
 	test-grb/3x7.grb.ref
