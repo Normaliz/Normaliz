@@ -807,7 +807,7 @@ void LatticeIdeal::computeGroebner(ConeProperties ToCompute){
 
     Groebner = gr.to_matrix();
 
-    Groebner = select_by_degree(Groebner, Grading, degree_bound, min_degree);
+    // Groebner = select_by_degree(Groebner, Grading, degree_bound, min_degree);
     if(verbose)
         verboseOutput() << "Gröbner basis elements " << Groebner.nr_of_rows() << endl;
     // cout << "GGGGGG " << Groebner.nr_of_rows() << endl;
