@@ -19,6 +19,8 @@ Normaliz is a open source tool for computations in affine monoids, vector config
 - Euclidean and lattice normalized volumes of polytopes
 - Hilbert (or Ehrhart) series and (quasi) polynomials under Z-gradings (for example, for rational polytopes)
 - generalized (or weighted) Ehrhart series and Lebesgue integrals of - polynomials over rational polytopes
+- NEW: minml systems of tenerators and Hilbert series of general affine monoids
+- NEW: Markov and HGröbner bases of lattice and toric ideals
 
 Normaliz offers the API libnormaliz that allows the user to access Normaliz computations from any C++ program.
 
@@ -35,7 +37,7 @@ The file 2cone.in from the directory example contains
     1 3
     2 1
 
-It defines a cone in two-dimensional real space by its extreme rays. 
+It defines a cone in two-dimensional real space by its extreme rays.
 ![2-dimensional cone](https://github.com/Normaliz/Normaliz/blob/master/doc/2cone.jpg)
 
 The command
@@ -49,14 +51,14 @@ runs Normaliz with its default computation goals. It produces the output file 2c
     2 support hyperplanes             external index = 1
                                       internal index = 5
                                       original monoid is not integrally closed
-    
+
     size of triangulation   = 1       rank of class group = 0
     resulting sum of |det|s = 5       finite cyclic summands:
-                                      5: 1  
+                                      5: 1
     No implicit grading found
-    
+
     ***********************************************************************
-    
+
     4 Hilbert basis elements:         2 extreme rays:
      1 1                               1 3
      1 2                               2 1
@@ -66,7 +68,7 @@ runs Normaliz with its default computation goals. It produces the output file 2c
                                         3 -1
 
 The main point was the computation of the Hilbert basis (encircled in red in the figure).
-                                        
+
 ## Platforms
 Each [release](https://github.com/Normaliz/Normaliz/releases) contains executables for Linux 64, MacOS X and MS Windows 64.
 
