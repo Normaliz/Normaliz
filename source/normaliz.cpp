@@ -105,6 +105,7 @@ void printHelp(char* command) {
     cout << "      Automorphisms, EuclideanAutomorphisms, RationalA..., CombinatorialA..." << endl;
     cout << "      EhrhartSeries, LatticePoints, NumberLatticePoints" << endl;
     cout << "      FaceLattice, FVector, Incidence" << endl;
+    cout << "      MasrkovBasis, GroebnerBasis, Lex, DegLex, RevLex" << endl;
 
     cout << endl;
     cout << "Output and execution:" << endl;

@@ -126,7 +126,7 @@
 
 \def\ttt{\texttt}
 
-\def\version{3.9.4}
+\def\version{3.10.0}
 \def\NmzDir{normaliz-\version}
 
 \def\ContLine#1{\hyperref[#1]{\large #1}\\[6pt]}
@@ -262,12 +262,21 @@ contains: (i) the definition of the ambient space, (ii) the algebraic number fie
 \ContLine{Tabular and symbolic constraints}
 \ContLine{Grading and dehomogenization}
 \ContLine{Polynomials}
+\ContLine{Binomial ideals}
 \ContLine{Numerical parameters}
 \ContLine{Types for precomputed data}
 \ContLine{Additional input types}
 \medskip
 
-Input types can be mixed with some obvious restrictions. Roughly speaking, Normaliz forms the cone defined by the generators and intersects it with the cone defined by the constraints. The same applies to lattices. See the manual for a more precise description. 
+There are 3 categories of input:
+\begin{enumerate}
+	\item For discrete convex geometry Normaliz forms the cone defined by the generators and intersects it with the cone defined by the constraints. The same applies to lattices. See the manual for a more precise description. 
+	
+	\item Affine monoids defined by generators.
+	
+	\item Binomial ideals saerving as lattice and toric iodeals. 
+\end{enumerate}
+
 
 \TopIndex
 
@@ -439,6 +448,8 @@ inequalities 4       inequalities        inequalities transpose 4
 	$$
 	
 	\textbf{Note:}\enspace \verb|vertices| \verb|cone| and \verb|subspace| together define a polyhedron. If \verb|vertices| is present in the input, then the default choices for \verb|cone| and \verb|subspace| are the empty matrices. \example{icosahedron-v}
+	
+	\itemtt[monoid] is a matrix with $d$ columns. Its rows generate a positive affine monnoid. 
 \end{itemize}
 
 
@@ -537,7 +548,7 @@ If there are no cone generators or inequalities, Normaliz automatically assumes 
 	
 	\example{ChF\_8\_1024}, \example{CondorcetRange}
 
-	\itemtt[constraints <n> symbolic]\index{symbolic\index{constraints!symbolic} constraints} where \verb|<n>| is the number of constraints in symbolic form that follow.
+	\itemtt[constraints <n> symbolic]\index{symbolic constraints}\index{constraints!symbolic} where \verb|<n>| is the number of constraints in symbolic form that follow.
 
 Symbolic constraints are given in traditional mathematical form.  Note that every symbolic constraint (including the last) must be terminated by a semicolon. The left and right hand side can be affine-linear expressions in the coordinates given by \verb|x<[i>]| where \verb|<i>| varies between $1$ and $d$. 
 
@@ -545,7 +556,7 @@ The interpretation of homogeneity follows the same rules as for tabular constrai
 
 Examples
 \begin{Verbatim}
-x[1] + 2x[3] = 5;    x[1] >= x[2] + 6;     x[1] + 2x[2] ~ 5 - 3x[]3] (12); 
+x[1] + 2x[3] = 5;    x[1] >= x[2] + 6;     x[1] + 2x[2] + 3x[]3] ~ 5 (12); 
 \end{Verbatim}
 
 \example{cube\_3}, \example{NumSemi}
@@ -594,6 +605,19 @@ where \verb|<n>| is the number of polynomials that follow. Everey polynomial mus
 
 \EndOfPage
 
+\SubSectStart{Binomial ideals}\index{binomial ideals}
+
+\begin{itemize}
+	
+	\itemtt[lattice\_ideal] is a matrix with $d$ columns containing the generators of a lattice ideal $L$ in the Laurent polynomial ring. It defines the intersection of $L$ with the polynomial ring.
+	
+	\itemtt[toric\_ideal] is a matrix with $d$ columns containing the generators of a lattice ideal in the Laurent polynomial ring. It defines the smallest toric ideal $T$ in the polynomial ring contaioning the generators and the affine monoid underlying the quotient of the polynomial ring modulo $T$.
+	
+	\itemtt[normal\_toric\_ideal] is a matrix with $d$ columns containing the generators of a lattice ideal in the Laurent polynomial ring. It It goes one step further than \verb|toric_ideal| by passing further to the normalizaion of the affime monoid.
+		
+\end{itemize}
+\vspace*{-0.5cm}
+
 \SubSectStart{Numerical parameters}\index{numerrical parameters}
 
 \begin{itemize}
@@ -606,7 +630,10 @@ where \verb|<n>| is the number of polynomials that follow. Everey polynomial mus
 	\itemtt[decimal\_digits <n>] where \verb|<n>| sets the precision to $10^{-n}$ (for computation with signed decomposition).
 	
 	\itemtt[block\_size\_hollow\_tri <n>] sets the block size for distributed computation to \verb|<n>|.
+	
+	\itemtt[gb\_degree\_bound <n>] sets the upper bound for elements computed in a Gröbner or Markov basis  to \verb|<n>|.
 
+	\itemtt[gb\_min\_degree <n>] sets the lower bound for elements in a Gröbner or Markov basis  to \verb|<n>|.
 \end{itemize}
 
 
@@ -677,8 +704,6 @@ Further admitted types for precomputed data: \ttt{grading}, \ttt{dehomogenizatio
 	\itemtt[open\_facets] is a vector of length $d$ with entries $\in \{0,1\}$. (See manual)
 	
 	\itemtt[hilbert\_basis\_rec\_cone] is a matrix with $d$ columns. It contains the precomputed Hilbert basis of the recession cone.
-	
-	\itemtt[lattice\_ideal] is a matrix with $d$ columns containing the generators of the lattice ideal in the Laurent polynomial ring. 
 	
 \end{itemize}
 
@@ -839,22 +864,31 @@ There are dual cone we have:
 	\itemtt[InputAutomorphisms] computes rational (or algebraic) automorphisms based solely on the input and initial coordinate transformations.\example{halfspace3inhom-input}
 \end{itemize}
 
+% \EndOfPageSub
+
+\SubSubSectStart{M;arkov and Gröbner bases}
+\begin{itemize}
+	\itemtt[MarkovBasis] computes a dsystem of generators of a givemn lattice or toric ideal defining an affine monoid.
+	
+	\itemtt[GroebnerBasis] computes a Gröbner basis of a lttice or toric ideal.
+\end{itemize}
+
 \EndOfPageSub
 
 \SubSubSectStart{Additional computation goals}
 
 \begin{itemize}
-	\itemtt[Sublattice, -S] (upper case S) asks Normaliz to compute the coordinate transformation to and from the efficient sublattice.\bigskip
+	\itemtt[Sublattice, -S] (upper case S) asks Normaliz to compute the coordinate transformation to and from the efficient sublattice.\medskip
 	
 	\itemtt[VerticesFloat] converts the format of the vertices to floating point. It implies \texttt{SupportHyperplanes}.
 	
 	\itemtt[SuppHypsFloat] converts the format of the support hyperplanes to floating point.
 	
-	\itemtt[ExtremeRaysFloat] does the same for the extreme rays.\bigskip
+	\itemtt[ExtremeRaysFloat] does the same for the extreme rays.\medskip
 	
-	\itemtt [WitnessNotIntegrallyClosed, -w] Normaliz stops the Hilbert basis computation as soon it has found a witness confirming that the original monoid is not integrally closed.\bigskip
+	\itemtt [WitnessNotIntegrallyClosed, -w] Normaliz stops the Hilbert basis computation as soon it has found a witness confirming that the original monoid is not integrally closed.\medskip
 
-	\itemtt [ClassGroup, -C] is self explanatory, includes \verb|SupportHyperplanes|. Not allowed in inhomogeneous computations.\bigskip
+	\itemtt [ClassGroup, -C] is self explanatory, includes \verb|SupportHyperplanes|. .\medskip
 	
 	\itemtt[ConeDecomposition, -D] Normaliz computes a disjoint decomposition of the cone into semiopen simplicial cones. Implies \verb|Triangulation|.
 	\itemtt[TriangulationSize, -t] makes Normaliz count the simplicial cones in the full triangulation.
@@ -864,25 +898,33 @@ There are dual cone we have:
 	\itemtt[StanleyDec, -y] makes Normaliz compute, store and export the Stanley decomposition.
 	
 	\itemtt[PlacingTriangulation] combinatorially defined triangulation, see manual.
-	\itemtt[PullingTriangulation] ditto.\bigskip
+	\itemtt[PullingTriangulation] ditto.\medskip
 	
 	\itemtt[Incidence] computes the incidence of extreme rays and facets.
 	
-	\itemtt[DualIncidence] the transpose of \verb|Incidence|.\bigskip
+	\itemtt[DualIncidence] the transpose of \verb|Incidence|.\medskip
 	
-	\itemtt[IsEmptySemiopen] checks whether a semiopen polyhedron is empty.\bigskip
+	\itemtt[IsEmptySemiopen] checks whether a semiopen polyhedron is empty.\medskip
 	
 	\itemtt[IsPointed]: is the efficient cone $C$ pointed? This computation goal is sometimes useful to give Normaliz a hint that a nonpointed cone is to be expected.
 	
-	\itemtt[IsDeg1ExtremeRays]: do the extreme rays have degree~$1$? (Only in homogeneous computations.)
+	\itemtt[IsDeg1ExtremeRays]: do the extreme rays have degree~$1$?
 	
-	\itemtt[IsDeg1HilbertBasis]: do the Hilbert basis elements have degree~$1$? (Only in homogeneous computations.)
+	\itemtt[IsDeg1HilbertBasis]: do the Hilbert basis elements have degree~$1$?
 	
-	\itemtt[IsReesPrimary]: for the input type \verb|rees_algebra|, is the monomial ideal primary to the irrelevant maximal ideal?\bigskip
+	\itemtt[IsReesPrimary]: for the input type \verb|rees_algebra|, is the monomial ideal primary to the irrelevant maximal ideal?\medskip
+	
+	\itemtt[Representations] asks for the representations of the reducible generators  of a monoid in terms of the irreducible ones.\medskip
+	
+	\itemtt[SingularLocus] computes the singular locus of a monoid algebra.
+	
+	\itemtt[CodimSingularLocus] just the codimension.
+	
+	\itemtt[IsSerreR1] checks whether a mo noid alebra satisfies the Serre condition $(R_1)$.\medskip
 	
 	\itemtt[WritePreComp] Computes and writes file with suffix \verb|precomp.in| that can be used for the input of precomputed data.
 
-\end{itemize}\bigskip
+\end{itemize}\medskip
 
 There are several more computation goals that are used internally by Normaliz and the communication with external packages. See manual.
 
@@ -911,7 +953,11 @@ For several computation goals there exist more than a single algorithm in  Norma
 
 	\itemtt[NoSymmetrization, -X] blocks symmetrization.\bigskip
 	
-	\itemtt[KeepOrder, -k]  forces Normaliz to insert the generators (for generator input) or the inequalities (for constraint input) in the input order.
+	\itemtt[KeepOrder, -k]  forces Normaliz to insert the generators (for generator input) or the inequalities (for constraint input) in the input order.\bigskip
+	
+	\itemtt[Lex] ask for the lexicographic monomial order vfor the Gröbner basis.
+	\itemtt[Lex] ask for the degree lexicographic monomial order vfor the Gröbner basis.
+	\itemtt[RevLex] ask for the degree reverse lexicographic monomial order vfor the Gröbner basis. (Default choice)
 \end{itemize}
 
 \EndOfPage
@@ -1031,6 +1077,16 @@ The main output file is \verb|<project>.out|. However, some data are written to 
 	
 	\itemtt[inc] contains the (dual) incidence matrix.
 	
+	\itemtt[mrk] contains the Markov basis.
+	
+	\itemtt[grb] contains the Gröbner basis.
+	
+	\itemtt[rep] contains the representations of the reducible generators of a monoid by the irreducible ones.
+	
+	\itemtt[ogn] contains the refernce generators for Markov bases, Gröbner bases and represntations, unless given by the Hilbert basis.
+	
+	\itemtt[sng] contains the singular locus.
+	
 	\itemtt[proj.out] contains the projected cone.
 	
 	\itemtt[inthull.out] contains the integer hull.
@@ -1044,6 +1100,12 @@ Via the option \ttt{WritePreComp} Normaliz can write an input file with precompu
 	
 	\itemtt[precomp.in]
 
+\end{itemize}
+
+\begin{itemize}
+	
+	\itemtt[BinomialsPacked] chooses a packed format for \ttt{mrk}, \ttt{grb} and \ttt{rep}.
+	
 \end{itemize}
 
 Moreover, there are truly optional output files that serve as a file interface. See manual.
