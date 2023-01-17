@@ -63,6 +63,7 @@ int gettimeofday(struct timeval * tp, struct timezone * tzp)
 namespace libnormaliz {
 
 bool verbose = false;
+bool constructor_verbose = true;
 
 volatile sig_atomic_t nmz_interrupted = 0;
 const int default_thread_limit = 8;
@@ -119,6 +120,10 @@ bool setVerboseDefault(bool v) {
     bool old = verbose;
     verbose = v;
     return old;
+}
+
+void suppressNextConstructorVerbose(){
+        constructor_verbose = false;
 }
 
 int set_thread_limit(int t) {

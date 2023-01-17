@@ -784,6 +784,7 @@ void Cone<Integer>::process_multi_input_inner(InputMap<Integer>& multi_input_dat
     lattice_ideal_input = false;
     pure_lattice_ideal = false;
     monoid_input = false;
+    normal_monoid_input = false;
     nr_latt_gen = 0, nr_cone_gen = 0;
     inhom_input = false;
 
@@ -2059,6 +2060,7 @@ void Cone<Integer>::prepare_input_lattice_ideal(InputMap<Integer>& multi_input_d
 
     if(make_normal_monoid){
         multi_input_data.insert(make_pair(Type::cone_and_lattice, Gens));  // this is the monoid defined by the binomials
+        normal_monoid_input = true;
     }
     else{
         multi_input_data.insert(make_pair(Type::monoid, Gens));  // this is the monoid defined by the binomials
@@ -2106,6 +2108,9 @@ void Cone<Integer>::initialize() {
     triangulation_is_partial = false;
     is_approximation = false;
     verbose = libnormaliz::verbose;  // take the global default
+    if(!constructor_verbose)
+        verbose = false;
+    constructor_verbose = true;
     if (using_GMP<Integer>()) {
         change_integer_type = true;
     }
@@ -3905,7 +3910,10 @@ void Cone<Integer>::compute_monoid_basic_data(const Matrix<long long>& InputGens
     HB_Mon.put_HilbertBasis_into(HB_LL);
     convert(HilbertBasis, HB_LL);
 
+    setWeights();
+
     setComputed(ConeProperty::HilbertBasis);
+    HilbertBasis.sort_by_weights(WeightsGrad, GradAbs);
 
     if(ToCompute.test(ConeProperty::Representations)){
         Matrix<long long> Rep_LL;
@@ -4081,7 +4089,10 @@ ConeProperties Cone<Integer>::lattice_ideal_compute_inner(ConeProperties ToCompu
         convert(GroebnerBasis,LattId.getGroebnerBasis());
         setComputed(ConeProperty::GroebnerBasis);
     }
-    if(LattId.isComputed(ConeProperty::MarkovBasis)){
+    // We want to see the Markov basis only if asked for in RoCompute,
+    // not as a by product of Hilbert seriesS
+    if(LattId.isComputed(ConeProperty::MarkovBasis) &&
+                    ToCompute.test(ConeProperty::MarkovBasis)){
         convert(MarkovBasis,LattId.getMarkovBasis());
         setComputed(ConeProperty::MarkovBasis);
     }
@@ -4133,6 +4144,12 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
 
     if(pure_lattice_ideal){
         LEAVE_CONE  return lattice_ideal_compute(ToCompute);
+    }
+
+    if(normal_monoid_input && ToCompute.test(ConeProperty::DefaultMode)){
+        ToCompute.set(ConeProperty::HilbertBasis);
+        ToCompute.set(ConeProperty::IsIntegrallyClosed);
+        ToCompute.reset(ConeProperty::DefaultMode);
     }
 
     if(monoid_input){
@@ -5692,7 +5709,7 @@ void Cone<Integer>::norm_dehomogenization(size_t FC_dim) {
 
 template <typename Integer>
 void Cone<Integer>::compute_singular_locus(const ConeProperties& ToCompute) {
-    if (!isComputed(ConeProperty::OriginalMonoidGenerators) || inhomogeneous)
+    if (inhomogeneous)
         return;
 
     if(!ToCompute.test(ConeProperty::SingularLocus) && !ToCompute.test(ConeProperty::CodimSingularLocus))
@@ -8069,6 +8086,7 @@ void Cone<Integer>::try_signed_dec_inner(ConeProperties& ToCompute) {
 //---------------------------------------------------------------------------
 // This routine aims at the computation of multiplicities by better exploitation
 // of unimodularity
+// Not bused at present
 
 
 template <typename Integer>

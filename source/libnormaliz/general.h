@@ -91,6 +91,7 @@ const nmz_float nmz_epsilon = 1.0e-12;
 typedef unsigned int key_t;
 
 NORMALIZ_DLL_EXPORT extern bool verbose;
+NORMALIZ_DLL_EXPORT extern bool constructor_verbose;
 NORMALIZ_DLL_EXPORT extern size_t GMP_mat, GMP_hyp, GMP_scal_prod;
 NORMALIZ_DLL_EXPORT extern size_t TotDet;
 
@@ -135,6 +136,7 @@ NORMALIZ_DLL_EXPORT extern long full_cone_recursion_level;
 
 /* set the verbose default value */
 bool setVerboseDefault(bool v);
+void suppressNextConstructorVerbose();
 /* methods to set and use the output streams */
 void setVerboseOutput(std::ostream&);
 void setErrorOutput(std::ostream&);

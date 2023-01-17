@@ -608,6 +608,7 @@ class Cone {
     bool lattice_ideal_input;
     bool pure_lattice_ideal;
     bool monoid_input;
+    bool normal_monoid_input; // set true for normal_toric_ideal input
     bool explicit_monoid_input; // type monoid explicit in construction, and not only derived from toric ideal
     size_t nr_latt_gen, nr_cone_gen;  // they count matrices in the input
 

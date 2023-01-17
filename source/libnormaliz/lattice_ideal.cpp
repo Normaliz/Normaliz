@@ -332,6 +332,7 @@ bool MarkovProjectAndLift::compute_current_weight(){
     // libnormaliz::verbose = false;
     Matrix<BigInt> LBR_Big;
     convert(LBR_Big, LatticeBasisReordered);
+    suppressNextConstructorVerbose();
     Cone<BigInt> WeightCone(Type::equations, LBR_Big); // intersects with positive orthant
     WeightCone.setVerbose(false);
     // libnormaliz::verbose = save_global_verbose;
@@ -502,6 +503,7 @@ bool MarkovProjectAndLift::find_and_lift_next_unbounded(){
     // libnormaliz::verbose = false;
     Matrix<BigInt> LBRT_Big;
     convert(LBRT_Big, LatticeBasisReorderedTranspose);
+    suppressNextConstructorVerbose();
     Cone<BigInt> CheckBounded(Type::inequalities, LBRT_Big);  // TODO Use Normaliz dynamic -- we must add
     //  one inequality only to last inequalities
     CheckBounded.setVerbose(false);
@@ -557,6 +559,7 @@ vector<Integer> MarkovProjectAndLift::find_new_element_for_unbounded(){
     Matrix<BigInt> UnitMat(LatticeBasisReordered.nr_of_columns());
     Matrix<BigInt> LBR_Big;
     convert(LBR_Big, LatticeBasisReordered);
+    suppressNextConstructorVerbose();
     Cone<BigInt> WeightCone(Type::cone, LBR_Big, Type::inequalities, UnitMat);
     WeightCone.setVerbose(false);
     Matrix<BigInt> ER_big = WeightCone.getExtremeRaysMatrix();

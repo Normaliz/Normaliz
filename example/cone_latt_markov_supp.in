@@ -1,0 +1,9 @@
+amb_space 3
+inequalities 5
+ 0   0 1
+ 0   1 0
+ 1   0 0
+ 2  -3 1
+ 5 -15 7
+MarkovBasis
+SingularLocus
