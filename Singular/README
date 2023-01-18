@@ -1,0 +1,19 @@
+The version of normliz.lib requires version 3.10.0 or nweer of Normaliz.
+
+The documentation normaliz.pdfcan still be used, but it does not contain the new functions
+that come with this version. For the time being, open normaliz.lib with
+your favorite editor, read the introduction and the information of the procedures that
+you are intereseted in.
+
+As a first test run
+
+    Singular basic_test.sing
+
+and then
+
+    Singular extended_test.sing
+
+These scripts require that the binary normaliz is in your search path for executable files.
+
+If you are interested in Sagbi bases, sagbiNormaliz.lib may be useful for you. Use this file is a preliminary documentation.
+

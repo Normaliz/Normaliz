@@ -10,8 +10,8 @@ external index = 2
 internal index = 1
 original monoid is not integrally closed in chosen lattice
 
-size of triangulation   = 2
-resulting sum of |det|s = 2
+size of partial triangulation   = 0
+resulting sum of |det|s = 0
 
 grading:
 1 1 
@@ -21,25 +21,6 @@ degrees of extreme rays:
 1:2  
 
 Hilbert basis elements are of degree 1
-
-multiplicity = 2
-
-Hilbert series:
-1 1 
-denominator with 2 factors:
-1:2  
-
-degree of Hilbert Series as rational function = -1
-
-The numerator of the Hilbert series is symmetric.
-
-Hilbert polynomial:
-1 2 
-with common denominator = 1
-
-rank of class group = 0
-finite cyclic summands:
-2:1  
 
 ***********************************************************************
 

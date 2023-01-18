@@ -3855,21 +3855,24 @@ void Cone<Integer>::compute_monoid_basic_data(const Matrix<long long>& InputGens
 
     // set grading if necessary
     ValuesGradingOnMonoid.resize(InputGensLL.nr_of_rows());
-    if(ToCompute.test(ConeProperty::HilbertSeries) || ToCompute.test(ConeProperty::Multiplicity)
-                            || gb_degree_bound >= 0 || gb_min_degree >= 0 || ToCompute.test(ConeProperty::MaxDegRepresentations) ){
-        vector<long long> ExternalGrading;
-        if(isComputed(ConeProperty::Grading))
-            convert(ExternalGrading, Grading);
-        else
-            ExternalGrading = vector<long long>(dim, 1);
 
-        long long GCD = 0;
-        for(size_t i = 0; i < InputGensLL.nr_of_rows(); ++i){
-            ValuesGradingOnMonoid[i] = v_scalar_product(ExternalGrading, InputGensLL[i]);
-            if(ValuesGradingOnMonoid[i] <= 0)
-                throw BadInputException("Implicit grading not positive on monoid");
-            GCD = gcd(GCD, ValuesGradingOnMonoid[i]);
+    vector<long long> ExternalGrading;
+    if(isComputed(ConeProperty::Grading))
+        convert(ExternalGrading, Grading);
+    else
+        ExternalGrading = vector<long long>(dim, 1);
+
+    long long GCD = 0;
+    bool grading_is_positive =true;
+    for(size_t i = 0; i < InputGensLL.nr_of_rows(); ++i){
+        ValuesGradingOnMonoid[i] = v_scalar_product(ExternalGrading, InputGensLL[i]);
+        if(ValuesGradingOnMonoid[i] <= 0){
+            grading_is_positive = false;
+            break;
         }
+        GCD = gcd(GCD, ValuesGradingOnMonoid[i]);
+    }
+    if(grading_is_positive){
         if(!ToCompute.test(ConeProperty::NoGradingDenom)){
             v_scalar_division(ValuesGradingOnMonoid, GCD);
             GradingDenom = convertTo<Integer>(GCD);
@@ -3879,6 +3882,13 @@ void Cone<Integer>::compute_monoid_basic_data(const Matrix<long long>& InputGens
         setComputed(ConeProperty::GradingDenom);
         convert(Grading,ExternalGrading);
         setComputed(ConeProperty::Grading);
+    }
+
+    // Check necessity of grading
+    if(ToCompute.test(ConeProperty::HilbertSeries) || ToCompute.test(ConeProperty::NoGradingDenom) || ToCompute.test(ConeProperty::Multiplicity)
+                            || gb_degree_bound >= 0 || gb_min_degree >= 0 || ToCompute.test(ConeProperty::MaxDegRepresentations) ){
+        if(!isComputed(ConeProperty::Grading))
+            throw BadInputException("Explicit or mplicit grading not positive on monoid");
     }
 
     ToCompute.reset(is_Computed);

@@ -5,6 +5,7 @@
 normaliz
 normaliz_*
 normaliz-*
+*.exe
 
 # ignore executable tools
 collectcols
