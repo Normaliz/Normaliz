@@ -3849,7 +3849,7 @@ void Cone<Integer>::compute_monoid_basic_data(const Matrix<long long>& InputGens
         for(size_t i = 0; i< InputGenerators.nr_of_rows(); ++i){
             TestDegree = v_scalar_product(TestGrad, InputGenerators[i]);
             if(TestDegree <= 0)
-                throw BadInputException("Affine monoid not positive");
+                throw BadInputException("Affine monoid not positive or 0 in input");
         }
     }
 
