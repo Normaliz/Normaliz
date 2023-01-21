@@ -5,13 +5,24 @@ SUBDIRS = source test example
 EXTRA_DIST = bootstrap.sh CHANGELOG \
              .github/workflows/ci.yml \
              .github/workflows/.github-ci-build_configure.sh \
-             .github/workflows/.github-ci-build_configure.sh \
-             .github/workflows/.github-ci-build_configure.sh
+             .github/workflows/.github-ci-build_check.sh \
+             .github/workflows/.github-ci-build_make.sh
 
 EXTRA_DIST += Macaulay2/INSTALL Macaulay2/Normaliz.m2
-EXTRA_DIST += Singular/INSTALL Singular/normaliz.lib Singular/normaliz.pdf
+EXTRA_DIST += Singular/README Singular/normaliz.lib Singular/sagbiNormaliz.lib \
+              Singular/normaliz.pdf
 EXTRA_DIST += doc/Normaliz.pdf
 EXTRA_DIST += doc/Normaliz.tex
+EXTRA_DIST += doc/Intro.tex
+EXTRA_DIST += doc/Discrete.tex
+EXTRA_DIST += doc/Monoid.tex
+EXTRA_DIST += doc/Input.tex
+EXTRA_DIST += doc/Options.tex
+EXTRA_DIST += doc/Advanced.tex
+EXTRA_DIST += doc/Algebraic.tex
+EXTRA_DIST += doc/OptFiles.tex
+EXTRA_DIST += doc/Technical.tex
+EXTRA_DIST += doc/Appendix.tex
 EXTRA_DIST += doc/NmzShortRef.pdf
 EXTRA_DIST += doc/NmzShortRef.tex
 EXTRA_DIST += doc/jNormaliz.jpg
