@@ -39,6 +39,7 @@ BUILD*
 *.sng
 *.grb
 *.ogn
+.rep
 test/Dummy/*
 
 # ignore temporary test files

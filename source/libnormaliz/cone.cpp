@@ -893,15 +893,9 @@ void Cone<Integer>::process_multi_input_inner(InputMap<Integer>& multi_input_dat
         throw BadInputException("Only one matrix of lattice generators allowed!");
     }
 
-    if (pure_lattice_ideal) {
-        if (multi_input_data.size() > 1) {
-            throw BadInputException("No second input type allowed with  lattice_ideal!");
-        }
-    }
-
     if (lattice_ideal_input || monoid_input) {
         if (multi_input_data.size() > 2 || (multi_input_data.size() == 2 && !contains(multi_input_data, Type::grading))){
-            throw BadInputException("Only grading allowed with mononid or lattice_ideal!");
+            throw BadInputException("Only grading allowed with mononid for monoid or binomial ideal!");
         }
     }
 
@@ -2024,6 +2018,8 @@ void Cone<Integer>::prepare_input_lattice_ideal(InputMap<Integer>& multi_input_d
     }
 
     if(pure_lattice_ideal){
+        if (Grading.size() > 0) // validity already checked
+            setComputed(ConeProperty::Grading);
         return;
     }
 
@@ -2079,11 +2075,12 @@ void Cone<Integer>::prepare_input_lattice_ideal(InputMap<Integer>& multi_input_d
             setComputed(ConeProperty::Grading, false);
         }
     }
-    if(Grading.size() == 0 && positive_emebbding){
+    // for toric_ideal the dafualt value will be set in monoid computation
+    if(Grading.size() == 0 && positive_emebbding && make_normal_monoid){
         if(verbose)
             verboseOutput() << "Implicit standard grading for oric_ideal" << endl;
         Grading = vector<Integer>(dim, 1);
-        setComputed(ConeProperty::Grading);
+        // setComputed(ConeProperty::Grading);
     }
 }
 
@@ -3135,6 +3132,12 @@ bool Cone<Integer>::isSerreR1() {
 }
 
 template <typename Integer>
+bool Cone<Integer>::isLatticeIdealToric() {
+    compute(ConeProperty::IsLatticeIdealToric);
+    return lattice_ideal_toric;
+}
+
+template <typename Integer>
 bool Cone<Integer>::isReesPrimary() {
     compute(ConeProperty::IsReesPrimary);
     return rees_primary;
@@ -3941,17 +3944,6 @@ ConeProperties Cone<Integer>::monoid_compute(ConeProperties ToCompute) {
             ToCompute.reset(ConeProperty::DefaultMode);
     }
     ToCompute.check_monoid_goals();
-    size_t nr_mon_ords = 0;
-    if(ToCompute.test(ConeProperty::RevLex))
-        nr_mon_ords++;
-    if(ToCompute.test(ConeProperty::Lex))
-        nr_mon_ords++;
-    if(ToCompute.test(ConeProperty::DegLex))
-        nr_mon_ords++;
-    if(nr_mon_ords > 1)
-        throw BadInputException("Conflicting monomial orders in input");
-    if(!explicit_monoid_input && ToCompute.test(ConeProperty::Representations))
-        throw BadInputException("Representations only allowed with monoid input");
 
     if(ToCompute.test(ConeProperty::InputAutomorphisms) &&
                 ToCompute.test(ConeProperty::AmbientAutomorphisms))
@@ -4073,9 +4065,22 @@ ConeProperties Cone<Integer>::lattice_ideal_compute(ConeProperties ToCompute) {
     ToCompute.check_lattice_ideal_goals();
 
     vector<long long> DummyVal;
+    if(isComputed(ConeProperty::Grading))
+        convert(DummyVal, Grading);
 
     Matrix<long long> BinLL;
     convert(BinLL,Binomials);
+
+    if(!isComputed(ConeProperty::IsLatticeIdealToric)){
+        lattice_ideal_toric = false;
+        Sublattice_Representation<long long> Saturation(BinLL, true, false);
+        Matrix<long long> M =  Saturation.to_sublattice(BinLL);
+        long long our_index = M.full_rank_index();
+        if(our_index == 1)
+            lattice_ideal_toric = true;
+        setComputed(ConeProperty::IsLatticeIdealToric);
+        ToCompute.reset(is_Computed);
+    }
 
     lattice_ideal_compute_inner(ToCompute,BinLL,DummyVal,verbose);
 
@@ -4087,6 +4092,18 @@ ConeProperties Cone<Integer>::lattice_ideal_compute_inner(ConeProperties ToCompu
                 const Matrix<long long>& LatticeId,
                 const vector<long long>& ValuesGradingOnMonoid,
                 bool verbose) {
+
+    size_t nr_mon_ords = 0;
+    if(ToCompute.test(ConeProperty::RevLex))
+        nr_mon_ords++;
+    if(ToCompute.test(ConeProperty::Lex))
+        nr_mon_ords++;
+    if(ToCompute.test(ConeProperty::DegLex))
+        nr_mon_ords++;
+    if(nr_mon_ords > 1)
+        throw BadInputException("Conflicting monomial orders in input");
+    if(!explicit_monoid_input && ToCompute.test(ConeProperty::Representations))
+        throw BadInputException("Representations only allowed with monoid input");
 
     LatticeIdeal LattId(LatticeId,ValuesGradingOnMonoid, verbose);
     if(gb_degree_bound != -1)
@@ -4109,7 +4126,6 @@ ConeProperties Cone<Integer>::lattice_ideal_compute_inner(ConeProperties ToCompu
     if(LattId.isComputed(ConeProperty::HilbertSeries)){
         HSeries = LattId.getHilbertSeries();
         setComputed(ConeProperty::HilbertSeries);
-        // Quasipolynom ???????????
     }
 
     ToCompute.reset(is_Computed);
@@ -4190,6 +4206,9 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         else
             setComputed(ConeProperty::Grading);
     }
+
+    if(!pure_lattice_ideal && ToCompute.test(ConeProperty::IsLatticeIdealToric))
+        throw BadInputException("IsLatticeIdealToric onl<y allowed for input type lattice_ideal");
 
 
     if(isPolynomiallyConstrained())
@@ -4504,6 +4523,11 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     // cout << "UUUU " << ToCompute.full_cone_goals(using_renf<Integer>()) << endl;
     /* cout << "UUUU All  " << ToCompute << endl;*/
 
+    if(ToCompute.test(ConeProperty::GroebnerBasis) || ToCompute.test(ConeProperty::MarkovBasis)){
+        ToCompute.set(ConeProperty::HilbertBasis);
+        ToCompute.set(ConeProperty::IsPointed);
+    }
+
     // the computation of the full cone
     if (ToCompute.full_cone_goals(using_renf<Integer>()).any()) {
         compute_full_cone(ToCompute);
@@ -4566,8 +4590,6 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     }
 
     if(ToCompute.test(ConeProperty::MarkovBasis) || ToCompute.test(ConeProperty::GroebnerBasis)){
-
-        compute(ConeProperty::HilbertBasis, ConeProperty::IsPointed);
         if(!pointed)
             throw BadInputException("Binomial relations for cones only allowed if cone is pointed");
         Matrix<long long> HB_LL;
@@ -9606,6 +9628,10 @@ bool Cone<Integer>::getBooleanConeProperty(ConeProperty::Enum property) {
             return this->isInhomogeneous();
         case ConeProperty::IsGorenstein:
             return this->isGorenstein();
+       case ConeProperty::IsSerreR1:
+            return this->isSerreR1();
+       case ConeProperty::IsLatticeIdealToric:
+            return this->isLatticeIdealToric();
         case ConeProperty::IsEmptySemiOpen:
             return this->isEmptySemiOpen();
         case ConeProperty::IsTriangulationNested:

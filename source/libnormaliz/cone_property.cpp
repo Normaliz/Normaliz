@@ -225,6 +225,7 @@ ConeProperties only_homogeneous_props() {
     ret.set(ConeProperty::IsDeg1HilbertBasis);
     ret.set(ConeProperty::IsIntegrallyClosed);
     ret.set(ConeProperty::IsSerreR1);
+    ret.set(ConeProperty::IsLatticeIdealToric);
     ret.set(ConeProperty::IsReesPrimary);
     ret.set(ConeProperty::ReesPrimaryMultiplicity);
     ret.set(ConeProperty::IsGorenstein);
@@ -302,9 +303,10 @@ void ConeProperties::check_lattice_ideal_goals() const{
     copy.reset(ConeProperty::Lex);
     copy.reset(ConeProperty::DegLex);
     copy.reset(ConeProperty::RevLex);
+    copy.reset(ConeProperty::IsLatticeIdealToric);
     if (copy.any()) {
         errorOutput() << copy << endl;
-        throw BadInputException("Cone Property in last line not allowed for monoids");
+        throw BadInputException("Cone Property in last line not allowed for lattice ideals");
     }
 }
 
@@ -376,6 +378,12 @@ size_t ConeProperties::count() const {
 
 /* add preconditions */
 void ConeProperties::set_preconditions(bool inhomogeneous, bool numberfield) {
+
+    if(CPs.test(ConeProperty::GroebnerBasis) ||
+                CPs.test(ConeProperty::MarkovBasis)){
+        CPs.set(ConeProperty::HilbertBasis);
+        CPs.set(ConeProperty::IsPointed);
+    }
 
     if(CPs.test(ConeProperty::MaxDegRepresentations))
         CPs.set(ConeProperty::Representations);
@@ -916,6 +924,7 @@ vector<string> initializeCPN() {
     CPN.at(ConeProperty::IsDeg1HilbertBasis) = "IsDeg1HilbertBasis";
     CPN.at(ConeProperty::IsIntegrallyClosed) = "IsIntegrallyClosed";
     CPN.at(ConeProperty::IsSerreR1) = "IsSerreR1";
+    CPN.at(ConeProperty::IsLatticeIdealToric) = "IsLatticeIdealToric";
     CPN.at(ConeProperty::WitnessNotIntegrallyClosed) = "WitnessNotIntegrallyClosed";
     CPN.at(ConeProperty::OriginalMonoidGenerators) = "OriginalMonoidGenerators";
     CPN.at(ConeProperty::IsReesPrimary) = "IsReesPrimary";
@@ -1028,7 +1037,7 @@ vector<string> initializeCPN() {
     CPN.at(ConeProperty::ConeForMonoid) = "ConeForMonoid";
 
     // detect changes in size of Enum, to remember to update CPN!
-    static_assert(ConeProperty::EnumSize == 146, "ConeProperties Enum size does not fit! Update cone_property.cpp!");
+    static_assert(ConeProperty::EnumSize == 147, "ConeProperties Enum size does not fit! Update cone_property.cpp!");
     // assert all fields contain an non-empty string
     for (size_t i = 0; i < ConeProperty::EnumSize; i++) {
         assert(CPN.at(i).size() > 0);

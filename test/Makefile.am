@@ -1711,6 +1711,9 @@ NMZTESTS +=						\
 	test-grb/latt_ideal.in				\
 	test-grb/latt_ideal.ref				\
 	test-grb/latt_ideal.grb.ref			\
+	test-grb/latt_ideal_grad.in			\
+	test-grb/latt_ideal_grad.ref			\
+	test-grb/latt_ideal_grad.grb.ref		\
 	test-grb/polytope.in				\
 	test-grb/polytope.ref				\
 	test-grb/polytope.grb.ref			\

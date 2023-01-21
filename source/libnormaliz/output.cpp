@@ -1238,14 +1238,26 @@ void Output<Integer>::write_files() {
         write_matrix_mrk(Result->getMarkovBasisMatrix());
         if(monoid_input)
             write_matrix_ogn(Result->getOriginalMonoidGeneratorsMatrix());
+        else
+            if(!pure_lattice_ideal){
+                write_matrix_ogn(Result->getHilbertBasisMatrix());
+            }
     }
     if (Result->isComputed(ConeProperty::Representations)) {  // write MarkovBasis
         write_matrix_rep(Result->getRepresentationsMatrix());
+        if(monoid_input)
+            write_matrix_ogn(Result->getOriginalMonoidGeneratorsMatrix());
+        else
+            write_matrix_ogn(Result->getHilbertBasisMatrix());
     }
     if (Result->isComputed(ConeProperty::GroebnerBasis)) {  // write GröbnerBasis
         write_matrix_grb(Result->getGroebnerBasisMatrix());
         if(monoid_input)
             write_matrix_ogn(Result->getOriginalMonoidGeneratorsMatrix());
+        else
+            if(!pure_lattice_ideal){
+                write_matrix_ogn(Result->getHilbertBasisMatrix());
+            }
     }
 
     if(Result->isComputed(ConeProperty::FaceLattice)) {  // write face lattice
@@ -1459,6 +1471,14 @@ void Output<Integer>::write_files() {
         if(Result->isComputed(ConeProperty::GroebnerBasis)){
             out << Result->getNrGroebnerBasis() << " Gröbner basis elements" << endl << endl;
         }
+        if(Result->isComputed(ConeProperty::IsLatticeIdealToric)){
+            if(Result->isLatticeIdealToric())
+                out << "Lattice ideal is toric" << endl;
+            else
+                out << "Lattice ideal is not toric" << endl;
+        }
+
+
         if (Result->isComputed(ConeProperty::Multiplicity)) {
             string mult_string = "multiplicity ";
             if (Result->isComputed(ConeProperty::FixedPrecision))

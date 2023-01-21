@@ -513,6 +513,7 @@ class Cone {
     bool isDeg1HilbertBasis();
     bool isIntegrallyClosed();
     bool isSerreR1();
+    bool isLatticeIdealToric();
     bool isGorenstein();
     bool isEmptySemiOpen();
     bool isReesPrimary();
@@ -607,7 +608,8 @@ class Cone {
     // we must register some information about thew input
     bool lattice_ideal_input;
     bool pure_lattice_ideal;
-    bool monoid_input;
+    bool lattice_ideal_toric;
+    bool monoid_input;  // setbtrue for input types monoid and toric_ideal
     bool normal_monoid_input; // set true for normal_toric_ideal input
     bool explicit_monoid_input; // type monoid explicit in construction, and not only derived from toric ideal
     size_t nr_latt_gen, nr_cone_gen;  // they count matrices in the input

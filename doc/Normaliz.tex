@@ -164,9 +164,11 @@
 The program Normaliz is a tool for computing
 the Hilbert bases and enumerative data of rational cones and, more generally, sets of lattice points in rational polyhedra. Moreover, Normaliz computes algebraic polyhedra, i.e., polyhedra defined over algebraic number fields embedded into $\RR$.
 
+Since version 3.10.0 Normaliz can also compute data of general affine monoids: their minimal systems of generators, Hilbert series, Markov and Gröbner bases of defining ideals and some local data, such as the singular locus.
+
 The mathematical background and the terminology of this manual are explained in Appendix~\ref{AppBackground}. For a thorough treatment of the mathematics involved we refer the reader to~\cite{BG}.
 The terminology follows~\cite{BG}. For
-algorithms of Normaliz see~\cite{BHIKS}, \cite{BI}, \cite{BI2},
+algorithms of Normaliz see \cite{BruAuto}, \cite{BruVol}, \cite{BHIKS}, \cite{BI}, \cite{BI2},
 \cite{BIS}, \cite{BK02}, \cite{BSS}, and~\cite{BS}. Some new developments are briefly explained in this manual.
 
 Both polyhedra and lattices can be given by
@@ -176,7 +178,7 @@ Both polyhedra and lattices can be given by
 \end{arab}
 Since version~3.1, cones need not be pointed and polyhedra need not have vertices, but are allowed to contain a positive-dimensional affine subspace.
 
-In addition to generators and constraints, affine monoids can be defined by lattice ideals, in other words, by binomial equations.
+Affine monoids can be defined by generators and by toric ideals, in other words, by binomial equations.
 
 In order to describe a rational polyhedron by \emph{generators}, one specifies a finite set of vertices $x_1,\dots,x_n\in\QQ^d$ and a set $y_1,\dots,y_m\in\ZZ^d$ generating a rational cone $C$. The polyhedron defined by these generators is
 $$
@@ -208,7 +210,7 @@ For algebraic polyhedra Normaliz realizes the computation goals above that make 
 
 The computation goals of Normaliz can be set by the user. In particular, they can be restricted to subtasks, such as the lattice points in a polytope or the leading coefficient of the Hilbert (quasi)polynomial.
 
-Performance data of Normaliz can be found in~\cite{BI2}, \cite{BIS} and~\cite{BIS2}.
+Performance data of Normaliz can be found in~\cite{BruVol}, \cite{BI2}, \cite{BIS} and~\cite{BIS2}.
 
 \emph{Acknowledgment.}\enspace In~2013--2016 the development of Normaliz has been supported by the DFG SPP~1489 ``Algorithmische und experimentelle Methoden in Algebra, Geometrie und Zahlentheorie''. From November~2020 to October~2021 Normaliz is supported by the DFG~project ``Normaliz: development and long term sustainability''.
 
@@ -242,23 +244,7 @@ Furthermore, Normaliz is used by B.~Burton's system
 Normaliz does not have its own interactive shell. We recommend the access via PyNormaliz, GAP or SageMath for interactive use. \textsc{PyNormaliz} is documented in Appendix~\ref{PyNormaliz}.
 
 
-\subsection{Major changes relative to version~3.7.0}
-
-3.7.1 and~3.7.2 are technical releases.
-
-In~3.7.3:
-
-\begin{arab}
-	\item Dynamic handling of cones.
-	\item VPATH builds in install scripts.
-\end{arab}
-
-In~3.7.4:
-
-\begin{arab}
-	\item Bugfix in face lattice computation.
-	\item Configuration completely defined in \verb|nmz_config.h|.
-\end{arab}
+\subsection{Major changes relative to version~3.8.0}
 
 In~3.8.0:
 
@@ -379,6 +365,16 @@ n~3.9.4:
 	\item Input directive \verb|convert_equations|.
 \end{arab}
 
+In 3.10.0:
+
+\begin{arab}
+	\item improvements in patching algorithm with polynomoial equations.
+	item input types \verb|monoid|, \verb|lattice_ideal| (changed), \verb|toric_ideal|, \verb|normal_toric_ideal|.
+	\item  Markov and Gröbnber bases of lattice ideals.
+	\item Hilbert series for all positive affine monoids.
+	\item Computation of the singular locus.
+\end{arab}
+
 See the file \verb|CHANGELOG| in the Normaliz directory for more information on the history of Normaliz.
 
 
@@ -390,7 +386,6 @@ See the file \verb|CHANGELOG| in the Normaliz directory for more information on 
 	\item multigraded Hilbert series,
 	\item access from further systems,
 	\item heterogeneous parallelization,
-	\item Gr\"obner and Graver bases.
 \end{arab}
 
 \subsection{Download and installation}
@@ -440,7 +435,7 @@ It is possible to upload and download files, but please refrain from using Binde
 
 
 
-\section{Normaliz by examples}\label{Examples}
+\section{Discrete convex geometry by examples}\label{Examples}
 
 \subsection{Terminology}\label{Term}
 
@@ -2440,6 +2435,423 @@ cone 4
 The generators of the integral closure appear as module generators in the output and the generators of the smallest monomial ideal with this integral closure are the vertices of the polyhedron.
 
 
+\section{Affine monids and binomial ideals by examples}\label{AffMon}
+
+\subsection{Positive affine monoids}\label{monoid}
+
+\subsubsection{Input and default computation goals}
+Affine monoids are given to Normaliz by the input type 
+\begin{itemize}
+	\itemtt[monoid]
+\end{itemize}
+as in \verb|monoid.in|:
+\begin{Verbatim}
+amb_space 3
+monoid 6
+1 0 0
+2 3 5
+0 0 1
+1 1 2
+0 1 3
+3 1 0
+/* grading 1 -2 1*/
+/*HilbertSeries*/
+/*GroebnerBasis*/
+/*Lex*/
+/*MarkovBasis*/
+/*gb_degree_bound 11*/
+/*gb_min_degree 9*/
+/*Multiplicity*/
+/*SingularLocus*/
+/*CodimSingularLocus*/
+/*IsSerreR1*/
+\end{Verbatim}
+Positivity of the monoid does \emph{not} mean that all components of the input vectors are nonnegative. It only means that $x=0$ if both $x$ and $-x$ belong to it.
+
+In the output file we see
+\begin{Verbatim}
+...
+original monoid is not integrally closed in chosen lattice
+...
+6 Hilbert basis elements:
+0 0 1
+1 0 0
+0 1 3
+1 1 2
+3 1 0
+2 3 5
+
+5 support hyperplanes:
+0   0 1
+0   1 0
+1   0 0
+2  -3 1
+5 -15 7
+\end{Verbatim}
+The support hyprplanes re those of the cone generated by the monoid. They are used in aiuxiliary computations, for example in finding the Hilbert basis, i.e., the unique minimal system of generators of our monoid. In this case the input vectors are all in the Hilbert basis, but thins need not be the case. The Hilbert basis is ordered by degree and lexicographically within each degree. In fact, we have a grading
+\begin{Verbatim}
+grading:
+1 1 1 
+\end{Verbatim}
+For the default choice of the grading we start from the standard grading on the ambient lattice. Then the grading, whether the default choice or an explicit grading in the input, is divided by the greatest common divisor of he degrees of the generators. In the context of monomial algebras it is the most natural choice. The division by the gcd can be suppressed by \verb|NoGradingDenom|. In our example the gcd is $1$.
+
+Our monoid actually has another grading, in which all generators have degree $1$: \verb|grading 1 -2 1| in the input file. Activate it and study the changes.
+
+\textbf{Note:}\enspace The input type \verb|monoid| is close to \verb|cone_and_lattice| if the monoid is normal.But there are two differences in the dafault choices: (1) The default computation goals and (2) the default grading. In fact, for \verb|monoid| is is derived ftom the standard grading on the ambeint lattice, whereas or \verb|cone_and_lattice| it gives degree $1$ to the extreme integral generators, provided this is possible.
+
+\subsubsection{Markov and Gröbner bases, Representations}\label{markov}
+If we activate
+\begin{itemize}
+	\itemtt[MarkovBasis]
+\end{itemize}
+in \verb|monoid.in|, the Markov basis is computed and returned in the file with suffix 
+\begin{itemize}
+	\itemtt[mrk] file containing the Markov basis	
+\end{itemize}
+In our case \verb|monoid.mrk|:
+\begin{Verbatim}
+7
+6
+1 0 -1 -1 1 0 
+-2 0 2 -1 0 1 
+-1 0 1 -2 1 1 
+2 1 0 -1 -1 -1 
+0 0 0 -3 2 1 
+1 1 1 -3 0 0 
+0 1 2 -2 -1 0
+\end{Verbatim}
+Each column corresponds to an input vector, and the rows aee indeed relations: the scalar product of a row listed in the Markov basis and a column of the matrix \verb|monoid| is $0$. The binomials corresponding to the rows in the Markov bases form a minimal system of generators of the binomial ideal defining our monoid algebra. The input matrix is mirrored in the file with suffix 
+\begin{itemize}
+	\itemtt[ogn] file with the original generators
+\end{itemize}
+in our case \verb|monoid.ogn|:
+\begin{Verbatim}
+6
+3
+1 0 0 
+2 3 5 
+0 0 1 
+1 1 2 
+0 1 3 
+3 1 0
+\end{Verbatim}
+
+In order to compute a Gröbner basis of our binomial ideal, we activate
+\begin{itemize}
+	\itemtt[GroebnerBasis]
+\end{itemize}
+and get the output file with suffix
+\begin{itemize}
+	\itemtt[grb] containing the Gröbner basis.
+\end{itemize}
+For the Gröbnerb basis one has to choose a monomial otrder. The default choice is `egree reverse lexicographic'' In our case it yields
+\begin{Verbatim}
+8
+6
+-1 0 1 1 -1 0 
+0 0 0 3 -2 -1 
+1 0 -1 2 -1 -1 
+2 0 -2 1 0 -1 
+0 1 2 -2 -1 0 
+1 1 1 0 -2 -1 
+2 1 0 -1 -1 -1 
+3 0 -3 0 1 -1 
+\end{Verbatim}
+More precisely: the indeterminates in the polynomial ring housing the binomials are ordered $X_1 > \dots X_n$ and we take the degree reverse lexicographic extension, where`  degree'' means the total degree on the polynomial ring. The file with suffix \verb|ogn| is also created for the Gröbner basis. There is no output of the (minimal) Markov basis, unless you ask for it explicitly. 
+
+Despite of being the defualt choice, the degree reverse lexicographic order is in the list of perttaining computation goals:
+\begin{itemize}
+	\itemtt[RevLex] degree reverse lexicographic order
+	\itemtt[Lex] lexicographic order
+	\itemtt[DegLex] gegree lexicographic order 
+\end{itemize}
+Activate also \verb|Lex| in our example and see what changes. \verb|DegLex| is taken with respect to the total standard degree as well, and makes no difference in our case, since the generating binomials are homogeneous in this grading.
+
+A grading of the monomial algebra induces a gtrading on the binomials in its definig ideal such that the latter are homogeneous polynomials. With respect to this grading  the output of Markov and Gröbner bases can be restricted:
+\begin{itemize}
+	\itemtt[gb\_degree\_bound <n>] sets upper degree bound \verb|<n>| for binomials,
+	\itemtt[gb\_min\_degree <n>] sets lower degree bound  \verb|<n>| for binomials. 
+\end{itemize}
+
+There is one more computation goal for monoids that complements \verb|HilbertBasis| (switched on by default):
+\begin{itemize}
+	\itemtt[Representations] representations of reeducible elements in \verb|monoid| in terms of the Hilbert basis
+\end{itemize}
+The outpur is a list of binomials in the file with suffix
+\begin{itemize}
+	\itemtt[rep] reprdsentations of reducible elements in terms of the Hilbert basis.
+\end{itemize}
+Also the file with suffix \verb|ogn| is written.
+
+As a simple example we consider \verb|representations.in|
+\begin{Verbatim}
+amb_space 3
+monoid 8
+1 0 0
+2 3 5
+0 1 1
+0 0 1
+1 1 2
+0 1 3
+3 1 0
+1 2 5
+Representations
+/*BinomialsPacked*/
+\end{Verbatim}
+with
+\begin{Verbatim}
+4 Hilbert basis elements:
+0 0 1
+1 0 0
+0 1 1
+3 1 0
+\end{Verbatim}
+and representations of the other $4$ elements in the input:
+\begin{Verbatim}
+4
+8
+-1 0 -1 -1 1 0 0 0 
+0 0 -1 -2 0 1 0 0 
+-1 0 -2 -3 0 0 0 1 
+-2 1 -3 -2 0 0 0 0
+\end{Verbatim}
+The entries $1$ in each row mark the reducible elements and the row should be read as a binomial vanishing on the input vectors (or monomials).
+
+
+\subsubsection{Hilbert series and muliplicity}
+
+If we activate both (!) \verb|HilbertSeries| and \verb|Multiplicity| in \verb|monoid.in|, the result is
+\begin{Verbatim}
+multiplicity = 19/40
+multiplicity (float) = 0.475
+
+Hilbert series:
+1 1 0 0 3 2 -2 -1 6 2 -4 0 6 1 -3 1 4 0 0 1 1 
+denominator with 3 factors:
+1:1  2:1  20:1 
+... 
+\end{Verbatim}
+followed by the representation with cyclotomic denominator and the Hilbert quasipolynomial.Activate \verb|grading 1 -2 1| and observe the changes.
+
+
+
+\subsubsection{Binomial ideals from cone input}
+
+Defining binomial ideals can be computed not only for monoids defined by the input type \verb|monoid|, but also for the monoids that defined by other input types as intersections of cones and lattices, for example \verb|cone|, \verb|cone_and_lattice|, \verb|equations|, \verb|inequalities| etc.In the case of generator input there are actually two monoids, the ``original monoid'' as discussed in Section \ref{MinMod}, and its integral closure in the lattice defined by tghe input. So, if we ask for the Markov basis of the defining ideal, which monoid is taken? Answer: always the integral closure generated by its Hilbert basis, unless the property makes only sense for the original monoid: if we ask \verb|IsIntegrallyClosed|, the answer is always `yes''  for the integral closure.
+
+As an example we take \verb|cone_latt_markov.in| (\verb|monoid.in| with a different input type):
+\begin{Verbatim}
+amb_space 3
+cone_and_lattice 6
+1 0 0
+2 3 5
+0 0 1
+1 1 2
+0 1 3
+3 1 0
+MarkovBasis
+SingularLocus
+\end{Verbatim}
+
+The output file contains
+\begin{Verbatim}
+original monoid is not integrally closed in chosen lattice
+...
+codim singular locus = 2
+18 Markov basis elements
+
+***********************************************************************
+
+9 lattice points in polytope (Hilbert basis elements of degree 1):
+0 0 1
+0 1 3
+1 0 0
+1 1 2
+1 2 4
+2 1 1
+2 2 3
+2 3 5
+3 1 0
+
+0 further Hilbert basis elements of higher degree:
+\end{Verbatim}
+The Markov basis is contained in \verb|cone_latt_markov.mrk|:
+\begin{Verbatim}
+18
+9
+-1 0 1 0 0 1 0 0 -1 
+0 0 0 -1 0 2 0 0 -1 
+...
+0 -1 0 0 2 0 0 -1 0 
+\end{Verbatim}
+\emph{The columns correspond to the Hilbert basis elements in the order they are listed above.} Fpr completemess the file with suffix \verb|ogn| is written also in this case. It conztains the Hilbert basis as listed in the \verb|out| file.
+
+The singular locus has codimension $2$, the minimum for a normal monoid (algebra). The singular locus is stored in \verb|cone_latt_markov.sng|.
+
+We could equally well start from the inequalities defining the integral closure (the generators above generate the lattice $\RR^3$) in \verb|cone_latt_markov_supp.in|,
+\begin{Verbatim}
+amb_space 3
+inequalities 5
+0   0 1
+0   1 0
+1   0 0
+2  -3 1
+5 -15 7
+MarkovBasis
+SingularLocus
+\end{Verbatim}
+with the same result as above, except that there is no originl monoid.
+
+\subsection{Monoids from binomials}\label{binom_ex}
+
+As an example, we consider the binomial ideal generated by
+$$
+X_1^2X_2-X_4X_5X_6,\ \ X_1X_4^2-X_3X_5X_6,\ \ X_1X_2X_3-X_5^2X_6.
+$$
+in the polynomial ring $P=K[X_1,\dots, X_6]$. We want to find an embedding of the toric ring it defines. When we say ``defines'', then we do not claim that the residue ring  $P/I$ is a toric ring. But there is a unique smallest binomial ideal $J\supset I$ withn this propetry, and Normaliz finds the monoid and, if wanted, also a Markov (or GRöbner)basis of $J$. A priori $R=P/J$ is only defined as a residue class ring. It doesn't have a `canonical' embedding into another polynomial ring, but Normaliz computes such an embedding if the monoid undrrlying $R/J$ isd positive. As pointed out already, non-positive affine monoids an only be computed by Normaliz if they are normal.
+
+\subsubsection{Monoids from binomial ideals}\label{toric_ideal}
+The input type that asks for a toric ring from binomial input is
+\begin{itemize}
+	\itemtt[toric\_ideal]
+\end{itemize}
+The input vectors are obtained as the differences of the two exponent vectors in the binomials. So the input ideal \verb+toric_ideal.in+ for ur $3$ binimials is
+\begin{Verbatim}
+amb_space 6
+toric_ideal 3
+2 1  0 -1 -1  -1
+1 0 -1  2 -1  -1
+1 1  1  0 -2  -1
+/* total_dgegree */
+\end{Verbatim}
+In order to avoid special input rules for this case in which our object is not defined as a subset of an ambient space, but as a quotient of type \emph{generators/relations}, we abuse the name \verb|amb_space|: it determines the space in which the input vectors live.
+
+It is possible to define a \verb|grading|. It must give positive degree to the unit vectors of the ambient space and degree $0$ to the vectors representing the binomials so that the latter become homogeneous polynomials with respect to this grading.
+
+In the output we get
+\begin{Verbatim}
+6 original generators:
+1 0 0
+2 3 5
+0 0 1
+1 1 2
+0 1 3
+3 1 0
+\end{Verbatim}
+namely the residue classes of the indeterminates realized in an embedding. Test the binomials on the original generators! We know this monoid already from \verb|monid.in|, and you can try the other computationn goals discussed for the ltter.
+
+We see
+\begin{Verbatim}
+grading:
+1 1 1 
+\end{Verbatim}
+So Normaliz uses the standard grading on the ambient polynomoal ring into which $R/J$ has been embedded. This is the default choice, as it is for the input type \verb|monolid|. Our toric ring actually has its own standard tgrading: activate \verb|total_degree| in the input file and look at the output. In fact, the binomials above are homogeneous in the standard garing on $P$, and \verb|total_degree| sets this grading.
+
+The generators are repeated (in this case) in a different order,m as wem know altready:
+\begin{Verbatim}
+6 Hilbert basis elements:
+0 0 1
+1 0 0
+0 1 3
+1 1 2
+3 1 0
+2 3 5
+\end{Verbatim}
+Now they are sorted by degree and then lexicographically, as we always sort Hilbert bases.
+
+As a trivial example in which the Hilbert basis does not simply repeat the original generators in a different order, compute \verb|lin_bin.in|:
+\begin{Verbatim}
+amb_space 2
+toric_ideal 1
+1 -1
+\end{Verbatim}
+The output contains
+\begin{Verbatim}
+2 original generators:
+1
+1
+
+1 Hilbert basis elements:
+1
+\end{Verbatim}
+
+\subsubsection{Normalization of monoids from binomials}\label{normal_toric_ideal}
+
+One go can a step further, using the input type
+\begin{itemize}
+	\itemtt[normal\_toric\_ideal]
+\end{itemize}
+It asks for the \emph{normalization} of the toric ring defined by the binomials. In \verb|normal_toric_ideral.in| we take the same binoials as above:
+\begin{Verbatim}
+amb_space 6
+normal_toric_ideal 3
+2 1  0 -1 -1  -1
+1 0 -1  2 -1  -1
+1 1  1  0 -2  -1
+\end{Verbatim}
+In the output file we find
+\begin{Verbatim}
+6 original generators:
+1 0 0
+2 3 5
+0 0 1
+1 1 2
+0 1 3
+3 1 0
+
+2 lattice points in polytope (Hilbert basis elements of degree 1):
+0 0 1
+1 0 0
+
+7 further Hilbert basis elements of higher degree:
+0 1 3
+1 1 2
+2 1 1
+3 1 0
+1 2 4
+2 2 3
+2 3 5
+\end{Verbatim}
+The ``original generetors" arev the same as above, as they should be. Also the default grading is the same, aned the default computation goals are identical as well. But the Hilbert series, Markov basis, Gröbner basis etc. are computed for the normalization, as the user can see by playing with the commnted out computation goals.
+
+\textbf{Note:}\enspace Until version 3.9.4 the input type \verb|normal_toric_ideal| was called \verb|lattice_ideal|, which has a different meaning now and is discussed in the next subsection.
+
+\subsection{Lattice ideals}\label{lattice_ideal}
+
+A lttice ideal $I$ in a polynomial ring $P$ is a binomial ideal modulo which all monomials are nonzerodivisors. This implies that $P/J$ is a monoid ring whose underlying monoid is the natural image of the monoid of monomials in $P$. Moreover, it is a cancellative monoid, but not necessarily affine---the latter property requires torsion freeness additionally. The input type is
+\begin{itemize}
+	\itemtt[lattice\_ideal] 
+\end{itemize}
+Normaliz tests whether the lattice ideral is toric and indicates it in the input file, but does not automatically treat the input like \verb|toric_ideal| in the positive case.
+
+A soimple example of a non-toric lattice ideal is \verb|non_toric.in|
+\begin{Verbatim}
+amb_space 4
+lattice_ideal 4
+2 -2 0 0
+1 1 -1 -1
+2 -1 1 -2
+-1 -1 1 -1
+/*GroebnerBasis
+DegLex*/
+\end{Verbatim}
+The default computation goal is \verb|MarkovBsis|. In our case the result is
+\begin{Verbatim}
+4
+4
+-4 -1 1 0 
+-3 0 0 1 
+-2 2 0 0 
+6 0 0 0
+\end{Verbatim}
+Attention: the last binomial is $x_1^6-1$ so that the residue class of $x_1$ is a torsion element in the monoid of residue classes.
+
+For internal reasons and the exchnge of data with external programs we can ask
+\begin{Verbatim}
+IsLatticeIdealToric
+\end{Verbatim}
+
+There is only one more allowed computation goal, namely \verb|GroebnerfBasis|. There are no monoid generators for \verb|lattice_ideal|.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%  INPUT  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{The input file}\label{input}
@@ -2710,6 +3122,14 @@ It is not allowed to combine an ordinary fraction and a decimal fraction in the 
 
 Their format is explained in Section~\ref{alg_ex} together with the definition of number fields.
 
+\subsubsection{Numerical parameters}
+
+Their input has the form
+\begin{Verbatim}
+<parameter> <n>
+\end{Verbatim}
+where \verb|<n>| is the value assigned to \verb|<parameter>|.
+
 \subsubsection{Computation goals and algorithmic variants}\label{subsecGoals}
 
 These are single or compound words, such as
@@ -2759,11 +3179,13 @@ Input items can be combined quite freely, but there are some restrictions:
 		\ttt{dehomogenization}
 	\end{center}
 	
-	\item Special restrictions apply for the input types \verb|lattice_ideal| and \verb|open_facets|; see Sections~\ref{relations} and~\ref{open_facets}.
+	\item Special restrictions apply for the input type \verb|open_facets|; see Section \ref{open_facets}.
 	
 	\item Special rules apply if precomputed data are used. See Section~\ref{precomputed_data}.
 	
 	\item For restrictions that apply to algebraic polyhedra see Section~\ref{Algebraic}. Similar restrictions apply if the input types \ttt{rational\_lattice} and \ttt{rational\_offset} are used (see Section~\ref{ratlat}).
+	
+	\item The input types \verb|monoid|, \verb|toric_ideal|, \verb|normal_toric_ideal| and \verb|lattice_ideal| alloow only \verb|grading| as a further input type.
 \end{arab}
 
 A non-restriction: the same type can appear several times. This is useful if one wants to combine different formats, for example
@@ -2844,7 +3266,7 @@ The Normaliz~2 types \verb|integral_closure| and \verb|normalization| can still 
 There are $5$ types. With the exception of \ttt{rational\_lattice} and \ttt{saturation} their entries are integers.
 
 \begin{itemize}
-	\itemtt[lattice] is a matrix with $d$ columns. Every row represents a vector, and they define the lattice generated by them. Section~\ref{latt_ex}, \verb|3x3magiceven_lat.in|
+	\itemtt[lattice] is a matrix with $d$ columns. Every row represents a vector, and they define the lattice generated by them. Section~\ref{latt_ex}, \verb|3x3magiceven_lat.in|.
 	
 	\itemtt[rational\_lattice] is a matrix with $d$ columns. Its entries can be fractions. Every row represents a vector, and they define the sublattice of $\QQ^d$ generated by them. See Section~\ref{ratlat}, \verb|ratlat_2.in|.
 	
@@ -2857,6 +3279,11 @@ There are $5$ types. With the exception of \ttt{rational\_lattice} and \ttt{satu
 	\itemtt[hilbert\_basis\_rec\_cone] is a matrix with $d$ columns. It contains the precomputed Hilbert basis of the recession cone. See Section \ref{HB_rec_cone}.
 \end{itemize}
 
+\subsubsection{Affine monoids}
+
+\begin{itemize}
+	\itemtt[monoid] is a matrix with $d$ columns. Every row represents a vector, and they generate a szbmonoid of $\ZZ$. See Section \ref{monoid}, \verb|monoid.in|, \verb|A443monoid.in|.
+\end{itemize}
 
 \subsection{Homogeneous Constraints}
 
@@ -3062,26 +3489,19 @@ where \verb|<n>| is the number of polynomials that follow. The equations defined
 
 See \verb|pet.in|, \verb|baby.in| and Section \ref{poly_const}.
 
-\subsection{Relations}\label{relations}
+\subsection{Binomial ideals}\label{relations}
 
-Relations do not select a
-sublattice of $\ZZ^d$ or a subcone of $\RR^d$, but define a
-monoid as a quotient of $\ZZ_+^d$ modulo a system of
-congruences (in the semigroup sense!).
+There are three types of input for binomial ideals. The rows of the matrices coming with these input types represent binomials. The representation nof binomials by vecors is discussed at the beginjing of Section n\ref{AffMon}. The mathematics of these input types is discussed in Section \ref{MathAffBin}. 
 
-The rows of the input matrix of this type are interpreted as
-generators of a subgroup $U\subset\ZZ^d$, and Normaliz computes an affine monoid and its normalization as explained in Section~\ref{binomials}.
-
-Set $G=\ZZ^d/U$ and $L=G/\textup{torsion}(G)$. Then the ambient lattice
-is $\AA=\ZZ^r$, $r=\rank L$, and the efficient lattice is $L$, realized
-as a sublattice of $\AA$. Normaliz computes the image $M$ of $\ZZ^d_+$ in $L$ and its normalization. To this end, $M$ is embedded into a lattice $\ZZ$, $r=\rank M$. There is no canonical choice for such an mebdding, but if possible, Normaliz finds an embedding into $\ZZ_+^r$.
+The input types differ in the object computed frtom them.
 
 \begin{itemize}
-	\itemtt[lattice\_ideal] is a matrix with $d$ columns containing the generators of the subgroup $U$. Section~\ref{binom_ex}, \verb|lattice_ideal.in|.
+	\itemtt[lattice\_ideal] is an integer matrix with $d$ columns. The object computed from the binomials in it is the smallest lattice ideal containing them. Section~\ref{lattice_ideal}, \verb|non_toric.in|.
+	
+	\itemtt[toric\_ideal] is an integer matrix with $d$ columns. The object computed from the binomials in it is the smallest toric ideal containing them and the toric ring whose defining ideal the latter is. Section~\ref{toric_ideal}, \verb|toric_ideal.in|.
+	
+	\itemtt[normal\_toric\_ideal] is an intehger matrix with $d$ columns. The object computed from the binomials in it is the the normalization of the toric ring it defines. Section~\ref{normal_toric_ideal}, \verb|normal_toric_ideal.in|.
 \end{itemize}
-
-The type \ttt{lattice\_ideal} cannot be combined with any other input type (except
-\ttt{grading})---such a combination would not make sense. (See Section~\ref{grad_lattid} for the use of a grading in this case.)
 
 \subsection{Unit vectors and unit matrix}\label{unit_vectors}
 
@@ -3137,7 +3557,7 @@ Normaliz checks whether all generators of the (recession) monoid have
 positive degree (after passage to the quotient modulo the unit group in the nonpointed case).
 Vertices of polyhedra may have degrees $\le 0$.
 
-\subsubsection{With \ttt{lattice\_ideal} input}\label{grad_lattid}
+\subsubsection{With binomil ideal input}\label{grad_lattid}
 
 In this case the unit vectors correspond to generators of the
 monoid. Therefore the degrees assigned to them must be
@@ -3227,6 +3647,13 @@ It can be set by
 \end{itemize}
 where \verb|<n>| is the bound for the codimension of the faces to be computed.
 
+\subsubsection{Degree bounds for Markov and Gröbbner bases}
+
+\begin{itemize}
+	\itemtt[gb\_degree\_bound <n>] sets the upper bound \verb|<n>| for Markov and Gröbner bases,
+	\itemtt[gb\_min\_degree <n>] sets the lower bound  \verb|<n>| for Markov and Gröbner bases.
+\end{itemize}
+
 \subsubsection{Number of digits for fixed precision}
 The computation of vilumes by signed decomposition can be done with a fixed precision. It is et by
 \begin{itemize}
@@ -3273,11 +3700,18 @@ If several computation goals are set, all of them are pursued. In particular, co
 	\itemtt[-{}-ignore, -i] on the command line switches off the computation goals and algorithmic variants set in the input file.
 \end{itemize}
 
-The default computation goal is set if neither the input file nor the command line contains a computation goal or an algorithmic variant that implies a computation goal. It is
-\begin{center}
-	\verb|SupportHyperplanes| + \verb|HilbertBasis| + \verb|HilbertSeries| .
-\end{center}
-In the homogeneous case, \verb|ClassGroup| is included as well.
+The default computation goal is set if neither the input file nor the command line contains a computation goal or an algorithmic variant that implies a computation goal. The deafault computatin goal depends on the input type.
+\begin{itemize}
+	\item Except the input of a monoid or binomial ideal it is
+	\begin{center}
+		\verb|SupportHyperplanes| + \verb|HilbertBasis| + \verb|HilbertSeries| .
+	\end{center}
+	In the homogeneous case, \verb|ClassGroup| is included as well.
+	
+	\item For \verb|monoid|, \verb|toric_ideal| and \verb|normal_toric _ideal| it is \verb|HilbertBasis| + \verb|IsIntegrallyClosed| for the momnoid derived from them.
+	
+	\item  For the input type \verb|lattice_ideal| it is  \verb|MarkovBasis|.
+\end{itemize}
 
 If set explicitly in the input file or on the command line the following adds these computation goals:
 \begin{itemize}
@@ -3288,13 +3722,7 @@ If set explicitly in the input file or on the command line the following adds th
 
 \subsection{Computation goals}\label{goals}
 
-The computation goal \verb|Sublattice| does not imply any other computation goal. Most other computation goals include \verb|Sublattice| and \verb|SupportHyperplanes|. The exceptions are:
-\begin{arab}
-	\item certain computations based on the dual algorithm see Section~\ref{InhomDual};
-	\item \verb|Projection| or \verb|ProjectionFloat| applied to parallelotopes; see Section~\ref{InhomDual};
-	\item computations done completely by symmetrization or signed decomposition.
-\end{arab}
-If you are in doubt whether your desired data will be computed, add an explicit computation goal.
+Almost always the computation goals set explicitly or by default require the comoputation of auxiliary data that themselves can be asked for by explicit computation goals. In most cases the results of these computations appear in the output. In case of doubt set exlicit computation goals.
 
 \subsubsection{Lattice data}
 
@@ -3487,12 +3915,33 @@ These computation goals require a homogeneous computation.
 
 Don't confuse these options with symmetrization. The latter symmetrizes (if possible) the given data and uses \verb|-E| or \verb|-L| internally on the symmetrized object. The options \verb|-E,-I,-L| ask for the input of a polynomial. See Section~\ref{poly_input}.
 
+\subsubsection{Markov and Gröbner bases}
+
+They are discussed in Section \ref{AffMon}.
+\begin{itemize}
+	\itemtt[MarkovBasis] computes a system of generators for a toric ideal defining a monoid or a lattice ideal. 
+	\itemtt[GroebnerBasis] computes a system of generators for such ideals.
+	\itemtt[Representations] compites the represenztation of the reducible elements in a generating system of an affine monoid by the Hilbert basis.
+	\itemtt[Lex] sets the lexicographic monomial order for Gröbner bases,
+	\itemtt[RevLex] sets the degree reverse lexicographic order,
+	\itemtt[DegLex] sets the degree lexicographic order.
+\end{itemize}
+
+\subsubsection{Local structure}
+
+\begin{itemize}
+	\itemtt[SingularLocus] comoputes the singular locus of an affine monoid (algebra),
+	\itemtt[CodimSingularLocus] computes its codimension. 
+\end{itemize}
+
 \subsubsection{Boolean valued computation goals}\label{bool}
 
 They tell Normaliz to find out the answers to the questions they ask. Two of them are more important than the others since they may influence the course of the computations:
 
 \begin{itemize}
 	\itemtt[IsIntegrallyClosed]: is the original monoid integrally closed? Normaliz stops the Hilbert basis computation as soon as it can decide whether the original monoid contains the Hilbert basis (see Section~\ref{IsIC}). Normaliz tries to find the answer as quickly as possible. This may include the computation of a witness, but not necessarily. If you need a witness, use \verb|WitnessNotIntegrallyClosed, -w|.
+	
+	\itemtt[IdsSerreR1] checks the Serre property $(R_1)$ for ffine monoids (automatically satisfied by normal monoids).
 	
 	\itemtt[IsPointed]: is the efficient cone $\CC$ pointed? This computation goal is sometimes useful to give Normaliz a hint that a nonpointed cone is to be expected. See Section~\ref{IsPointed}.
 \end{itemize}
@@ -3727,8 +4176,7 @@ the following elements of \verb|ConeProperties| control the work flow in \verb|l
 	\itemtt[Congruences] controls the congruences.
 	\itemtt[ExternalIndex] controls the external index.
 	\itemtt[InternalIndex] controls the internal index.
-	\itemtt[UnitGroupIndex] controls the unit group index.
-	
+	\itemtt[UnitGroupIndex] controls the unit group index.	
 	
 	\itemtt[IsInhomogeneous] controls the inhomogeneous case.
 	
@@ -3922,6 +4370,11 @@ An even more drastic option is
 It suppresses all output after the ``preamble''. It is useful in testing large examples where the numbers of extreme rays, lattice points etc.\ are usually a good criterion for correctness.
 
 \verb|NoExtRaysOutput|, \verb|NoSuppHypsOutput|and \verb|NoMatricesOutput| are not cone properties.
+
+\begin{itemize}
+	\itemtt[BinomialsPacked] chooses a packed format for files containing binomials. See Section \ref{BinomialsPacked}.
+\end{itemize}
+
 
 \subsection{Ignoring the options in the input file}
 
@@ -4626,7 +5079,7 @@ It defines the precision to be $10^{-100}$. Then the precision of the final resu
  
  If the default value of $100$ is too large or too small it can be set by
  \begin{itemize}
- 	\itemtt[decimal\_digits <N>]
+ 	\itemtt[decimal\_digits <n>]
  \end{itemize}
 in the input file.
 
@@ -6948,6 +7401,60 @@ As in the other cases with precomputed data, Normaliz must believe you and the p
 
 It requires inhomogeneous input. Note that it can only be used in the primal algorithm. In the dual algorithm it is useless and therefore ignored.
 
+\subsection{Singular locus}\label{SingularLocus}
+
+
+
+The singular locus is computed by
+\begin{itemize}
+	\itemtt[SingularLocus]
+\end{itemize}
+For \verb|monoid.in| the output file contains
+\begin{Verbatim}
+codim singular locus = 1
+\end{Verbatim}
+and the file with suffix
+\begin{itemize}
+	\itemtt[sng] contains the singular locus.
+\end{itemize}
+Thwe format is the same as that for the face lattice:
+\begin{Verbatim}
+2
+5
+
+00010 1
+00001 1
+\end{Verbatim}
+The last integer in each row is the codimension of a minimal singular prime ideal and the face opposite to it is the intersection of the support hypwerplanes with entry $1$ in the $0$-$1$-vector. The codimension $1$ is not surprising for a nonnormal monoid.
+
+If we are only interested in the codimenasion, we ask for
+\begin{itemize}
+	\itemtt[CodimSingularLocus] computing the codimension of the singular locus
+\end{itemize}
+or only
+\begin{itemize}
+	\itemtt[IsSerreR1] checking the Serre property $(R_1)$
+\end{itemize}
+which means that the codimension of the singular locus is $\ge 2$. If this is all you wantb to know, then use \verb|IsSerreR1| since it avoids the computation of the face lattice.
+
+\subsection{Packed format in the output of binomials}\label{BinomialsPacked}
+
+Output files of binomials are often very sparse, i.e., contain many entries $0$. Rewading them by computerr algebra systems with a file interface like Singular or Macaulay2 can therefore be time consuming. To speed reading up, we have introduced a packed format for binimial output files.
+\begin{itemize}
+	\itemtt[BinomialsPacked] activates the packed format for binimial output files.
+\end{itemize}
+For \verb|representations.in| (discussed in Swction \ref{markov}) it tiurns \verb|representations.rep| into
+\begin{Verbatim}
+-4
+8
+4 1 -1 3 -1 4 -1 5 1 
+3 3 -1 4 -2 6 1 
+4 1 -1 3 -2 4 -3 8 1 
+4 1 -2 2 1 3 -3 4 -2
+\end{Verbatim}
+The negative entry in the first line indicates the packed format. Its absolute value is the number of rows. Each row starts with the number vof nonzero entries, and each such entry is given by a pair (column, value).
+
+
 
 \section{Algebraic polyhedra}\label{Algebraic}
 
@@ -7218,464 +7725,6 @@ For the control of computations and communication with interfaces the following 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%  EXAMPLES  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % !TeX spellcheck = en_US
 
-\section{Affine monids and binomial ideals}
-
-\subsection{Positive affine monoids}
-
-\subsubsection{Input and default computation goals}
-Affine monoids are given to Normaliz by the input type 
-\begin{itemize}
-\itemtt[monoid]
-\end{itemize}
-as in \verb|monoid.in|:
-\begin{Verbatim}
-amb_space 3
-monoid 6
-1 0 0
-2 3 5
-0 0 1
-1 1 2
-0 1 3
-3 1 0
-/* grading 1 -2 1*/
-/*HilbertSeries*/
-/*GroebnerBasis*/
-/*Lex*/
-/*MarkovBasis*/
-/*gb_degree_bound 11*/
-/*gb_min_degree 9*/
-/*Multiplicity*/
-/*SingularLocus*/
-/*CodimSingularLocus*/
-/*IsSerreR1*/
-\end{Verbatim}
-Positivity of the monoid does \emph{not} mean that all components of the input vectors are nonnegative. It only means that $x=0$ if both $x$ and $-x$ belong to it.
-
-In the output file we see
-\begin{Verbatim}
-...
-original monoid is not integrally closed in chosen lattice
-...
-6 Hilbert basis elements:
-0 0 1
-1 0 0
-0 1 3
-1 1 2
-3 1 0
-2 3 5
-
-5 support hyperplanes:
-0   0 1
-0   1 0
-1   0 0
-2  -3 1
-5 -15 7
-\end{Verbatim}
-The support hyprplanes re those of the cone generated by the monoid. They are used in aiuxiliary computations, for example in finding the Hilbert basis, i.e., the unique minimal system of generators of our monoid. In this case the input vectors are all in the Hilbert basis, but thins need not be the case. The Hilbert basis is ordered by degree and lexicographically within each degree. In fact, we have a grading
-\begin{Verbatim}
-grading:
-1 1 1 
-\end{Verbatim}
-For the default choice of the grading we start from the standard grading on the ambient lattice. Then the grading, whether the default choice or an explicit grading in the input, is divided by the greatest common divisor of he degrees of the generators. In the context of monomial algebras it is the most natural choice. The division by the gcd can be suppressed by \verb|NoGradingDenom|. In our example the gcd is $1$.
-
-Our monoid actually has another grading, in which all generators have degree $1$: \verb|grading 1 -2 1| in the input file. Activate it and study the changes.
-
-\textbf{Note:}\enspace The input type \verb|monoid| is close to \verb|cone_and_lattice| if the monoid is normal.But there are two differences in the dafault choices: (1) The default computation goals and (2) the default grading. In fact, for \verb|monoid| is is derived ftom the standard grading on the ambeint lattice, whereas or \verb|cone_and_lattice| it gives degree $1$ to the extreme integral generators, provided this is possible.
-
-\subsubsection{Markov and Gröbner bases, Representations}
-If we activate
-\begin{itemize}
-\itemtt[MarkovBasis]
-\end{itemize}
-in \verb|monoid.in|, the Markov basis is computed and returned in the file with suffix 
-\begin{itemize}
-\itemtt[mrk] file containing the Markov basis	
-\end{itemize}
-In our case \verb|monoid.mrk|:
-\begin{Verbatim}
-7
-6
-1 0 -1 -1 1 0 
--2 0 2 -1 0 1 
--1 0 1 -2 1 1 
-2 1 0 -1 -1 -1 
-0 0 0 -3 2 1 
-1 1 1 -3 0 0 
-0 1 2 -2 -1 0
-\end{Verbatim}
-Each column corresponds to an input vector, and the rows aee indeed relations: the scalar product of a row listed in the Markov basis and a column of the matrix \verb|monoid| is $0$. The binomials corresponding to the rows in the Markov bases form a minimal system of generators of the binomial ideal defining our monoid algebra. The input matrix is mirrored in the file with suffix 
-\begin{itemize}
-	\itemtt[ogn] file with the original generators
-\end{itemize}
-in our case \verb|monoid.ogn|:
-\begin{Verbatim}
-6
-3
-1 0 0 
-2 3 5 
-0 0 1 
-1 1 2 
-0 1 3 
-3 1 0
-\end{Verbatim}
-
-In order to compute a Gröbner basis of our binomial ideal, we activate
-\begin{itemize}
-	\itemtt[GroebnerBasis]
-\end{itemize}
-and get the output file with suffix
-\begin{itemize}
-	\itemtt[grb] containing the Gröbner basis.
-\end{itemize}
-For the Gröbnerb basis one has to choose a monomial otrder. The default choice is `egree reverse lexicographic'' In our case it yields
-\begin{Verbatim}
-8
-6
--1 0 1 1 -1 0 
-0 0 0 3 -2 -1 
-1 0 -1 2 -1 -1 
-2 0 -2 1 0 -1 
-0 1 2 -2 -1 0 
-1 1 1 0 -2 -1 
-2 1 0 -1 -1 -1 
-3 0 -3 0 1 -1 
-\end{Verbatim}
-More precisely: the indeterminates in the polynomial ring housing the binomials are ordered $X_1 > \dots X_n$ and we take the degree reverse lexicographic extension, where`  degree'' means the total degree on the polynomial ring. The file with suffix \verb|ogn| is also created for the Gröbner basis. There is no output of the (minimal) Markov basis, unless you ask for it explicitly. 
-
-Despite of being the defualt choice, the degree reverse lexicographic order is in the list of perttaining computation goals:
-\begin{itemize}
-	\itemtt[RevLex] degree reverse lexicographic order
-	\itemtt[Lex] lexicographic order
-	\itemtt[DegLex] gegree lexicographic order 
-\end{itemize}
-Activate also \verb|Lex| in our example and see what changes. \verb|DegLex| is taken with respect to the total standard degree as well, and makes no difference in our case, since the generating binomials are homogeneous in this grading.
-
-A grading of the monomial algebra induces a gtrading on the binomials in its definig ideal such that the latter are homogeneous polynomials. With respect to this grading  the output of Markov and Gröbner bases can be restricted:
-\begin{itemize}
-\itemtt[gb\_degree\_bound <n>] sets upper degree bound \verb|<n>| for binomials,
-\itemtt[gb\_min\_degree <n>] sets lower degree bound  \verb|<n>| for binomials. 
-\end{itemize}
-
-There is one more computation goal for monoids that complements \verb|HilbertBasis| (switched on by default):
-\begin{itemize}
-	\itemtt[Representations] representations of reeducible elements in \verb|monoid| in terms of the Hilbert basis
-\end{itemize}
-The outpur is a list of binomials in the file with suffix
-\begin{itemize}
-	\itemtt[rep] reprdsentations of reducible elements in terms of the Hilbert basis.
-\end{itemize}
- Also the file with suffix \verb|ogn| is written.
- 
- As a simple example we consider \verb|representations.in|
-\begin{Verbatim}
-amb_space 3
-monoid 8
-1 0 0
-2 3 5
-0 1 1
-0 0 1
-1 1 2
-0 1 3
-3 1 0
-1 2 5
-Representations
-/*BinomialsPacked*/
-\end{Verbatim}
-with
-\begin{Verbatim}
-4 Hilbert basis elements:
-0 0 1
-1 0 0
-0 1 1
-3 1 0
-\end{Verbatim}
-and representations of the other $4$ elements in the input:
-\begin{Verbatim}
-4
-8
--1 0 -1 -1 1 0 0 0 
-0 0 -1 -2 0 1 0 0 
--1 0 -2 -3 0 0 0 1 
--2 1 -3 -2 0 0 0 0
-\end{Verbatim}
-The entries $1$ in each row mark the reducible elements and the row should be read as a binomial vanishing on the input vectors (or monomials).
-
-\subsubsection{Packed format in the output of binomials}
-
-Output files of binomials are often very sparse, i.e., contain many entries $0$. Rewading them by computerr algebra systems with a file interface like Singular or Macaulay2 can therefore be time consuming. To speed reading up, we have introduced a packed format for binimial output files.
-\begin{itemize}
-	\itemtt[BinomialsPacked] activates the packed format for binimial output files.
-\end{itemize}
-For \verb|representations.in| it tiurns \verb|representations.rep| into
-\begin{Verbatim}
--4
-8
-4 1 -1 3 -1 4 -1 5 1 
-3 3 -1 4 -2 6 1 
-4 1 -1 3 -2 4 -3 8 1 
-4 1 -2 2 1 3 -3 4 -2
-\end{Verbatim}
-The negative entry in the first line indicates the packed format. Its absolute value is the number of rows. Each row starts with the number vof nonzero entries, and each such entry is given by a pair (column, value).
-
-\subsubsection{Hilbert series and muliplicity}
-
-If we activate both (!) \verb|HilbertSeries| and \verb|Multiplicity| in \verb|monoid.in|, the result is
-\begin{Verbatim}
-multiplicity = 19/40
-multiplicity (float) = 0.475
-
-Hilbert series:
-1 1 0 0 3 2 -2 -1 6 2 -4 0 6 1 -3 1 4 0 0 1 1 
-denominator with 3 factors:
-1:1  2:1  20:1 
-... 
-\end{Verbatim}
-followed by the representation with cyclotomic denominator and the Hilbert quasipolynomial.Activate \verb|grading 1 -2 1| and observe the changes.
-
-\subsubsection{Singular locus}
-
-The singular locus is computed by
-\begin{itemize}
-	\itemtt[SingularLocus]
-\end{itemize}
-For \verb|monoid.in| the output file contains
-\begin{Verbatim}
-codim singular locus = 1
-\end{Verbatim}
-and the file with suffix
-\begin{itemize}
-	\itemtt[sng] contains the singular locus.
-\end{itemize}
-Thwe format is the same as that for the face lattice:
-\begin{Verbatim}
-2
-5
-
-00010 1
-00001 1
-\end{Verbatim}
-The last integer in each row is the codimension of a minimal singular prime ideal and the face opposite to it is the intersection of the support hypwerplanes with entry $1$ in the $0$-$1$-vector. The codimension $1$ is not surprising for a nonnormal monoid.
-
-If we are only interested in the codimenasion, we ask for
-\begin{itemize}
-	\itemtt[CodimSingularLocus] computing the codimension of the singular locus
-\end{itemize}
-or only
-\begin{itemize}
-	\itemtt[IsSerreR1] checking the Serre property $(R_1)$
-\end{itemize}
-which means that the codimension of the singular locus is $\ge 2$. If this is all you wantb to know, then use \verb|IsSerreR1| since it avoids the computation of the face lattice.
-
-
-\subsubsection{Binomial ideals from cone input}
-
-Defining binomial ideals can be computed not only for monoids defined by the input type \verb|monoid|, but also for the monoids that defined by other input types as intersections of cones and lattices, for example \verb|cone|, \verb|cone_and_lattice|, \verb|equations|, \verb|inequalities| etc.In the case of generator input there are actually two monoids, the ``original monoid'' as discussed in Section \ref{MinMod}, and its integral closure in the lattice defined by tghe input. So, if we ask for the Markov basis of the defining ideal, which monoid is taken? Answer: always the integral closure generated by its Hilbert basis, unless the property makes only sense for the original monoid: if we ask \verb|IsIntegrallyClosed|, the answer is always `yes''  for the integral closure.
-
-As an example we take \verb|cone_latt_markov.in| (\verb|monoid.in| with a different input type):
-\begin{Verbatim}
-amb_space 3
-cone_and_lattice 6
-1 0 0
-2 3 5
-0 0 1
-1 1 2
-0 1 3
-3 1 0
-MarkovBasis
-SingularLocus
-\end{Verbatim}
-
-The output file contains
-\begin{Verbatim}
-original monoid is not integrally closed in chosen lattice
-...
-codim singular locus = 2
-18 Markov basis elements
-
-***********************************************************************
-
-9 lattice points in polytope (Hilbert basis elements of degree 1):
-0 0 1
-0 1 3
-1 0 0
-1 1 2
-1 2 4
-2 1 1
-2 2 3
-2 3 5
-3 1 0
-
-0 further Hilbert basis elements of higher degree:
-\end{Verbatim}
-The Markov basis is contained in \verb|cone_latt_markov.mrk|:
-\begin{Verbatim}
-18
-9
--1 0 1 0 0 1 0 0 -1 
-0 0 0 -1 0 2 0 0 -1 
-...
-0 -1 0 0 2 0 0 -1 0 
-\end{Verbatim}
-\emph{The columns correspond to the Hilbert basis elements in the order they are listed above.} The singular locus has codimension $2$, the minimum for a normal monoid (algebra). The singular locus is stored in \verb|cone_latt_markov.sng|.
-
-We could equally well start from the inequalities defining the integral closure (the generators above generate the lattice $\RR^3$) in \verb|cone_latt_markov_supp.in|,
-\begin{Verbatim}
-amb_space 3
-inequalities 5
-0   0 1
-0   1 0
-1   0 0
-2  -3 1
-5 -15 7
-MarkovBasis
-SingularLocus
-\end{Verbatim}
-with the same result as above, except that there is no originl monoid.
-
-\subsection{Monoids from binomials}\label{binom_ex}
-
-As an example, we consider the binomial ideal generated by
-$$
-X_1^2X_2-X_4X_5X_6,\ \ X_1X_4^2-X_3X_5X_6,\ \ X_1X_2X_3-X_5^2X_6.
-$$
-in the polynomial ring $P=K[X_1,\dots, X_6]$. We want to find an embedding of the toric ring it defines. When we say ``defines'', then we do not claim that the residue ring  $P/I$ is a toric ring. But there is a unique smallest binomial ideal $J\supset I$ withn this propetry, and Normaliz finds the monoid and, if wanted, also a Markov (or GRöbner)basis of $J$. A priori $R=P/J$ is only defined as a residue class ring. It doesn't have a `canonical' embedding into another polynomial ring, but Normaliz computes such an embedding if the monoid undrrlying $R/J$ isd positive. As pointed out already, non-positive affine monoids an only be computed by Normaliz if they are normal.
-
-\subsubsection{Monoids from binomial ideals}
-The input type that asks for a toric ring from binomial input is
-\begin{itemize}
-	\itemtt[toric\_ideal]
-\end{itemize}
-The input vectors are obtained as the differences of the two exponent vectors in the binomials. So the input ideal \verb+toric_ideal.in+ for ur $3$ binimials is
-\begin{Verbatim}
-amb_space 6
-toric_ideal 3
-2 1  0 -1 -1  -1
-1 0 -1  2 -1  -1
-1 1  1  0 -2  -1
-/* total_dgegree */
-\end{Verbatim}
-In order to avoid special input rules for this case in which our object is not defined as a subset of an ambient space, but as a quotient of type \emph{generators/relations}, we abuse the name \verb|amb_space|: it determines the space in which the input vectors live.
-
-In the output we get
-\begin{Verbatim}
-6 original generators:
-1 0 0
-2 3 5
-0 0 1
-1 1 2
-0 1 3
-3 1 0
-\end{Verbatim}
-namely the residue classes of the indeterminates realized in an embedding. Test the binomials on the original generators! We know this monoid already from \verb|monid.in|, and you can try the other computationn goals discussed for the ltter.
-
-We see
-\begin{Verbatim}
-grading:
-1 1 1 
-\end{Verbatim}
-So Normaliz uses the standard grading on the ambient polynomoal ring into which $R/J$ has been embedded. This is the default choice, as it is for the input type \verb|monolid|. Our toric ring actually has its own standard tgrading: activate \verb|total_degree| in the input file and look at the output. In fact, the binomials above are homogeneous in the standard garing on $P$, and \verb|total_degree| sets this grading.
-
-The generators are repeated (in this case) in a different order,m as wem know altready:
-\begin{Verbatim}
-6 Hilbert basis elements:
-0 0 1
-1 0 0
-0 1 3
-1 1 2
-3 1 0
-2 3 5
-\end{Verbatim}
-Now they are sorted by degree and then lexicographically, as we always sort Hilbert bases.
-
-As a trivial example in which the Hilbert basis does not simply repeat the original generators in a different order, compute \verb|lin_bin.in|:
-\begin{Verbatim}
-amb_space 2
-toric_ideal 1
-1 -1
-\end{Verbatim}
-The output contains
-\begin{Verbatim}
-2 original generators:
-1
-1
-
-1 Hilbert basis elements:
-1
-\end{Verbatim}
-
-\subsubsection{Normalization of monoids from binomials}
-
-One go can a step further, using the input type
-\begin{itemize}
-	\itemtt[normal\_toric\_ideal]
-\end{itemize}
-It asks for the \emph{normalization} of the toric ring defined by the binomials. In \verb|normal_toric_ideral.in| we take the same binoials as above:
-\begin{Verbatim}
-amb_space 6
-normal_toric_ideal 3
-2 1  0 -1 -1  -1
-1 0 -1  2 -1  -1
-1 1  1  0 -2  -1
-\end{Verbatim}
-In the output file we find
-\begin{Verbatim}
-6 original generators:
-1 0 0
-2 3 5
-0 0 1
-1 1 2
-0 1 3
-3 1 0
-
-2 lattice points in polytope (Hilbert basis elements of degree 1):
-0 0 1
-1 0 0
-
-7 further Hilbert basis elements of higher degree:
-0 1 3
-1 1 2
-2 1 1
-3 1 0
-1 2 4
-2 2 3
-2 3 5
-\end{Verbatim}
-The ``original generetors" arev the same as above, as they should be. Also the default grading is the same, aned the default computation goals are identical as well. But the Hilbert series, Markov basis, Gröbner basis etc. are computed for the normalization, as the user can see by playing with the commnted out computation goals.
-
-\textbf{Note:}\enspace Until version 3.9.4 the input type \verb|normal_toric_ideal| was called \verb|lattice_ideal|, which has a different meaning now and is discussed in the next subsection.
-
-\subsection{Lattice ideals}
-
-A lttice ideal $I$ in a polynomial ring $P$ is a binomial ideal modulo which all monomials are nonzerodivisors. This implies that $P/J$ is a monoid ring whose underlying monoid is the natural image of the monoid of monomials in $P$. Moreover, it is a cancellative monoid, but not necessarily affine---the latter property requires torsion freeness additionally. The input type is
-\begin{itemize}
-	\itemtt[lattice\_ideal] 
-\end{itemize}
-Normaliz tests whether the lattice ideral is toric and indicates it in the input file, but does not automatically treat the input like \verb|toric_ideal| in the positive case.
-
-A soimple example of a non-toric lattice ideal is \verb|non_toric.in|
-\begin{Verbatim}
-amb_space 4
-lattice_ideal 4
-2 -2 0 0
-1 1 -1 -1
-2 -1 1 -2
--1 -1 1 -1
-/*GroebnerBasis
-DegLex*/
-\end{Verbatim}
-The default computation goal is \verb|MarkovBsis|. In our case the result is
-\begin{Verbatim}
-4
-4
--4 -1 1 0 
--3 0 0 1 
--2 2 0 0 
-6 0 0 0
-\end{Verbatim}
-Attention: the last binomial is $x_1^6-1$ so that the residue class of $x_1$ is a torsion element in the monoid of residue classes.
-
-There is only one more allowed computation goal, namely \verb|GroebnerfBasis|. There are no monoid generators for \verb|lattice_ideal|.
-
 \section{Optional output files}\label{optionaloutput}
 
 In addition nto the output file with suffix \verb|out| several computation goals write their results into extra files. But these are \emph{not} optional. They are explained together with the pertaining computationn goals, and Section \ref{forced_out} gives an overview. 
@@ -7798,7 +7847,39 @@ One can generate a file with the data needed for an input file with precomputed 
 The suffix is \verb|precomp.in|. It contains the data that can (and must) go into a file redefining the present cone (except \verb|hilbert_basis_rec_cone|).
 
 \subsection{Overview: Output files forced by computation goals}\label{forced_out}
-.
+
+\begin{itemize}
+	
+	\itemtt[tri] contains the triangulation.
+	
+	\itemtt[tgn] reference generators for the triangulation.
+	
+	\itemtt[aut] contains the automorphism group.
+	
+	\itemtt[dec] contains the Stanley decomposition.
+	
+	\itemtt[fac] contains the face lattice.
+	
+	\itemtt[inc] contains the (dual) incidence matrix.
+	
+	\itemtt[mrk] contains the Markov basis.
+	
+	\itemtt[grb] contains the Gröbner basis.
+	
+	\itemtt[rep] contains the representations of the reducible generators of a monoid by the irreducible ones.
+	
+	\itemtt[ogn] contains the refernce generators for Markov bases, Gröbner bases and represntations.
+	
+	\itemtt[sng] contains the singular locus.
+	
+	\itemtt[proj.out] contains the projected cone.
+	
+	\itemtt[inthull.out] contains the integer hull.
+	
+	\itemtt[symm.out] contains the symmetrized cone.
+	
+\end{itemize}
+
 \section{Performance}\label{Perf}
 
 \subsection{Parallelization}\label{PerfPar}
@@ -11191,9 +11272,9 @@ To make Normaliz write the data files and to stop once they have been written, o
 \end{itemize}
 The size of the locks can be set by
 \begin{itemize}
-	\itemtt[block\_size\_hollow\_tri <S>] 
+	\itemtt[block\_size\_hollow\_tri <n>] 
 \end{itemize}
-to the input file where \verb|<S>| is the number of simplices of the full triangulation that should go into a single output file.  The default value chosen by \verb|DistributedComp| is $500,000$.
+to the input file where \verb|<n>| is the number of simplices of the full triangulation that should go into a single output file.  The default value chosen by \verb|DistributedComp| is $500,000$.
 
 The output files are
 \begin{itemize}
@@ -11265,6 +11346,14 @@ LMS J.\ Comp.\ Math.\ 17 (2014), 565--581.
 St.~ Brumme,
 \emph{Hash library}.
 Package available at \url{https://create.stephan-brumme.com/}.
+
+\bibitem{BruAuto}
+W. Bruns, \emph{Automorphism groups and normal forms in Normaliz.} Res. Math. Sci. 9 (2022), no. 2, Paper No. 20, 15 pp.
+
+\bibitem{BruVol}
+W. Bruns, \emph{Polytope volume in Normaliz.}
+São Paulo J. Math. Sci.
+\url{https://doi.org/10.1007/s40863-022-00317-9}
 
 \bibitem{BGOW}
 W.~Bruns, P.~Garcia-Sanchez, C.~O'Neill and D.~Wilburne,
@@ -11395,3 +11484,15 @@ American Mathematical Society 1996.
 \addcontentsline{toc}{section}{\indexname}
 \printindex
 \end{document}
+
+Relations do not select a
+sublattice of $\ZZ^d$ or a subcone of $\RR^d$, but define a
+monoid as a quotient of $\ZZ_+^d$ modulo a system of
+congruences (in the semigroup sense!).
+
+The rows of the input matrix of this type are interpreted as
+generators of a subgroup $U\subset\ZZ^d$, and Normaliz computes an affine monoid and its normalization as explained in Section~\ref{binomials}.
+
+Set $G=\ZZ^d/U$ and $L=G/\textup{torsion}(G)$. Then the ambient lattice
+is $\AA=\ZZ^r$, $r=\rank L$, and the efficient lattice is $L$, realized
+as a sublattice of $\AA$. Normaliz computes the image $M$ of $\ZZ^d_+$ in $L$ and its normalization. To this end, $M$ is embedded into a lattice $\ZZ$, $r=\rank M$. There is no canonical choice for such an mebdding, but if possible, Normaliz finds an embedding into $\ZZ_+^r$.

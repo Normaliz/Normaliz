@@ -7,6 +7,7 @@
 -- Markov and Gröbnber bases of lattice ideals, representations of reducible elements
 -- packed format of files with binomials on request
 -- Hilbert series for all positive affine monoids
+-- Computation of the singular locus
 -- bug fixes
 
 ## [3.9.4]  2022-08-14

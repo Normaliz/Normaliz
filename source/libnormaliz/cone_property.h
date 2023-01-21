@@ -150,6 +150,7 @@ enum Enum {
     IsDeg1HilbertBasis,
     IsIntegrallyClosed,
     IsSerreR1,
+    IsLatticeIdealToric,
     IsReesPrimary,
     IsInhomogeneous,
     IsGorenstein,
