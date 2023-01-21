@@ -1,0 +1,2988 @@
+\appendix
+
+\section{Mathematical background and terminology}\label{AppBackground}
+
+For a coherent and thorough treatment of the mathematical background we refer the reader to~\cite{BG}.
+
+\subsection{Polyhedra, polytopes and cones}
+
+An \emph{affine halfspace} of $\RR^d$ is a subset given as
+$$
+H_\lambda^+=\{x: \lambda(x)\ge 0\},
+$$
+where $\lambda$ is an affine form, i.e., a non-constant map $\lambda:\RR^d\to\RR$, $\lambda(x)=\alpha_1x_1+\dots+\alpha_dx_d+\beta$ with $\alpha_1,\dots,\alpha_d,\beta\in\RR$. If $\beta=0$ and $\lambda$ is therefore linear, then the halfspace is called \emph{linear}. The halfspace is \emph{rational} if $\lambda$ is \emph{rational}, i.e., has rational coordinates. If $\lambda$ is rational, we can assume that it is even \emph{integral}, i.e., has integral coordinates, and, moreover, that these are coprime. Then $\lambda$ is uniquely determined by $H_\lambda^+$. Such integral forms are called \emph{primitive}, and the same terminology applies to vectors.
+
+\begin{definition}
+	A (rational) \emph{polyhedron} $P$ is the intersection of finitely many (rational) halfspaces. If it is bounded, then it is called a \emph{polytope}. If all the halfspaces are linear, then $P$ is a \emph{cone}.
+	
+	The \emph{dimension} of $P$ is the dimension of the smallest affine subspace $\aff(P)$ containing $P$.
+\end{definition}
+
+
+A support hyperplane of $P$ is an affine hyperplane $H$ that intersects $P$, but only in such a way that $H$ is contained in one of the two halfspaces determined by $H$. The intersection $H\cap P$ is called a \emph{face} of $P$. It is a polyhedron (polytope, cone) itself. Faces of dimension $0$ are called \emph{vertices}, those of dimension $1$ are called \emph{edges} (in the case of cones \emph{extreme rays}), and those of dimension $\dim(P)-1$ are \emph{facets}.
+
+When we speak of \emph{the} support hyperplanes of $P$, then we mean those intersecting $P$ in a facet. Their halfspaces containing $P$ cut out $P$ from $\aff(P)$. If $\dim(P)=d$, then they are uniquely determined (up to a positive scalar).
+
+The constraints by which Normaliz describes polyhedra are
+\begin{arab}
+	\item linear equations for $\aff(P)$ and
+	\item linear inequalities (simply called support hyperplanes) cutting out $P$ from $\aff(P)$.
+\end{arab}
+In other words, the constraints are given by a linear system of equations and inequalities, and a polyhedron is nothing else than the solution set of a linear system of inequalities and equations. It can always be represented in the form
+$$
+Ax\ge b, \qquad A\in\RR^{m\times d}, b\in \RR^m,
+$$
+if we replace an equation by two inequalities.
+
+\subsection{Cones}
+
+The definition describes a cone by constraints. One can equivalently describe it by generators:
+
+\begin{theorem}[Minkowski-Weyl]
+	The following are equivalent for $C\subset\RR^d$;
+	\begin{enumerate}
+		\item $C$ is a (rational) cone;
+		\item there exist finitely many (rational) vectors $x_1,\dots,x_n$ such that
+		$$
+		C=\{a_1x_1+\dots+a_nx_n:a_1,\dots,a_n\in\RR_+\}.
+		$$
+	\end{enumerate}
+\end{theorem}
+
+By $\RR_+$ we denote the set of nonnegative real numbers; $\QQ_+$ and $\ZZ_+$ are defined in the same way.
+
+The conversion between the description by constraints and that by generators is one of the basic tasks of Normaliz. It uses the \emph{Fourier-Motzkin elimination}.
+
+Let $C_0$ be the set of those $x\in C$ for which $-x\in C$ as well. It is the largest vector subspace contained in $C$.
+A cone is \emph{pointed} if $C_0=0$. If a rational cone is pointed, then it has uniquely determined \emph{extreme integral generators}. These are the primitive integral vectors spanning the extreme rays. These can also be defined with respect to a sublattice $L$ of $\ZZ^d$, provided $C$ is contained in $\RR L$. If a cone is not pointed, then Normaliz computes the extreme rays of the pointed $C/C_0$ and lifts them to $C$. (Therefore they are only unique modulo $C_0$.)
+
+The \emph{dual cone} $C^*$ is given by
+$$
+C^*=\{\lambda\in (\RR^d)^*:\lambda(x)\ge0 \text{ for all } x\in C\}.
+$$
+Under the identification $\RR^d=(\RR^d)^{**}$ one has $C^{**}=C$. Then one has
+$$
+\dim C_0+\dim C^*=d.
+$$
+In particular, $C$ is pointed if and only if $C^*$ is full dimensional, and this is the criterion for pointedness used by Normaliz. Linear forms $\lambda_1,\dots,\lambda_n$ generate $C^*$ if and only if $C$ is the intersection of the halfspaces $H_{\lambda_i}^+$. Therefore the conversion from constraints to generators and its converse are the same task, except for the exchange of $\RR^d$ and its dual space.
+
+\subsection{Polyhedra}
+
+In order to transfer the Minkowski-Weyl theorem to polyhedra it is useful to homogenize coordinates by embedding $\RR^d$ as a hyperplane in $\RR^{d+1}$, namely via
+$$
+\kappa:\RR^d\to\RR^{d+1},\qquad \kappa(x)=(x,1).
+$$
+If $P$ is a (rational) polyhedron, then the closure of the union of the rays from $0$ through the points of $\kappa(P)$ is a (rational) cone $C(P)$, called the \emph{cone over} $P$. The intersection $C(P)\cap(\RR^d\times\{0\})$ can be identified with the \emph{recession} (or tail) \emph{cone}
+$$
+\rec(P)=\{x\in\RR^d: y+x\in P\text{ for all } y\in P\}.
+$$
+It is the cone of unbounded directions in $P$. The recession cone is pointed if and only if $P$ has at least one bounded face, and this is the case if and only if it has a vertex.
+
+The theorem of Minkowski-Weyl can then be generalized as follows:
+
+\begin{theorem}[Motzkin]
+	The following are equivalent for a subset $P\neq\emptyset$ of $\RR^d$:
+	\begin{enumerate}
+		\item $P$ is a (rational) polyhedron;
+		\item $P=Q+C$ where $Q$ is a (rational) polytope and $C$ is a (rational) cone.
+	\end{enumerate}
+	If $P$ has a vertex, then the smallest choice for $Q$ is the convex hull of its vertices, and $C=\rec(P)$ is uniquely determined.
+\end{theorem}
+
+The \emph{convex hull} of a subset $X\in\RR^d$ is
+$$
+\conv(X)=\{a_1x_1+\dots+a_nx_n: n\ge 1, x_1,\dots,x_n\in X, a_1,\dots,a_n\in\RR_+, a_1+\dots+a_n=1\}.
+$$
+
+Clearly, $P$ is a polytope if and only if $\rec(P)=\{0\}$, and the specialization to this case one obtains Minkowski's theorem: a subset $P$ of $\RR^d$ is a polytope if and only if it is the convex hull of a finite set. A \emph{lattice polytope} is distinguished by having integral points as vertices.
+
+Normaliz computes the recession cone and the polytope $Q$ if $P$ is defined by constraints. Conversely it finds the constraints if the vertices of $Q$ and the generators of $C$ are specified.
+
+Suppose that $P$ is given by a system
+$$
+Ax\ge b, \qquad A\in\RR^{m\times d},\ b\in \RR^m,
+$$
+of linear inequalities (equations are replaced by two inequalities). Then $C(P)$ is defined by the \emph{homogenized system}
+$$
+Ax-x_{d+1}b\ge 0
+$$
+whereas the $\rec(P)$ is given by the \emph{associated homogeneous system}
+$$
+Ax\ge 0.
+$$
+
+It is of course possible that $P$ is empty if it is given by constraints since inhomogeneous systems of linear equations and inequalities may be unsolvable. By abuse of language we call the solution set of the associated homogeneous system the recession cone of the system.
+
+Via the concept of dehomogenization, Normaliz allows for a more general approach. The \emph{dehomogenization} is a linear form $\delta$ on $\RR^{d+1}$. For a cone $\widetilde C$ in $\RR^{d+1}$ and a dehomogenization $\delta$, Normaliz computes the polyhedron $P=\{x\in \widetilde C: \delta(x)=1\}$ and the recession cone $C=\{x\in \widetilde C: \delta(x)=0\}$. In particular, this allows other choices of the homogenizing coordinate. (Often one chooses $x_0$, the first coordinate then.)
+
+In the language of projective geometry, $\delta(x)=0$ defines the hyperplane at infinity.
+
+\subsection{Affine monoids}
+
+An \emph{affine monoid} $M$ is a finitely generated submonoid of $\ZZ^d$ for some $d\ge0$. This means: $0\in M$, $M+M\subset M$, and there exist $x_1,\dots,x_n$ such that
+$$
+M=\{a_1x_1+\dots+a_nx_n: a_1,\dots,a_n\in\ZZ_+\}.
+$$
+We say that $x_1,\dots,x_n$ is a \emph{system of generators} of $M$. A monoid $M$ is positive if $x\in M$ and $-x\in M$ implies $x=0$. An element $x$ in a positive monoid $M$ is called \emph{irreducible} if it has no decomposition $x=y+z$ with $y,z\in M$, $y,z\neq0$. The \emph{rank} of $M$ is the rank of the subgroup $\gp(M)$ of $\ZZ^d$ generated by $M$. (Subgroups of $\ZZ^d$ are also called sublattices.)
+For certain aspects of monoid theory it is very useful (or even necessary) to introduce coefficients from a field $K$ (or a more general commutative ring) and consider the monoid algebra $K[M]$.
+
+
+\begin{theorem}[van der Corput]
+	Every positive affine monoid $M$ has a unique minimal system of generators, given by its irreducible elements.
+\end{theorem}
+
+We call the minimal system of generators the \emph{Hilbert basis} of $M$. Normaliz computes Hilbert bases of a special type of affine monoid:
+
+\begin{theorem}[Gordan's lemma]
+	Let $C\subset\RR^d$ be a (pointed) rational cone and let $L\subset \ZZ^d$ be a sublattice. Then $C\cap L$ is a (positive) affine monoid.
+\end{theorem}
+
+The monoids $M=C\cap L$ of the theorem have the pleasant property that the group of units $M_0$ (i.e., elements whose inverse also belongs to $M$) splits off as a direct summand. Therefore $M/M_0$ is a well-defied affine monoid. If $M$ is not positive, then Normaliz computes a Hilbert basis of $M/M_0$ and lifts it to $M$.
+
+Let $M\subset \ZZ^d$ be an affine monoid, and let $N\supset M$ be an overmonoid (not necessarily affine), for example a sublattice $L$ of $\ZZ^d$ containing $M$.
+
+\begin{definition}
+	The \emph{integral closure} (or \emph{saturation}) of $M$ in $N$ is the set
+	$$
+	\widehat M_N=\{x\in N: kx\in M \text{ for some } k\in \ZZ, k>0\}.
+	$$
+	If $\widehat M_N=M$, one calls $M$ \emph{integrally closed} in $N$.
+	
+	The integral closure $\overline M$ of $M$ in $\gp(M)$ is its \emph{normalization}. $M$ is \emph{normal} if $\overline M=M$.
+\end{definition}
+
+The integral closure has a geometric description:
+
+\begin{theorem}\label{incl_cone}
+	$$
+	\widehat M_N =\cone(M)\cap N.
+	$$
+\end{theorem}
+
+Combining the theorems, we can say that Normaliz computes integral closures of affine monoids in lattices, and the integral closures are themselves affine monoids as well. (More generally, $\widehat M_N$ is affine if $M$ and $N$ are affine.)
+
+In order to specify the intersection $C\cap L$ by constraints we need a system of homogeneous inequalities for $C$. Every sublattice of $\ZZ^d$ can be written as the solution set of a combined system of homogeneous linear diophantine equations and a homogeneous system of congruences (this follows from the elementary divisor theorem). Thus $C\cap L$ is the solution set of a homogeneous linear diophantine system of inequalities, equations and congruences. Conversely, the solution set of every such system is a monoid of type $C\cap L$.
+
+In the situation of Theorem~\ref{incl_cone}, if $\gp(N)$ has finite rank as a $\gp(M)$-module, $\widehat M_N$ is even a finitely generated module over $M$. I.e., there exist finitely many elements $y_1,\dots,y_m\in \widehat M_N$ such that $\widehat M_N=\bigcup_{i=1}^m M+y_i$. Normaliz computes a minimal system $y_1,\dots,y_m$ and lists the nonzero $y_i$ as a system of module generators of $\widehat M_N$ modulo $M$. We must introduce coefficients to make this precise: Normaliz computes a minimal system of generators of the $K[M]$-module $K[\widehat M_N]/K[M]$.
+
+\subsection{Affine monoids from binomial ideals}\label{binomials}
+
+Let $U$ be a subgroup of $\ZZ^n$. Then the natural image $M$ of
+$\ZZ_+^n\subset\ZZ^n$ in the abelian group $G=\ZZ^n/U$ is a
+submonoid of $G$. In general, $G$ is not torsionfree, and
+therefore $M$ may not be an affine monoid. However, the image
+$N$ of $M$ in the lattice $L=G/\textup{torsion}(G)$ is an affine
+monoid. Given $U$, Normaliz chooses an embedding
+$L\hookrightarrow\ZZ^r$, $r=n-\rank U$, such that $N$ becomes a
+submonoid of $\ZZ_+^r$. In general there is no canonical choice
+for such an embedding, but one can always find one, provided
+$N$ has no invertible element except $0$.
+
+The typical starting point is an ideal $J\subset
+K[X_1,\dots,X_n]$ generated by binomials
+$$
+X_1^{a_1}\cdots X_n^{a_n}-X_1^{b_1}\cdots X_n^{b_n}.
+$$
+The image of $K[X_1,\dots,X_n]$ in the residue class ring of
+the Laurent polynomial ring $S=K[X_1^{\pm1},\dots,X_n^{\pm1}]$
+modulo the ideal $JS$ is exactly the monoid algebra $K[M]$ of
+the monoid $M$ above if we let $U$ be the subgroup of $\ZZ^n$
+generated by the differences
+$$
+(a_1,\dots,a_n)-(b_1,\dots,b_n).
+$$
+
+Ideals of type $JS$ are called lattice ideals if they are
+prime. Since Normaliz automatically passes to
+$G/\textup{torsion}(G)$, it replaces $JS$ by the smallest lattice
+ideal containing it.
+
+\subsection{Lattice points in polyhedra}\label{latt_hedra}
+
+Let $P\subset \RR^d$ be a rational polyhedron and $L\subset \ZZ^d$ be an \emph{affine sublattice}, i.e., a subset $w+L_0$ where $w\in\ZZ^d$ and $L_0\subset \ZZ^d$ is a sublattice. In order to investigate (and compute) $P\cap L$ one again uses homogenization: $P$ is extended to $C(P)$ and $L$ is extended to $\cL=L_0+\ZZ(w,1)$. Then one computes $C(P)\cap \cL$. Via this ``bridge'' one obtains the following inhomogeneous version of Gordan's lemma:
+
+\begin{theorem}
+	Let $P$ be a rational polyhedron with vertices and $L=w+L_0$ an affine lattice as above. Set $\rec_L(P)=\rec(P)\cap L_0$. Then there exist $x_1,\dots,x_m\in P\cap L$ such that
+	$$
+	P\cap L=\{(x_1+\rec_L(P))\cap\dots\cap(x_m+\rec_L(P))\}.
+	$$
+	If the union is irredundant, then $x_1,\dots,x_m$ are uniquely determined.
+\end{theorem}
+
+The Hilbert basis of $\rec_L(P)$ is given by $\{x: (x,0)\in \Hilb(C(P)\cap\cL)\}$ and the minimal system of generators can also be read off the Hilbert basis of $C(P)\cap \cL$: it is given by those $x$ for which $(x,1)$ belongs to $\Hilb(C(P)\cap\cL)$. (Normaliz computes the Hilbert basis of $C(P)\cap L$ only at ``levels'' $0$ and $1$.)
+
+We call $\rec_L(P)$ the \emph{recession monoid} of $P$ with respect to $L$ (or $L_0$). It is justified to call $P\cap L$ a \emph{module} over $\rec_L(P)$. In the light of the theorem, it is a finitely generated module, and it has a unique minimal system of generators.
+
+After the introduction of coefficients from a field $K$, $\rec_L(P)$ is turned into an affine monoid algebra, and $N=P\cap L$ into a finitely generated torsionfree module over it. As such it has a well-defined \emph{module rank} $\mrank(N)$, which is computed by Normaliz via the following combinatorial description: Let $x_1,\dots,x_m$ be a system of generators of $N$ as above; then $\mrank(N)$ is the cardinality of the set of residue classes of $x_1,\dots,x_m$ modulo $\rec_L(P)$.
+
+Clearly, to model $P\cap L$ we need linear diophantine systems of inequalities, equations and congruences which now will be inhomogeneous in general. Conversely, the set of solutions of such a system is of type $P\cap L$.
+
+
+\subsection{Hilbert series and multiplicity}\label{AppHilbertSeries}
+
+Normaliz can compute the Hilbert series and the Hilbert
+(quasi)polynomial of a graded monoid. A \emph{grading} of a
+monoid $M$ is simply a homomorphism $\deg:M\to\ZZ^g$ where
+$\ZZ^g$ contains the degrees. The \emph{Hilbert series} of $M$
+with respect to the grading is the formal Laurent series
+$$
+H(t)=\sum_{u\in \ZZ^g} \#\{x\in M: \deg x=u\}t_1^{u_1}\cdots t_g^{u_g}=\sum_{x\in M}t^{\deg x},
+$$
+provided all sets $\{x\in M: \deg x=u\}$ are finite. At the moment, Normaliz can only handle the case $g=1$, and therefore we restrict ourselves to this case. We assume in the following that $\deg x >0$ for all nonzero $x\in M$ and that there exists an $x\in\gp(M)$ such that $\deg x=1$. (Normaliz always rescales the grading accordingly -- as long as no module $N$ is involved.) In the case of a nonpositive monoid, these conditions must hold for $M/M_0$, and its Hilbert series is considered as the Hilbert series of $M$.
+
+The basic fact about $H(t)$ in the $\ZZ$-graded case is that it
+is the Laurent expansion of a rational function at the origin:
+\begin{theorem}[Hilbert, Serre; Ehrhart]
+	Suppose that $M$ is a normal positive affine monoid. Then
+	$$
+	H(t)=\frac{R(t)}{(1-t^e)^r},\qquad R(t)\in\ZZ[t], %\label{raw}
+	$$
+	where $r$ is the rank of $M$ and $e$ is the least common multiple
+	of the degrees of the extreme integral generators of $\cone(M)$. As a rational function, $H(t)$ has negative degree.
+\end{theorem}
+
+The statement about the rationality of $H(t)$ holds under much more general hypotheses.
+
+Usually one can find denominators for $H(t)$ of much lower
+degree than that in the theorem, and Normaliz tries to
+give a more economical presentation of $H(t)$ as a quotient of
+two polynomials. One should note that it is not clear what the
+most natural presentation of $H(t)$ is in general (when $e>1$).
+We discuss this problem in~\cite[Section~4]{BIS}. The examples~\ref{rational} and~\ref{magiceven}, may serve as
+an illustration.
+
+A rational cone $C$ and a grading together define the rational
+polytope $Q=C\cap A_1$ where $A_1=\{x:\deg x=1\}$. In this
+sense the Hilbert series is nothing but the Ehrhart series of
+$Q$.
+The following description of the Hilbert function $H(M,k)=\#\{x\in M: \deg x=k\}$ is equivalent to the previous theorem:
+
+\begin{theorem}
+	There exists a quasipolynomial $q$ with rational coefficients, degree $\rank M-1$ and period $\pi$ dividing $e$ such that $H(M,k)=q(k)$ for all $q\ge0$.
+\end{theorem}
+
+The statement about the quasipolynomial means that there exist
+polynomials $q^{(j)}$, $j=0,\dots,\pi-1$, of degree $\rank M-1$ such that
+$$
+q(k)=q^{(j)}(k),\qquad j\equiv k\pod \pi,
+$$
+and
+$$
+q^{(j)}(k)=q^{(j)}_0+q^{(j)}_1k+\dots+q^{(j)}_{r-1}k^{r-1},\qquad r=\rank M,
+$$
+with coefficients $q^{(j)}_i\in \QQ$. It is not hard to show that in the case of affine monoids all components have the same degree $r-1$ and the same leading coefficient:
+$$
+q_{r-1}=\frac{\vol(Q)}{(r-1)!},
+$$
+where $\vol$ is the lattice normalized volume of $Q$ (a lattice simplex of smallest possible volume has volume $1$). The \emph{multiplicity} of $M$, denoted by $e(M)$ is $(r-1)!q_{r-1}=\vol(Q)$.
+
+Suppose now that $P$ is a rational polyhedron in $\RR^d$, $L\subset\ZZ^d$ is an affine lattice, and we consider $N=P\cap L$ as a module over $M=\rec_L(P)$. Then we must give up the condition that $\deg$ takes the value $1$ on $\gp(M)$ (see Section~\ref{sdqm} for an example). But the Hilbert series
+$$
+H_N(t)=\sum_{x\in N} t^{\deg x}
+$$
+is well-defined, and the qualitative statement above about rationality remain valid. However, in general the quasipolynomial gives the correct value of the Hilbert function only for $k>r$ where $r$ is the degree of the Hilbert series as a rational function. The multiplicity of $N$ is given by
+$$
+e(N)=\mrank(N)e(M).
+$$
+where $\mrank(M)$ is the module rank of $M$.
+
+Since $N$ may have generators in negative degrees, Normaliz shifts the degrees into $\ZZ_+$ by subtracting a constant, called the \emph{shift}. (The shift may also be positive.)
+
+Above the multiplicity of $M$ was defined under the assumption that $\gp(M)$ contains an element of degree $1$. In the homogeneous situation where no module $N$ comes into play, Normaliz achieves this extra condition by dividing the grading by the \emph{grading denominator} so that we are effectively in the situation considered above, except in two situations:
+(i) the use of the grading denominator is blocked; (ii) when a module $N$ is considered, it can easily happen that the grading restricted to the recession monoid $M$ has a denominator $g>1$, but there occur degrees in $N$ that are not divisible by $g$. Let $\deg'=\deg/g$ and let $e'(M)$ be the multiplicity of $M$ with respect to $\deg'$. Then
+$$
+e(M)=\frac{e'(M)}{g^{r-1}}.
+$$
+With this definition, $e(M)$ has the expected property as a dimension normed leading coefficient of the Hilbert quasipolynomial: if $q^{(j)}$ is a \emph{nonzero} component of the quasipolynomial of $M$, then its leading coefficient satisfies
+$$
+q_{r-1}^{(j)}=\frac{e(M)}{(r-1)!}.
+$$
+This follows immediately from the substitution $k\mapsto k/g$ in the Hilbert function when we pass from $\deg'$ to $\deg$: $H(M,k)=H'(M,k/g)$ if $g$ divides $k$ and $H(M,k)=0$ otherwise. Also the interpretation as a volume is consistent: $e(M)$ is the lattice normalized volume of the polytope $C\cap\{x:\deg x=1 \}$ (whereas $e'(M)$ is the lattice normalized volume of $C\cap\{x:\deg x=g \}$).
+
+For the interpretation of the multiplicity $e(N)=\mrank(N)e(M)$ one must first split the module $N$ into a direct sum where each summand bundles the elements whose degrees belong to a fixed residue class modulo $g$. Let $N^0,\dots,N^{g-1}$ be these summands. Then $e(N^k)$ is the dimension normed constant leading coefficient of the Hilbert quasipolynomial of $N^k$ for each $k$, and $e(N)=\sum_k e(N^k)$.
+
+\subsection{The class group}
+
+A normal affine monoid $M$ has a well-defined divisor class group. It is naturally isomorphic to the divisor class group of $K[M]$ where $K$ is a field (or any unique factorization domain); see~\cite[Section~4.F]{BG}, and especially~\cite[Corollary~4.56]{BG}. The class group classifies the divisorial ideals up to isomorphism. It can be computed from the standard embedding that sends an element $x$ of $\gp(M)$ to the vector $\sigma(x)$ where $\sigma$ is the collection of support forms $\sigma_1,\dots,\sigma_s$ of $M$: $\Cl(M)=\ZZ^s/\sigma(\gp(M))$. Finding this quotient amounts to an application of the Smith normal form to the matrix of $\sigma$.
+
+
+
+\section{Annotated console output}\label{Console}
+
+Somewhat outdated, but not much has changed in the shown computations since~3.2.0.
+
+\subsection{Primal mode}
+
+With
+\begin{Verbatim}
+./normaliz -ch example/A443
+\end{Verbatim}
+we get the following terminal output.
+
+\begin{Verbatim}
+                                                    \.....|
+                    Normaliz 3.2.0                   \....|
+                                                      \...|
+     (C) The Normaliz Team, University of Osnabrueck   \..|
+                     January  2017                      \.|
+                                                         \|
+************************************************************
+Command line: -ch example/A443 
+Compute: HilbertBasis HilbertSeries 
+************************************************************
+starting primal algorithm with full triangulation ...
+Roughness 1
+Generators sorted by degree and lexicographically
+Generators per degree:
+1: 48 
+\end{Verbatim}
+Self explanatory so far (see Section~\ref{bottom_dec} for the definition of roughness). Now the generators are inserted.
+\begin{Verbatim}
+Start simplex 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 19 22 25 26 27 28 31 34 
+37 38 39 40 43 46 
+\end{Verbatim}
+Normaliz starts by searching linearly independent generators with indices as small as possible. They span the start simplex in the triangulation. The remaining generators are inserted successively. (If a generator does not increase the cone spanned by the previous ones, it is not listed, but this does not happen for \verb|A443|.)
+\begin{Verbatim}
+gen=17, 39 hyp, 4 simpl
+\end{Verbatim}
+We have now reached a cone with $39$ support hyperplanes and the triangulation has $4$ simplices so far. We omit some generators until something interesting happens:
+\begin{Verbatim}
+gen=35, 667 hyp, 85 pyr, 13977 simpl
+\end{Verbatim}
+In view of the number of simplices in the triangulation and the number of support hyperplanes, Normaliz has decided to build pyramids and to store them for later triangulation.
+\begin{Verbatim}
+gen=36, 723 hyp, 234 pyr, 14025 simpl
+...
+gen=48, 4948 hyp, 3541 pyr, 14856 simpl
+\end{Verbatim}
+All generators have been processed now. Fortunately our cone is pointed:
+\begin{Verbatim}
+Pointed since graded
+Select extreme rays via comparison ... done.
+\end{Verbatim}
+Normaliz knows two methods for finding the extreme rays. Instead of ``comparison'' you may see ``rank''.
+Now the stored pyramids must be triangulated. They may produce not only simplices, but also pyramids of higher level, and indeed they do so:
+\begin{Verbatim}
+**************************************************
+level 0 pyramids remaining: 3541
+**************************************************
+**************************************************
+all pyramids on level 0 done!
+**************************************************
+level 1 pyramids remaining: 5935
+**************************************************
+**************************************************
+all pyramids on level 1 done!
+**************************************************
+level 2 pyramids remaining: 1567
+**************************************************
+1180 pyramids remaining on level 2, evaluating 2503294 simplices
+\end{Verbatim}
+At this point the preset size of the evaluation buffer for simplices has been exceeded. Normaliz stops the processing of pyramids, and empties the buffer by evaluating the simplices.
+\begin{Verbatim}
+||||||||||||||||||||||||||||||||||||||||||||||||||
+2503294 simplices, 0 HB candidates accumulated.
+**************************************************
+all pyramids on level 2 done!
+**************************************************
+level 3 pyramids remaining: 100
+**************************************************
+**************************************************
+all pyramids on level 3 done!
+\end{Verbatim}
+This is a small computation, and the computation of pyramids goes level by level without the necessity to return to a lower level. But in larger examples the buffer for level $n+1$ may be filled before level $n$ is finished. Then it becomes necessary to go back. Some simplices remaining in the buffer are now evaluated:
+\begin{Verbatim}
+evaluating 150978 simplices
+||||||||||||||||||||||||||||||||||||||||||||||||||
+2654272 simplices, 0 HB candidates accumulated.
+Adding 1 denominator classes... done.
+\end{Verbatim}
+Since our generators form the Hilbert basis, we do not collect any further candidates. If all generators are in degree $1$, we have only one denominator class in the Hilbert series, but otherwise there may be many. The collection of the Hilbert series in denominator classes reduces the computations of common denominators to a minimum.
+\begin{Verbatim}
+Total number of pyramids = 14137, among them simplicial 2994
+\end{Verbatim}
+Some statistics of the pyramid decomposition.
+\begin{Verbatim}
+------------------------------------------------------------
+transforming data... done.
+\end{Verbatim}
+Our computation is finished.
+
+A typical pair of lines that you will see for other examples is
+\begin{Verbatim}
+auto-reduce 539511 candidates, degrees <= 1 3 7 
+reducing 30 candidates by 73521 reducers
+\end{Verbatim}
+It tells you that Normaliz has found a list of $539511$ new candidates for the Hilbert basis, and this list is reduced against itself (auto-reduce). Then the $30$ old candidates are reduced against the $73521$ survivors of the auto-reduction.
+
+\subsection{Dual mode}
+
+Now we give an example of a computation in dual mode. It is started by the command
+\begin{Verbatim}
+./normaliz -cid example/5x5
+\end{Verbatim}
+The option \verb|i| is used to suppress the \verb|HSOP| in the input file. The console output:
+
+\begin{Verbatim}
+                                                    \.....|
+                    Normaliz 3.2.0                   \....|
+                                                      \...|
+     (C) The Normaliz Team, University of Osnabrueck   \..|
+                     January  2017                      \.|
+                                                         \|
+************************************************************
+Command line: -cid example/5x5 
+Compute: DualMode 
+No inequalities specified in constraint mode, using non-negative orthant.
+************************************************************
+\end{Verbatim}
+Indeed, we have used only equations as the input.
+\begin{Verbatim}
+************************************************************
+computing Hilbert basis ...
+==================================================
+cut with halfspace 1 ...
+Final sizes: Pos 1 Neg 1 Neutral 0
+\end{Verbatim}
+The cone is cut out from the space of solutions of the system of equations (in this case) by successive intersections with halfspaces defined by the inequalities. After such an intersection we have the positive half space, the ``neutral'' hyperplane and the negative half space. The final sizes given are the numbers of Hilbert basis elements strictly in the positive half space, strictly in the negative half space, and in the hyperplane. This pattern is repeated until all hyperplanes have been used.
+\begin{Verbatim}
+==================================================
+cut with halfspace 2 ...
+Final sizes: Pos 1 Neg 1 Neutral 1
+\end{Verbatim}
+We leave out some hyperplanes \dots
+\begin{Verbatim}
+==================================================
+cut with halfspace 20 ...
+auto-reduce 1159 candidates, degrees <= 13 27 
+Final sizes: Pos 138 Neg 239 Neutral 1592
+==================================================
+cut with halfspace 21 ...
+Positive: 1027  Negative: 367
+..................................................
+Final sizes: Pos 1094 Neg 369 Neutral 1019
+\end{Verbatim}
+Sometimes reduction takes some time, and then Normaliz may issue a message on ``auto-reduction'' organized by degree (chosen for the algorithm, not defined by the given grading). The line of dots is printed is the computation of new Hilbert basis candidates takes time, and Normaliz wants to show you that it is not sleeping. Normaliz shows you the number of positive and negative partners that must be pared produce offspring.
+\begin{Verbatim}
+==================================================
+cut with halfspace 25 ...
+Positive: 1856  Negative: 653
+..................................................
+auto-reduce 1899 candidates, degrees <= 19 39 
+Final sizes: Pos 1976 Neg 688 Neutral 2852
+\end{Verbatim}
+All hyperplanes have been taken care of.
+\begin{Verbatim}
+Find extreme rays
+Find relevant support hyperplanes
+\end{Verbatim}
+Well, in connection with the equations, some hyperplanes become superfluous. In the output file Normaliz will list a minimal set of support hyperplanes that together with the equations define the cone.
+\begin{Verbatim}
+Hilbert basis 4828
+\end{Verbatim}
+The number of Hilbert basis elements computed is the sum of the last positive and neutral numbers.
+\begin{Verbatim}
+Find degree 1 elements
+\end{Verbatim}
+The input file contains a grading.
+\begin{Verbatim}
+transforming data... done.
+\end{Verbatim}
+Our example is finished.
+
+The computation of the new Hilbert basis after the intersection with the new hyperplane proceeds in rounds, and there can be many rounds \dots (not in the above example). Then you can see terminal output like
+\begin{Verbatim}
+Round 100
+Round 200
+Round 300
+Round 400
+Round 500
+\end{Verbatim}
+
+\section{Normaliz~2 input syntax}\label{OldSyntax}
+
+A Normaliz~2 input file contains a sequence of matrices. Comments or options are not allowed in it. A matrix has the format
+\begin{Verbatim}
+<m>
+<n>
+<x_1>
+...
+<x_m>
+<type>
+\end{Verbatim}
+where \verb|<m>| denotes the number of rows, \verb|<n>| is the number of columns and \verb|<x_1>\dots<x_n>| are the rows with \verb|<n>| entries each. All matrix types of Normaliz~3 are allowed (with Normaliz~3), also \verb|grading| and \verb|dehomogenization|. These vectors must be encoded as matrices with $1$ row.
+
+Note that algebraic polyhedra cannot be defined by input files in this format.
+
+The optional output files with suffix \verb|cst| are still in this format. Just create one and inspect it.
+
+\section{libnormaliz}\label{libnorm}
+
+\begin{small}
+
+The kernel of Normaliz is the C++ class library \verb|libnormaliz|. It implements all the classes that are necessary for the computations. The central class is \verb|Cone|. It realizes the communication with the calling program and starts the computations most of which are implemented in other classes. In the following we describe the class \verb|Cone|; other classes of \verb|libnormaliz| may follow in the future.
+
+Of course, Normaliz itself is the prime example for the use of \verb|libnormaliz|, but it is rather complicated because of the input and output it must handle. Therefore we have a added a simple example program at the end of this introduction.
+
+\verb|libnormaliz| defines its own name space. In the following we assume that
+\begin{Verbatim}
+using namespace std;
+using namespace libnormaliz;
+\end{Verbatim}
+have been declared. It is clear that opening these name spaces is dangerous. In this documentation we only do it to avoid constant repetition of \verb|std::| and \verb|libnormaliz::|
+
+\subsection{The master header file}
+
+\begin{Verbatim}
+#include "libnormaliz/libnormaliz.h"
+\end{Verbatim}
+reads all installed header files of libnormaliz.
+
+\subsection{Optional packages and configuration}
+
+The file
+\begin{Verbatim}
+#include "libnormaliz/lnmz_config.h"
+\end{Verbatim}
+is created and installed when Normaliz is built by the autotools scripts. It (un)defines the preprocessor variables that indicate the optional packages used in the build process. These are
+\begin{Verbatim}
+ENFNORMALIZ   NMZ_NAUTY   NMZ_FLINT   NMZ_COCOA 
+\end{Verbatim}
+with obvious interpretations (\verb|ENFNORMALIZ| stands for e-antic).
+
+\subsection{Integer type as a template parameter}
+
+A cone can be constructed for two integer types, \verb|long long| and \verb|mpz_class|. (Also \verb|long| is possible, but we disregard it in the following, since one should make sure that the integer type has at least~$64$~bits.) It is reasonable to choose \verb|mpz_class| since the main computations will then be tried with \verb|long long| and restarted with \verb|mpz_class| if \verb|long long| cannot store the results. This internal change of integer type is not possible if the cone is constructed for \verb|long long|. (Nevertheless, the linear algebra routines can use \verb|mpz_class| locally if intermediate results exceed \verb|long long|; have a look into \verb|matrix.cpp|.)
+
+Internally the template parameter is called \verb|Integer|. In the following we assume that the integer type has been fixed as follows:
+\begin{Verbatim}
+typedef mpz_class Integer;
+\end{Verbatim}
+
+The internal passage from \verb|mpz_class| to \verb|long long| can be suppressed by
+\begin{Verbatim}
+MyCone.deactivateChangeOfPrecision();
+\end{Verbatim}
+where we assume that \verb|MyCone| has been constructed as described in the next section.
+
+\subsubsection{Alternative integer types}
+
+It is possible to use libnormaliz with other integer types than \verb|mpz_class|, \verb|long long|, \verb|long| or \verb|renf_elem_class| but we have tested only these types.
+
+If you want to use other types, you probably have to implement some conversion functions which you can find in \verb|integer.h| and \verb|integer.cpp|. Namely the functions
+\begin{Verbatim}
+bool libnormaliz::try_convert(TypeA, TypeB); 
+// converts TypeB to TypeA, returns false if not possible
+\end{Verbatim}
+where one type is your type and the other is \verb|long|, \verb|long long|, \verb|mpz_class| and \verb|nmz_float|.
+Additionally, if your type uses infinite precision (for example, it is some wrapper for GMP), you must also implement
+\begin{Verbatim}
+template<> inline bool libnormaliz::using_GMP<YourType>() { return true; }
+\end{Verbatim}
+
+\subsubsection{Decimal fractions and floating point numbers}
+
+libnormaliz has a type \verb|nmz_float| (presently set to \verb|double|) that allows the construction of cones from floating point data. These are are first converted into \verb|mpq_class| by using the GMP constructor of \verb|mpq_class|, and then denominators are cleared. (The input routine of Normaliz goes another way by reading the floating point input as decimal fractions.)
+
+\subsection{Construction of a cone}\label{ConstCone}
+
+The construction requires the specification of input data consisting of one or more matrices and the input types they represent. In addition there is a constructor that takes a Normaliz input file.
+
+The term ``matrix'' stands for
+\begin{Verbatim}
+vector<vector<number> >
+\end{Verbatim}
+where predefined choices of number are \verb|long long|, \verb|mpz_class|, \verb|mpq_class| and \verb|nmz_float| (the latter representing \verb|double|).
+
+The available input types (from \verb|input_type.h|) are defined as follows:
+\begin{Verbatim}
+namespace Type {
+enum InputType {
+//
+// homogeneous generators
+//
+polytope,
+rees_algebra,
+subspace,
+cone,
+cone_and_lattice,
+lattice,
+rational_lattice,
+saturation,
+//
+// inhomogeneous generators
+//
+vertices,
+offset,
+rational_offset,
+//
+// homogeneous constraints
+//
+inequalities,
+signs,
+equations,
+congruences,
+excluded_faces,
+//
+// inhomogeneous constraints
+//
+inhom_equations,
+inhom_inequalities,
+strict_inequalities,
+strict_signs,
+inhom_congruences,
+inhom_excluded_faces,
+//
+// linearforms
+//
+grading,
+dehomogenization,
+//
+// special
+open_facets,
+projection_coordinates,
+lattice_ideal,
+//
+// precomputed data
+//
+support_hyperplanes,
+extreme_rays,
+maximal_subspace,
+generated_lattice,
+hilbert_basis_rec_cone,
+//
+// deprecated
+//
+integral_closure,
+normalization,
+polyhedron,
+...
+};
+} //end namespace Type
+\end{Verbatim}
+The input types are explained in Section~\ref{input}. (There are further input types used for debugging and tests.)
+
+In certain environments it is not possible to use the enumeration. Therefore we provide a function that converts a string into the corresponding input type:
+\begin{Verbatim}
+Type::InputType to_type(const string& type_string)
+\end{Verbatim}
+
+The types \verb|grading|, \verb|dehomogenization|, \verb|signs|, \verb|strict_signs|, \verb|offset|and \verb|open_facets| must be encoded as matrices with a single row. We come back to this point below.
+
+The simplest constructor has the syntax
+\begin{Verbatim}
+Cone<Integer>::Cone(InputType input_type, const vector< vector<Integer> >& Input)
+\end{Verbatim}
+and can be used as in the following example:
+\begin{Verbatim}
+vector<vector <Integer> > Data = ...
+Type::InputType type = cone;
+Cone<Integer> MyCone = Cone<Integer>(type, Data);
+\end{Verbatim}
+For two and three pairs of type and matrix there are the constructors
+\begin{Verbatim}
+Cone<Integer>::Cone(InputType type1, const vector< vector<Integer> >& Input1,
+InputType type2, const vector< vector<Integer> >& Input2)
+
+Cone<Integer>::Cone(InputType type1, const vector< vector<Integer> >& Input1,
+InputType type2, const vector< vector<Integer> >& Input2,
+InputType type3, const vector< vector<Integer> >& Input3)
+\end{Verbatim}
+
+If you have to combine more than three matrices, you can define a
+\begin{Verbatim}
+map <InputType, vector< vector<Integer> > >
+\end{Verbatim}
+and use the constructor with syntax
+\begin{Verbatim}
+Cone<Integer>::Cone(const map< InputType, 
+vector< vector<Integer> > >& multi_input_data)
+\end{Verbatim}
+
+The four constructors also exist in a variant that uses the \verb|libnormaliz| type \verb|Matrix<Integer>| instead of \verb|vector< vector<Integer> >| (see \verb|cone.h|).
+
+For the input of rational numbers we have all constructors also in variants that use \verb|mpq_class| for the input matrix, for example
+\begin{Verbatim}
+Cone<Integer>::Cone(InputType input_type, const vector< vector<mpq_class> >& Input)
+\end{Verbatim}
+etc.
+
+Similarly, for the input of decimal fractions and floating point numbers we have all constructors also in variants that use \verb|nmz_float| for the input matrix, for example
+\begin{Verbatim}
+Cone<Integer>::Cone(InputType input_type, const vector< vector<nmz_float> >& Input)
+\end{Verbatim}
+etc.
+
+Note that \verb|rational_lattice| and \verb|rational_offset| can only be used if the input data are given in class \verb|mpq_class| or \verb|nmz_float|.
+
+For convenience we provide the function
+\begin{Verbatim}
+vector<vector<T> > to_matrix<Integer>(vector<T> v)
+\end{Verbatim}
+in \verb|matrix.h|. It returns a matrix whose first row is \verb|v|. A typical example:
+\begin{Verbatim}
+size_t dim = ...
+vector<vector <Integer> > Data = ...
+Type::InputType type = cone;
+vector<Integer> total_degree(dim,1);
+Type::InputType grad = grading;
+Cone<Integer> MyCone = Cone<Integer>(type, Data,grad,to_matrix(total_degree));
+\end{Verbatim}
+
+There is a default constructor for cones,
+\begin{Verbatim}
+Cone<Integer>::Cone()
+\end{Verbatim}
+
+\subsubsection{Construction from an input file}
+
+One can construct a cone also from a Normaliz input file by
+\begin{Verbatim}
+Cone<Integer>::Cone(const string project)
+\end{Verbatim}
+The constructor reads the file \verb|<project>.in|. All options in the file and numerical parameters are disregarded. The polynomials if present are however forwarded to the cone.
+
+\subsection{Setting and changing additional data}
+
+These data must be given to the cone before starting the computation if they are needed.
+The numerical parameters have default values, and the grading can be set when the cone is constructed.
+
+\subsubsection{Polynomials}
+
+The polynomial needed for integrals and weighted Ehrhart series must be passed to the cone after construction:
+\begin{Verbatim}
+void Cone<Integer>::setPolynomial(string poly)
+\end{Verbatim}
+
+Like the grading it can be changed later on. Then the results depending on the previous polynomial will be deleted.
+
+Similarly polynomial constraints can be set:
+\begin{Verbatim}
+void Cone<Integer>::setPolynomialEquations(const vector<string>& poly_equs)
+void Cone<Integer>::setPolynomialInequalities(const vector<string>& poly_inequs)
+\end{Verbatim}
+
+En bloc setting is also possible:
+\begin{Verbatim}
+void Cone<Integer>::setPolyParams(const map<PolyParam::Param, vector<string>>& poly_params)
+\end{Verbatim}
+Have a look at \verb|cone.cpp|. The single \verb|polynomial| must be disguised as the only member of a vector.
+
+\subsubsection{Grading}
+
+If your computation needs a grading, you should include it into the construction of the cone. However, especially in interactive use via PyNormaliz or other interfaces, it can be useful to add the grading if it was forgotten or to change it later on. The following function allows this:
+
+\begin{Verbatim}
+void Cone<Integer>::resetGrading(const vector<Integer>& grading)
+\end{Verbatim}
+
+Note that it deletes all previously computed results that depend on the grading.
+
+\subsubsection{Projection coordinates}
+
+Similarly to  \verb|resetGrading| we have
+\begin{Verbatim}
+void Cone<Integer>::resetProjectionCoords(const vector<Integer>& lf)
+\end{Verbatim}
+The entries of \verb|lf| must be $0$ or $1$.
+
+\subsubsection{Numerical parameters}
+
+Some computations can be controlled by numerical parameters. They can be given to the cone en bloc or individually.
+
+To set them individually, you can use the following functions:
+\begin{Verbatim}
+void Cone<Integer>::setExpansionDegree(long degree)
+void Cone<Integer>::setNrCoeffQuasiPol(long nr_coeff)
+void Cone<Integer>::setFaceCodimBound(long bound)
+void Cone<Integer>::setAutomCodimBoundVectors(long bound) // not yet used
+void Cone<Integer>::setDecimalDigits(long digits)
+void Cone<Integer>::setBlocksizeHollowTri(long block_size)
+\end{Verbatim}
+There common default value of \verb|degree| is $-1$, signaling no expansion, all coefficients or no codimension bound etc. One can reset the values after a computation. Then they will delete the computation results that depend on them.
+%However, there is no point in changing the codimension bounds for the exploitation of the automorphism group after the computations to that they refer have been finished.
+
+To set them en bloc you can use
+\begin{Verbatim}
+void Cone<Integer>::setNumericalParams(const map <NumParam::Param, long >& num_params)
+\end{Verbatim}
+where \verb|NumParam::Param| refers to
+\begin{Verbatim}
+namespace NumParam {
+enum Param {
+expansion_degree,
+nr_coeff_quasipol,
+face_codim_bound,
+autom_codim_bound_vectors,  // not yet used
+block_size_hollow_tri,
+decimal_digits,
+not_a_num_param
+};
+} //end namespace NumParam
+\end{Verbatim}
+(see \verb|libnormaliz/input_type.h|).
+
+\subsection{Modifying a cone after construction}\label{Modify}
+
+Within some boundaries it is possible to change an already constructed cone (and lattice). To this end one can use the functions
+\begin{Verbatim}
+void Cone<Integer>::modifyCone(const map<InputType, vector<vector<Integer> > >& 
+                                                           multi_add_input_const)
+void Cone<Integer>::modifyCone(InputType input_type, const vector< vector<Integer> >& Input)
+\end{Verbatim}
+Similar to the cone constructor, it has variations for \verb|vector< vector<mpq_class> >| and\\ \verb|vector< vector<nmz_float> >| for cones that are not of \verb|renf_elem_class|. There are also versions with \verb|Matrix<...>| .
+
+The following input types are allowed (to be prefixed by \verb|Type::|)
+\begin{center}
+\texttt{
+	\begin{tabular}{llll}
+		cone& vertices & subspace\\
+		equations & inhom\_equations&inequalities&inhom\_inequalities
+\end{tabular}	}
+\end{center}
+Modifying the current cone $C $ by \emph{additional} generators (first row) means to extend $C$. Modifying it by \emph{additional} constraints (second row) restricts $C$.
+
+It is allowed to issue several \verb|modifyCone(...)| at any time, but there are some restrictions:
+\begin{arab}
+\item The inhomogeneous types are only allowed if the cone was constructed with inhomogeneous input.
+
+\item Normaliz cannot fall back behind the coordinate transformation that has been reached at the time of additional input. This implies: (i) Additional generators must satisfy the equations valid at the time of addition. (They are automatically adapted to the congruences if there should be any.) (ii) Additional linear inequalities must vanish on the maximal subspace at the time of addition.
+
+\item \verb|modifyCone| cannot be used if the cone was created with \verb|rational_lattice| or \verb|rational_offset|.
+
+\item Between two \verb|compute(...)| several \verb|modifyCone| are allowed. But they must be of the same category, either the types in the first line above (generators) or those in the second (constraints).
+\end{arab}
+
+The last restriction are necessary to avoid ambiguities. If the cone constructor is used with generators and constraints simultaneously, then the \emph{intersection} of the cones defined by the constraints on one side and the generators on the other side is computed. (The same applies to lattice data.) In contrast, the later addition of generators always leads to an \emph{extension} of the existing cone. And: if both constraints and generators are added between two \verb|compute|, should we first extend and then restrict, or the other way round? The two operations do not commute.
+
+For flexibility both support hyperplanes and extrene rays are computed before the modification.
+
+It may happen that a previously computed (or provided) grading gives a negative value on an added generator. In this case the grading is reset. In the inhomogeneous case, if the dehomogenization should give a negative value, a \verb|BadInputException| is thrown.
+
+\subsection{Computations in a cone}
+
+Before starting a computation in a (previously constructed) cone, one must decide what should be computed and in which way it should be computed. The computation goals and algorithmic variants (see Section~\ref{Goals}) are defined as follows (\verb|cone_property.h|):
+\begin{Verbatim}
+namespace ConeProperty {
+enum Enum {
+// matrix valued
+START_ENUM_RANGE(FIRST_MATRIX),
+ExtremeRays,
+VerticesOfPolyhedron,
+SupportHyperplanes,
+HilbertBasis,
+ModuleGenerators,
+Deg1Elements,
+LatticePoints,
+ModuleGeneratorsOverOriginalMonoid,
+ExcludedFaces,
+OriginalMonoidGenerators,
+MaximalSubspace,
+Equations,
+Congruences,
+END_ENUM_RANGE(LAST_MATRIX),
+
+START_ENUM_RANGE(FIRST_MATRIX_FLOAT),
+SuppHypsFloat,
+VerticesFloat,
+ExtremeRaysFloat,
+END_ENUM_RANGE(LAST_MATRIX_FLOAT),
+
+// vector valued
+START_ENUM_RANGE(FIRST_VECTOR),
+Grading,
+Dehomogenization,
+WitnessNotIntegrallyClosed,
+GeneratorOfInterior,
+CoveringFace,
+AxesScaling,
+END_ENUM_RANGE(LAST_VECTOR),
+
+// integer valued
+START_ENUM_RANGE(FIRST_INTEGER),
+TriangulationDetSum,
+ReesPrimaryMultiplicity,
+GradingDenom,
+UnitGroupIndex,
+InternalIndex,
+END_ENUM_RANGE(LAST_INTEGER),
+
+START_ENUM_RANGE(FIRST_GMP_INTEGER),
+ExternalIndex = FIRST_GMP_INTEGER,
+END_ENUM_RANGE(LAST_GMP_INTEGER),
+
+// rational valued
+START_ENUM_RANGE(FIRST_RATIONAL),
+Multiplicity,
+Volume,
+Integral,
+VirtualMultiplicity,
+END_ENUM_RANGE(LAST_RATIONAL),
+
+// field valued
+START_ENUM_RANGE(FIRST_FIELD_ELEM),
+RenfVolume,
+END_ENUM_RANGE(LAST_FIELD_ELEM),
+
+// floating point valued
+START_ENUM_RANGE(FIRST_FLOAT),
+EuclideanVolume,
+EuclideanIntegral,
+END_ENUM_RANGE(LAST_FLOAT),
+
+// dimensions and cardinalities
+START_ENUM_RANGE(FIRST_MACHINE_INTEGER),
+TriangulationSize,
+NumberLatticePoints,
+RecessionRank,
+AffineDim,
+ModuleRank,
+Rank,
+EmbeddingDim,
+END_ENUM_RANGE(LAST_MACHINE_INTEGER),
+
+// boolean valued
+START_ENUM_RANGE(FIRST_BOOLEAN),
+IsPointed,
+IsDeg1ExtremeRays,
+IsDeg1HilbertBasis,
+IsIntegrallyClosed,
+IsReesPrimary,
+IsInhomogeneous,
+IsGorenstein,
+IsEmptySemiOpen,
+//
+// checking properties of already computed data
+// (cannot be used as a computation goal)
+//
+IsTriangulationNested,
+IsTriangulationPartial,
+END_ENUM_RANGE(LAST_BOOLEAN),
+
+// complex structures
+START_ENUM_RANGE(FIRST_COMPLEX_STRUCTURE),
+Triangulation,
+UnimodularTriangulation,
+LatticePointTriangulation,
+AllGeneratorsTriangulation,
+PlacingTriangulation,
+PullingTriangulation,
+StanleyDec,
+InclusionExclusionData,
+IntegerHull,
+ProjectCone,
+ConeDecomposition,
+//
+Automorphisms,
+AmbientAutomorphisms,
+CombinatorialAutomorphisms,
+RationalAutomorphisms,
+EuclideanAutomorphisms,
+InputAutomorphisms,
+//
+HilbertSeries,
+HilbertQuasiPolynomial,
+EhrhartSeries,
+EhrhartQuasiPolynomial,
+WeightedEhrhartSeries,
+WeightedEhrhartQuasiPolynomial,
+//
+FaceLattice,
+FVector,
+Incidence,
+DualFVector,
+DualIncidence,
+DualSublattice,
+//
+Sublattice,
+//
+ClassGroup,
+END_ENUM_RANGE(LAST_COMPLEX_STRUCTURE),
+
+//
+// integer type for computations
+//
+START_ENUM_RANGE(FIRST_PROPERTY),
+BigInt,
+//
+// algorithmic variants
+//
+DefaultMode,
+Approximate,
+BottomDecomposition,
+NoBottomDec,
+DualMode,
+PrimalMode,
+Projection,
+ProjectionFloat,
+NoProjection,
+Symmetrize,
+NoSymmetrization,
+NoSubdivision,
+NoNestedTri,  // synonym for NoSubdivision
+KeepOrder,
+HSOP,
+NoPeriodBound,
+NoLLL,
+NoRelax,
+Descent,
+NoDescent,
+NoGradingDenom,
+GradingIsPositive,
+ExploitAutomsVectors, // not yet implemented
+ExploitIsosMult,
+StrictIsoTypeCheck,
+SignedDec,
+NoSignedDec,
+FixedPrecision,
+//
+Dynamic,
+Static,
+//
+// ONLY FOR INTERNAL CONTROL
+//
+...
+END_ENUM_RANGE(LAST_PROPERTY),
+
+EnumSize // this has to be the last entry, to get the number of entries in the enum
+
+}; // remember to change also the string conversion function if you change this enum
+}
+\end{Verbatim}
+
+The class \verb|ConeProperties| is based on this enumeration. Its instantiations are essentially boolean vectors that can be accessed via the names in the enumeration. Instantiations of the class are used to set computation goals and algorithmic variants and to check whether the goals have been reached. The distinction between computation goals and algorithmic variants is not completely strict. See Section~\ref{Goals} for implications between some \verb|ConeProperties|.
+
+There exist versions of \verb|compute| for up to $3$ cone properties:
+\begin{Verbatim}
+ConeProperties Cone<Integer>::compute(ConeProperty::Enum cp)
+
+ConeProperties Cone<Integer>::compute(ConeProperty::Enum cp1, 
+                   ConeProperty::Enum cp2)
+
+ConeProperties Cone<Integer>::compute(ConeProperty::Enum cp1, 
+                   ConeProperty::Enum cp2, ConeProperty::Enum cp3)
+\end{Verbatim}
+
+An example:
+\begin{Verbatim}
+MyCone.compute(ConeProperty::HilbertBasis, ConeProperty::Multiplicity)
+\end{Verbatim}
+
+If you want to specify more than $3$ cone properties, you can define an instance of \verb|ConeProperties| yourself and call
+\begin{Verbatim}
+ConeProperties Cone<Integer>::compute(ConeProperties ToCompute)
+\end{Verbatim}
+
+An example:
+\begin{Verbatim}
+ConeProperties Wanted;
+Wanted.set(ConeProperty::Triangulation, ConeProperty::HilbertBasis);
+MyCone.compute(Wanted);
+\end{Verbatim}
+
+All \verb|get...| functions that are listed in the next section, try to compute the data asked for if they have not yet been computed. Unless you are interested a single result, we recommend to use \verb|compute| since the data asked for can then be computed in a single run. For example, if the Hilbert basis and the multiplicity are wanted, then it would be a bad idea to call \verb|getHilbertBasis| and \verb|getMultiplicity| consecutively. More importantly, however, there is no choice of an algorithmic variant if you use \verb|get...| without \verb|compute| beforehand.
+
+It is possible that a computation goal is unreachable. If this can be recognized from the input, a \verb|BadInputException| will be thrown. If it cannot be recognized from the input, and \verb|DefaultMode| is not set, then \verb|compute()| will throw a \verb|NotComputableException| so that \verb|compute()| cannot return a value. In the presence of \verb|DefaultMode|, the returned \verb|ConeProperties| are those that have not been computed.
+
+Please inspect \verb|cone_property.cpp| for the full list of methods implemented in the class \verb|ConeProperties|. Here we only mention the constructors
+\begin{Verbatim}
+ConeProperties::ConeProperties(ConeProperty::Enum p1)
+
+ConeProperties::ConeProperties(ConeProperty::Enum p1, ConeProperty::Enum p2)
+
+ConeProperties::ConeProperties(ConeProperty::Enum p1, ConeProperty::Enum p2,
+                               ConeProperty::Enum p3)
+\end{Verbatim}
+and the functions
+\begin{Verbatim}
+ConeProperties& ConeProperties::set(ConeProperty::Enum p1, bool value)
+
+ConeProperties& ConeProperties::set(ConeProperty::Enum p1, ConeProperty::Enum p2)
+
+bool ConeProperties::test(ConeProperty::Enum Property) const
+\end{Verbatim}
+
+A string can be converted to a cone property and conversely:
+\begin{Verbatim}
+ConeProperty::Enum toConeProperty(const string&)
+const string& toString(ConeProperty::Enum)
+\end{Verbatim}
+
+You can return the whole collection of reached computation goals via
+\begin{Verbatim}
+const ConeProperties& Cone<Integer>::getIsComputed() const
+\end{Verbatim}
+
+
+
+\subsection{Retrieving results}
+
+As remarked above, all \verb|get...| functions that are listed below, try to compute the data asked for if they have not yet been computed. As also remarked above, it is often better to use \verb|compute| first.
+
+The functions that return a matrix encoded as \verb|vector<vector<number> >| have variants that return a matrix encoded in the \verb|libnormaliz| class \verb|Matrix<number>|. These are not listed below; see \verb|cone.h|.
+
+Note that there are now functions that return results by type so that interfaces need not implement all the functions in this section. See~\ref{ByType}.
+
+\subsubsection{Checking computations}
+In order to check whether a computation goal has been reached, one can use
+\begin{Verbatim}
+bool Cone<Integer>::isComputed(ConeProperty::Enum prop) const 
+\end{Verbatim}
+for example
+\begin{Verbatim}
+bool done=MyCone.isComputed(ConeProperty::HilbertBasis)
+\end{Verbatim}
+
+\subsubsection{Rank, index and dimension}
+
+\begin{Verbatim}
+size_t Cone<Integer>::getEmbeddingDim()
+size_t Cone<Integer>::getRank()
+Integer Cone<Integer>::getInternalIndex()
+Integer Cone<Integer>::getUnitGroupIndex()
+
+size_t Cone<Integer>::getRecessionRank()
+long Cone<Integer>::getAffineDim()
+size_t Cone<Integer>::getModuleRank()
+\end{Verbatim}
+
+The \emph{internal} index is only defined if original generators are defined. See Section~\ref{coord} for the external index.
+
+The last three functions return values that are only well-defined after inhomogeneous computations.
+
+\subsubsection{Support hyperplanes and constraints}\label{SHC}
+
+\begin{Verbatim}
+const vector< vector<Integer> >& Cone<Integer>::getSupportHyperplanes()
+size_t Cone<Integer>::getNrSupportHyperplanes()
+\end{Verbatim}
+
+The first function returns the support hyperplanes of the (homogenized) cone.
+The second function returns the number of support hyperplanes. Similarly we have
+
+\begin{Verbatim}
+const vector< vector<Integer> >& Cone<Integer>::getEquations()
+size_t Cone<Integer>::getNrEquations()
+const vector< vector<Integer> >& Cone<Integer>::getCongruences()
+size_t Cone<Integer>::getNrCongruences()
+\end{Verbatim}
+
+Support hyperplanes can be returned in floating point format:
+\begin{Verbatim}
+const vector< vector<nmz_float> >& Cone<Integer>::getSuppHypsFloat()
+size_t Cone<Integer>::getNrSuppHypsFloat()
+\end{Verbatim}
+
+For these functions there also exist \ttt{Matrix}versions.
+
+\subsubsection{Extreme rays and vertices}
+
+\begin{Verbatim}
+const vector< vector<Integer> >& Cone<Integer>::getExtremeRays()
+size_t Cone<Integer>::getNrExtremeRays()
+const vector< vector<Integer> >& Cone<Integer>::getVerticesOfPolyhedron()
+size_t Cone<Integer>::getNrVerticesOfPolyhedron()
+\end{Verbatim}
+
+In the inhomogeneous case the first function returns the extreme rays of the recession cone, and the second the vertices of the polyhedron. (Together they form the extreme rays of the homogenized cone.)
+
+Vertices and extreme rays can be returned in floating point format:
+\begin{Verbatim}
+const vector< vector<nmz_float> >& Cone<Integer>::getVerticesFloat()
+const vector< vector<nmz_float> >& Cone<Integer>::getExtremeRaysFloat()
+size_t Cone<Integer>::getNrVerticesFloat()
+\end{Verbatim}
+
+\subsubsection{Generators}
+
+\begin{Verbatim}
+const vector< vector<Integer> >& Cone<Integer>::getOriginalMonoidGenerators()
+size_t Cone<Integer>::getNrOriginalMonoidGenerators()
+\end{Verbatim}
+Note that original generators are not always defined. The system of generators of the cone that is used in the computations and its cardinality are returned by
+\begin{Verbatim}
+const vector< vector<Integer> >& Cone<Integer>::getGenerators()
+size_t Cone<Integer>::getNrGenerators()
+\end{Verbatim}
+
+\subsubsection{Lattice points in polytopes and elements of degree $1$}
+
+\begin{Verbatim}
+const vector< vector<Integer> >& Cone<Integer>::getDeg1Elements()
+size_t Cone<Integer>::getNrDeg1Elements()
+\end{Verbatim}
+These functions apply to the homogeneous case. \verb|getNrDeg1Elements()| returns the number of degree $1$ elements if these have been computed and stored|, and if the degree $1$ elements are not available, it forces their computation and storage, even if the number of these elements should be known from other computations.
+
+In the inhomogeneous case replace \verb|Deg1Elements| by \verb|ModuleGenerators|; see below. (They are also computable in the unbounded case.) A uniform access is possible by
+\begin{Verbatim}
+const vector< vector<Integer> >& Cone<Integer>::getLatticePoints()
+size_t Cone<Integer>::getNrLatticePoints()
+\end{Verbatim}
+
+In addition, we have
+\begin{Verbatim}
+size_t Cone<Integer>::getNumberLatticePoints()
+\end{Verbatim}
+There is an important difference between \verb|getNrLatticePoints()| and \verb|getNumberLatticePoints()|: the latter returns the number whenever it is known for some reason. If the number is not known, it forces only the counting of lattice points, not their storage.
+
+\subsubsection{Hilbert basis}\label{HB_lib}
+
+In the nonpointed case we need the maximal linear subspace of the cone:
+\begin{Verbatim}
+const vector< vector<Integer> >& Cone<Integer>::getMaximalSubspace()
+size_t Cone<Integer>::getDimMaximalSubspace()
+\end{Verbatim}
+
+One of the prime results of Normaliz and its cardinality are returned by
+\begin{Verbatim}
+const vector< vector<Integer> >& Cone<Integer>::getHilbertBasis()
+size_t Cone<Integer>::getNrHilbertBasis()
+\end{Verbatim}
+Inhomogeneous case the functions refer to the the Hilbert basis of the recession cone. The module generators of the lattice points in the polyhedron are accessed by
+\begin{Verbatim}
+const vector< vector<Integer> >& Cone<Integer>::getModuleGenerators()
+size_t Cone<Integer>::getNrModuleGenerators()
+\end{Verbatim}
+
+If the original monoid is not integrally closed, you can ask for a witness:
+\begin{Verbatim}
+vector<Integer> Cone<Integer>::getWitnessNotIntegrallyClosed()
+\end{Verbatim}
+
+\subsubsection{Module generators over original monoid}
+
+\begin{Verbatim}
+const vector< vector<Integer> >& 
+               Cone<Integer>::getModuleGeneratorsOverOriginalMonoid()
+size_t Cone<Integer>::getNrModuleGeneratorsOverOriginalMonoid()
+\end{Verbatim}
+
+\subsubsection{Generator of the interior}\label{GenInt}
+
+If the monoid is Gorenstein, Normaliz computes the generator of the interior (the canonical module):
+\begin{Verbatim}
+const vector<Integer>& Cone<Integer>::getGeneratorOfInterior()
+\end{Verbatim}
+Before asking for this vector, one should test \verb|isGorenstein()|.
+
+\subsubsection{Grading and dehomogenization}
+
+\begin{Verbatim}
+vector<Integer> Cone<Integer>::getGrading()
+Integer Cone<Integer>::getGradingDenom()
+\end{Verbatim}
+The second function returns the denominator of the grading.
+
+\begin{Verbatim}
+vector<Integer> Cone<Integer>::getDehomogenization()
+\end{Verbatim}
+
+\subsubsection{Enumerative data}
+
+\begin{Verbatim}
+mpq_class Cone<Integer>::getMultiplicity()
+\end{Verbatim}
+Don't forget that the multiplicity is measured for a rational, not necessarily integral polytope. Therefore it need not be an integer. The same applies to
+\begin{Verbatim}
+mpq_class Cone<Integer>::getVolume()
+nmz_float Cone<Integer>::getEuclideanVolume()
+\end{Verbatim}
+which can be computed for polytopes defined by homogeneous or inhomogeneous input. In the homogeneous case the volume is the multiplicity.
+
+The Hilbert and Ehrhart series are stored in instances class \verb|HilbertSeries|. They are retrieved by
+\begin{Verbatim}
+const HilbertSeries& Cone<Integer>::getHilbertSeries()
+const HilbertSeries& Cone<Integer>::getEhrhartSeries()
+\end{Verbatim}
+They contain several data fields that can be accessed as follows (see \verb|hilbert_series.h|):
+\begin{Verbatim}
+const vector<mpz_class>& HilbertSeries::getNum() const;
+const map<long, denom_t>& HilbertSeries::getDenom() const;
+
+const vector<mpz_class>& HilbertSeries::getCyclotomicNum() const;
+const map<long, denom_t>& HilbertSeries::getCyclotomicDenom() const;
+
+const vector<mpz_class>& HilbertSeries::getHSOPNum() const;
+const map<long, denom_t>& HilbertSeries::getHSOPDenom() const;
+
+long HilbertSeries::getDegreeAsRationalFunction() const;
+long HilbertSeries::getShift() const;
+
+bool HilbertSeries::isHilbertQuasiPolynomialComputed() const;
+const vector< vector<mpz_class> >& HilbertSeries::getHilbertQuasiPolynomial() const;
+long HilbertSeries::getPeriod() const;
+mpz_class HilbertSeries::getHilbertQuasiPolynomialDenom() const;
+
+vector<mpz_class> HilbertSeries::getExpansion() const;
+\end{Verbatim}
+
+The first six functions refer to three representations of the Hilbert series as a rational function in the variable $t$: the first has a denominator that is a product of polynomials $(1-t^g)^e$, the second has a denominator that is a product of cyclotomic polynomials. In the third case the denominator is determined by the degrees of a homogeneous system of parameters (see Section~\ref{rational}). In all cases the numerators are given by their coefficient vectors, and the denominators are lists of pairs $(g,e)$ where in the second case $g$ is the order of the cyclotomic polynomial.
+
+If you have already computed the Hilbert series without HSOP and you want it with HSOP afterwards, the Hilbert series will simply be transformed, but Normaliz must compute the degrees for the denominator, and this may be a nontrivial computation.
+
+The degree as a rational function is of course independent of the chosen representation, but may be negative, as well as the shift that indicates with which power of $t$ the numerator tarts. Since the denominator has a nonzero constant term in all cases, this is exactly the smallest degree in which the Hilbert function has a nonzero value.
+
+The Hilbert quasipolynomial is represented by a vector whose length is the period and whose entries are itself vectors that represent the coefficients of the individual polynomials corresponding to the residue classes modulo the period. These integers must be divided by the common denominator that is returned by the last function.
+
+For the input type \verb|rees_algebra| we provide
+\begin{Verbatim}
+Integer Cone<Integer>::getReesPrimaryMultiplicity()
+\end{Verbatim}
+
+\subsubsection{Weighted Ehrhart series and integrals}
+
+The weighted Ehrhart series can be accessed by
+\begin{Verbatim}
+const pair<HilbertSeries, mpz_class>& Cone<Integer>::getWeightedEhrhartSeries()
+\end{Verbatim}
+The second component of the pair is the denominator of the coefficients in the series numerator. Its introduction was necessary since we wanted to keep integral coefficients for the numerator of a Hilbert series. The numerator and the denominator of the first component of type \verb|HilbertSeries| can be accessed as usual, but one \emph{must not forget the denominator of the numerator coefficients}, the second component of the return value. There is a second way to access these data; see below.
+
+The virtual multiplicity and the integral, respectively, are got by
+\begin{Verbatim}
+mpq_class Cone<Integer>::getVirtualMultiplicity()
+mpq_class Cone<Integer>::getIntegral()
+nmz_float Cone<Integer>::getEuclideanIntegral()
+\end{Verbatim}
+
+Actually the cone saves these data in a special container of class \verb|IntegrationData| (defined in \verb|Hilbert_series.h|). It is accessed by
+\begin{Verbatim}
+const IntegrationData& Cone<Integer>::getIntData()
+\end{Verbatim}
+The three \verb|get| functions above are only shortcuts for the access via \verb|getIntData()|:
+\begin{Verbatim}
+string IntegrationData::getPolynomial() const
+long IntegrationData::getDegreeOfPolynomial() const
+bool IntegrationData::isPolynomialHomogeneous() const
+
+const vector<mpz_class>& IntegrationData::getNum_ZZ() const
+mpz_class IntegrationData::getNumeratorCommonDenom() const
+const map<long, denom_t>& IntegrationData::getDenom() const
+
+const vector<mpz_class>& IntegrationData::getCyclotomicNum_ZZ() const
+const map<long, denom_t>& IntegrationData::getCyclotomicDenom() const
+
+bool IntegrationData::isWeightedEhrhartQuasiPolynomialComputed() const
+void IntegrationData::computeWeightedEhrhartQuasiPolynomial()
+const vector< vector<mpz_class> >& IntegrationData::getWeightedEhrhartQuasiPolynomial()
+mpz_class IntegrationData::getWeightedEhrhartQuasiPolynomialDenom() const
+
+vector<mpz_class> IntegrationData::getExpansion() const
+
+mpq_class IntegrationData::getVirtualMultiplicity() const
+mpq_class IntegrationData::getIntegral() const
+\end{Verbatim}
+
+The first three functions refer to the polynomial defining the integral or weighted Ehrhart series. The function \verb|getNumeratorCommonDenom()| returns the integer by which the coefficients of the numerator of the series must be divided.
+
+The computation of these data is controlled by the corresponding \verb|ConeProperty|. The expansion is always computed on-the-fly. Its values must be divided by the same number as the coefficients of the numerator.
+
+\subsubsection{Triangulation and disjoint decomposition}
+
+The last triangulation that has been explicitly computed is returned by
+\begin{Verbatim}
+const pair<vector<SHORTSIMPLEX<Integer> >, Matrix<Integer> >&
+                                                Cone<Integer>::getTriangulation()
+\end{Verbatim}
+If no triangulation has been computed yet, the basic triangulation is returned.
+
+The \verb| Matrix<Integer>| contains (a superset of) the vectors that generate the simplicial cones in the triangulation. The simplicial cones are represented by the \verb|<vector<SHORTSIMPLEX<Integer> >|:
+\begin{Verbatim}
+struct SHORTSIMPLEX {
+vector<key_t> key;      // full key of simplex
+Integer height;         // height of last vertex over opposite facet, used in Full_Cone
+Integer vol;            // volume if computed, 0 else
+Integer mult;           // used for renf_elem_class in Full_Cone
+vector<bool> Excluded;  // for disjoint decomposition of cone
+                        // true in position i indicates that the facet
+                        // opposite of generator i must be excluded
+};
+\end{Verbatim}
+The \verb|key| specifies the generators of the simplicial cone by their row indices in the matrix (counted from $0$). The component \verb|vol| is the (absolute value) of their determinant, and \verb|Excluded| is only set if \verb|ConeDecomposition| was asked for.
+
+For the refined triangulations one uses
+\begin{Verbatim}
+const pair<vector<SHORTSIMPLEX<Integer> >, Matrix<Integer> >& 
+                    Cone<Integer>::getTriangulation(ConeProperty::Enum quality)
+\end{Verbatim}
+In which the parameter specifies the type of triangulation that is to be computed:
+\begin{Verbatim}
+ConeProperty::Triangulation
+ConeProperty::AllGeneratorsTriangulation
+ConeProperty::LatticePointTriangulation
+ConeProperty::UnimodularTriangulation
+\end{Verbatim}
+where the first choice returns the basic triangulation.
+
+\begin{Verbatim}
+const pair<vector<SHORTSIMPLEX<Integer> >, Matrix<Integer> >&
+                                           Cone<Integer>::getConeDecomposition()
+\end{Verbatim}
+has the same effect as \verb|getTriangulation(ConeProperty::Triangulation)|, except that the components \verb|Excluded| are definitely set.
+
+Additional information on the possibly nested and /or partial triangulation that has been used for the computation in primal ode can be retrieved by
+\begin{Verbatim}
+size_t Cone<Integer>::getTriangulationSize()
+Integer Cone<Integer>::getTriangulationDetSum() 
+\end{Verbatim}
+
+\subsubsection{Stanley decomposition}
+
+The Stanley decomposition is stored in a list whose entries correspond to the simplicial cones in the triangulation:
+\begin{Verbatim}
+const pair<list<STANLEYDATA<Integer> >, Matrix<Integer> > &  Cone<Integer>::getStanleyDec()
+\end{Verbatim}
+The \verb|Matrix<Integer| has the same meaning as for triangulations.
+\verb|STANLEYDATA| defined as follows:
+\begin{Verbatim}
+struct STANLEYDATA {
+vector<key_t> key;
+Matrix<Integer> offsets;
+};
+\end{Verbatim}
+The key has the same interpretation as for the triangulation, namely as the vector of indices of the generators of the simplicial cone (counted from $0$). The matrix contains the coordinate vectors of the offsets of the components of the decomposition that belong to the simplicial cone defined by the key. See Section~\ref{Stanley} for the interpretation. The format of the matrix can be accessed by the following functions of class \verb|Matrix<Integer>|:
+\begin{Verbatim}
+size_t nr_of_rows() const
+size_t nr_of_columns() const
+\end{Verbatim}
+The entries are accessed in the same way as those of \verb|vector<vector<Integer> >|.
+
+\subsubsection{Scaling of axes}
+
+If \verb|rational_lattice| or \verb|rational_offset| are in the input for the cone, then the vector giving scaling of axes can be retrieved by
+\begin{Verbatim}
+vector<Integer> Cone<Integer>::getAxesScaling() 
+\end{Verbatim}
+The cone property \verb|AxesScaling| cannot be used as a computation goal, but one can ask for its computation as usual.|
+
+\subsubsection{Coordinate transformation}\label{coord}
+
+The coordinate transformation from the ambient lattice to the sublattice generated by the Hilbert basis (whether it has been computed or not) can be returned as follows:
+\begin{Verbatim}
+const Sublattice_Representation<Integer>& Cone<Integer>::getSublattice()
+\end{Verbatim}
+For algebraic polyhedra it defines the subspace generated by the (homogenized) cone.
+
+An object of type \verb|Sublattice_Representation| models a sequence of $\ZZ$-homomorphisms
+$$
+\ZZ^r\xrightarrow{\phi}\ZZ^n\xrightarrow{\pi}\ZZ^r
+$$
+with the following property: there exists $c\in\ZZ$, $c\neq 0$, such that $\pi\circ \phi=c\cdot\operatorname{id}_{\ZZ^r}$. In particular $\phi$ is injective. One should view the two maps as a pair of coordinate transformations: $\phi$ is determined by a choice of basis in the sublattice $U=\phi(\ZZ^r)$, and it allows us to transfer vectors from $U\cong \ZZ^r$ to the ambient lattice $\ZZ^n$. The map $\pi$ is used to realize vectors from $U$ as linear combinations of the given basis of $U\cong\ZZ^r$: after the application of $\pi$ one divides by $c$. (If $U$ is a direct summand of $\ZZ^n$, one can choose $c=1$, and conversely.) Normaliz considers vectors as rows of matrices. Therefore $\phi$ is given as an $r\times n$-matrix and $\pi$ is given as an $n\times r$ matrix.
+
+The data just described can be accessed as follows (\verb|sublattice_representation.h|). For space reasons we omit the class specification \verb|Sublattice_Representation<Integer>::|
+\begin{Verbatim}
+const vector<vector<Integer> >& getEmbedding() const
+const vector<vector<Integer> >& getProjection() const
+Integer getAnnihilator() const
+\end{Verbatim}
+Here ``Embedding'' refers to $\phi$ and ``Projection'' to $\pi$ (though $\pi$ is not always surjective). The ``Annihilator'' is the number $c$ above. (It annihilates $\ZZ^r$ modulo $\pi(\ZZ^n)$.)
+
+The numbers $n$ and $r$ are accessed in this order by
+\begin{Verbatim}
+size_t getDim() const
+size_t getRank() const
+\end{Verbatim}
+The external index, namely the order of the torsion subgroup of $\ZZ^n/U$, is returned by
+\begin{Verbatim}
+mpz_class getExternalIndex() const
+\end{Verbatim}
+Very often $\phi$ and $\psi$ are identity maps, and this property can be tested by
+\begin{Verbatim}
+bool IsIdentity() const
+\end{Verbatim}
+The constraints computed by Normaliz are ``hidden'' in the sublattice representation. They van be accessed by
+\begin{Verbatim}
+const vector<vector<Integer> >& getEquations() const
+const vector<vector<Integer> >& getCongruences() const
+\end{Verbatim}
+
+But see Section~\ref{SHC} above for a more direct access.
+
+\subsubsection{Coordinate transformations for precomputed data}\label{coord_pre}
+
+For precomputed data we need \verb|Type::generated_lattice| and \verb|Type::maximal_subspace|, should they be nontrivial. The maximal subspace is retrieved by
+\begin{Verbatim}
+getMaximalSubspace()
+\end{Verbatim}
+mentioned already in Section~\ref{HB_lib}. The generated lattice (subspace in the algebraic case) is accessed by
+\begin{Verbatim}
+getSublattice().getEmbedding()
+\end{Verbatim}
+introduced in Section~\ref{coord}.
+
+\subsubsection{Automorphism groups}
+
+The automorphism group is accessed by
+
+\begin{Verbatim}
+const AutomorphismGroup<Integer>& Cone<Integer>::getAutomorphismGroup();
+\end{Verbatim}
+independently of the type of the automorphism group (see below). Only one type of automorphism group can be computed in a run of \verb|compute(...)| and this type is stored.
+
+Contrary to other get functions, \verb|getAutomorphismGroup()| does not trigger a computation since it is unclear what quality of automorphisms is asked for. If no automorphism group has been computed, a \verb|BadInputException| is thrown.
+
+Additionally we have
+\begin{Verbatim}
+const AutomorphismGroup<Integer>& 
+            Cone<Integer>::getAutomorphismGroup(ConeProperty::Enum quality)
+\end{Verbatim}
+in which the quality can be specified. If the automorphism group has already been computed with a different quality, then it is recomputed.
+
+If the automorphism group has been computed by those options that use extreme rays and support hyperplanes, i.e., all except \verb|AmbientAutomorphisms| and \verb|InputAutomorphisms|, then the action of the group is recorded in
+\begin{Verbatim}
+mpz_class  getOrder() const;
+const vector<vector<key_t> >&  getVerticesPerms() const
+const vector<vector<key_t> > getExtremeRaysPerms() const
+const vector<vector<key_t> > getSupportHyperplanesPrms() const
+
+const vector<vector<key_t> > getVerticesOrbits() const
+const vector<vector<key_t> > geExtremeRaystOrbits() const
+const vector<vector<key_t> > getSupportHyperplanesOrbits() const
+\end{Verbatim}
+AQll these functions and the following ones belong to the class \verb|AutomorphismGroup<Integer>|.
+
+``Perms'' is a shorthand for ``permutations'', and each generator of the automorphism group is represented by the permutation of the extreme rays that it induces. In the permutations, objects are counted from $0$. The reference order of the vectors is the same as in the output files. The entry \verb|[i][j]|| is the index of the object to which the $j$-th object is mapped by the $i$-th generator of the automorphism group.
+
+The orbits are listed one by one: each \verb|vector<key_t>| contains the indices that form an orbit, and the collection of orbits is given by the outer vector.
+
+The action  of \verb|AmbientAutomorphisms| and \verb|InputAutomorphisms| is documented in
+\begin{Verbatim}
+const vector<vector<key_t> >& getGensPerms() const;
+const vector<vector<key_t> >& getGensOrbits() const;
+const vector<vector<key_t> >& getLinFormsPerms() const;
+const vector<vector<key_t> >& getLinFormsOrbits() const; 
+\end{Verbatim}
+where the ` Gens'' are the input vectors representing generators of the primal cone or inequalities, given by linear forms  generating the dual cone. ``LinForms'' are defined only for \verb|AmbientAutomorphisms|, and they represent the coordinate linear forms. The generators from which the group has been computed are returned by
+\begin{Verbatim}
+const Matrix<Integer>& getGens() const;
+\end{Verbatim}
+
+The qualities of the automorphisms is returned by
+\begin{Verbatim}
+set<AutomParam::Quality> getQualities() const;
+\end{Verbatim}
+and the qualities are given by
+\begin{Verbatim} 
+namespace AutomParam {
+enum Quality {
+combinatorial,
+rational,
+integral,
+euclidean,
+ambient_gen,
+ambient_ineq,
+input_gen,
+input_ineq,
+algebraic,
+graded // not used at present
+};
+...
+\end{Verbatim}
+Input and ambient automorphisms appear twice since Normaliz records what type of input is used for the computation, and this information is shown in the output files.
+
+Another access is given by
+\begin{Verbatim}
+string getQualitiesString()
+\end{Verbatim}
+and
+\begin{Verbatim}
+string quality_to_string(AutomParam::Quality quality)
+\end{Verbatim}
+does a single conversion.
+
+Moreover, you can ask
+\begin{Verbatim}
+bool IsIntegralityChecked() const;
+bool IsIntegral() const;
+\end{Verbatim}
+
+If you are interested in cycle decompositions, you can use
+\begin{Verbatim}
+vector<vector<key_t> > cycle_decomposition(vector<key_t> perm, bool with_fixed_points)
+\end{Verbatim}
+where \verb|with_fixed_points| decides whether cycles of length $1$ are produced.
+
+\subsubsection{Class group}
+
+\begin{Verbatim}
+vector<Integer> Cone<Integer>::getClassGroup()
+\end{Verbatim}
+The return value is to be interpreted as follows: The entry for index $0$ is the rank of the class group. The remaining entries contain the orders of the summands in a direct sum decomposition of the torsion subgroup.
+
+\subsubsection{Face lattice and f-vector}
+\begin{Verbatim}
+vector<size_t> Cone<Integer>::getFVector()
+const map<dynamic_bitset,int>& Cone<Integer>::getFaceLattice()
+\end{Verbatim}
+Each element of the set represents a face $F$: the \verb|int| is its codimension, and the \verb|vector<bool>| $v$ represents the facets containing $F$: $v[i]=1$, if and only if the facet given by the $i$-th row of \verb|getSupportHyperplanes()| contains $F$. (See Section~\ref{FaceLattice}.)
+
+The incidence matrix can be accessed by
+
+\begin{Verbatim}
+const vector<dynamic_bitset>& Cone<Integer>::getIncidence()
+\end{Verbatim}
+
+These functions have dual versions:
+
+\begin{Verbatim}
+vector<size_t> Cone<Integer>::getDualFVector()
+const map<dynamic_bitset,int>& Cone<Integer>::getDualFaceLattice()
+const vector<dynamic_bitset>& Cone<Integer>::getDualIncidence()
+\end{Verbatim}
+
+\subsubsection{Integer hull}
+
+For the computation of the integer hull an auxiliary cone is constructed. A reference to it is returned by
+\begin{Verbatim}
+Cone<Integer>& Cone<Integer>::getIntegerHullCone() const
+\end{Verbatim}
+
+For example, the support hyperplanes of the integer hull can be accessed by
+\begin{Verbatim}
+MyCone.getIntegerHullCone().getSupportHyperplanes()
+\end{Verbatim}
+
+\subsubsection{Projection of the cone}
+
+Like the integer hull, the image of the projection is contained in an auxiliary cone that can be accessed by
+\begin{Verbatim}
+Cone<Integer>& Cone<Integer>::getProjectCone() const
+\end{Verbatim}
+
+It contains constraints and extreme rays of the projection.
+
+\subsubsection{Excluded faces}
+
+Before using the excluded faces Normaliz makes the collection irredundant by discarding those that are contained in others. The irredundant collection (given by hyperplanes that intersect the cone in the faces) and its cardinality are returned by
+\begin{Verbatim}
+const vector< vector<Integer> >& Cone<Integer>::getExcludedFaces()
+size_t Cone<Integer>::getNrExcludedFaces()
+\end{Verbatim}
+For the computation of the Hilbert series the all intersections of the excluded faces are computed, and for each resulting face the weight with which it must be counted is computed. These data can be accessed by
+\begin{Verbatim}
+const vector< pair<vector<key_t>,long> >& Cone<Integer>::getInclusionExclusionData()
+\end{Verbatim}
+The first component of each pair contains the indices of the generators (counted from~$0$) that lie in the face and the second component is the weight.
+
+The emptiness of semiopen polyhedra can be tested by
+\begin{Verbatim}
+bool Cone<Integer>::isEmptySemiOpen()
+\end{Verbatim}
+If the answer is positive, an excluded face making the semiopen polyhedron empty is returned by
+\begin{Verbatim}
+vector<Integer> Cone<Integer>::getCoveringFace() 
+\end{Verbatim}
+
+\subsubsection{Boolean valued results}
+
+All the ``questions'' to the cone that can be asked by the boolean valued functions in this section start a computation if the answer is not yet known.
+
+The first, the question
+\begin{Verbatim}
+bool Cone<Integer>::isIntegrallyClosed()
+\end{Verbatim}
+does not trigger a computation of the full Hilbert basis. The computation stops as soon as the answer can be given, and this is the case when an element in the integral closure has been found that is not in the original monoid. Such an element is retrieved by
+\begin{Verbatim}
+vector<Integer> Cone<Integer>::getWitnessNotIntegrallyClosed()
+\end{Verbatim}
+
+As discussed in Section~\ref{IsPointed} it can sometimes be useful to ask
+\begin{Verbatim}
+bool Cone<Integer>::isPointed()
+\end{Verbatim}
+before a more complex computation is started.
+
+The Gorenstein property can be tested with
+\begin{Verbatim}
+bool Cone<Integer>::isGorenstein()
+\end{Verbatim}
+If the answer is positive, Normaliz computes the generator of the interior of the monoid. Also see~\ref{GenInt}.
+
+
+The next two functions answer the question whether the Hilbert basis or at least the extreme rays live in degree $1$.
+\begin{Verbatim}
+bool Cone<Integer>::isDeg1ExtremeRays()
+bool Cone<Integer>::isDeg1HilbertBasis()
+\end{Verbatim}
+
+Finally we have
+\begin{Verbatim}
+bool Cone<Integer>::isInhomogeneous()
+bool Cone<Integer>::isReesPrimary()
+\end{Verbatim}
+\verb|isReesPrimary()| checks whether the ideal defining the Rees algebra is primary to the irrelevant maximal ideal.
+
+
+\subsubsection{Results by type}\label{ByType}
+
+It is also possible to access (and compute if necessary) the output data of Normaliz by functions that only depend on the C++ type of the data:
+
+\begin{Verbatim}
+const Matrix<Integer>& getMatrixConePropertyMatrix(ConeProperty::Enum property);
+const vector< vector<Integer> >& getMatrixConeProperty(ConeProperty::Enum property);
+const Matrix<nmz_float>& getFloatMatrixConePropertyMatrix(ConeProperty::Enum property);
+const vector< vector<nmz_float> >& getFloatMatrixConeProperty(ConeProperty::Enum property);
+vector<Integer> getVectorConeProperty(ConeProperty::Enum property);
+Integer getIntegerConeProperty(ConeProperty::Enum property);
+mpz_class getGMPIntegerConeProperty(ConeProperty::Enum property);
+mpq_class getRationalConeProperty(ConeProperty::Enum property);
+renf_elem_class getFieldElemConeProperty(ConeProperty::Enum property);
+nmz_float getFloatConeProperty(ConeProperty::Enum property);
+size_t getMachineIntegerConeProperty(ConeProperty::Enum property);
+bool getBooleanConeProperty(ConeProperty::Enum property);
+\end{Verbatim}
+
+For example, \verb|getMatrixConeProperty(ConeProperty::HilbertBasis)| will return the Hilbert basis as a \verb|const vector< vector<Integer> >&|.
+
+These functions make it easier to write interfaces to Normaliz since they need not to introduce new functions for results that have one of the types listed above.
+
+It is clear that the complex results can only be accessed via their specialized ``get'' functions.
+
+\subsection{Algebraic polyhedra}
+
+Cones over algebraic number fields are constructed by
+\begin{Verbatim}
+Cone<renf_elem_class>(...)
+\end{Verbatim}
+where \ttt{...} stands for all the variants that have been discussed in Section~\ref{ConstCone}, except that all matrices must be of type \verb+vector<vector<renf_elem_class> >+ or \verb+Matrix<renf_elem_class>+. \verb|Cone<renf_elem_class>(...)| is predefined in \ttt{libnormaliz}.
+
+Note that not all integer, rational or float input types are allowed; see Section~\ref{Algebraic}.
+
+After the construction of the cone you must use
+\begin{Verbatim}
+void Cone<renf_elem_class>::setRenf(renf_class* renf)
+\end{Verbatim}
+It is necessary to forward the information about the number field to derived cones. In the other direction:
+\begin{Verbatim}
+renf_class* Cone<renf_elem_class>::getRenf()
+\end{Verbatim}
+Since version~1.0.0 the \verb|renf_class*| is administrated through a \verb|std::shared_ptr<const renf_class>|. It is returned by
+\begin{Verbatim}
+const std::shared_ptr<const renf_class> Cone<Integer>::getRenfSharedPtr()
+\end{Verbatim}
+
+One can retrieve the minimal polynomial and the embedding by
+\begin{Verbatim}
+vector<string> Cone<renf_elem_class>::getRenfData()
+\end{Verbatim}
+The name of the field generator is returned by
+\begin{Verbatim}
+string Cone<renf_elem_class>::getRenfGenerator()
+\end{Verbatim}
+
+The computation follows the same rules that have been explained above, again with some restriction of the computation goals that can be reached. Again see Section~\ref{Algebraic}.
+
+In return values \ttt{Integer} must be specialized to \verb|renf_elem_class|. A special return value is the volume that in general is no longer of type \verb|mpq_class|. It is retrieved by
+\begin{Verbatim}
+renf_elem_class Cone<renf_elem_class>::getRenfVolume() 
+\end{Verbatim}
+
+The number field must be defined outside of libnormaliz. Have a look at \verb|source/normaliz.cpp| and \verb|source/input.in| to see the details.
+
+The integer hull cone is of type \verb|libnormaliz::Cone<renf_elem_class>|.
+
+Remark: In the code, the template \ttt{Integer} does no longer stand for a truly integer type, but also for \verb|renf_elem_class|, and thus for elements from a field.
+
+\subsection{Reusing previous computation results}
+
+To some extent it is possible to exploit the results of a previous computation after the modification of a cone (see Section~\ref{Modify}). This is controlled by
+\begin{Verbatim}
+ConeProperty::Dynamic
+ConeProperty::Static
+\end{Verbatim}
+where \verb|Dynamic| activates this feature and \verb|Static| deactivates it.
+
+At present only results of previous convex hull computations or vertex enumerations can be reused. Restrictions:
+\begin{arab}
+	\item The coordinate transformation that had been reached before the previous computation must have remained unchanged. Note that a change may have happened as a consequence the previous computation. For example, the addition of inequalities can reduce the dimension.
+	\item If a convex hull computation simultaneously creates a triangulation, then it must start from scratch.
+\end{arab}
+
+An example for the use of \verb|ConeProperty::Dynamic| is given in \verb|source/dynamic/dynamic.cpp|. It is compiled automatically by the \verb|autotools| scripts, and can also be compiled in \verb|source| by\\ \verb|make -f Makefile.classic dynamic|.
+
+\subsection{Control of execution}
+
+\subsubsection{Exceptions}
+
+All exceptions that are thrown in \verb|libnormaliz| are derived from the abstract class \verb|NormalizException| that itself is derived from \verb|std::exception|:
+\begin{Verbatim}
+class NormalizException: public std::exception
+\end{Verbatim}
+
+The following exceptions must be caught by the calling program:
+\begin{Verbatim}
+class ArithmeticException: public NormalizException
+class BadInputException: public NormalizException
+class NotComputableException: public NormalizException
+class FatalException: public NormalizException
+class NmzCoCoAException: public NormalizException
+class InterruptException: public NormalizException
+\end{Verbatim}
+
+The \verb|ArithmeticException| leaves \verb|libnormaliz| if a nonrecoverable overflow occurs (it is also used internally for the change of integer type). This should not happen for cones of integer type \verb|mpz_class|, unless it is caused by the attempt to create a data structure of illegal size or by a bug in the program. The \verb|BadInputException| is thrown whenever the input is inconsistent; the reasons for this are manifold. The \verb|NotComputableException| is thrown if a computation goal cannot be reached. The \verb|FatalException| should never appear. It covers error situations that can only be caused by a bug in the program. At many places \verb|libnormaliz| has \verb|assert| verifications built in that serve the same purpose.
+
+There are two more exceptions for the communication within \verb|libnormaliz| that should not leave it:
+\begin{Verbatim}
+class NonpointedException: public NormalizException 
+class NotIntegrallyClosedException: public NormalizException
+\end{Verbatim}
+
+The \verb|InterruptException| is discussed in the next section.
+
+\subsubsection{Interruption}
+
+In order to find out if the user wants to interrupt the program, the functions in \verb|libnormaliz| test the value of the global variable
+\begin{Verbatim}
+volatile sig_atomic_t nmz_interrupted
+\end{Verbatim}
+If it is found to be \verb|true|, an \verb|InterruptException| is thrown. This interrupt leaves \verb|libnormaliz|, so that the calling program can process it. The \verb|Cone| still exists, and the data computed in it can still be accessed. Moreover, \verb|compute| can again be applied to it.
+
+The calling program must take care to catch the signal caused by Ctrl-C and to set \verb|nmz_interrupted=1|.
+
+\subsubsection{Inner parallelization}
+
+By default the cone constructor sets the maximal number of parallel threads to $8$, unless the system has set a lower limit. You can change this value by
+\begin{Verbatim}
+long set_thread_limit(long t)
+\end{Verbatim}
+The function returns the previous value.
+
+\verb|set_thread_limit(0)| raises the limit set by libnormaliz to $\infty$.
+
+\subsubsection{Outer parallelization}
+
+The libnormaliz functions can be called by programs that are parallelized via OpenMP themselves. The functions in libnormaliz switch off nested parallelization.
+
+As a test program you can compile and run \verb|outerpar| in \verb|source/outerpar|. Compile it by For the compilation of \verb|maxsimplex.cpp| use
+\begin{Verbatim}
+make -f Makefile.classic outerpar
+\end{Verbatim}
+in \verb|source|.
+
+\subsubsection{Control of terminal output}
+By using
+\begin{Verbatim}
+bool setVerboseDefault(bool v)
+\end{Verbatim}
+one can control the verbose output of \verb|libnormaliz|. The default value is \verb|false|. This is a global setting that effects all cones constructed afterwards. However, for every cone one can set an individual value of \verb|verbose| by
+\begin{Verbatim}
+bool Cone<Integer>::setVerbose(bool v)
+\end{Verbatim}
+Both functions return the previous value.In order to \verb|setVerbose| for a cone, it must have already beren constructed, and during construction the global verbose determines terminalk output. The construction phase does some precomputations, and they may issue some inwanted terminal output. In order to suppress it, one can use
+\begin{Verbatim}
+void suppressNextConstructorVerbose()
+\end{Verbatim}
+It sets the value of \verb|verbose| to \verb|false| for the next cone constructed. 
+
+
+The default values of verbose output and error output are \verb|std::cout| and \verb|std::cerr|. These values can be changed by
+\begin{Verbatim}
+void setVerboseOutput(std::ostream&)
+void setErrorOutput(std::ostream&)
+\end{Verbatim}
+
+\subsubsection{Printing the cone}
+
+The function
+\begin{Verbatim}
+void Cone<Integer>::write_cone_output(const string& output_file)
+\end{Verbatim}
+writes the standard \verb|out| file using the content of \verb|output_file| instead of the standard \verb|<project>|. It is meant as a tool for debugging libraries. It is not possible to write any file with a suffix different from \verb|out|.
+
+We also have
+\begin{Verbatim}
+void Cone<Integer>::write_precomp_for_input(const string& output_file)
+\end{Verbatim}
+It writes an input file with precomputed data (see Section \ref{write_precomp}).
+writes the file with suffix  \verb|precomp.in| file using the content of \verb|output_file| instead of the standard \verb|<project>|.
+
+\subsection{A simple program}\label{maxsimplex}
+
+The example program is a simplified version of the program on which the experiments for the paper ``Quantum jumps of normal polytopes'' by W.~Bruns, J.~Gubeladze and M.~Micha\l{}ek, Discrete Comput.\ Geom.\ 56 (2016), no.\ 1, 181--215, are based. Its goal is to find a maximal normal lattice polytope $P$ in the following sense: there is no normal lattice polytope $Q\supset P$ that has exactly one more lattice point than $P$. ``Normal'' means in this context that the Hilbert basis of the cone over $P$ is given by the lattice points of $P$, considered as degree $1$ elements in the cone.
+
+The program generates normal lattice simplices and checks them for maximality. The dimension is set in the program, as well as the bound for the random coordinates of the vertices.
+
+Let us have a look at \verb|source/maxsimplex/maxsimplex.cpp|. First the more or less standard preamble:
+
+\begin{Verbatim}
+#include <cstdlib>
+#include <vector>
+#include <fstream>
+#include <omp.h>
+using namespace std;
+
+#include "libnormaliz/libnormaliz.h"
+\end{Verbatim}
+
+Since we want to perform a high speed experiment which is not expected to be arithmetically demanding, we choose $64$ bit integers:
+\begin{Verbatim}
+typedef long long Integer;
+\end{Verbatim}
+
+The first routine finds a random normal simplex of dimension \verb|dim|. The coordinates of the vertices are integers between $0$ and \verb|bound|. We are optimistic that such a simplex can be found, and this is indeed no problem in dimension $4$ or $5$.
+
+\begin{Verbatim}
+Cone<Integer> rand_simplex(size_t dim, long bound){
+
+    vector<vector<Integer> > vertices(dim+1,vector<Integer> (dim));
+    while(true){ // an eternal loop ...
+        for(size_t i=0;i<=dim;++i){
+            for(size_t j=0;j<dim;++j)
+                vertices[i][j]=rand()%(bound+1);
+        }
+
+        Cone<Integer> Simplex(Type::polytope,vertices);
+        // we must check the rank and normality
+        if(Simplex.getRank()==dim+1 && Simplex.isDeg1HilbertBasis())
+            return Simplex;
+    }
+    vector<vector<Integer> > dummy_gen(1,vector<Integer>(1,1)); 
+    // to make the compiler happy
+    return Cone<Integer>(Type::cone,dummy_gen); 
+}
+\end{Verbatim}
+
+We are looking for a normal polytope $Q\supset P$ with exactly one more lattice point. The potential extra lattice points $z$ are contained in the matrix \verb|jump_cands|. There are two obstructions for $Q=\operatorname{conv}(P,z)$ to be tested: (i) $z$ is the only extra lattice point and (ii) $Q$ is normal. It makes sense to test them in this order since most of the time condition (i) is already violated and it is much faster to test.
+\begin{Verbatim}
+bool exists_jump_over(Cone<Integer>& Polytope, 
+                      const vector<vector<Integer> >& jump_cands){
+
+    vector<vector<Integer> > test_polytope=Polytope.getExtremeRays();
+    test_polytope.resize(test_polytope.size()+1); 
+    for(size_t i=0;i<jump_cands.size();++i){
+        test_polytope[test_polytope.size()-1]=jump_cands[i];
+        Cone<Integer> TestCone(Type::cone,test_polytope);
+        if(TestCone.getNrDeg1Elements()!=Polytope.getNrDeg1Elements()+1)
+            continue;
+        if(TestCone.isDeg1HilbertBasis())
+            return true;
+    }
+    return false;
+}
+\end{Verbatim}
+
+In order to make the (final) list of candidates $z$ as above we must compute the widths of $P$ over its support hyperplanes.
+\begin{Verbatim}
+vector<Integer> lattice_widths(Cone<Integer>& Polytope){
+
+    if(!Polytope.isDeg1ExtremeRays()){
+        cerr<< "Cone in lattice_widths is not defined by lattice polytope"<< endl;
+        exit(1);
+    }
+    vector<Integer> widths(Polytope.getNrExtremeRays(),0);
+    for(size_t i=0;i<Polytope.getNrSupportHyperplanes();++i){
+        for(size_t j=0;j<Polytope.getNrExtremeRays();++j){
+            // v_scalar_product is a useful function from vector_operations.h
+            Integer test=v_scalar_product(Polytope.getSupportHyperplanes()[i],
+            Polytope.getExtremeRays()[j]);
+            if(test>widths[i])
+                widths[i]=test;
+        }
+    }
+    return widths;
+}
+\end{Verbatim}
+
+\begin{Verbatim}
+int main(int argc, char* argv[]){
+
+    time_t ticks;
+    srand(time(&ticks));
+    cout << "Seed " <<ticks << endl;  // we may want to reproduce the run
+
+    size_t polytope_dim=4;
+    size_t cone_dim=polytope_dim+1;
+    long bound=6;
+    vector<Integer> grading(cone_dim,0); 
+           // at some points we need the explicit grading
+    grading[polytope_dim]=1;
+
+    size_t nr_simplex=0; // for the progress report
+\end{Verbatim}
+Since the computations are rather small, we suppress parallelization (except for one step below).
+\begin{Verbatim}
+    while(true){
+
+#ifdef _OPENMP
+        omp_set_num_threads(1);
+#endif
+    Cone<Integer> Candidate=rand_simplex(polytope_dim,bound);
+    nr_simplex++;
+    if(nr_simplex%1000 ==0)
+    cout << "simplex " << nr_simplex << endl;
+\end{Verbatim}
+Maximality is tested in $3$ steps. Most often there exists a lattice point $z$ of height $1$ over $P$. If so, then $\operatorname{conv}(P,z)$ contains only $z$ as an extra lattice point and it is automatically normal. In order to find such a point we must move the support hyperplanes outward by lattice distance $1$.
+\begin{Verbatim}
+    vector<vector<Integer> > supp_hyps_moved=Candidate.getSupportHyperplanes();
+    for(size_t i=0;i<supp_hyps_moved.size();++i)
+        supp_hyps_moved[i][polytope_dim]+=1;
+    Cone<Integer> Candidate1(Type::inequalities,supp_hyps_moved, 
+    Type::grading,to_matrix(grading));
+    if(Candidate1.getNrDeg1Elements()>Candidate.getNrDeg1Elements()) 
+        continue;                     // there exists a point of height 1
+\end{Verbatim}
+Among the polytopes that have survived the height $1$ test, most nevertheless have suitable points $z$ close to them, and it makes sense not to use the maximum possible height immediately. Note that we must now test normality explicitly.
+\begin{Verbatim}
+    cout << "No ht 1 jump"<< " #latt " << Candidate.getNrDeg1Elements() << endl; 
+    // move the hyperplanes further outward
+    for(size_t i=0;i<supp_hyps_moved.size();++i)
+        supp_hyps_moved[i][polytope_dim]+=polytope_dim; 
+    Cone<Integer> Candidate2(Type::inequalities,supp_hyps_moved,
+                             Type::grading,to_matrix(grading));
+    cout << "Testing " << Candidate2.getNrDeg1Elements() 
+         << " jump candidates" << endl; // including the lattice points in P
+    if(exists_jump_over(Candidate,Candidate2.getDeg1Elements()))
+            continue;
+\end{Verbatim}
+Now we can be optimistic that a maximal polytope $P$ has been found, and we test all candidates $z$ that satisfy the maximum possible bound on their lattice distance to $P$.
+\begin{Verbatim}
+    cout << "No ht <= 1+dim jump" << endl;
+    vector<Integer> widths=lattice_widths(Candidate);
+    for(size_t i=0;i<supp_hyps_moved.size();++i)
+            supp_hyps_moved[i][polytope_dim]+=
+                            -polytope_dim+(widths[i])*(polytope_dim-2);
+\end{Verbatim}
+The computation may become arithmetically critical at this point. Therefore we use \verb|mpz_class| for our cone. The conversion to and from \verb|mpz_class| is done by routines contained in \verb|convert.h|.
+\begin{Verbatim}
+    vector<vector<mpz_class> > mpz_supp_hyps;
+    convert(mpz_supp_hyps,supp_hyps_moved);
+    vector<mpz_class> mpz_grading=convertTo<vector<mpz_class> >(grading);
+\end{Verbatim}
+The computation may need some time now. Therefore we allow a little bit of parallelization.
+\begin{Verbatim}
+#ifdef _OPENMP
+        omp_set_num_threads(4);
+#endif
+\end{Verbatim}
+Since $P$ doesn't have many vertices (even if we use these routines for more general polytopes than simplices), we don't expect too many vertices for the enlarged polytope. In this situation it makes sense to set the algorithmic variant \verb|Approximate|.
+\begin{Verbatim}
+    Cone<mpz_class> Candidate3(Type::inequalities,mpz_supp_hyps,
+                               Type::grading,to_matrix(mpz_grading));
+    Candidate3.compute(ConeProperty::Deg1Elements,ConeProperty::Approximate);
+    vector<vector<Integer> > jumps_cand; // for conversion from mpz_class
+    convert(jumps_cand,Candidate3.getDeg1Elements());
+    cout << "Testing " << jumps_cand.size() << " jump candidates" << endl;
+    if(exists_jump_over(Candidate, jumps_cand))
+        continue;
+\end{Verbatim}
+Success!
+\begin{Verbatim}
+    cout << "Maximal simplex found" << endl;
+    cout << "Vertices" << endl;
+    Candidate.getExtremeRaysMatrix().pretty_print(cout); // a goody from matrix.h
+    cout << "Number of lattice points = " << Candidate.getNrDeg1Elements();
+    cout << " Multiplicity = " << Candidate.getMultiplicity() << endl; 
+
+    } // end while
+} // end main
+\end{Verbatim}
+
+For the compilation of \verb|maxsimplex.cpp| use
+\begin{Verbatim}
+make -f Makefile.classic maxsimplex
+\end{Verbatim}
+in \verb|source|. Running the program needs a little bit of patience. However, within a few hours a maximal simplex should have emerged. From a log file:
+\begin{Verbatim}
+simplex 143000
+No ht 1 jump #latt 9
+Testing 22 jump candidates
+No ht 1 jump #latt 10
+Testing 30 jump candidates
+No ht 1 jump #latt 29
+Testing 39 jump candidates
+No ht <= 1+dim jump
+Testing 173339 jump candidates
+Maximal simplex found
+Vertices
+1 3 5 3 1
+2 3 0 3 1
+3 0 5 5 1
+5 2 2 1 1
+6 5 6 2 1
+Number of lattice points = 29 Multiplicity = 275
+\end{Verbatim}
+
+\end{small}
+
+\newpage
+
+\section{Normaliz interactive: PyNormaliz}\label{PyNormaliz}
+
+\begin{small}
+	
+PyNormaliz serves three purposes:
+\begin{itemize}
+	\item It is the bridge from Normaliz to SageMath.
+	\item It provides an interactive access to Normaliz from a Python command line.
+	\item It is a flexible environment for the exploration of Normaliz.
+\end{itemize}
+In the following we describe the use of PyNormaliz from a Python command line and document the basic functions that allow the access from SageMath.
+
+For a brief introduction please consult the PyNormaliz tutorial at \url{https://nbviewer.jupyter.org/github/Normaliz/PyNormaliz/blob/main/doc/PyNormaliz_Tutorial.ipynb}.
+
+You can also open the tutorial for PyNormaliz interactively on \url{https://mybinder.org} following the link \url{https://mybinder.org/v2/gh/Normaliz/NormalizJupyter/master}.
+
+\subsection{Installation}
+
+The PyNormaliz install script assumes that you have executed the
+\begin{center}
+	\verb|install_normaliz_with_eantic.sh|
+\end{center}
+script. (It is however possible to install PyNormaliz with fewer optional packages.) In the following we assume that PyNormaliz resides in the subdirectory \verb|PyNormaliz| of the Normaliz directory. This automatically the case if you have downloaded a Normaliz source package. If you have obtained Normaliz or PyNormaliz in another way, make sure that our assumption is satisfied.
+
+To install PyNormaliz navigate to the Normaliz directory and type
+\begin{Verbatim}
+./install_pynormaliz.sh --user
+\end{Verbatim}
+The script detects your Python3 version, assuming the executable is in the \verb|PATH|. Note that the installation stores the produced files in \verb|~/.local|.
+
+If you want to install PyNormaliz system wide,
+replace \verb|--user| by \verb|--sudo|. Then you will be asked for your root password.
+The following additional options are available for \verb|install_pynormaliz.sh|:
+\begin{itemize}
+	\item \verb|--python3 <path>|: Path to a python3 executable.
+	\item \verb|--prefix <path>|: Path to the Normaliz install path
+\end{itemize}
+
+Depending on your setup, you might be able to install PyNormaliz via pip, typing
+\begin{Verbatim}
+pip3 install PyNormaliz
+\end{Verbatim}
+at a command prompt.
+
+The installation requires the \verb|setuptools|. If you are missing them install them with  \verb|pip3|.
+
+
+\subsection{The high level interface by examples}
+
+PyNormaliz has a high level interface which allows a very intuitive use. We load PyNormaliz:
+\begin{Verbatim}
+winfried@ryzen:~$ python3
+Python 3.6.9 (default, Oct  8 2020, 12:12:24) 
+[GCC 8.4.0] on linux
+Type "help", "copyright", "credits" or "license" for more information.
+>>> import PyNormaliz
+>>> from PyNormaliz import *
+\end{Verbatim}
+
+\subsubsection{Creating a cone}
+
+The only available class in PyNormaliz is \verb|Cone|. As often in this manual, ``cone'' includes a lattice of reference, unless we are working in an algebraic number field. We come back to this case below. First we have to create a cone (and a lattice). We can use all input types that are allowed in Normaliz input files. They must be given as named parameters as in the following example:
+\begin{Verbatim}
+>>> C = Cone(cone = [[1,3],[2,1]])
+\end{Verbatim}
+This is the example from Section~\ref{cone_ex}. There can be several input matrices. The example shows us how Normaliz matrices are represented as Python types: each row is a \verb|list|, and the matrix then is a \verb|list| whose members are the lists representing the rows. Important: This encoding matches exactly the formatted matrices in Normaliz input files.
+
+It is possible to use (decimal) fractions in the input, but they must be encoded as strings. Our cone from above could be defined by
+\begin{Verbatim}
+>>> C = Cone(cone = [[1,"3.0"],[1,"1/2"]])
+\end{Verbatim}
+This creates a \verb|Cone<mpz_class>| on the Normaliz side. One can also create a \verb|Cone<long long>| by
+\begin{Verbatim}
+>>> C = Cone(cone = [[1,"3.0"],[1,"1/2"]], CreateAsLongLong = True)
+\end{Verbatim}
+
+In the following \verb|Cone| (with a capital C) is a class defined in \verb|PyNormaliz.py|. An instance of this class contains an \verb|NmzCone| which is the Python equivalent of a \verb|Cone<Integer>| defined on the Normaliz side. The \verb|NmzCone| in the \verb|Cone| \verb|C|, is referred to by \verb|C.cone|. This is only important when one wants to access the low level interface.
+
+One can create a cone from a Normaliz input file as follows:
+\begin{Verbatim}
+C = Cone(file = "example/small")
+\end{Verbatim}
+It will read the file \verb|small.in| in the directory \verb|example| /relative to the current directory.  \verb|CreateAsLongLong| \verb| = True| can be used.
+
+For polynomial constraints one uses commands like
+\begin{Verbatim}
+PolyEq = ["x[1] -x[2]^2", "x[2]*x[3] - 27"]
+C.SetPolynomialEquations(PolyEQ)
+\end{Verbatim}
+The argument of \verb|SetPolynomialEquations| is a list of strings in which each component represents a polynomial expression. See Sections \ref{poly_input} and \ref{poly_const_input}. The equations are always of type $f(x) = 0$. Similarly, inequalities defined by
+\begin{Verbatim}
+C.SetPolynomialInequalities(PolyEQ)
+\end{Verbatim}
+are vinterpreted as $f(x) \ge 0$.
+
+\subsubsection{Matrices, vectors and numbers}
+
+The matrix format of the input is of course also used in PyNormaliz results:
+\begin{Verbatim}
+>>> C.HilbertBasis()
+[[1, 1], [1, 2], [1, 3], [2, 1]]
+\end{Verbatim}
+PyNormaliz contains some functions that help reading complicated output. For matrices we can use
+\begin{Verbatim}
+>>> print_matrix(C.HilbertBasis())
+1 1
+1 2
+1 3
+2 1
+\end{Verbatim}
+Similarly
+\begin{Verbatim}
+>>> print_matrix(C.SupportHyperplanes())
+-1  2
+3 -1
+\end{Verbatim}
+Since our input defines an original monoid, we can ask for the module generators over it:
+\begin{Verbatim}
+>>> print_matrix(C.ModuleGeneratorsOverOriginalMonoid())
+0 0
+1 1
+1 2
+2 2
+2 3
+\end{Verbatim}
+Some numerical invariants:
+\begin{Verbatim}
+>>> C.Rank()
+2
+>>> C.EmbeddingDim()
+2
+>>> C.ExternalIndex()
+1
+>>> C.InternalIndex()
+5
+\end{Verbatim}
+
+If we want to know whether a certain cone property has already been computed, we can ask for it:
+\begin{Verbatim}
+>>> C.IsComputed("HilbertBasis")
+True
+\end{Verbatim}
+The essential point is that this query does \emph{not} force the computation if the property has not yet been computed.
+There are several more computation goals that come as matrices, vectors or numbers. We list all of them:
+\begin{itemize}
+	\item Matrices: \ttt{    ExtremeRays,
+		VerticesOfPolyhedron,
+		SupportHyperplanes,
+		HilbertBasis,\\
+		ModuleGenerators,
+		Deg1Elements,
+		LatticePoints,
+		ModuleGeneratorsOverOriginalMonoid,
+		ExcludedFaces,
+		OriginalMonoidGenerators,
+		MaximalSubspace,
+		Equations,
+		Congruences}
+	\item Matrices with floating point entries: \ttt{    ExtremeRaysFloat,
+		SuppHypsFloat,
+		VerticesFloat}
+	\item Vectors: \ttt{    Grading,
+		Dehomogenization,
+		WitnessNotIntegrallyClosed,
+		GeneratorOfInterior,
+		CoveringFace,
+		AxesScaling}
+	\item Numbers: \ttt{    
+		TriangulationSize,
+		NumberLatticePoints,
+		RecessionRank,
+		AffineDim,
+		ModuleRank,
+		Rank,
+		EmbeddingDim,
+		ExternalIndex,
+		TriangulationDetSum,
+		GradingDenom,
+		UnitGroupIndex,
+		InternalIndex,}
+\end{itemize}
+
+The numbers have several different representations on the Normaliz side. In Python they are all (long) integers.
+\subsubsection{Triangulations, automorphisms and face lattice}
+Some of the raw output is complicated:
+\begin{Verbatim}
+>>> U = C.UnimodularTriangulation()
+>>> U
+[[[[1, 2], 1, []], [[2, 3], 1, []], [[0, 3], 1, []]], [[1, 3], [2, 1], [1, 1], [1, 2]]]
+\end{Verbatim}
+Taking a close look, we see two members of the outermost \verb|list|. The second is an ordinary matrix, namely the matrix of the rays of the triangulation:
+\begin{Verbatim}
+>>> print_matrix(U[1])
+1 3
+2 1
+1 1
+1 2
+\end{Verbatim}
+The first member is not a matrix, but close enough so that we can use \verb|print_matrix|:
+\begin{Verbatim}
+>>> print_matrix(U[0])
+[1, 2] 1 []
+[2, 3] 1 []
+[0, 3] 1 []
+\end{Verbatim}
+In each line we find the information on a simplicial cone, first the list of the rays by their indices relative to the matrix of rays (counting rows from $0$). The next is the determinant relative to a lattice basis (in our case the unit vectors). In a unimodular triangulation these determinants must of course be $1$. The third component is the list of excluded faces if we have computed a disjoint decomposition. This is explained in Section~\ref{Disjoint}.
+
+To see an even more complicated data structure we ask for the combinatorial automorphisms:
+\begin{Verbatim}
+>>> G = C.CombinatorialAutomorphisms()
+>>> G
+[2, Faase, False,  [[[1, 0]], [[0, 1]]], [[], []], [[[1, 0]], [[0, 1]]]]
+\end{Verbatim}
+There are~$6$ components on the outermost level. The first is the order of the group. The second amswers the question whether the integrality of the automorphisms has been checked. The answer is always ``no'' for compinatorial automorphisms, and therefore the third give the answer ``no'' to the question whether the automorphisms are integral.
+
+The next three contain information on the
+\begin{itemize}
+	\item extreme rays of the (recession) cone,
+	\item the vertices of the polyhedron,
+	\item he support hyperplane
+\end{itemize}
+in this order. In each of them we find
+\begin{itemize}
+	\item the action of the group generators on the respective vectors,
+	\item their orbits under the group.
+\end{itemize}
+In our case there are no vertices of the polyhedron (only defined for inhomogeneous input). This explains the empty \verb|list|. Fortunately we can print the complicated result nicely with an explanation:
+\begin{Verbatim}
+>>> print_automs(G)
+order  2
+permutations of  extreme rays of (recession) cone
+0 :  [1, 0]
+orbits of  extreme rays of (recession) cone
+0 :  [0, 1]
+permutations of  support hyperplanes
+0 :  [1, 0]
+orbits of  support hyperplanes
+0 :  [0, 1]
+\end{Verbatim}
+It makes sense to have a look at Section~\ref{Automorphisms}. (Here we count from $0$.)
+
+\ttt{AmbientAutomorphisms} and \ttt{InputAutomorphisms} yield a slightly different result. The permutations and orbits in the third element of the outer list now refer to the input vectors. The fourth element gives data for thempty set, as does the fifth for \ttt{InputAutomorphisms} . For \ttt{AmbientAutomorphisms} it lists the permutation and oprbits of the coordinates of the ambient lattice. All this is folloowed by the input vectors for reference. A simple example:
+\begin{Verbatim}
+>>> C = Cone(cone = [[0,1],[1,0]])
+>>> C.AmbientAutomorphisms()
+[2, True, True, [[[1, 0]], [[0, 1]]], [[], []], [[[1, 0]], [[0, 1]]], [[0, 1], [1, 0]]]
+>>> print_automs(C.AmbientAutomorphisms())
+order  2
+automorphisms are integral
+permutations of  input vectors
+0 :  [1, 0]
+orbits of  input vectors
+0 :  [0, 1]
+permutations of  coordinates
+0 :  [1, 0]
+orbits of  coordinates
+0 :  [0, 1]
+input vectors
+0 1
+1 0
+\end{Verbatim}
+ 
+Of course, we also want to know the face lattice:
+\begin{Verbatim}
+>>> C.FaceLattice()
+[[[0, 0], 0], [[1, 0], 1], [[0, 1], 1], [[1, 1], 2]]
+\end{Verbatim}
+Hard to read. Much better:
+\begin{Verbatim}
+>>> print_matrix(C.FaceLattice())
+[0, 0] 0
+[1, 0] 1
+[0, 1] 1
+[1, 1] 2
+\end{Verbatim}
+So there are four faces. The \verb|list| contains the support hyperplanes that meet in the face and the number is the codimension. The support hyperplanes are given by their row indices relative to the matrix of support hyperplanes. Also see Section~\ref{FaceLattice}. The $f$-vector:
+\begin{Verbatim}
+>>> C.FVector()
+[1, 2, 1]
+\end{Verbatim}
+
+If you want to limit the codimension of the faces computed with \verb|FaceLattice| or \verb|FVector|, set the bound by
+\begin{Verbatim}
+>>> SetFaceCodimBound(1)
+\end{Verbatim}
+Try it and ask for \verb|FaceLattice| once more. If you want to get rid of a previously set bound:
+\begin{Verbatim}
+>>> SetFaceCodimBound()
+\end{Verbatim}
+or take $-1$ as the argument.
+
+We also have a printer for the Stanley decomposition:
+\begin{Verbatim}
+>>> print_Stanley_dec(C.StanleyDec())
+\end{Verbatim}
+Try it.
+
+The cone properties that fall into the categories discussed in this section are: \ttt{    Triangulation,
+	UnimodularTriangulation,
+	LatticePointTriangulation,
+	AllGeneratorsTriangulation,\\
+	PlacingTriangulation,
+	PullingTriangulation,
+	StanleyDec,
+	InclusionExclusionData,
+	Automorphisms,
+	CombinatorialAutomorphisms,
+	RationalAutomorphisms,
+	EuclideanAutomorphisms,
+	AmbientAutomorphisms,
+	InputAutomorphisms,
+	FaceLattice,
+	DualFaceLattice,
+	FVector,
+	DualFVector,
+	Incidence,
+	DualIncidence.}
+
+\subsubsection{Hilbert and other series}
+
+Now we turn to the Hilbert series.
+\begin{Verbatim}
+>>> C.HilbertSeries()
+Traceback (most recent call last):
+File "<stdin>", line 1, in <module>
+File "/home/winfried/../PyNormaliz.py", line 403, in inner
+return self._generic_getter(name, **kwargs)
+File "/home/winfried/.../PyNormaliz.py", line 393, in _generic_getter
+PyNormaliz_cpp.NmzCompute(self.cone, input_list)
+PyNormaliz_cpp.NormalizError: Could not compute: 
+No grading specified and cannot find one. Cannot compute some requested properties!
+\end{Verbatim}
+Indeed, we forgot the grading. We could have added it at the time of construction
+\begin{Verbatim}
+>>> C = Cone(cone = [[1,3],[2,1]], grading = [[1,2]])
+\end{Verbatim}
+where it must be given as a matrix with a single row. Or we can add it later:
+\begin{Verbatim}
+>>> C.SetGrading([1,2])
+\end{Verbatim}
+(A similar function is \verb|SetProjectionCoords|.) We check the grading:
+\begin{Verbatim}
+>>> C.Grading()
+[[1, 2], 1]
+\end{Verbatim}
+The number $1$ following the vector is the grading denominator.
+
+Now:
+\begin{Verbatim}
+>>> C.HilbertSeries()
+[[1, -1, 0, 1, 0, 0, 0, 1, 0, -1, ..., 0, 0, 0, 0, 1, -1, 1], [1, 28], 0]
+\end{Verbatim}
+For space reasons we have omitted some components in the first \verb|list|, the numerator of the Hilbert series. The second gives the denominator, and the last is the shift. Much nicer:
+\begin{Verbatim}
+>>> print_series(C.HilbertSeries())
+(1 -  t +  t^3 +  t^7 -  t^9 +  t^10 +  t^12 -  t^13 +  t^14 +  t^19 +  t^24 -  t^25 +  t^26)
+---------------------------------------------------------------------------------------------
+(1 - t) (1 - t^28) 
+\end{Verbatim}
+
+Options can be added as named parameters:
+\begin{Verbatim}
+>>> print_series(C.HilbertSeries(HSOP = True))
+(1 +  t^3 +  t^5 +  t^6 +  t^8)
+-------------------------------
+(1 - t^4) (1 - t^7)   
+\end{Verbatim}
+This representation is much more natural in this case. Perhaps we want so see the Hilbert quasipolynomial:
+\begin{Verbatim}
+>>> print_quasipol(C.HilbertQuasiPolynomial())
+28 5
+-5 5
+...
+10 5
+5 5
+divide all coefficients by  28
+\end{Verbatim}
+In this case it seems better to print the polynomials as vectors of coefficients.
+
+If the quasipolynomial has a large period and high degree, you may want to restrict the information to only a few coefficients from the top:
+\begin{Verbatim}
+SetNrCoeffQuasiPol(bound)
+\end{Verbatim}
+The bound $-1$ or \verb|SetNrCoeffQuasiPol()|mean ``all'', in case you want to get rid of the previously set bound.
+
+Normaliz can compute the values of the coefficients of the Hilbert series for you:
+\begin{Verbatim}
+>>> C.HilbertSeriesExpansion(10)
+[1, 0, 0, 1, 1, 1, 1, 2, 2, 1, 2]
+\end{Verbatim}
+
+For the weighted Ehrhart series we need a polynomial. Let's add it (can also be done in the constructor with \verb|polynomial = <string>|):
+\begin{Verbatim}
+>>> C.SetPolynomial("x[1]+x[2]")
+True
+\end{Verbatim}
+Then
+\begin{Verbatim}
+print_series(C.WeightedEhrhartSeries())
+\end{Verbatim}
+We don't show the result because it is too long for this manual.
+
+The cone properties of this section: \ttt{    HilbertSeries,
+	HilbertQuasiPolynomial,
+	EhrhartSeries,
+	EhrhartQuasiPolynomial,
+	WeightedEhrhartSeries,
+	WeightedEhrhartQuasiPolynomial}
+
+\subsubsection{Multiplicity, volume and integral}
+The first time we see a fraction printed as such:
+\begin{Verbatim}
+>>> C.Multiplicity()
+'5/28'
+\end{Verbatim}
+Since Python has no built-in type for fractions, we print it as a string.
+
+\begin{Verbatim}
+>>> C.EuclideanVolume()
+'0.3993'
+\end{Verbatim}
+The decimal fractions is rounded to $4$ decimals. If you need more precision, you can directly use the low level interface:
+\begin{Verbatim}
+>>> NmzResult(C.cone,"EuclideanVolume")
+0.39929785312496247
+\end{Verbatim}
+By default, the low level interface returns raw values. We use it once more:
+\begin{Verbatim}
+>>> NmzResult(C.cone,"EuclideanIntegral")
+0.2638217958147073
+\end{Verbatim}
+We have integrated our polynomial from above. In case we have forgotten it:
+\begin{Verbatim}
+>>> C.Polynomial()
+'x[1]+x[2]'
+\end{Verbatim}
+
+For computations with fixed precision one can specify the number of decimal digits:
+\begin{Verbatim}
+>>> C.setDecimalDigits(50)
+\end{Verbatim}
+This function is hardly necessary, since the default value of \ttt{100} is almost always satisfactory.
+
+The cone properties of this section: \ttt{    Multiplicity,
+	Volume,
+	Integral,
+	VirtualMultiplicity,
+	EuclideanVolume,
+	EuclideanIntegral,
+	ReesPrimaryMultiplicity
+}
+
+\subsubsection{Integer hull and other cones as values}
+
+Let us define a nonintegral polytope (we vary the format of the numbers on purpose):
+\begin{Verbatim}
+>>> R = Cone(vertices = [["-3/2", '7/5',1], [9,-15,4], ["7.0",8,3]])
+>>> R.VerticesOfPolyhedron()
+[[-15, 14, 10], [7, 8, 3], [9, -15, 4]]
+\end{Verbatim}
+The last component of each vector acts as the denominator of the first two, and we recognize the fractions in the input. Numerical invariants available with inhomogeneous input:
+\begin{Verbatim}
+>>> R.AffineDim()
+2
+>>> R.RecessionRank()
+0
+>>> R.LatticePoints()
+[[-1, 1, 1], [0, 0, 1], [0, 1, 1], [1, -2, 1], ...  [2, -1, 1], [2, 0, 1], [2, 1, 1], [2, 2, 1]]
+>>> H = R.IntegerHull()
+>>> H
+<Normaliz Cone>
+\end{Verbatim}
+So we have computed a new cone, the cone over the polytope (in this case) spanned by the lattice points in the polytope with rational vertices \verb|[[-15, 14, 10], [7, 8, 3], [9, -15, 4]]|.
+\begin{Verbatim}
+>>> H.VerticesOfPolyhedron()
+[[-1, 1, 1], [1, -2, 1], [1, 2, 1], [2, -3, 1], [2, 2, 1]]
+\end{Verbatim}
+The last component is $1$ as it must be for lattice points of the polytope.
+\begin{Verbatim}
+>>> print_matrix(H.SupportHyperplanes())
+-1  0 2
+ 0 -1 2
+ 1 -2 3
+ 1  1 1
+ 3  2 1
+\end{Verbatim}
+
+The other computations that return a cone are \verb|ProjectCone| and \verb|SymmetrizedCone|.
+
+\subsubsection{Boolean values}
+
+We ask our cone \verb|C| many questions:
+\begin{Verbatim}
+>>> C.IsGorenstein()
+False
+>>> C.IsDeg1HilbertBasis()
+False
+>>> C.IsDeg1ExtremeRays()
+False
+>>> C.IsPointed()
+True
+>>> C.IsInhomogeneous()
+False
+>>> C.IsEmptySemiOpen()
+...
+PyNormaliz_cpp.NormalizError: ...: IsEmptySemiOpen can only be computed with excluded faces
+>>> C.IsIntegrallyClosed()
+False
+>>> 
+>>> C.IsReesPrimary()
+...
+PyNormaliz_cpp.NormalizError: Could not compute: IsReesPrimary !
+\end{Verbatim}
+
+
+\subsubsection{Algebraic polyhedra}
+
+For an algebraic polyhedron we must define the real embedded number field over which the polyhedron is living. This information is given in the cone constructor:
+\begin{Verbatim}
+>>> A = Cone(number_field=[ "a^2-2", "a", "1.4+/-0.1" ], 
+             vertices = [["1/2a", "13/3",1], ["-3a^1",-6,2], [-6, "-1/2a-7",1]])
+>>> print_matrix(A.VerticesOfPolyhedron())
+    -6 -1/2*a-7 1
+-3/2*a       -3 1
+ 1/2*a     13/3 1
+>>> print_matrix(A.VerticesFloat())
+-6.0000 -7.7071 1.0000
+-2.1213 -3.0000 1.0000
+ 0.7071  4.3333 1.0000
+>>> A.RenfVolume()
+'-19*a+42'
+>>> A.EuclideanVolume()
+'7.5650'
+>>> print_matrix(A.LatticePoints())
+-5 -6 1
+...
+-1  1 1
+0  3 1
+>>> A.NumberFieldData()
+('a^2 - 2', '[1.414213562373095048801688724209698078569671875376948073176679738 +/- 3.57e-64]')
+>>> A.GetFieldGeneratorName()
+'a'
+\end{Verbatim}
+
+The only point to notice is \verb|RenfVolume| that we must use instead of \verb|Volume| here. The number field data show you to what precision $\sqrt2$ had to be computed to make all decisions about positivity for our little polytope.
+
+\subsubsection{The collective compute command and algorithmic variants}
+So far we have asked Normaliz for a single cone property. It is also possible to bundle several computation goals and options in a single compute command:
+\begin{Verbatim}
+>>> C.Compute("HilbertBasis", "HilbertSeries", "ClassGroup", "DualMode")
+True
+>>> C.IsComputed("ClassGroup")
+True
+>>> C.ClassGroup()
+[0, 5]
+\end{Verbatim}
+which means that the class group is isomorphic to $\ZZ/(5)$. The first number $0$ indicates that the class group has rank $0$.
+
+The collective compute command not only allows you to sset several computation goals simultaneously. It allows you to specify algorithmic variants, like \verb|DulaMode|. There is a whole collection of variants explained elsewhere in this manual:
+
+\ttt{DefaultMode,
+Approximate,
+BottomDecomposition,
+NoBottomDec,
+DualMode,\\
+PrimalMode,
+Projection,
+ProjectionFloat,
+NoProjection,
+Symmetrize,
+NoSymmetrization,\\
+NoSubdivision,
+NoNestedTri, 
+KeepOrder,
+HSOP,
+NoPeriodBound,
+NoLLL,
+NoRelax,
+Descent,
+NoDescent,
+NoGradingDenom,
+GradingIsPositive,
+ExploitAutomsVectors (not yet implemented),
+ExploitIsosMult,
+StrictIsoTypeCheck,
+SignedDec,
+NoSignedDec,
+FixedPrecision}
+
+\subsubsection{Miscellaneous functions}
+In order to get some information about what is going on in Normaliz, we can switch on the terminal output:
+\begin{Verbatim}
+>>> C = Cone(cone = [[1,3],[2,1]], grading = [[1,2]])
+>>> C.SetVerbose()
+False
+>>> C.HilbertBasis(DualMode = True)
+Computing support hyperplanes for the dual mode:
+************************************************************
+starting full cone computation
+Generators sorted lexicographically
+Starting primal algorithm (only support hyperplanes) ...
+Start simplex 1 2 
+Pointed since graded
+Select extreme rays via comparison ... done.
+------------------------------------------------------------
+transforming data... done.
+************************************************************
+computing Hilbert basis ...
+==================================================
+cut with halfspace 1 ...
+Final sizes: Pos 1 Neg 1 Neutral 0
+==================================================
+cut with halfspace 2 ...
+Final sizes: Pos 3 Neg 3 Neutral 1
+Hilbert basis 4
+Find degree 1 elements
+transforming data... done.
+[[1, 1], [2, 1], [1, 2], [1, 3]]
+\end{Verbatim}
+The return value of \verb|SetVerbose| is the \emph{old value} of \emph{verbose}. We had to redefine \verb|C| to get of the already computed Hilbert basis. The very last line is our Hilbert basis.
+
+If we want to see all data computed for \verb|C|, call
+\begin{Verbatim}
+>>> C.print_properties()
+ExtremeRays:                         NumberLatticePoints:
+[[2, 1], [1, 3]]                     0
+SupportHyperplanes:                  Rank:
+[[-1, 2], [3, -1]]                   2
+HilbertBasis:                        EmbeddingDim:
+[[1, 1], [2, 1], [1, 2], [1, 3]]     2
+Deg1Elements:                        IsPointed:
+[]                                   True
+OriginalMonoidGenerators:            IsDeg1ExtremeRays:
+[[1, 3], [2, 1]]                     False
+MaximalSubspace:                     IsDeg1HilbertBasis:
+[]                                   False
+Grading:                             IsIntegrallyClosed:
+[[1, 2], 1]                          False
+GradingDenom:                        IsInhomogeneous:
+1                                    False
+UnitGroupIndex:                      Sublattice:
+1                                    [[[1, 0], [0, 1]], [[1, 0], [0, 1]], 1]
+InternalIndex:
+\end{Verbatim}
+Typeset in two columns. The last property we see is \verb|Sublattice|. It consists of two matrices and a number. See Section~\ref{coord} for the interpretation.
+
+Finally, we can write a Normaliz output file:
+\begin{Verbatim}
+>>> C.WriteOutputFile("Wonderful")
+True
+\end{Verbatim}
+Now you should find a file \verb|Wonderful.out| in the current directory.
+
+One can also write a file for the inout of precomputed data:
+\begin{Verbatim}
+>>> C.WritePrecompData("Wonderful")
+True
+\end{Verbatim}
+It creates the file \verb|Wonderful.precomp.in|.
+
+\subsection{The low level interface}
+
+The low level interface is contained in \ttt{NormalizModule.cpp}. Its functions are listed in\\ \verb|PyNormaliz_cppMethods[]|. They allow the construction of an \verb|NmzCone| (accompanied by a lattice), the computation in it, and give access to the computation results. The use of the low level interface is indirectly explained by the examples above. Therefore we keep the discussion short.
+
+\subsubsection{The main functions}
+
+For the construction one uses
+\begin{Verbatim}
+NmzCone(**kwargs)
+\end{Verbatim}
+The keyword arguments \ttt{kwargs} transport Normaliz input types and the corresponding matrices in Python format. In addition we must use \ttt{number\_field} for algebraic polyhedra. You can use \ttt{polynomial} for computations with a polynomial weight. (There is also an extra function for setting the polynomial; see below.) You can also ask for a \verb|Cone<long long>| by adding \verb|CreateAsLongLong = True|.
+
+\textbf{Once and for all:} in the functions listed in the following that apply to a specific \verb|NmzCone|, this \verb|NmzCone| must be the first argument in \verb|*args|.
+
+Computations are started by
+\begin{Verbatim}
+NmzCompute(*args)
+\end{Verbatim}
+The arguments list the computation goals and options as strings.
+
+Access to the computation results is given by
+\begin{Verbatim}
+NmzResult(*args, **kwargs)
+\end{Verbatim}
+There must be exactly two positional arguments. The first is the \verb|NmzCone|, the second names the result to be returned, given as a string.
+
+The \verb|*kwargs| specify handlers, routines that format the raw results of output types that are not existent in Python or should be formatted for another reason. The potential handlers:
+\begin{itemize}
+	\item[\texttt{RatHandler}] defines the formatting of fractions.
+	
+	\item[\texttt{FloatHandler}] defines the formatting of floating point numbers.
+	
+	\item[\texttt{NumberfieldElementHandler}] defines the formatting of number field elements.
+	
+	\item[\texttt{VectorHandler}] defines the formatting of vectors.
+	
+	\item[\texttt{MatrixHandler}] defines the formatting of matrices.
+\end{itemize}
+
+The default handler for vectors and matrices is \verb|list|, and there is not be much point in changing it. If you don't like lists, you can set \verb|VectorHandler=tuple|, for example. But especially \verb|RatHandler| and \verb|NumberfieldElementHandler| are very useful since the raw versions are difficult to read. Examples of handlers can be found in \verb|PyNormaliz.py|.
+
+\textbf{Note:}\enspace When \verb|NmzResult| is called, its first action is to reset the handlers to the raw format. Then the \verb|kwargs| are evaluated. In other words: the values of the handlers are only applied to the current result, and not to future ones.
+
+In the same way as the data access functions of Normaliz, \verb|NmzResult| triggers the computation of the required result if it should not have been computed yet. Whether a result has been computed yet can be checked by
+\begin{Verbatim}
+NmzIsComputed(*args)
+\end{Verbatim}
+The second argument of exactly $2$ is the result whose computation is to be checked, given as a string.
+
+\subsubsection{Additional input and modification of existing cones}
+
+These functions allow the input of data that cannot be passed through the cone constructor or modify a cone after construction. For example:
+\begin{Verbatim}
+NmzSetGrading(cone, grading)
+\end{Verbatim}
+The grading is a vector encoded as a Python list. Similarly
+\begin{Verbatim}
+NmzSetProjectionCoords(cone, coordinates)
+\end{Verbatim}
+where \verb|coordinates| is a list with entries $0$ or $1$.
+
+\begin{Verbatim}
+NmzSetPolynomial(cone, polynomial)
+\end{Verbatim}
+The polynomial is given as a string.
+
+\begin{Verbatim}
+NmzSetNrCoeffQuasiPol(cone, number)
+NmzSetFaceCodimBound(cone, number)
+\end{Verbatim}
+Do what the names say.
+
+\begin{Verbatim}
+NmzModifyCone(cone, type, matrix)
+\end{Verbatim}
+This is the PyNormaliz version of the libnormaliz function modifyCone. Please have a look at Section~\ref{Modify}.
+
+\subsubsection{Additional data access}
+
+Some values cannot be returned as cone properties. For them we have additional access functions.
+
+\begin{Verbatim}
+NmzGetPolynomial(cone)
+\end{Verbatim}
+returns the polynomial weight if one has been set.
+
+The functions
+\begin{Verbatim}
+NmzHilbertSeriesExpansion(cone, degree)
+NmzEhrhartSeriesExpansion(cone, degree)
+NmzWeightedEhrhartSeriesExpansion(cone, degree)
+\end{Verbatim}
+return the expansion of the named series up to the given degree as a list of numbers.
+
+\begin{Verbatim}
+NmzIntegerHullCone(cone)
+NmzProjectCone(cone)
+NmzSymmetrizedCone(cone)
+\end{Verbatim}
+return \verb|NmzCone|.
+
+\begin{Verbatim}
+NmzGetRenfInfo(cone)
+NmzFieldGenName(cone)
+\end{Verbatim}
+return the data defining the number field.
+
+\subsubsection{Miscellaneous functions}
+
+\begin{Verbatim}
+NmzSetVerbose(cone, value=True)
+NmzSetVerboseDefault(value=True)
+\end{Verbatim}
+The first sets \verb|verbose| to the specified value for cone, whereas the second sets it for all subsequently defined cones.
+
+\begin{Verbatim}
+NmzConeCopy(cone)
+\end{Verbatim}
+returns a copy of cone.
+
+\begin{Verbatim}
+NmzSetNumberOfNormalizThreads(number)
+\end{Verbatim}
+does what its name says. The previous number of threads is returned.
+
+\begin{Verbatim}
+NmzWriteOutputFile(cone, project)
+NmzWritePrecompData(cone, project)
+\end{Verbatim}
+The first writes a Normaliz output file whose name is the string \verb|project| with the suffix \verb|.out|, the second a file whose name is the string \verb|project| with suffix \verb|precomp.in|.
+
+
+The functions
+\begin{Verbatim}
+NmzHasEantic(cone)
+NmzHasCoCoA(cone)
+NmzHasFlint(cone)
+NmzHasFlint(cone)
+\end{Verbatim}
+return \verb|True| or \verb|False|, depending on whether Normaliz has been built with the corresponding package.
+
+\begin{Verbatim}
+NmzListConeProperties() 
+\end{Verbatim}
+lists all cone properties in case you should have forgotten any of them.
+
+\begin{Verbatim}
+error_out(PyObject* m)
+\end{Verbatim}
+writes an error message if something bad has happened.
+
+\subsubsection{Raw formats of numbers}
+
+All Normaliz integers are transformed to Python long integers, and floating point numbers are transformed to Python floats.
+
+Numbers of type \verb|mpq_class| are represented by a \verb|list| with two components on the Python side, namely the numerator and the denominator.
+
+An algebraic number is represented by a \verb|list| whose members are rational numbers each of which is a \verb|list| with two members. They are the coefficients of the polynomial representing the algebraic number.
+
+\end{small}
+
+\section{Distributed computation for volume via signed decomposition}\label{distr_comp}
+
+Normaliz offers a possibility to compute volumes via signed decomposition by distributing the task to several computers or nodes in a gigh performance cluster that run independently of each other. The principal approach:
+\begin{arab}
+\item The first step is the computation of the hollow triangulation and the generic vector on a single machine. This step can require considerable time and memory.
+\item These data (and some more) are written to ``hollow tri'' files.
+\item The files are read by Normaliz with the \verb|--Chunk| option that makes it compute the contribution to the volume that comes from a single data file (``chunk'') and write this volume to a ``mult''  file.
+\item A final run of Normaliz with the \verb|--AddChunks| option so that it reads all the ``mult'' files and adds the partial volumes.
+\end{arab}
+
+This is certainly a  robust and flexible approach to distributed computation. While the main purpose of distributed computation is a massive increase in parallelization, one should consider its use even if the computation is done on a single machine. It limits the loss of data caused by system crashes or similar interruptions to a small amount and allows easy repair. Another advantage is that the most time consuming step (3) needs very little RAM for a single ``chunk'', compared to step (1). 
+
+To make Normaliz write the data files and to stop once they have been written, one uses the cone property
+\begin{itemize}
+	\itemtt[DistributedComp] 
+\end{itemize}
+The size of the locks can be set by
+\begin{itemize}
+	\itemtt[block\_size\_hollow\_tri <n>] 
+\end{itemize}
+to the input file where \verb|<n>| is the number of simplices of the full triangulation that should go into a single output file.  The default value chosen by \verb|DistributedComp| is $500,000$.
+
+The output files are
+\begin{itemize}
+	\itemtt[<project>.hollow\_tri.<n>.gz]
+\end{itemize}
+where \verb|<n>| numbers these files consecutively, starting from $0$. As usual, \verb|<project>| is the name of the project. These files are gzipped to save disk space.
+
+Moreover, there is a common data file:
+\begin{itemize}
+	\itemtt[<project>.basic.data] 
+\end{itemize}
+
+Each file of the hollow triangulation must be run by  Normaliz with the option \verb|--Chunk|. The input is read from \ttt{stdin} to which the gzipped file(s) must be decompressed and redirected or piped. The directory \verb|source/chunk| contains \verb|run_single.sh| hat can be used for this purpose:
+\begin{Verbatim}
+time zcat $1.hollow_tri.$2.gz | ../normaliz --Chunk 
+\end{Verbatim}
+where \verb|$1| is the project name and \verb|$2| is the number \verb|<n>| from above. The OpenMP parallelization is set to $8$ threads by this call, but one can add the option \verb|-x=<p>| where \verb|<p>| is the number of parallel threads to be used. Normaliz processes the single blocks with the fixed precision of $100$ decimal digits. The path to normaliz (\verb|../| above) must be adapted to your system.
+
+On a cluster system one uses a script to start a job array where our number \verb|<n>| serves as an index for the array. An example:
+\begin{Verbatim}
+#SBATCH --job-name="CondEffPlur"
+#SBATCH --comment="CondEffPlur"
+#SBATCH --time=24:00:00
+#SBATCH --ntasks=8
+#SBATCH --threads-per-core=1
+#SBATCH --mem=15000
+#SBATCH --array=0-359%100
+
+# each job will see a different ${SLURM_ARRAY_TASK_ID}
+../run_single.sh CondEffPlur ${SLURM_ARRAY_TASK_ID}
+\end{Verbatim}
+In this example \verb|<n>| runs from 0 to 359, and 100 jobs can be processed simultaneously.
+
+Finally, execute 
+\begin{Verbatim}
+normaliz <project> --AddChunks
+\end{Verbatim}
+to sum the partial multiplicities in the files \verb|<project>.mult.<n>| The result is written to the terminal and also to the file \verb|<project>.total.mult|.
+

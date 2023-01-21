@@ -1,0 +1,345 @@
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  DISTRIBUTION  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Distribution and installation}\label{Distr}
+
+\subsection{Docker image}
+The easiest and absolutely hassle free access to Normaliz is via its Docker image. To run it, you must first install Docker on your system. This is easy on up-to-date versions of the three major platforms. After installation you can issue the command
+\begin{Verbatim}
+docker run -ti normaliz/normaliz
+\end{Verbatim}
+You may have to prefix it with \ttt{sudo}. This will download the Docker image if it is not yet present and open a Docker container. As a result you will get a Linux terminal. Normaliz is installed in the standard location \verb|/usr/local|. Moreover, the source is contained in the subdirectory \verb|Normaliz/source| of the home directory. (Your username is \verb|norm.|) In the Docker container, \verb|Normaliz| is the Normaliz directory (independently of the version number).
+
+Try
+\begin{Verbatim}
+normaliz -c Normaliz/example/small
+\end{Verbatim}
+as a first test.
+
+Of course, you want to make your data available to Normaliz in the container. Here is an example:
+\begin{Verbatim}
+docker run -it -v /home/winfried/my_normaliz:/home/norm/example  normaliz/normaliz
+\end{Verbatim}
+Here \verb|/home/winfried/my_normaliz| is the (absolute!) path to the directory that I want to mount into the Docker container and \verb|/home/norm/example| is the (absolute!) path to the location in the container where it should be mounted.
+
+The command above downloads the image labeled ``latest''.  There are also images on Dockerhub with version numbers. You can slo access them adding the sufix \verb|:<version>| to \verb|normaliz/normaliz|. 
+
+The Docker image contains a full installation including PyNormaliz.
+
+\subsection{Binary release}
+
+We provide binary releases for Windows, Linux and Mac. Follow the instructions in
+\begin{center}
+	\url{https://normaliz.uos.de/download/}.
+\end{center}
+They guide you to our GitHub repository
+\begin{center}
+	\url{https://github.com/Normaliz/Normaliz/releases}.
+\end{center}
+
+Download the archive file
+corresponding to your system \ttt{\NmzDir\_<systemname>.zip} in a directory of your choice
+and unzip it. This process will create the Normaliz directory and store the Normaliz executable in it. In case you want to run Normaliz from the
+command line or use it from other systems, you may have to copy
+the executables to a directory in the search path for executables or update your search path.
+
+The From version 3.9.3 on, MS~Windows executable is compiled with all optional packages.
+
+Note:
+\begin{enumerate}
+	\item The Linux binary \verb|normaliz| and the MS Windows binary \verb|normaliz.exe| are fully static executables.
+	
+\item The Mac~OS and the MS Windows binaries cannot be statically linked in the absolute sense. The MS Windows binary depends only on system DLLs. The Mac OS  binary depends only on Mac~OS system libraries and \verb|libomp.dylib| (contained in the zip file) which makes parallelization possible. This dynamic library must be kept in the same directory as the binary.
+
+\end{enumerate}
+
+Unzipping creates the following files and subdirectories in the Normaliz directory:
+
+\begin{itemize}
+	\item In the Normaliz directory you should
+	find \ttt{jNormaliz.jar}, and the binary files as indicated above. Furthermore COPYING.
+	
+	\item The subdirectory \ttt{doc} contains the file you are reading
+	and further documentation.
+	
+	\item In the subdirectory \ttt{example} there are the input
+	files for some examples. It contains all named
+	input files of examples of this manual.
+	
+	\item The subdirectory \ttt{Singular} contains the
+	\textsc{Singular} library \ttt{normaliz.lib} and a PDF file with
+	documentation.
+	
+	\item The subdirectory \ttt{Macaulay2} contains the
+	\textsc{Macaulay2} package \ttt{Normaliz.m2}.
+	
+	\item The subdirectory \ttt{lib} contains libraries for
+	jNormaliz.
+\end{itemize}
+
+\subsection{Source package}
+In order to build Normaliz yourself, navigate to our GitHub repository
+\begin{center}
+	\url{https://github.com/Normaliz/Normaliz/releases}.
+\end{center}
+and download the
+source package \ttt{\NmzDir.zip} (also available as \ttt{.tar.gz}) contains the source files, installation scripts, examples, documentation, the test suite and PyNormaliz.
+
+Then unzip the downloaded file in a directory of your choice and expand it. (If you have installed a binary package, choose the same directory.)
+This process will create a directory \ttt{\NmzDir} and several subdirectories in it.
+
+If you build Normaliz yourself, the build process will create further subdirectories \verb|build|, \verb|nmz_opt_lib| and \verb|local| (with the default settings).
+
+\subsection{Conda}
+
+The platform independent package manager Conda provides executables for all three operating systems. See
+\begin{center}
+	\url{https://github.com/conda-forge/normaliz-feedstock}
+\end{center}
+In addition to the binaries you get the files that are usually installed: header files and libraries.
+
+\subsection{Cloning the GitHub repository}
+
+Another way to download the Normaliz source is cloning the repository from GitHub by
+\begin{Verbatim}
+git clone https://github.com/Normaliz/Normaliz.git
+\end{Verbatim}
+The Normaliz directory is then called \verb|Normaliz|. You may need
+\begin{Verbatim}
+sudo apt-get install autoconf libtool
+\end{Verbatim}
+if you want to build Normaliz by autotools. To this end change to the Normaliz directory and run
+\begin{Verbatim}
+./bootstrap.sh
+\end{Verbatim}
+After this step you can follow the instruction in the next section.
+
+Note that he GitHub repository Normaliz/Normaliz does not contain PyNormaliz. You can clone them from the repository Normaliz/PyNormaliz.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  COMPILATION  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Building Normaliz yourself}\label{Compile}
+
+We recommend building Normaliz through the install scripts described below. They use the \verb|autotools| scripts have been written by Matthias K\"oppe. The Normaliz team thanks him cordially for his generous help.
+
+If you don't want to use the Normaliz install scripts, you can of course take the usual configure-make-make install path. The dependencies of Normaliz on external packages are listed in \verb|INSTALL|.
+
+\subsection{Prerequisites}
+
+We require a compiler supporting C++14:
+\begin{itemize}
+	\item GNU~g++~5,
+	\item clang++~3.4,
+	\item Intel~icpc~16.0
+\end{itemize}
+The mentioned compilers are also able to handle OpenMP~3.0, with the exception of clang++, there the first OpenMP support was introduced in~3.7.
+
+For compiling Normaliz the following libraries are needed:
+\begin{itemize}
+	\item GMP including the C++ wrapper (libgmpxx and libgmp)
+\end{itemize}
+
+We will only discuss how to build Normaliz with the install scripts in the distribution. See the file \verb|INSTALL| for additional information.
+
+Any optional package that you want to use, must be installed before the compilation of Normaliz, independently of the method used for building Normaliz. The installation scripts mentioned below make and use directories within the Normaliz directory.
+
+\subsubsection{Linux}
+The standard compiler choice on Linux is \verb|g++|. We do no not recommend \verb|clang++| since its support for OpenMP is not as comprehensive as that of \verb|g++|.
+
+On Ubuntu we suggest
+\begin{Verbatim}
+sudo apt-get install tar g++ libgmp-dev wget make libboost-all-dev
+\end{Verbatim}
+for the basic installation of the required libraries (plus compiler).
+
+\subsubsection{Mac~OS~X}\label{mac}
+
+Currently Apple does not supply a compiler which supports OpenMP.
+The install scripts discussed below \emph{require LLVM~3.9 or newer from Homebrew.} See
+\url{https://brew.sh/} from where you can also download GMP:
+
+\begin{Verbatim}
+brew install gmp llvm wget boost automake
+\end{Verbatim}
+
+It may be necessary to replace \verb|install| by \verb|reinstall| since the Xcode compiler may be newer that the one from Homebrew.
+
+You also need to download and install the Xcode Command Line Tools from the AppStore:
+\begin{Verbatim}
+xcode-select --install
+\end{Verbatim}
+
+\subsection{Normaliz at a stroke}\label{stroke}
+
+Navigate to the Normaliz directory. The command
+\begin{Verbatim}
+./install_normaliz_with_eantic.sh
+\end{Verbatim}
+installs the all packages that are needed for the computation of rational and algebraic polyhedra (including CoCoALib and Flint) and does the full compilation.
+
+If you don't want algebraic polyhedra, call
+\begin{Verbatim}
+./install_normaliz_with_opt.sh
+\end{Verbatim}
+It downloads CoCoALib, Flint and nauty and compiles Normaliz.
+
+The sources of the optional packages are downloaded to the subdirectory \verb|nmz_opt_lib| of the Normaliz directory. They are installed in the subdirectory \verb|local| (imitating \verb|/usr/local|) where they exist in static and dynamic versions (except CoCoALib and nauty that can only be built statically).
+
+If you don't want the optional packages or if you have them properly installed,
+\begin{Verbatim}
+./install_normaliz.sh
+\end{Verbatim}
+compiles Normaliz, using the optional packages that it can find.
+
+The library \verb|libnormaliz| is compiled statically and shared. It is installed in \verb|local| as well.
+
+The binary \verb|normaliz| is stored in \verb|local/bin|, but it is also copied to the Normaliz directory.It is statically linked by default.
+
+Remarks:
+\begin{arab}
+
+\item If you want a global installation (and have the rights to do it), you can ask for
+\begin{Verbatim}
+sudo cp -r local /usr
+\end{Verbatim}
+at the end.
+
+\item Another way to a global installation (or to an installation in a place of your choice) is to use
+\begin{Verbatim}
+export NMZ_PREFIX=<your choice>  
+./install_normaliz_...
+\end{Verbatim}
+
+For the typical choice \verb|/usr/local| you need superuser rights (as in (1)). Note that \verb|NMZ_PREFIX| must be an absolute path name.
+
+\item The scripts compile a fully static binary under Linux and an ``almost'' static binary under Mac~OS. You can choose a dynamically linked binary by
+\begin{Verbatim}
+export NMZ_SHARED=yes
+./install_normaliz_...
+\end{Verbatim}
+\verb|NMZ_SHARED| is set automatically on Linux if a compiler from the clang family is used since a statically linked binary cannot be built by them (\verb|libomp.a| is missing).
+
+\item The install scripts can be further customized. Have a look at them or at \verb|INSTALL|.
+
+\item Precise information on the versions of the optional packages that should be used with Normaliz \version{} is contained in \verb|INSTALL| as well.
+
+\item The install script creates a directory for VPATH builds,
+\begin{center}
+	\ttt{build}
+\end{center}
+It is \emph{not} removed by the script so that you can use it for further \ttt{make} actions.
+
+\item To run the test suite, go to \ttt{build} and run \ttt{make check}. For more information on the test suite see \verb|INSTALL|.
+\end{arab}
+
+\subsection{Packages for rational polyhedra}
+
+\subsubsection{CoCoALib}
+
+Normaliz can be built without CoCoALib, which is however necessary for the computation of integrals and weighted Ehrhart series and, hence, for symmetrization. If you don't want to use the scripts in Section~\ref{stroke}, but nevertheless want to compile Normaliz with CoCoALib, install CoCoALib first by navigating to the Normaliz directory and typing the command
+\begin{Verbatim}
+install_scripts_opt/install_nmz_cocoa.sh
+\end{Verbatim}
+CoCoALib is downloaded and compiled as described above.
+
+If you want to use a preinstalled version of CoCoALib: for parallelization it must be configured as
+\begin{Verbatim}
+./configure --threadsafe-hack --no-boost 
+\end{Verbatim}
+
+\subsubsection{nauty}
+
+Normaliz can be built without nauty, which is however necessary for the computation of automorphism groups. If you don't want to use the scripts in Section~\ref{stroke}, but nevertheless want to compile Normaliz with nauty, install nauty first by navigating to the Normaliz directory and typing the command
+\begin{Verbatim}
+install_scripts_opt/install_nmz_nauty.sh
+\end{Verbatim}
+nauty is downloaded and compiled as described above.
+
+You can or course use a preinstalled version of nauty.
+
+We thank Brendan McKay for his help in the integration of nauty to Normaliz.
+
+\subsubsection{Hash library}
+for the computation of SHA256 hash values Normaliz uses by Stephan Brumme:
+\begin{Verbatim}
+install_scripts_opt/install_nmz_hash-library.sh
+\end{Verbatim}
+
+\subsubsection{Flint}
+
+Flint does not extend the functionality of Normaliz (for rational polytopes), and is therefore truly optional.
+However, the ultrafast polynomial arithmetic of Flint is very useful if quasipolynomials with large periods come up in the computation of Hilbert series or weighted Ehrhart series. If you don't want to use the scripts in Section~\ref{stroke}, but nevertheless want to compile Normaliz with Flint, install Flint (and its prerequisite MPFR) by navigating to the Normaliz directory and entering the commands
+\begin{Verbatim}
+install_scripts_opt/install_nmz_mpfr.sh
+install_scripts_opt/install_nmz_flint.sh
+\end{Verbatim}
+
+\subsection{Packages for algebraic polyhedra}
+
+The basic classes for algebraic polyhedra are defined in the package
+\begin{itemize}
+	\item[] e-antic by V.~Delecroix (\url{https://github.com/flatsurf/e-antic}).
+\end{itemize}
+In its turn it is based on
+\begin{arab}
+	\item Flint maintained by W.~B.~Hart (\url{https://www.flintlib.org/}),
+	\item antic by W.~B.~Hart, (\url{https://github.com/wbhart/antic}),
+	\item arb by F.~Johansson (\url{https://arblib.org/}).
+\end{arab}
+
+The dependence on antic and arb is only through e-antic.
+
+For Normaliz it is useless to install any of them separately (except Flint, see above). Again, if you don't want to use the ready-made install scripts for Normaliz as a whole, you can install e-antic and its prerequisites separately by
+\begin{Verbatim}
+install_scripts_opt/install_eantic_with_prerequisites.sh
+\end{Verbatim}
+
+\subsection{MS~Windows}
+
+We compile Normaliz for MS Windows 64 under MSYS2. See the last section of \verb|INSTALL| for the details.
+
+\section{Copyright and how to cite}
+
+Normaliz 3.1 is free software licensed under the GNU General
+Public License, version 3. You can redistribute it and/or
+modify it under the terms of the GNU General Public License as
+published by the Free Software Foundation, either version 3 of
+the License, or (at your option) any later version.
+
+It is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public
+License along with the program. If not, see
+\url{https://www.gnu.org/licenses/}.
+
+Please refer to Normaliz in any publication for which it has
+been used:
+been used:
+\begin{center}
+	W.~Bruns, B.~Ichim, C.~S\"oger and U.~von~der~Ohe: Normaliz. Algorithms for
+	rational cones and affine monoids. Available at
+	\url{https://normaliz.uos.de}
+\end{center}
+The corresponding \verb|\bibitem|:
+\begin{Verbatim}
+\bibitem{Normaliz} W.~Bruns, B.~Ichim, C.~S\"oger and U.~von~der~Ohe:
+Normaliz. Algorithms for rational cones and affine monoids.
+Available at \url{https://normaliz.uos.de}.
+\end{Verbatim}
+
+A BibTeX entry:
+\begin{Verbatim}
+@Misc{Normaliz,
+author = {W. Bruns and B. Ichim, C. S\"oger and U. von der Ohe},
+title = Normaliz. Algorithms for rational cones and affine monoids,
+howpublished ={Available at \url{https://normaliz.uos.de}}
+\end{Verbatim}
+
+It is now customary to evaluate mathematicians by such data as
+numbers of publications, citations and impact factors. The data
+bases on which such dubious evaluations are based do not list
+mathematical software. Therefore we ask you to cite the article~\cite{BIS}
+in addition. This is very helpful for the younger
+members of the team.
