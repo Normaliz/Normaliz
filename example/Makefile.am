@@ -115,8 +115,17 @@ EXTRA_DIST =					\
 	pythagoras_rat.in			\
 	subspace4.in				\
 	tame.in					\
-	tame_prec.in				
-	
+	tame_prec.in				\
+	monoid.in				\
+	representations.in			\
+	443monoid.in				\
+	Kwak80.in				\
+	one_latt_markov.in			\
+	toric_ideal.in				\
+	lin_bin.in				\
+	normal_toric_ideral.in			\
+	non_toric.in
+
 EXTRA_DIST +=					\
 	600cell-dual.in				\
 	600cell.in				\
