@@ -130,6 +130,8 @@
 
 \hyphenation{semi-open}
 
+\includeonly{Appendix}
+
 \begin{document}
 \vspace*{2cm}
 
@@ -163,19 +165,17 @@
 \include{Algebraic}
 \include{OptFiles}
 \include{Technical}
-
-
-
-
-
-\newpage
-
 \include{Appendix}
 \newpage
 
 \addcontentsline{toc}{section}{References}
 \begin{thebibliography}{15.}
 \small
+
+\bibitem{4ti2} 
+4ti2 team. 4ti2-A software package
+for algebraic, geometric and combinatorial problems on linear
+spaces. Available at \url{https://github.com/4ti2/4ti2}.
 
 \bibitem{CoCoA}
 J.~Abbott, A.~M.~Bigatti and G.~Lagorio,
@@ -269,16 +269,21 @@ W.~Bruns and C.~S\"oger,
 \emph{The computation of weighted Ehrhart series in Normaliz}.
 J.\ Symb.\ Comp.\ 68 (2015), 75--86.
 
-\bibitem{e-antic}
-V.~Delecroix,
-\emph{embedded algebraic number fields (on top of antic)},
-package available at \url{https://github.com/flatsurf/e-antic}.
-
 \bibitem{vinci} B. B\"{u}eler and A. Enge, \emph{Vinci.} Package available from \url{https://www.math.u-bordeaux.fr/~aenge/}
 
 \bibitem{practical}	
 B. Büeler, A. Enge, K. Fukuda, \emph{Exact volume computation for polytopes: a practical study.} In: Polytopes - combinatorics and computation (Oberwolfach, 1997), pp. 131 -- 154,
 DMV Sem. 29, Birkhäuser, Basel, 2000.
+
+\bibitem{DLHK}	
+J. A. De Loera, R. Hemmecke and M. Köppe.
+Algebraic and geometric ideas in the theory of discrete optimization.
+MOS-SIAM Series on Optimization, 14. Society for Industrial and Applied Mathematics (SIAM), Philadelphia 2013.
+
+\bibitem{e-antic}
+V.~Delecroix,
+\emph{embedded algebraic number fields (on top of antic)},
+package available at \url{https://github.com/flatsurf/e-antic}.
 
 \bibitem{Filli} 
 P. Filliman, \emph{The volume of duals and sections of polytopes. } Mathematika 37 (1992), 67--80.
@@ -302,6 +307,11 @@ Package available at \url{https://github.com/wbhart/antic}.
 W.~B.~Hart, F.~Johansson and S.~Pancratz,
 \emph{FLINT: Fast Library for Number Theory}.
 Available at \url{https://flintlib.org}.
+
+\bibitem{HM}
+Hemmecke and P. N. Malkin. Computing generating sets of lattice ideals and Markov bases of
+lattices. J. Symb. Comp. 44, 1463--1476 (2009).
+
 
 \bibitem{arb}
 F.~Johansson,

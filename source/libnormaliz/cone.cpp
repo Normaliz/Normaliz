@@ -4523,11 +4523,6 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     // cout << "UUUU " << ToCompute.full_cone_goals(using_renf<Integer>()) << endl;
     /* cout << "UUUU All  " << ToCompute << endl;*/
 
-    if(ToCompute.test(ConeProperty::GroebnerBasis) || ToCompute.test(ConeProperty::MarkovBasis)){
-        ToCompute.set(ConeProperty::HilbertBasis);
-        ToCompute.set(ConeProperty::IsPointed);
-    }
-
     // the computation of the full cone
     if (ToCompute.full_cone_goals(using_renf<Integer>()).any()) {
         compute_full_cone(ToCompute);
@@ -5782,12 +5777,8 @@ void Cone<Integer>::compute_singular_locus(const ConeProperties& ToCompute) {
 
     codim_singular_locus = dim +1; // the maximum if it is empty
     bool first_singular = true;
-    size_t new_codim_sing = dim+1;
 
-    for(auto& F: FacesByCodim){
-
-        if(F.first > new_codim_sing +1)
-            break;
+    for(auto& F: FacesByCodim){;
 
         bool non_minimal = false;
         for(auto& G: SingularLocus){
@@ -5819,7 +5810,6 @@ void Cone<Integer>::compute_singular_locus(const ConeProperties& ToCompute) {
         if(TestReg.isIntegrallyClosed() && TestReg.getNrHilbertBasis() == F.first) // regular
             continue;
         SingularLocus[F.second] = F.first;
-        new_codim_sing = F.first;
         if(first_singular){
             first_singular = false;
             codim_singular_locus = F.first;
