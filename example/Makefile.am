@@ -75,7 +75,6 @@ EXTRA_DIST =					\
 	hickerson-18plus1.in			\
 	huge.in					\
 	j462.in					\
-	lattice_ideal.in			\
 	knapsack_11_60.in			\
 	lo6.in					\
 	max_polytope_cand.in			\
@@ -118,12 +117,12 @@ EXTRA_DIST =					\
 	tame_prec.in				\
 	monoid.in				\
 	representations.in			\
-	443monoid.in				\
+	A443monoid.in				\
 	Kwak80.in				\
-	one_latt_markov.in			\
+	cone_latt_markov.in			\
 	toric_ideal.in				\
 	lin_bin.in				\
-	normal_toric_ideral.in			\
+	normal_toric_ideal.in			\
 	non_toric.in
 
 EXTRA_DIST +=					\

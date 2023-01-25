@@ -1,3 +1,5 @@
+% !TeX spellcheck = en_US
+
 \section{Advanced topics}\label{MoreExamples}
 
 \subsection{Computations with a polytope}\label{Polytopes}
@@ -3017,13 +3019,11 @@ It requires inhomogeneous input. Note that it can only be used in the primal alg
 
 \subsection{Singular locus}\label{SingularLocus}
 
-
-
-The singular locus is computed by
+Certain data of affine monoid algebras are accedssuble by purely combinatorial methods. In particular this is true for the singular locus. (See SEction \ref{local_prop}.) It is computed by
 \begin{itemize}
 	\itemtt[SingularLocus]
 \end{itemize}
-For \verb|monoid.in| the output file contains
+For \verb|monoid.in| (see Section \ref{moninp_def}) the output file contains
 \begin{Verbatim}
 codim singular locus = 1
 \end{Verbatim}
@@ -3031,7 +3031,7 @@ and the file with suffix
 \begin{itemize}
 	\itemtt[sng] contains the singular locus.
 \end{itemize}
-Thwe format is the same as that for the face lattice:
+The format is the same as that for the face lattice:
 \begin{Verbatim}
 2
 5
@@ -3039,7 +3039,7 @@ Thwe format is the same as that for the face lattice:
 00010 1
 00001 1
 \end{Verbatim}
-The last integer in each row is the codimension of a minimal singular prime ideal and the face opposite to it is the intersection of the support hypwerplanes with entry $1$ in the $0$-$1$-vector. The codimension $1$ is not surprising for a nonnormal monoid.
+The last integer in each row is the codimension of a minimal singular prime ideal and the face opposite to it is the intersection of the support hyperplanes with entry $1$ in the $0$-$1$-vector. The codimension $1$ is not surprising for a nonnormal monoid.
 
 If we are only interested in the codimenasion, we ask for
 \begin{itemize}
@@ -3049,15 +3049,15 @@ or only
 \begin{itemize}
 	\itemtt[IsSerreR1] checking the Serre property $(R_1)$
 \end{itemize}
-which means that the codimension of the singular locus is $\ge 2$. If this is all you wantb to know, then use \verb|IsSerreR1| since it avoids the computation of the face lattice.
+which means that the codimension of the singular locus is $\ge 2$. If this is all you want to know, then use \verb|IsSerreR1| since it avoids the computation of the face lattice.
 
 \subsection{Packed format in the output of binomials}\label{BinomialsPacked}
 
-Output files of binomials are often very sparse, i.e., contain many entries $0$. Rewading them by computerr algebra systems with a file interface like Singular or Macaulay2 can therefore be time consuming. To speed reading up, we have introduced a packed format for binimial output files.
+Output files of binomials are often very sparse, i.e., contain many entries $0$. Reading them by computer  algebra systems with a file interface like Singular or Macaulay2 can therefore be time consuming. To speed reading up, we have introduced a packed format for binomial output files.
 \begin{itemize}
 	\itemtt[BinomialsPacked] activates the packed format for binimial output files.
 \end{itemize}
-For \verb|representations.in| (discussed in Swction \ref{markov}) it tiurns \verb|representations.rep| into
+For \verb|representations.in| (discussed in Swction \ref{markov}) it turns \verb|representations.rep| into
 \begin{Verbatim}
 -4
 8
