@@ -215,19 +215,6 @@ jobs:
       NO_COVERAGE: "1"
     steps:
       - uses: actions/checkout@v2
-        with:
-          # For Codecov, we must also fetch the parent of the HEAD commit to
-          # be able to properly deal with PRs / merges
-          fetch-depth: 2
-
-      # Setup ccache, to speed up repeated compilation of the same binaries
-      - name: "Setup ccache"
-        uses: Chocobo1/setup-ccache-action@v1
-        with:
-          override_cache_key: ${{ runner.os }}-${{ github.job }}-${{ github.ref }}
-          override_cache_key_fallback: ${{ runner.os }}-${{ github.job }}
-          update_packager_index: false
-
       - name: "Setup compiler and build automake"
         run: |
           brew reinstall llvm automake boost
@@ -264,19 +251,6 @@ jobs:
       NO_OPENMP: "1"
     steps:
       - uses: actions/checkout@v2
-        with:
-          # For Codecov, we must also fetch the parent of the HEAD commit to
-          # be able to properly deal with PRs / merges
-          fetch-depth: 2
-
-      # Setup ccache, to speed up repeated compilation of the same binaries
-      - name: "Setup ccache"
-        uses: Chocobo1/setup-ccache-action@v1
-        with:
-          override_cache_key: ${{ runner.os }}-${{ github.job }}-${{ github.ref }}
-          override_cache_key_fallback: ${{ runner.os }}-${{ github.job }}
-          update_packager_index: false
-
       - name: "Setup automake"
         run: |
           brew reinstall automake boost
@@ -305,19 +279,6 @@ jobs:
       NO_COVERAGE: "1"
     steps:
       - uses: actions/checkout@v2
-        with:
-          # For Codecov, we must also fetch the parent of the HEAD commit to
-          # be able to properly deal with PRs / merges
-          fetch-depth: 2
-
-      # Setup ccache, to speed up repeated compilation of the same binaries
-      - name: "Setup ccache"
-        uses: Chocobo1/setup-ccache-action@v1
-        with:
-          override_cache_key: ${{ runner.os }}-${{ github.job }}-${{ github.ref }}
-          override_cache_key_fallback: ${{ runner.os }}-${{ github.job }}
-          update_packager_index: false
-
       - name: "Setup automake"
         run: |
           brew reinstall automake
@@ -347,19 +308,6 @@ jobs:
       NO_COVERAGE: "1"
     steps:
       - uses: actions/checkout@v2
-        with:
-          # For Codecov, we must also fetch the parent of the HEAD commit to
-          # be able to properly deal with PRs / merges
-          fetch-depth: 2
-
-      # Setup ccache, to speed up repeated compilation of the same binaries
-      - name: "Setup ccache"
-        uses: Chocobo1/setup-ccache-action@v1
-        with:
-          override_cache_key: ${{ runner.os }}-${{ github.job }}-${{ github.ref }}
-          override_cache_key_fallback: ${{ runner.os }}-${{ github.job }}
-          update_packager_index: false
-
       - name: "Setup automake"
         run:
           brew reinstall automake boost

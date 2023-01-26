@@ -53,7 +53,7 @@ template <typename Integer>
 class Collector;
 
 /* The SimplexEvaluator provides preallocated space for the comutations in simplex.cpp,
- * especially matrices and vectors. It also collects elements for thge local Hilbert basis.
+ * especially matrices and vectors. It also collects elements for the local Hilbert basis.
  * The Full_Cone provides one evaluator per thread.
  */
 

@@ -30,7 +30,7 @@
 #include "libnormaliz/general.h"
 
 namespace libnormaliz {
-    
+
 using std::string;
 
 namespace Type {
@@ -46,6 +46,7 @@ enum InputType {
     lattice,
     saturation,
     rational_lattice,
+    monoid,
     //
     // inhomogeneous generators
     //
@@ -70,15 +71,20 @@ enum InputType {
     inhom_congruences,
     inhom_excluded_faces,
     //
-    // linearforms
+    // linear forms
     //
     grading,
     dehomogenization,
     //
+    // lattice ideals and friends
+    //
+    lattice_ideal,
+    toric_ideal,
+    normal_toric_ideal,
+    //
     // special
     open_facets,
     projection_coordinates,
-    lattice_ideal,
     //
     // precomputed data
     //
@@ -130,6 +136,8 @@ enum Param {
     autom_codim_bound_vectors,
     block_size_hollow_tri,
     decimal_digits,
+    gb_degree_bound,
+    gb_min_degree,
     not_a_num_param
 };
 }  // end namespace NumParam
@@ -202,8 +210,14 @@ inline InputType to_type(const string& type_string) {
     if (type_string == "signs") {
         return Type::signs;
     }
-    if (type_string == "10" || type_string == "lattice_ideal") {
+    if (type_string == "lattice_ideal") {
         return Type::lattice_ideal;
+    }
+    if ( type_string == "toric_ideal") {
+        return Type::toric_ideal;
+    }
+    if ( type_string == "normal_toric_ideal") {
+        return Type::normal_toric_ideal;
     }
     if (type_string == "grading") {
         return Type::grading;
@@ -222,6 +236,9 @@ inline InputType to_type(const string& type_string) {
     }
     if (type_string == "saturation") {
         return Type::saturation;
+    }
+    if (type_string == "monoid") {
+        return Type::monoid;
     }
     if (type_string == "cone") {
         return Type::cone;
@@ -325,6 +342,28 @@ inline bool type_is_vector(InputType type) {
     return false;
 }
 
+inline bool is_inequalities(InputType type) {
+    if (type == Type::signs || type == Type::strict_signs || type == Type::inequalities || type ==
+        Type::strict_inequalities || type == Type::inhom_inequalities || type == Type::excluded_faces
+           || type == Type::inhom_excluded_faces) {
+        return true;
+    }
+    return false;
+}
+
+// generators definiong something convex
+inline bool is_generators(InputType type) {
+    if (type == Type::cone || type == Type::cone_and_lattice
+           || type == Type::polyhedron  || type == Type::vertices
+           || type == Type::polytope || type == Type::rees_algebra
+           || type == Type::monoid || type == Type::integral_closure
+           || type == Type::normalization) {
+        return true;
+    }
+    return false;
+}
+
+
 inline NumParam::Param to_numpar(const string& type_string) {
     if (type_string == "expansion_degree")
         return NumParam::expansion_degree;
@@ -338,6 +377,10 @@ inline NumParam::Param to_numpar(const string& type_string) {
         return NumParam::block_size_hollow_tri;
     if (type_string == "decimal_digits")
         return NumParam::decimal_digits;
+    if (type_string == "gb_degree_bound")
+        return NumParam::gb_degree_bound;
+    if (type_string == "gb_min_degree")
+        return NumParam::gb_min_degree;
 
     return NumParam::not_a_num_param;
 }
@@ -357,6 +400,10 @@ inline string numpar_to_string(const NumParam::Param& numpar) {
         return "block_size_hollow_tri";
     if (numpar == NumParam::decimal_digits)
         return "decimal_digits";
+    if (numpar == NumParam::gb_degree_bound)
+        return "gb_degree_bound";
+    if (numpar == NumParam::gb_min_degree)
+        return "gb_min_degree";
     if (numpar == NumParam::not_a_num_param)
         return "not_a_num_param";
     assert(false);

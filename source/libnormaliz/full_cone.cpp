@@ -45,6 +45,10 @@
 #include "libnormaliz/sublattice_representation.h"
 #include "libnormaliz/offload_handler.h"
 
+#ifdef _MSC_VER
+typedef long long ssize_t;
+#endif
+
 //---------------------------------------------------------------------------
 
 namespace libnormaliz {
@@ -80,7 +84,7 @@ size_t count_large_pyrs = 0;
 */
 
 //-------------------------------------------------------------------------
-// Hedre to avoid a probem with certain compikers
+// Hedre to avoid a problem with certain compikers
 
 void integrate(SignedDec<mpz_class>& SD, const bool do_virt_mult);
 
@@ -741,7 +745,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator) {
 
         if (facet.neutral) {
             facet.GenInHyp.set(new_generator);  // Must be set explicitly !!
-            facet.simplicial = false;           // simpliciality definitly gone with the new generator
+            facet.simplicial = false;           // simpliciality definitely gone with the new generator
             if (simplex) {
                 Neutral_Simp.push_back(&facet);  // simplicial without the new generator
             }
@@ -909,7 +913,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator) {
 
         // We remove negative simplicial subfacets that appear in neuitral facets or negative nonsimplicial facets
         if (nr_NegSubfMult * (nr_NeuSimp + nr_NeuNonSimp + nr_NegNonSimp) <=
-            100000000) {  // to prevent a desaster in the double loops,
+            100000000) {  // to prevent a disaster in the double loops,
             bool found;
 
             // This for region cannot throw a NormalizException
@@ -1168,7 +1172,7 @@ void Full_Cone<Integer>::find_new_facets(const size_t& new_generator) {
 
                         if (extension_test) {
                             bool extended = false;
-                            second_loop_bound = both_existing_from;  // fisrt we find the common vertices inserted from the step
+                            second_loop_bound = both_existing_from;  // first we find the common vertices inserted from the step
                                                                      // where both facets existed the first time
                             for (k = both_existing_from; k < nr_RelGen_PosHyp; k++) {
                                 if (!NegHyp_Pointer->GenInHyp.test(key[k])) {
@@ -2277,7 +2281,9 @@ void Full_Cone<Integer>::find_and_evaluate_start_simplex() {
     size_t i, j;
 
     vector<key_t> key = find_start_simplex();
-    assert(key.size() == dim);  // safety heck
+    if(key.size() != dim){  // safety heck
+       throw ArithmeticException("Most likely an overflow occurred. Rerunning with indefinite precision if possible. If you have used LOngLong, omit it. If the problem persists, iform the authors.");
+    }
     if (verbose) {
         verboseOutput() << "Start simplex ";
         for (unsigned int i : key)
@@ -3167,7 +3173,7 @@ void Full_Cone<Integer>::build_cone() {
                 tri_recursion = true;
                 process_pyramids(i, false);  // non-recursive
             }
-            else {  // no pyramids necesary or allowed
+            else {  // no pyramids necessary or allowed
                 if (do_partial_triangulation)
                     process_pyramids(i, false);  // non-recursive
                 if (do_triangulation)
@@ -3572,7 +3578,7 @@ void Full_Cone<Integer>::compute_multiplicity_or_integral_by_signed_dec() {
         nr_attempts++;
 
         if (nr_attempts > Powers10.size())
-            throw NotComputableException("SinedDec given up since generaic verctor could not be found");
+            throw NotComputableException("SinedDec given up since generaic vector could not be found");
 
         for (size_t k = 0; k < 2; ++k) {
             for (size_t i = 0; i < dim; ++i) {
@@ -4697,7 +4703,7 @@ template <typename Integer>
 void Full_Cone<Integer>::reset_degrees_and_merge_new_candidates() {
     make_module_gens();
 
-    NewCandidates.divide_sortdeg_by2();  // was previously multplied by 2
+    NewCandidates.divide_sortdeg_by2();  // was previously multiplied by 2
     NewCandidates.sort_by_deg();
 
     OldCandidates.merge(NewCandidates);
@@ -5420,7 +5426,7 @@ void Full_Cone<Integer>::get_cone_over_facet_vectors(const vector<Integer>& fixe
 
     Matrix<Integer> Facet_Gens(0, dim);
     // vector<Integer> selected_gen=replace_fixed_point_by_generator(fixed_point,facet_nr,help_grading);
-    // cpuld be the fixed point
+    // could be the fixed point
     Facet_Gens.append(fixed_point);
     Facet_Gens.append(Generators.submatrix(facet_key));
 
@@ -5493,7 +5499,7 @@ void Full_Cone<Integer>::compute_Deg1_via_automs() {
         union_of_orbits.sort();
         union_of_facets.merge(union_of_orbits);
     }
-    union_of_facets.unique();  // necesary since dupocates cannot be avoided
+    union_of_facets.unique();  // necessary since dupocates cannot be avoided
     Deg1_Elements.splice(Deg1_Elements.begin(), union_of_facets);
 
     setComputed(ConeProperty::Deg1Elements);
@@ -5583,7 +5589,7 @@ template <typename Integer>
 vector<vector<key_t>> Full_Cone<Integer>::get_facet_keys_for_orbits(const vector<Integer>& fixed_point, bool with_orbit_sizes) {
     // We collect only the facets that do not contain the fixed point.
     // The last one (or two) entries of each key vector are abused for
-    // (the orbit size and )  the number of the suport hyperplane.
+    // (the orbit size and )  the number of the support hyperplane.
     // Everything for the first hyperplane in the orbit.
 
     vector<vector<key_t>> facet_keys;

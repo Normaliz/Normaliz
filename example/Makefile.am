@@ -75,7 +75,6 @@ EXTRA_DIST =					\
 	hickerson-18plus1.in			\
 	huge.in					\
 	j462.in					\
-	lattice_ideal.in			\
 	knapsack_11_60.in			\
 	lo6.in					\
 	max_polytope_cand.in			\
@@ -115,8 +114,17 @@ EXTRA_DIST =					\
 	pythagoras_rat.in			\
 	subspace4.in				\
 	tame.in					\
-	tame_prec.in				
-	
+	tame_prec.in				\
+	monoid.in				\
+	representations.in			\
+	A443monoid.in				\
+	Kwak80.in				\
+	cone_latt_markov.in			\
+	toric_ideal.in				\
+	lin_bin.in				\
+	normal_toric_ideal.in			\
+	non_toric.in
+
 EXTRA_DIST +=					\
 	600cell-dual.in				\
 	600cell.in				\

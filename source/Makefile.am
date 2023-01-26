@@ -1,7 +1,7 @@
 EXTRA_DIST =
 
 AM_CPPFLAGS = -I$(top_srcdir)/source
-AM_CXXFLAGS = -Wall -pedantic -Wno-unknown-pragmas -Wno-sign-compare 
+AM_CXXFLAGS = -Wall -pedantic -Wno-unknown-pragmas -Wno-sign-compare
 AM_CXXFLAGS += $(OPENMP_CXXFLAGS)
 AM_LDFLAGS = -Wl,-s
 
@@ -35,6 +35,7 @@ nobase_include_HEADERS = \
   libnormaliz/nmz_config.h \
   libnormaliz/nmz_integrate.h \
   libnormaliz/nmz_nauty.h \
+  libnormaliz/nmz_polynomial.h \
   libnormaliz/normaliz_exception.h \
   libnormaliz/options.h \
   libnormaliz/output.h \
@@ -45,6 +46,8 @@ nobase_include_HEADERS = \
 # Sources
 libnormaliz_la_SOURCES = \
   libnormaliz/automorph.cpp \
+  libnormaliz/binomial.cpp \
+  libnormaliz/binomial_containers.cpp \
   libnormaliz/chunk.cpp \
   libnormaliz/collection.cpp \
   libnormaliz/cone_dual_mode.cpp \
@@ -56,9 +59,11 @@ libnormaliz_la_SOURCES = \
   libnormaliz/general.cpp \
   libnormaliz/HilbertSeries.cpp \
   libnormaliz/input.cpp \
+  libnormaliz/lattice_ideal.cpp \
   libnormaliz/matrix.cpp \
   libnormaliz/nmz_integral.cpp \
   libnormaliz/nmz_nauty.cpp \
+  libnormaliz/nmz_polynomial.cpp \
   libnormaliz/nmz_hash.cpp \
   libnormaliz/offload_handler.cpp \
   libnormaliz/options.cpp \
@@ -72,10 +77,13 @@ libnormaliz_la_SOURCES = \
 
 # Other headers (not installed)
 noinst_HEADERS = \
+  libnormaliz/binomial.h \
+  libnormaliz/binomial_containers.h \
   libnormaliz/chunk.h \
   libnormaliz/cone_dual_mode.h \
   libnormaliz/face_lattice.h \
   libnormaliz/full_cone.h \
+  libnormaliz/lattice_ideal.h \
   libnormaliz/nmz_hash.h \
   libnormaliz/offload_handler.h \
   libnormaliz/options.h \
@@ -85,7 +93,7 @@ noinst_HEADERS = \
   libnormaliz/simplex.h \
   libnormaliz/collection.h
 
-libnormaliz_la_LDFLAGS = -no-undefined -version-info 12:4:9
+libnormaliz_la_LDFLAGS = -no-undefined -version-info 13:0:10
 ## Conjecture: x.y.z yields x-z.z.y
 #libnormaliz_la_LIBADD = $(GMP_LIBS)
 
@@ -113,7 +121,7 @@ EXTRA_DIST += dynamic/third.mat
 
 
 # Plain old build system
-EXTRA_DIST += Makefile.classic Makefile.configuration libnormaliz/Makefile.classic 
+EXTRA_DIST += Makefile.classic Makefile.configuration libnormaliz/Makefile.classic
 
 # The classic makefile creates this file, which can confuse automake builds
 CLEANFILES = normaliz.o

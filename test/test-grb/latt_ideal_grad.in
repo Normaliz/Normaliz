@@ -1,0 +1,10 @@
+amb_space 4
+normal_toric_ideal 1
+2 1 -2 -1
+grading
+2 2 2 2
+NoGradingDenom
+HilbertSeries
+GroebnerBasis
+IsSerreR1
+Lex

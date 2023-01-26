@@ -25,6 +25,10 @@
 #include "libnormaliz/face_lattice.h"
 #include "libnormaliz/vector_operations.h"
 
+#ifdef _MSC_VER
+typedef long long ssize_t;
+#endif
+
 namespace libnormaliz {
 
 using namespace std;
@@ -173,7 +177,7 @@ void FaceLattice<Integer>::compute(const long face_codim_bound, const bool verbo
     if (change_integer_type)
         convert(SuppHyps_MI, SuppHyps);
 
-    /*for(int i=0;i< 10000;++i){ // for pertubation of order of supphyps
+    /*for(int i=0;i< 10000;++i){ // for perturbation of order of supphyps
         int j=rand()%nr_supphyps;
         int k=rand()%nr_supphyps;
         swap(SuppHypInd[j],SuppHypInd[k]);

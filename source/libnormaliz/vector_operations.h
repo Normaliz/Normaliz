@@ -215,7 +215,7 @@ bool v_non_negative(const vector<Integer>& v) {
 
 //---------------------------------------------------------------------------
 /*
-// returns a key vector containing the positions of non-zero entrys of v
+// returns a key vector containing the positions of non-zero entries of v
 template <typename Integer>
 vector<key_t> v_non_zero_pos(const vector<Integer>& v) {
     vector<key_t> key;
@@ -875,6 +875,19 @@ inline mpq_class v_scalar_product(const vector<mpq_class>& av, const vector<mpq_
 //---------------------------------------------------------------------------
 
 template <typename Integer>
+Integer pos_degree(const vector<Integer>& to_test, const vector<Integer> grading){
+    assert(to_test.size() == grading.size());
+    Integer deg = 0;
+    for(size_t j = 0; j < to_test.size(); ++j)
+        if(to_test[j] > 0)
+            deg += to_test[j]*grading[j];
+
+    return deg;
+}
+
+//---------------------------------------------------------------------------
+
+template <typename Integer>
 vector<Integer> v_select_coordinates(const vector<Integer>& v, const vector<key_t> projection_key) {
     vector<Integer> w(projection_key.size());
     for (size_t i = 0; i < w.size(); ++i)
@@ -1354,6 +1367,47 @@ void AdditionPyramid<Integer>::add(const Integer& summand) {
     }
     add_inner(summand, 0);
 }
+
+template <typename T>
+void v_cyclic_shift_right( T& vec, size_t col){
+    if(vec.size() == 0)
+        return;
+    assert(col < vec.size());
+    auto dummy = vec[col];
+    for(int i = col; i >= 1; --i)
+        vec[i] = vec[i-1];
+    vec[0] = dummy;
+}
+
+template <typename T>
+void v_cyclic_shift_left( T& vec, size_t col){
+    if(vec.size() == 0)
+        return;
+    assert(col < vec.size());
+    auto dummy = vec[0];
+    for(size_t i = 0; i < col; ++i)
+        vec[i] = vec[i+1];
+    vec[col] = dummy;
+}
+
+template <typename T>
+T v_permute_coordinates(const T& vec, const vector<key_t>& perm){
+    assert(vec.size() == perm.size());
+    T new_vec(vec.size());
+    for(size_t i = 0; i< vec.size(); ++i)
+        new_vec[i] = vec[perm[i]];
+    return new_vec;
+}
+
+template <typename T>
+T v_inverse_permute_coordinates(const T& vec, const vector<key_t>& perm){
+    assert(vec.size() == perm.size());
+    T new_vec(vec.size());
+    for(size_t i = 0; i< vec.size(); ++i)
+        new_vec[perm[i]] = vec[i];
+    return new_vec;
+}
+
 
 }  // namespace libnormaliz
 

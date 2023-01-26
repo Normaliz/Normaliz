@@ -66,8 +66,14 @@ TEST_FILES_GEN_GEN = $(patsubst %.in,%.gen.diff,$(wildcard test-gen/*.in))
 TEST_FILES_CST = $(patsubst %.in,%.diff,$(wildcard test-cst/*.in))
 TEST_FILES_CST_CST = $(patsubst %.in,%.cst.diff,$(wildcard test-cst/*.in))
 
+TEST_FILES_MRK = $(patsubst %.in,%.diff,$(wildcard test-mrk/*.in))
+TEST_FILES_MRK_MRK = $(patsubst %.in,%.mrk.diff,$(wildcard test-mrk/*.in))
 
-all: tests testv testn test1 testN testq testp testd testh testdefault testd1 testdnn testr1 testM testw testH testpr testdeg testDec testStDec testFac testInc testgen testcst testSpecial testclo
+TEST_FILES_GRB = $(patsubst %.in,%.diff,$(wildcard test-grb/*.in))
+TEST_FILES_GRB_GRB = $(patsubst %.in,%.grb.diff,$(wildcard test-grb/*.in))
+
+
+all: tests testv testn test1 testN testq testp testd testh testdefault testd1 testdnn testr1 testM testw testH testpr testdeg testDec testStDec testFac testInc testgen testcst testSpecial testclo testmrk testgrb
 
 ## Don't include testLARGE into all! It requires the optional libraries and runs very long.
 
@@ -104,10 +110,12 @@ testFac: $(TEST_FILES_FAC) $(TEST_FILES_FAC_FAC)
 testInc: $(TEST_FILES_INC) $(TEST_FILES_INC_INC)
 testgen: $(TEST_FILES_GEN) $(TEST_FILES_GEN_GEN)
 testcst: $(TEST_FILES_CST) $(TEST_FILES_CST_CST)
+testmrk: $(TEST_FILES_MRK) $(TEST_FILES_MRK_MRK)
+testgrb: $(TEST_FILES_GRB) $(TEST_FILES_GRB_GRB)
 
 # the next test is only inderted for code coverage
 # calling all "new" command line options
-# that are tested via options in imput files
+# that are tested via options in input files
 #or are left to be chosen by Normaliz
 testclo: test-clopt/whow.out
 
@@ -186,6 +194,14 @@ test-r1/%.out: $(NORMALIZ) test-r1/%.in
 	$(NICE) $(NORMALIZ) $(NORMPARA) -r1 test-r1/$*
 test-LARGE/%.out: $(NORMALIZ) test-LARGE/%.in
 	$(NICE) $(NORMALIZ) $(NORMPARA) -x=16 test-LARGE/$*
+
+test-Qdegenerate/%.out: $(NORMALIZ) test-Qdegenerate/%.in
+	$(NICE) $(NORMALIZ) $(NORMPARA) test-Qdegenerate/$*
+test-nf/%.out: $(NORMALIZ) test-nf/%.in
+	$(NICE) $(NORMALIZ) $(NORMPARA) -sc test-nf/$* > /dev/null
+test-nf-hh/%.out test-nf-hh/%.IntHull.out: $(NORMALIZ) test-nf-hh/%.in
+	$(NICE) $(NORMALIZ) $(NORMPARA) -H test-nf-hh/$*
+
 # for the next rules with two targets USING PATTERNS, make will execute it only once
 # to create the two target files
 test-hh/%.out test-hh/%.IntHull.out: $(NORMALIZ) test-hh/%.in
@@ -204,27 +220,20 @@ test-Special/%.out: $(NORMALIZ) test-Special/%.in
 	$(NICE) $(NORMALIZ) $(NORMPARA) -ca test-Special/$* > /dev/null
 test-StDec/%.out test-StDec/%.dec: $(NORMALIZ) test-StDec/%.in
 	$(NICE) $(NORMALIZ) $(NORMPARA) test-StDec/$*
-
 test-Fac/%.out test-Fac/%.fac: $(NORMALIZ) test-Fac/%.in
 	$(NICE) $(NORMALIZ) $(NORMPARA) test-Fac/$*
-
 test-Inc/%.out test-Inc/%.inc: $(NORMALIZ) test-Inc/%.in
 	$(NICE) $(NORMALIZ) $(NORMPARA) test-Inc/$*
-
 test-gen/%.out test-gen/%.gen: $(NORMALIZ) test-gen/%.in
 	$(NICE) $(NORMALIZ) $(NORMPARA) -N --gen test-gen/$*
-
 test-cst/%.out test-cst/%.cst: $(NORMALIZ) test-cst/%.in
 	$(NICE) $(NORMALIZ) $(NORMPARA) -s --cst test-cst/$*
+test-mrk/%.out test-mrk/%.mrk: $(NORMALIZ) test-mrk/%.in
+	$(NICE) $(NORMALIZ) $(NORMPARA) test-mrk/$*
+test-grb/%.out test-grb/%.grb: $(NORMALIZ) test-grb/%.in
+	$(NICE) $(NORMALIZ) $(NORMPARA) test-grb/$*
 
-test-Qdegenerate/%.out: $(NORMALIZ) test-Qdegenerate/%.in
-	$(NICE) $(NORMALIZ) $(NORMPARA) test-Qdegenerate/$*
 
-test-nf/%.out: $(NORMALIZ) test-nf/%.in
-	$(NICE) $(NORMALIZ) $(NORMPARA) -sc test-nf/$* > /dev/null
-
-test-nf-hh/%.out test-nf-hh/%.IntHull.out: $(NORMALIZ) test-nf-hh/%.in
-	$(NICE) $(NORMALIZ) $(NORMPARA) -H test-nf-hh/$*
 
 clean:
 	-rm -f test-*/*.diff
@@ -274,6 +283,10 @@ distclean: clean
 .PRECIOUS: test-LARGE/%.out
 .PRECIOUS: test-Fac/%.out
 .PRECIOUS: test-Inc/%.out
+.PRECIOUS: test-mrk/%.out
+.PRECIOUS: test-mrk/%.mrk
+.PRECIOUS: test-grb/%.out
+.PRECIOUS: test-grb/%.grb
 .PRECIOUS: test-clopt/whow.out
 .PRECIOUS: test-nf/%.out test-nf-hh/%.out  test-nf-hh/%.IntHull.out test-Qdegenerate/%.out
 

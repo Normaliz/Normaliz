@@ -41,6 +41,10 @@
 #include "flint/fmpz_mat.h"
 #endif
 
+#ifdef _MSC_VER
+typedef long long ssize_t;
+#endif
+
 //---------------------------------------------------------------------------
 
 namespace libnormaliz {
@@ -240,6 +244,43 @@ void Matrix<Integer>::print(ostream& out, bool with_format) const {
         out << endl;
     }
 }
+
+//---------------------------------------------------------------------------
+
+template <typename Integer>
+void Matrix<Integer>::sparse_print(const string& name, const string& suffix) const {
+    string file_name = name + "." + suffix;
+    const char* file = file_name.c_str();
+    ofstream out(file);
+    sparse_print(out);
+    out.close();
+}
+
+//---------------------------------------------------------------------------
+
+template <typename Integer>
+void Matrix<Integer>::sparse_print(ostream& out, bool with_format) const {
+    size_t i, j;
+    long nr_long = nr;
+    if (with_format)
+        out << -nr_long << endl << nc << endl;
+    for (i = 0; i < nr; i++) {
+        size_t nr_nonzero = 0;
+        for (j = 0; j < nc; j++) {
+            if(elem[i][j] != 0)
+                nr_nonzero++;
+        }
+        out << nr_nonzero << " ";
+
+        for (j = 0; j < nc; j++) {
+            if(elem[i][j] != 0)
+                out << j+1 << " " << elem[i][j] << " ";
+        }
+        out << endl;
+    }
+}
+
+//---------------------------------------------------------------------------
 
 template <typename Integer>
 void Matrix<Integer>::debug_print(char mark) const {
@@ -1529,6 +1570,31 @@ void Matrix<Integer>::exchange_rows(const size_t& row1, const size_t& row2) {
 //---------------------------------------------------------------------------
 
 template <typename Integer>
+void Matrix<Integer>::permute_columns(const vector<key_t>& perm) {
+    assert(perm.size() == nc);
+    Matrix<Integer> Copy = *this;
+    for(size_t i = 0; i< nr; ++i){
+        for(size_t j = 0; j< nc; ++j)
+            elem[i][j] = Copy[i][perm[j]];
+    }
+}
+
+//---------------------------------------------------------------------------
+
+template <typename Integer>
+void Matrix<Integer>::inverse_permute_columns(const vector<key_t>& perm) {
+    assert(perm.size() == nc);
+    Matrix<Integer> Copy = *this;
+    for(size_t i = 0; i< nr; ++i){
+        for(size_t j = 0; j< nc; ++j)
+            elem[i][perm[j]] = Copy[i][j];
+    }
+}
+
+
+//---------------------------------------------------------------------------
+
+template <typename Integer>
 void Matrix<Integer>::exchange_columns(const size_t& col1, const size_t& col2) {
     if (col1 == col2)
         return;
@@ -1536,6 +1602,34 @@ void Matrix<Integer>::exchange_columns(const size_t& col1, const size_t& col2) {
     assert(col2 < nc);
     for (size_t i = 0; i < nr; i++) {
         std::swap(elem[i][col1], elem[i][col2]);
+    }
+}
+
+//---------------------------------------------------------------------------
+
+template <typename Integer>
+void Matrix<Integer>::cyclic_shift_right(const size_t& col){
+    assert(col < nc);
+    Integer dummy;
+    for(int i = 0; i < nr; ++i){
+        dummy = elem[i][col];
+        for(size_t j = col; j >= 1; --j)
+            elem[i][j] = elem[i][j-1];
+        elem[i][0] = dummy;
+    }
+}
+
+//---------------------------------------------------------------------------
+
+template <typename Integer>
+void Matrix<Integer>::cyclic_shift_left(const size_t& col){
+    assert(col < nc);
+    Integer dummy;
+    for(size_t i = 0; i < nr; ++i){
+        dummy = elem[i][0];
+        for(size_t j = 0; j < col; ++j)
+            elem[i][j] = elem[i][j+1];
+        elem[i][col] = dummy;
     }
 }
 
@@ -1596,7 +1690,7 @@ bool Matrix<Integer>::reduce_row(size_t corner) {
 template <typename Integer>
 bool Matrix<Integer>::reduce_rows_upwards() {
     // assumes that "this" is in row echelon form
-    // and reduces eevery column in which the rank jumps
+    // and reduces every column in which the rank jumps
     // by its lowest element
 
     if (nr == 0)
@@ -1638,7 +1732,7 @@ bool Matrix<nmz_float>::reduce_rows_upwards() {
 template <>
 bool Matrix<renf_elem_class>::reduce_rows_upwards() {
     // assumes that "this" is in row echelon form
-    // and reduces eevery column in which the rank jumps
+    // and reduces every column in which the rank jumps
     // by its lowest element
     //
     if (nr == 0)
@@ -2936,7 +3030,9 @@ vector<Integer> Matrix<Integer>::solve_rectangular(const vector<Integer>& v, Int
     size_t i;
     vector<key_t> rows = max_rank_submatrix_lex();
     Matrix<Integer> Left_Side = submatrix(rows);
-    assert(nc == Left_Side.nr);  // otherwise input hadn't full rank //TODO
+    if(nc != Left_Side.nr){
+        throw ArithmeticException("Most likely an overflow occurred. Rerunning with indefinite precision if possible. If you have used LOngLong, omit it. If the problem persists, iform the authors.");
+    }
     Matrix<Integer> Right_Side(v.size(), 1);
     Right_Side.write_column(0, v);
     Right_Side = Right_Side.submatrix(rows);
@@ -3568,7 +3664,7 @@ void Matrix<Integer>::saturate() {
 
 //---------------------------------------------------------------------------
 
-/* sorts rows of a matrix by a degree function and returns the permuation
+/* sorts rows of a matrix by a degree function and returns the permutation
  * does not change matrix (yet)
  */
 
@@ -4410,7 +4506,7 @@ BinaryMatrix<Integer>::BinaryMatrix(size_t m, size_t n, size_t height) {
 
 // data access & equality
 
-// test bit k in binary expansion at "planar" coordiantes (i,j)
+// test bit k in binary expansion at "planar" coordinates (i,j)
 template <typename Integer>
 bool BinaryMatrix<Integer>::test(key_t i, key_t j, key_t k) const {
     assert(i < nr_rows);

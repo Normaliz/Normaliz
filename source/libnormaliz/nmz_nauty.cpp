@@ -91,7 +91,7 @@ void getmyautoms(int count, int* perm, int* orbits, int numorbits, int stabverte
  *
  * There is one crucial point for isomorphism classes. See the comment in makeMM(...): we must take
  * care that the canonical type does not depend on the order in which the values in our matrix
- * are produced (or procesed).
+ * are produced (or processed).
  *
  */
 
@@ -298,7 +298,7 @@ void makeMMFromGensOnly(BinaryMatrix<renf_elem_class>& MM,
 // matrix with entries f(x), with x corresponding to a row and f to a column
 // This rectangular matrix is then interpreted as the weight pattern on a complete
 // bipartite graph.
-// Via a binary matrix the weights are tranlated into a grpah with "layers"
+// Via a binary matrix the weights are translated into a grpah with "layers"
 // where each layer corresponds to a place in the binary expansion of the entries.
 //
 // But the function can be used also for 0-1-matrices where the entries
@@ -581,7 +581,7 @@ nauty_result<Integer> compute_automs_by_nauty_FromGensOnly(const Matrix<Integer>
 
     vector<key_t> row_order;  //
     for (key_t i = 0; i < layer_size; ++i)
-        if (lab[i] < (int)mm)  // we suppoess the clumn of the special linear form
+        if (lab[i] < (int)mm)  // we suppoess the column of the special linear form
             row_order.push_back(lab[i]);
 
     /*vector<key_t> col_order(layer_size); // this includes the column of the special linear form

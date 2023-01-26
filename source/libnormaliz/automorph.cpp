@@ -66,7 +66,7 @@ bool AutomorphismGroup<Integer>::IsIntegral() const {
 
 template <typename Integer>
 bool AutomorphismGroup<Integer>::IsInput() const {
-    return HasQuality(AutomParam::input_gen) || HasQuality(AutomParam::input_gen);
+    return HasQuality(AutomParam::input_gen) || HasQuality(AutomParam::input_ineq);
 }
 
 template <typename Integer>
@@ -319,6 +319,9 @@ template <typename Integer>
 AutomorphismGroup<Integer>::AutomorphismGroup(const Matrix<Integer>& ExtRays,
                                               const Matrix<Integer>& SuppHyps,
                                               const Matrix<Integer>& SpecialLinForms) {
+
+    // SuppHyps.debug_print('+');
+    // ExtRays.debug_print('$');
     reset();
     size_t dim = ExtRays.nr_of_columns();
     Matrix<Integer> SpecialGens(0, dim);
@@ -1357,7 +1360,7 @@ vector<vector<key_t> > convert_to_orbits(const vector<key_t>& raw_orbits) {
 }
 
 vector<vector<key_t> > cycle_decomposition(vector<key_t> perm, bool with_fixed_points) {
-    // computes the cacle decomposition of a permutation with or wothout fixed points
+    // computes the cacle decomposition of a permutation with or without fixed points
 
     vector<vector<key_t> > dec;
     vector<bool> in_cycle(perm.size(), false);

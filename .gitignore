@@ -4,6 +4,8 @@
 # ignore normaliz executables
 normaliz
 normaliz_*
+normaliz-*
+*.exe
 
 # ignore executable tools
 collectcols
@@ -33,6 +35,11 @@ BUILD*
 *.aut
 *.fac
 *.inc
+*.mrk
+*.sng
+*.grb
+*.ogn
+.rep
 test/Dummy/*
 
 # ignore temporary test files
@@ -53,6 +60,8 @@ test/*/*.out_1
 *.ilg
 *.idx
 *.ind
+*.mrk
+*.grb
 
 # ignore gperftools
 source/gperftools/*

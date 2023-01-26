@@ -141,7 +141,7 @@ void SignedDec<Integer>::next_subfacet(const dynamic_bitset& Subfacet_next,
 }
 
 // This function tries to
-// Find a generic element. For this purpose we exchage the role of the generic element and the grading.
+// Find a generic element. For this purpose we exchange the role of the generic element and the grading.
 // The point is to find an element that does not share a critical hyperplane with the grading. This is a
 // syymetric relation. The function becomes 2 candidates in CandisatesGeneric and tries to form a suitable
 // linear combination if this is possible at all. It is possible if there is no critical hyperplane (through
@@ -361,7 +361,7 @@ bool SignedDec<Integer>::FindGeneric() {
     }
 
     // the last resort: multiply one of the two vector by a large factor
-    // so that the other vector cann be added without creating a zero for one
+    // so that the other vector can be added without creating a zero for one
     // of the critical linear forms
     int k;
     if (Quot[0] <= Quot[1])

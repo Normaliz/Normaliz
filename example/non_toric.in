@@ -1,0 +1,8 @@
+amb_space 4
+lattice_ideal 4
+2 -2 0 0
+1 1 -1 -1
+2 -1 1 -2
+-1 -1 1 -1
+/*GroebnerBasis
+DegLex*/

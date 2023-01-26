@@ -1,0 +1,38 @@
+0 lattice points in polytope (Hilbert basis elements of degree 1)
+1 extreme rays
+1 support hyperplanes
+
+embedding dimension = 9
+rank = 1
+external index = 1
+internal index = 1
+
+grading:
+1 0 0 0 0 0 0 0 0 
+
+degrees of extreme rays:
+2:1  
+
+***********************************************************************
+
+0 lattice points in polytope (Hilbert basis elements of degree 1):
+
+1 extreme rays:
+ 2 1 1 0 0 0 0 0 0
+
+1 support hyperplanes:
+ 1 0 0 0 0 0 0 0 0
+
+8 equations:
+ 1 0 -2 0 0 0 0 0 0
+ 0 1 -1 0 0 0 0 0 0
+ 0 0  0 1 0 0 0 0 0
+ 0 0  0 0 1 0 0 0 0
+ 0 0  0 0 0 1 0 0 0
+ 0 0  0 0 0 0 1 0 0
+ 0 0  0 0 0 0 0 1 0
+ 0 0  0 0 0 0 0 0 1
+
+1 basis elements of generated  lattice:
+ 2 1 1 0 0 0 0 0 0
+

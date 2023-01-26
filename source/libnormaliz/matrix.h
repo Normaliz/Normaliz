@@ -70,10 +70,10 @@ class Matrix {
     //---------------------------------------------------------------------------
     //              Row and column reduction
     //---------------------------------------------------------------------------
-    // return value false undicates failure because of overflow
+    // return value false indicates failure because of overflow
     // for all the routines below
 
-    // reduction via integer division and elemntary transformations
+    // reduction via integer division and elementary transformations
     bool reduce_row(size_t corner);           // reduction by the corner-th row
     bool reduce_row(size_t row, size_t col);  // corner at position (row,col)
 
@@ -95,7 +95,7 @@ class Matrix {
     // solution replaces right hand side
     bool solve_destructive_inner(bool ZZinvertible, Integer& denom);
 
-    // asembles the matrix of the system (left side the submatrix of mother given by key
+    // assembles the matrix of the system (left side the submatrix of mother given by key
     // right side from column vectors pointed to by RS
     // both in a single matrix
     void solve_system_submatrix_outer(const Matrix<Integer>& mother,
@@ -127,7 +127,7 @@ class Matrix {
     vector<key_t> max_rank_submatrix_lex_inner(bool& success, vector<key_t> perm = vector<key_t>(0)) const;
 
     // A version of invert that circumvents protection and leaves it to the calling routine
-    Matrix invert_unprotected(Integer& denom, bool& sucess) const;
+    Matrix invert_unprotected(Integer& denom, bool& success) const;
 
     bool SmithNormalForm_inner(size_t& rk, Matrix<Integer>& Right);
 
@@ -169,6 +169,10 @@ class Matrix {
 
     void exchange_rows(const size_t& row1, const size_t& row2);     // row1 is exchanged with row2
     void exchange_columns(const size_t& col1, const size_t& col2);  // col1 is exchanged with col2
+    void cyclic_shift_right(const size_t& col); // involving columns 0,...,col
+    void cyclic_shift_left(const size_t& col); // ditto, but opposite
+    void permute_columns(const vector<key_t>& perm); // column perm[i] becomes colimn i
+    void inverse_permute_columns(const vector<key_t>& perm); // the inverse operation
 
     //---------------------------------------------------------------------------
 
@@ -180,7 +184,7 @@ class Matrix {
     Matrix(size_t dim);                             // constructor of unit matrix
     Matrix(size_t row, size_t col);                 // main constructor, all entries 0
     Matrix(size_t row, size_t col, Integer value);  // constructor, all entries set to value
-    Matrix(const vector<vector<Integer> >& elem);   // constuctor, elem=elem
+    Matrix(const vector<vector<Integer> >& elem);   // constructor, elem=elem
     Matrix(const list<vector<Integer> >& elems);
     Matrix(const vector<Integer>& row);
 
@@ -192,9 +196,11 @@ class Matrix {
     void print(const string& name, const string& suffix) const;         //  writes matrix into name.suffix
     void print_append(const string& name, const string& suffix) const;  // the same, but appends matrix
     void print(std::ostream& out, bool with_format = true) const;       // writes matrix to the stream
+    void sparse_print(const string& name, const string& suffix) const;         //  writes matrix into name.suffix
+    void sparse_print(std::ostream& out, bool with_format = true) const;    // writes matrix sparse to the stream
     void debug_print(char mark = '*') const;
     void pretty_print(std::ostream& out, bool with_row_nr = false, bool count_from_one = false)
-        const;                     // writes matrix in a nice format to the stream                   // read a row
+        const;                     // writes matrix in a nice format to the stream
     size_t nr_of_rows() const;     // returns nr
     size_t nr_of_columns() const;  // returns nc
     void set_nr_of_columns(size_t c);
@@ -236,7 +242,7 @@ class Matrix {
     void resize_columns(size_t nr_cols);
     void Shrink_nr_rows(size_t new_nr_rows);
 
-    vector<Integer> diagonal() const;       // returns the diagonale of this
+    vector<Integer> diagonal() const;       // returns the diagonal of this
                                             // this should be a quadratic matrix
     size_t maximal_decimal_length() const;  // return the maximal number of decimals
                                             // needed to write an entry
@@ -365,7 +371,7 @@ class Matrix {
 
     size_t rank() const;                                    // returns rank
     Integer full_rank_index() const;                        // returns index of full rank sublattice
-    size_t rank_submatrix(const vector<key_t>& key) const;  // returns rank of submarix defined by key
+    size_t rank_submatrix(const vector<key_t>& key) const;  // returns rank of submatrix defined by key
 
     // returns rank of submatrix of mother. "this" is used as work space
     size_t rank_submatrix(const Matrix<Integer>& mother, const vector<key_t>& key);
@@ -375,7 +381,7 @@ class Matrix {
     Integer vol_submatrix(const vector<key_t>& key) const;
     Integer vol_submatrix(const Matrix<Integer>& mother, const vector<key_t>& key);
 
-    // find linearly indepenpendent submatrix of maximal rank
+    // find linearly independent submatrix of maximal rank
 
     vector<key_t> max_rank_submatrix_lex(vector<key_t> perm = vector<key_t>(0)) const;  // returns a vector with entries
     // the indices of the first rows in lexicographic order of this forming
@@ -386,7 +392,7 @@ class Matrix {
     // In the following routines, denom is the absolute value of the determinant of the
     // left side matrix.
     // If the diagonal is asked for, ZZ-invertible transformations are used.
-    // Otherwise ther is no restriction on the used algorithm
+    // Otherwise there is no restriction on the used algorithm
 
     // The diagonal of left hand side after transformation into an upper triangular matrix
     // is saved in diagonal, denom is |determinant|.
@@ -436,7 +442,7 @@ class Matrix {
     // computes solution vector for right side v
     // insists on integrality of the solution
 
-    // homogenous linear systems
+    // homogeneous linear systems
 
     Matrix<Integer> kernel(bool use_LLL = true) const;
     // computes a ZZ-basis of the solutions of (*this)x=0
@@ -466,7 +472,7 @@ class Matrix {
 
     vector<Integer> find_linear_form() const;
     // Tries to find a linear form which gives the same value an all rows of this
-    // this should be a m x n matrix (m>=n) of maxinal rank
+    // this should be a m x n matrix (m>=n) of maximal rank
     // returns an empty vector if there does not exist such a linear form
 
     vector<Integer> find_linear_form_low_dim() const;
@@ -548,7 +554,7 @@ class Matrix {
 /*
  * Binary matrices contain matrices of nonnegative integers.
  * Each entry is stored "vertically" as the binary expansion of an
- * index (relaive to values) i. The k-th binary digit of i (counting k from 0)
+ * index (relative to values) i. The k-th binary digit of i (counting k from 0)
  * is in layer k.
  *
  * The "true" value represented by i is values[i] (or mpz_values[i], see below).
@@ -556,7 +562,7 @@ class Matrix {
  * The goal is to store large matrices of relatively
  * small numbers with as little space as possible.
  *
- * Moreover this structure needs as a brifge to nauty.
+ * Moreover this structure needs as a bridge to nauty.
  *
  * It can happen that mpz_class values must be taken into account,
  * even if Integer = long or long long. (See nmz_nauty.cpp,
@@ -770,7 +776,7 @@ void convert(Matrix<ToType>& to_mat, const Matrix<FromType>& from_mat) {
 }
 
 //---------------------------------------------------------------------------
-//                  Matrix relateed functions
+//                  Matrix related functions
 //---------------------------------------------------------------------------
 // determines the maximal subsets in a vector of subsets given by their indicator vectors
 // result returned in is_max_subset -- must be initialized outside
@@ -779,7 +785,7 @@ void convert(Matrix<ToType>& to_mat, const Matrix<FromType>& from_mat) {
 template <typename IncidenceVector>
 void maximal_subsets(const vector<IncidenceVector>& ind, IncidenceVector& is_max_subset);
 
-// computes the incidence of LinForms withz Gens ijn the following sense:
+// computes the incidence of LinForms with Gens in the following sense:
 // Incidence[i][j] = 1 <==> scalar product(LinForms[i], Gnes[j]) == 0
 template <typename Integer>
 void makeIncidenceMatrix(vector<dynamic_bitset>& Incidence, const Matrix<Integer>& Gens, const Matrix<Integer>& LinForms);
