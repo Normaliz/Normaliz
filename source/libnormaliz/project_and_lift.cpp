@@ -763,6 +763,9 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                     EffectivePolys.push_back(PolyEqusThread[0][i]);
             }
 
+            if(verbose)
+                verboseOutput() << LevelPatches[coord] << " / " << coord << " active polynomials " << EffectivePolys.size() << " of " <<  PolyEqusThread[0].size() << endl;
+
             for(size_t thr = 0; thr < PolyEqusThread.size(); ++thr)
                 PolyEqusThread[thr] = EffectivePolys;
         }
