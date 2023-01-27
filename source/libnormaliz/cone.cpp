@@ -5758,6 +5758,12 @@ void Cone<Integer>::compute_singular_locus(const ConeProperties& ToCompute) {
         OurMonoidHere = HilbertBasis;
     }
 
+    // We need the full face lattice
+    if(isComputed(ConeProperty::FaceLattice) && face_codim_bound != -1){
+        face_codim_bound = -1;
+        is_Computed.reset(ConeProperty::FaceLattice);
+    }
+
     compute(ConeProperty::FaceLattice, ConeProperty::MaximalSubspace);  // in the monoid case we assume pointed
 
     vector< dynamic_bitset> InputIncidence(SupportHyperplanes.nr_of_rows(), dynamic_bitset(OurMonoidHere.nr_of_rows()));
