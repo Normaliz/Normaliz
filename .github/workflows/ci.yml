@@ -12,7 +12,7 @@ jobs:
       BUILDSYSTEM: "makedistcheck-cocoa"
       NO_COVERAGE: "1"
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           # For Codecov, we must also fetch the parent of the HEAD commit to
           # be able to properly deal with PRs / merges
@@ -46,7 +46,7 @@ jobs:
       NO_OPENMP: "1"
       NMZ_COMPILER: "clang++"
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           # For Codecov, we must also fetch the parent of the HEAD commit to
           # be able to properly deal with PRs / merges
@@ -79,7 +79,7 @@ jobs:
     env:
       BUILDSYSTEM: "eantic-nauty-cocoa-extended"
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           # For Codecov, we must also fetch the parent of the HEAD commit to
           # be able to properly deal with PRs / merges
@@ -115,7 +115,7 @@ jobs:
       # - name: "Setup tmate session"
       #   uses: mxschmitt/action-tmate@v3
       - name: "Upload coverage data to Codecov"
-        uses: codecov/codecov-action@v1
+        uses: codecov/codecov-action@v3
 
   eantic-nauty-notls-cocoa:
     runs-on: ubuntu-18.04
@@ -123,7 +123,7 @@ jobs:
       BUILDSYSTEM: "eantic-nauty-notls-cocoa"
       NO_COVERAGE: "1"
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           # For Codecov, we must also fetch the parent of the HEAD commit to
           # be able to properly deal with PRs / merges
@@ -168,7 +168,7 @@ jobs:
       NO_COVERAGE: "1"
       NMZ_COMPILER: "clang++-12"
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           # For Codecov, we must also fetch the parent of the HEAD commit to
           # be able to properly deal with PRs / merges
@@ -214,7 +214,7 @@ jobs:
       CONFIGURE_FLAGS: "--enable-openmp"
       NO_COVERAGE: "1"
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: "Setup compiler and build automake"
         run: |
           brew reinstall llvm automake boost
@@ -250,7 +250,7 @@ jobs:
       NO_COVERAGE: "1"
       NO_OPENMP: "1"
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: "Setup automake"
         run: |
           brew reinstall automake boost
@@ -278,7 +278,7 @@ jobs:
       BUILDSYSTEM: "nauty"
       NO_COVERAGE: "1"
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: "Setup automake"
         run: |
           brew reinstall automake
@@ -307,7 +307,7 @@ jobs:
       ## NORMPARA: "-x=1"
       NO_COVERAGE: "1"
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: "Setup automake"
         run:
           brew reinstall automake boost
