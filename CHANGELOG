@@ -2,9 +2,9 @@
 
 ## [3.10.0]  2023-01-20
 
--- improvements in patching algorithm with polynomoial equations
+-- improvements in patching algorithm with polynomial equations
 -- input types monoid, lattice_ideal (changed), toric_ideal, normal_toric_ideal
--- Markov and Gröbnber bases of lattice ideals, representations of reducible elements
+-- Markov and Gröbner bases of lattice ideals, representations of reducible elements
 -- packed format of files with binomials on request
 -- Hilbert series for all positive affine monoids
 -- Computation of the singular locus
@@ -13,9 +13,9 @@
 ## [3.9.4]  2022-08-14
 
 -- Positive systems
--- Polynomial constraints for loattice points
+-- Polynomial constraints for lattice points
 -- Coarse project-and-lift
--- Patching algorithm in pproject-and-lift
+-- Patching algorithm in project-and-lift
 
 ## [3.9.3]  2022-04-21
 
