@@ -114,6 +114,9 @@ jobs:
         run: .github/workflows/.github-ci-build_check.sh
       # - name: "Setup tmate session"
       #   uses: mxschmitt/action-tmate@v3
+      - name: "Collect coverage data"
+        run: |
+          find . -type f -name '*.gcno' -exec gcov -pb {} +
       - name: "Upload coverage data to Codecov"
         uses: codecov/codecov-action@v3
 
