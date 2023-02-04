@@ -15,7 +15,7 @@
 -- Positive systems
 -- Polynomial constraints for loattice points
 -- Coarse project-and-lift
--- Patching algorithm in pproject-and-lift
+-- Patching algorithm in project-and-lift
 
 ## [3.9.3]  2022-04-21
 
