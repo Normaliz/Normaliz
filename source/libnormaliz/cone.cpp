@@ -4052,6 +4052,7 @@ ConeProperties Cone<Integer>::monoid_compute(ConeProperties ToCompute) {
 template <>
 ConeProperties Cone<renf_elem_class>::lattice_ideal_compute(ConeProperties ToCompute) {
     assert(false);
+	return {};
 }
 #endif
 
