@@ -145,12 +145,18 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
     for(auto& T: AllPolyInequsThread)
         T.resize(omp_get_max_threads());
 
+    AllRestrictablePolyInequs.resize(EmbDim);
+    AllRestrictablePolyInequsThread.resize(EmbDim);
+    for(auto& T: AllRestrictablePolyInequsThread)
+        T.resize(omp_get_max_threads());
+
     NrRemainingLP.resize(EmbDim,0);
     NrDoneLP.resize(EmbDim,0);
     AllLocalSolutions_by_intersecion.resize(EmbDim);
     AllLocalSolutions.resize(EmbDim);
 
     poly_equs_minimized.resize(EmbDim);
+    poly_restrictable_inequs_minimized.resize(EmbDim);
 
     // First we compute the patches
     for(size_t coord = 1; coord < EmbDim; coord++){
@@ -277,7 +283,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
         dynamic_bitset new_covered = covered | AllPatches[coord];
 
         // Collect relevant polynomial constraints
-        vector<key_t> PolyEqusKey, PolyInequsKey;
+        vector<key_t> PolyEqusKey, PolyInequsKey, RestrictablePolyInequsKey;
 
         // first the equations
         for(size_t i = 0; i < PolyEquations.size(); ++i){
@@ -306,6 +312,31 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
             T = AllPolyInequs[coord];
         }
 
+        // now the inequalities which can be restricted
+        for(size_t i = 0; i < RestrictablePolyInequs.size(); ++i){
+            if(RestrictablePolyInequs[i].support.is_subset_of(new_covered))
+                continue;
+            if(!(RestrictablePolyInequs[i]).is_restrictable_inequ(new_covered))
+                continue;
+            /* cout << "***********************************************" << endl;
+            cout << "ccord " << coord << endl;
+            cout << bitset_to_key(new_covered);
+            OurPolynomial<IntegerRet> PPPPP = PolyInequalities[i];
+            for(auto& T: PPPPP){
+                cout << bitset_to_key(T.support);
+                cout << T.coeff << endl;
+                cout << "------" << endl;
+            }
+
+            cout << "***********************************************" << endl;
+            exit(0);*/
+            AllRestrictablePolyInequs[coord].push_back(PolyInequalities[i]);
+            RestrictablePolyInequsKey.push_back(i);
+        }
+        for(auto& T: AllPolyInequsThread[coord]){ // vcopy for each thread
+            T = AllRestrictablePolyInequs[coord];
+        }
+
 #ifdef NMZ_DEVELOP
         if(verbose)
             verboseOutput() << endl << "index coord " << coord << " nr covered coordinates " << new_covered.count() << " coordinates " << bitset_to_key(new_covered);
@@ -313,6 +344,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
             verboseOutput() << endl << "poly equations " << PolyEqusKey;
         if(verbose && PolyInequsKey.size() > 0)
             verboseOutput() << endl << coord << " poly inequalities " << PolyInequsKey;
+        if(verbose && RestrictablePolyInequsKey.size() > 0)
+            verboseOutput() << endl << coord << " rwatrictable poly inequalities " << RestrictablePolyInequsKey;
         if(verbose)
             verboseOutput() << "---------------------------------------------------------------" << endl;
 #endif
@@ -538,6 +571,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
 
     vector<OurPolynomialSystem<IntegerRet>>& PolyEqusThread = AllPolyEqusThread[coord];
     vector<OurPolynomialSystem<IntegerRet>>& PolyInequsThread = AllPolyInequsThread[coord];
+    vector<OurPolynomialSystem<IntegerRet>>& PolyRestrictableInequsThread = AllRestrictablePolyInequsThread[coord];
 
     ProjectAndLift<IntegerPL, IntegerRet>& LocalPL = AllLocalPL[coord];
     map<vector<IntegerRet>, vector<key_t> >& LocalSolutions_by_intersecion = AllLocalSolutions_by_intersecion[coord];
@@ -618,10 +652,19 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         vector<vector<size_t> > poly_stat;
         vector<size_t> poly_stat_total;
         if(!poly_equs_minimized[coord]){
-            poly_stat.resize(omp_get_max_threads());  // counts the number of "successful". iu.e. != 0,
-            for(auto& p:poly_stat)                    // evaluations of a mpolynomial erquationj
+            poly_stat.resize(omp_get_max_threads());  // counts the number of "successful". i.e. != 0,
+            for(auto& p:poly_stat)                    // evaluations of a mpolynomial erquation
                 p.resize(PolyEqusThread[0].size());
             poly_stat_total.resize(poly_stat[0].size());
+        }
+
+        vector<vector<size_t> > poly_restrictable_stat;
+        vector<size_t> poly_restrictable_stat_total;
+        if(!poly_restrictable_inequs_minimized[coord]){
+            poly_restrictable_stat.resize(omp_get_max_threads());  // counts the number of "successful". i.e. < 0,
+            for(auto& p:poly_stat)                    // evaluations of a restricted mpolynomial inequalities
+                p.resize(PolyRestrictableInequsThread[0].size());
+            poly_restrictable_stat_total.resize(poly_stat[0].size());
         }
 
 #pragma omp parallel
@@ -647,6 +690,9 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         list<key_t> order_poly_inequs;
         for(key_t k = 0; k < PolyInequsThread[tn].size(); ++k)
             order_poly_inequs.push_back(k);
+        list<key_t> order_restrictable_poly_inequs;
+        for(key_t k = 0; k < PolyInequsThread[tn].size(); ++k)
+            order_restrictable_poly_inequs.push_back(k);
 
 #pragma omp for schedule(dynamic)
         for (size_t ppp = 0; ppp < nr_to_match; ++ppp) {
@@ -708,6 +754,18 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                     }
                 }
                 if(can_be_inserted){
+                    for(auto pp = order_restrictable_poly_inequs.begin(); pp!= order_restrictable_poly_inequs.end(); ++pp){
+                        if(PolyRestrictableInequsThread[tn][*pp].evaluate(NewLattPoint) < 0){
+                            can_be_inserted = false;
+                            if(!poly_restrictable_inequs_minimized[coord])
+                                poly_restrictable_stat[tn][*pp]++;
+                            else
+                                order_restrictable_poly_inequs.splice(order_restrictable_poly_inequs.begin(), order_restrictable_poly_inequs, pp);
+                            break;
+                        }
+                    }
+                }
+                if(can_be_inserted){
                     nr_points_in_thread++;
                     if(last_coord)
                         finalize_latt_point(NewLattPoint, tn);
@@ -744,6 +802,14 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
             // cout << "PPPP " << poly_stat_total;
         }
 
+        if(!poly_restrictable_inequs_minimized[coord]){
+            for(size_t i = 0; i< poly_stat.size(); ++i){
+                    for(size_t j = 0; j < poly_stat[0].size(); ++j)
+                        poly_restrictable_stat_total[j] += poly_restrictable_stat[i][j];
+            }
+            // cout << "PPPP " << poly_stat_total;
+        }
+
         for (size_t i = 0; i < Deg1Thread.size(); ++i)
             NewLatticePoints.splice(NewLatticePoints.end(), Deg1Thread[i]);
 
@@ -764,10 +830,26 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
             }
 
             if(verbose)
-                verboseOutput() << LevelPatches[coord] << " / " << coord << " active polynomials " << EffectivePolys.size() << " of " <<  PolyEqusThread[0].size() << endl;
+                verboseOutput() << LevelPatches[coord] << " / " << coord << " active polynomial equations " << EffectivePolys.size() << " of " <<  PolyEqusThread[0].size() << endl;
 
             for(size_t thr = 0; thr < PolyEqusThread.size(); ++thr)
-                PolyEqusThread[thr] = EffectivePolys;
+                    PolyEqusThread[thr] = EffectivePolys;
+        }
+
+        //Discard ineffective restrictable plolynjomial inequalities
+        if(!poly_restrictable_inequs_minimized[coord] &&  nr_latt_points_total > nr_new_latt_points_for_elimination_equs){
+            poly_restrictable_inequs_minimized[coord] = true;
+            OurPolynomialSystem<IntegerRet> EffectiveRestrictablePolyInequs;
+            for(size_t i = 0; i < PolyRestrictableInequsThread.size(); ++i){
+                if(poly_restrictable_stat_total[i] > 0)
+                    EffectiveRestrictablePolyInequs.push_back(PolyRestrictableInequsThread[0][i]);
+            }
+
+            if(verbose)
+                verboseOutput() << LevelPatches[coord] << " / " << coord << " active restricted polynomial inequalities " << EffectiveRestrictablePolyInequs.size() << " of " <<  PolyRestrictableInequsThread[0].size() << endl;
+
+             for(size_t thr = 0; thr < PolyEqusThread.size(); ++thr)
+                PolyRestrictableInequsThread[thr] = EffectiveRestrictablePolyInequs;
         }
 
         /*if(verbose){
@@ -1770,6 +1852,11 @@ void ProjectAndLift<IntegerPL, IntegerRet>::set_congruences(const Matrix<Integer
 template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL, IntegerRet>::set_PolyEquations(const OurPolynomialSystem<IntegerRet>& PolyEqus) {
     PolyEquations = PolyEqus;
+    RestrictablePolyInequs = PolyEquations;
+    IntegerRet MinusOne = -1;
+    RestrictablePolyInequs.multiply_by_constant(MinusOne);
+    RestrictablePolyInequs.insert(RestrictablePolyInequs.end(),PolyEquations.begin(), PolyEquations.end());
+
 }
 //---------------------------------------------------------------------------
 template <typename IntegerPL, typename IntegerRet>
