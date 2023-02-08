@@ -73,7 +73,7 @@ class ProjectAndLift {
 
     OurPolynomialSystem<IntegerRet> PolyEquations;
     OurPolynomialSystem<IntegerRet> PolyInequalities;
-    OurPolynomialSystem<IntegerRet> RestrictablePolyInequs;
+    // OurPolynomialSystem<IntegerRet> RestrictablePolyInequs;
 
     vector<IntegerRet> Grading;
     size_t TotalNrLP;
@@ -122,13 +122,13 @@ class ProjectAndLift {
     // vector<vector<key_t> > AllPolyInequsKey;
     vector<OurPolynomialSystem<IntegerRet> > AllPolyEqus; // indexed by coord, poly equs applied with this coord
     vector<OurPolynomialSystem<IntegerRet> > AllPolyInequs; // ditto for inequalities
-    vector<OurPolynomialSystem<IntegerRet> > AllRestrictablePolyInequs; // resstricted inequalities derived from equations
+    // vector<OurPolynomialSystem<IntegerRet> > AllRestrictablePolyInequs; // resstricted inequalities derived from equations
     vector<vector<OurPolynomialSystem<IntegerRet> > > AllPolyEqusThread; // a copy for each thread
     vector<vector<OurPolynomialSystem<IntegerRet> > > AllPolyInequsThread; // ditto for inequalities
-    vector<vector<OurPolynomialSystem<IntegerRet> > > AllRestrictablePolyInequsThread; // ditto for inequalities
+    // vector<vector<OurPolynomialSystem<IntegerRet> > > AllRestrictablePolyInequsThread; // ditto for inequalities
     dynamic_bitset used_supps; // registers which inequalities are used in the patching process
     dynamic_bitset poly_equs_minimized; // redisters whether the polynomial equations at a coord have been minimized
-    dynamic_bitset poly_restrictable_inequs_minimized; //  ditto for the inequalities from equations
+    dynamic_bitset poly_inequs_minimized; //  ditto for the inequalities from equations
 
     vector<size_t> NrRemainingLP;
     vector<size_t> NrDoneLP;
