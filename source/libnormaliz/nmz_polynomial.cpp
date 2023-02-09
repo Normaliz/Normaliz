@@ -264,8 +264,6 @@ void OurPolynomial<Number>::multiply_by_constant(const Number& factor){
 template<typename Number>
 bool OurPolynomial<Number>::is_restrictable_inequ(const dynamic_bitset& set_of_var)  const{
     size_t nr_negative = 0;
-    //if(set_of_var.is_subset_of(support))
-    //    return true;
     for(auto& T: *this){
         if(!T.is_restrictable_inequ(set_of_var))
             return false;
