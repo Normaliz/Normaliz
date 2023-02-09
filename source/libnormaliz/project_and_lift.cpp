@@ -295,10 +295,12 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
 
         // now the inequalities which can be restricted
         for(size_t i = 0; i < PolyInequalities.size(); ++i){
+
+            if(PolyInequalities[i].support.is_subset_of(covered)) // already used
+                continue;
             if(!(PolyInequalities[i]).is_restrictable_inequ(new_covered))
                 continue;
-            if(PolyInequalities[i][i].support.is_subset_of(covered)) // already used
-                continue;
+
             /* cout << "***********************************************" << endl;
             cout << "ccord " << coord << endl;
             cout << bitset_to_key(new_covered);
@@ -1828,7 +1830,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::set_PolyEquations(const OurPolynomia
 //---------------------------------------------------------------------------
 template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL, IntegerRet>::set_PolyInequalities(const OurPolynomialSystem<IntegerRet>& PolyInequs) {
-    PolyInequalities = PolyInequs;
+    PolyInequalities.insert(PolyInequalities.begin(), PolyInequs.begin(), PolyInequs.end());
 }
 
 //---------------------------------------------------------------------------
