@@ -73,7 +73,7 @@ class ProjectAndLift {
 
     OurPolynomialSystem<IntegerRet> PolyEquations;
     OurPolynomialSystem<IntegerRet> PolyInequalities;
-    // OurPolynomialSystem<IntegerRet> RestrictablePolyInequs;
+    OurPolynomialSystem<IntegerRet> RestrictablePolyInequs;
 
     vector<IntegerRet> Grading;
     size_t TotalNrLP;

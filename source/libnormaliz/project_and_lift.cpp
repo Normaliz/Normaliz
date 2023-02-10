@@ -278,7 +278,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
         dynamic_bitset new_covered = covered | AllPatches[coord];
 
         // Collect relevant polynomial constraints
-        vector<key_t> PolyEqusKey, PolyInequsKey;
+        vector<key_t> PolyEqusKey, PolyInequsKey, RestrictablePolyInequsKey;
 
         // first the equations
         for(size_t i = 0; i < PolyEquations.size(); ++i){
@@ -293,12 +293,12 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
             T = AllPolyEqus[coord];
         }
 
-        // now the inequalities which can be restricted
+        // now the full inequalities
         for(size_t i = 0; i < PolyInequalities.size(); ++i){
 
             if(PolyInequalities[i].support.is_subset_of(covered)) // already used
                 continue;
-            if(!(PolyInequalities[i]).is_restrictable_inequ(new_covered))
+            if(!(PolyInequalities[i]).support.is_subset_of(new_covered))
                 continue;
 
             /* cout << "***********************************************" << endl;
@@ -316,6 +316,18 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
             AllPolyInequs[coord].push_back(PolyInequalities[i]);
             PolyInequsKey.push_back(i);
         }
+
+        // now the inequalities which can be restricted
+        // treated separately to avoid double evaluations of equations
+        for(size_t i = 0; i < RestrictablePolyInequs.size(); ++i){
+            if(RestrictablePolyInequs[i].support.is_subset_of(new_covered))
+                continue;
+            if(!(RestrictablePolyInequs[i]).is_restrictable_inequ(new_covered))
+                continue;
+            AllPolyInequs[coord].push_back(RestrictablePolyInequs[i]);
+            RestrictablePolyInequsKey.push_back(i);
+        }
+
         for(auto& T: AllPolyInequsThread[coord]){ // vcopy for each thread
             T = AllPolyInequs[coord];
         }
@@ -323,10 +335,12 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
 #ifdef NMZ_DEVELOP
         if(verbose)
             verboseOutput() << endl << "index coord " << coord << " nr covered coordinates " << new_covered.count() << " coordinates " << bitset_to_key(new_covered);
-        if(verbose && AllPolyEqus.size() > 0)
+        if(verbose && PolyEqusKey.size() > 0)
             verboseOutput() << endl << "poly equations " << PolyEqusKey;
         if(verbose && PolyInequsKey.size() > 0)
-            verboseOutput() << endl << coord << " poly inequalities " << PolyInequsKey;
+            verboseOutput() << endl << " poly inequalities " << PolyInequsKey;
+        if(verbose && RestrictablePolyInequsKey.size() > 0)
+            verboseOutput() << endl <<  " restrictable poly inequalities " << RestrictablePolyInequsKey;
         if(verbose)
             verboseOutput() << "---------------------------------------------------------------" << endl;
 #endif
@@ -400,7 +414,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_covers() {
             nr_patches_needed++;
             if(already_covered == poly_supp){
                 sort(patches_used.begin(), patches_used.end());
-                covering_equations.push_back(make_pair(patches_used.size(), patches_used));
+                covering_equations.push_back(make_pair(patches_used.size(),
+                                                       patches_used));
                 break;
             }
         }
@@ -1450,6 +1465,8 @@ void ProjectAndLift<IntegerPL, IntegerRet>::finalize_latt_point(const vector<Int
         // and we check all polynomial equations because we have suppressed the "noneffective" ones
         if(!PolyEquations.check(NewPoint, true, false)) // true = equations, fasle = any length
             return;
+        if(!PolyInequalities.check(NewPoint, false, false)) // false = inequlities, fasle = any length
+            return;
     }
 
     if (!Congs.check_congruences(NewPoint))
@@ -1822,15 +1839,16 @@ template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL, IntegerRet>::set_PolyEquations(const OurPolynomialSystem<IntegerRet>& PolyEqus) {
     PolyEquations = PolyEqus;
     OurPolynomialSystem<IntegerRet> DerivedPolyInequs = PolyEquations;
-    PolyInequalities.insert(PolyInequalities.begin(), DerivedPolyInequs.begin(), DerivedPolyInequs.end());
+    RestrictablePolyInequs.insert(RestrictablePolyInequs.begin(), DerivedPolyInequs.begin(), DerivedPolyInequs.end());
     IntegerRet MinusOne = -1;
     DerivedPolyInequs.multiply_by_constant(MinusOne);
-    PolyInequalities.insert(PolyInequalities.begin(), DerivedPolyInequs.begin(), DerivedPolyInequs.end());
+    RestrictablePolyInequs.insert(RestrictablePolyInequs.begin(), DerivedPolyInequs.begin(), DerivedPolyInequs.end());
 }
 //---------------------------------------------------------------------------
 template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL, IntegerRet>::set_PolyInequalities(const OurPolynomialSystem<IntegerRet>& PolyInequs) {
-    PolyInequalities.insert(PolyInequalities.begin(), PolyInequs.begin(), PolyInequs.end());
+    PolyInequalities = PolyInequs;
+    RestrictablePolyInequs.insert(RestrictablePolyInequs.begin(), PolyInequs.begin(), PolyInequs.end());
 }
 
 //---------------------------------------------------------------------------
