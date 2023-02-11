@@ -126,6 +126,29 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
     }
     dynamic_bitset max_sparse = sparse_bounds;
 
+    // find weights of coords
+    WeightOfCoord.resize(EmbDim);
+    WeightOfCoord[0] = 1.0;
+    for(size_t i = 1; i< EmbDim; ++i){
+        bool first = true;
+        for(size_t j = 0; j < max_sparse.size(); ++j){
+            if(!max_sparse[j])
+                continue;
+            if(AllSupps[EmbDim][j][i] < 0){
+                double test = convertTo<nmz_float>(AllSupps[EmbDim][j][0]);
+                double den = convertTo<nmz_float>(-AllSupps[EmbDim][j][i]);
+                test /= den;
+                test += 1.0;
+                if(first || test < WeightOfCoord[i]){
+                    WeightOfCoord[i] = test;
+                    first =false;
+                }
+            }
+        }
+    }
+
+    cout << "WWWWWWWWWWWW " << WeightOfCoord;
+
     dynamic_bitset covered(EmbDim);  // registers covered coordinates
     covered[0] = 1; // the 0-th coordinate is covered by all local PL
     AllLocalPL.resize(EmbDim);
@@ -398,7 +421,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_covers() {
         while(true){
             bool first = true;
             size_t max_nr_new_covered = 0; // = 0 to make gcc happy
-            size_t max_covering;
+            size_t max_covering = 0; // to make gcc happy
             for(size_t k = 0; k < EmbDim; ++k){
                 if(AllPatches[k].size() == 0)
                     continue;
@@ -445,7 +468,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_covers() {
         dynamic_bitset min_covered_coords(dim);
         bool first = true;
         size_t min_at;
-        size_t nr_min_covered_coords = 0; // =0 to make gcc happy
+        double min_added_weight = 0; // =0 to make gcc happy
         for( size_t i = 0; i < covering_equations.size(); ++i){
             if(used_covering_equations[i])
                 continue;
@@ -456,9 +479,15 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_covers() {
                 used_covering_equations[i] = true; // no new coordinates, not used explicitly , but not needed
                 continue;
             }
-            if(first || test_covered_coords.count() < nr_min_covered_coords){
+            double new_added_weight = 0;
+            for(size_t i = 0; i < covered_coords.size(); ++i){
+                if(covered_coords[i] || !test_covered_coords[i])
+                    continue;
+                 new_added_weight += WeightOfCoord[i];
+            }
+            if(first || new_added_weight < min_added_weight){
                 first = false;
-                nr_min_covered_coords = test_covered_coords.count();
+                min_added_weight = new_added_weight;
                 min_covered_coords = test_covered_coords;
                 min_at = i;
             }

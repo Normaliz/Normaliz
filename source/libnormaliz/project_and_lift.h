@@ -129,6 +129,7 @@ class ProjectAndLift {
     dynamic_bitset used_supps; // registers which inequalities are used in the patching process
     dynamic_bitset poly_equs_minimized; // redisters whether the polynomial equations at a coord have been minimized
     dynamic_bitset poly_inequs_minimized; //  ditto for the inequalities from equations
+    vector<double> WeightOfCoord;
 
     vector<size_t> NrRemainingLP;
     vector<size_t> NrDoneLP;
