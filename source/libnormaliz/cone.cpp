@@ -7242,6 +7242,7 @@ void Cone<renf_elem_class>::project_and_lift(const ConeProperties& ToCompute,
     vector<renf_elem_class> Dummy;
     ProjectAndLift<renf_elem_class, mpz_class> PL;
     PL = ProjectAndLift<renf_elem_class, mpz_class>(Supps, Ind, rank);
+    PL.set_coord_weights(ToCompute.test(ConeProperty::UseWeightsPatching));
     if(primitive){
         PL.set_primitive();
         PL.set_LLL(false);
@@ -7358,6 +7359,7 @@ void Cone<Integer>::project_and_lift(const ConeProperties& ToCompute,
                 Matrix<MachineInteger> CongsMI;
                 convert(CongsMI, Congs);
                 PL.set_congruences(CongsMI);
+                PL.set_coord_weights(ToCompute.test(ConeProperty::UseWeightsPatching));
                 if(primitive){
                     PL.set_primitive();
                     PL.set_LLL(false);
@@ -7415,6 +7417,7 @@ void Cone<Integer>::project_and_lift(const ConeProperties& ToCompute,
             else
                 PL = ProjectAndLift<Integer, Integer>(Supps, Pair, ParaInPair, rank);
             PL.set_congruences(Congs);
+            PL.set_coord_weights(ToCompute.test(ConeProperty::UseWeightsPatching));
             if(primitive){
                 PL.set_primitive();
                 PL.set_LLL(false);

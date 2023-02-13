@@ -176,6 +176,7 @@ ConeProperties all_options() {
     ret.set(ConeProperty::SingleLatticePointInternal);
     ret.set(ConeProperty::MaxDegRepresentations);
     ret.set(ConeProperty::ConeForMonoid);
+    ret.set(ConeProperty::UseWeightsPatching);
     return ret;
 }
 
@@ -1035,9 +1036,10 @@ vector<string> initializeCPN() {
     CPN.at(ConeProperty::Representations) = "Representations";
     CPN.at(ConeProperty::MaxDegRepresentations) = "MaxDegRepresentations";
     CPN.at(ConeProperty::ConeForMonoid) = "ConeForMonoid";
+    CPN.at(ConeProperty::UseWeightsPatching) = "UseWeightsPatching";
 
     // detect changes in size of Enum, to remember to update CPN!
-    static_assert(ConeProperty::EnumSize == 147, "ConeProperties Enum size does not fit! Update cone_property.cpp!");
+    static_assert(ConeProperty::EnumSize == 148, "ConeProperties Enum size does not fit! Update cone_property.cpp!");
     // assert all fields contain an non-empty string
     for (size_t i = 0; i < ConeProperty::EnumSize; i++) {
         assert(CPN.at(i).size() > 0);

@@ -244,6 +244,7 @@ enum Enum {
     NoPatching,
     NoCoarseProjection,
     MaxDegRepresentations,
+    UseWeightsPatching,
     //
     Dynamic,
     Static,

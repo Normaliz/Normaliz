@@ -129,25 +129,33 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
     // find weights of coords
     WeightOfCoord.resize(EmbDim);
     WeightOfCoord[0] = 1.0;
-    for(size_t i = 1; i< EmbDim; ++i){
-        bool first = true;
-        for(size_t j = 0; j < max_sparse.size(); ++j){
-            if(!max_sparse[j])
-                continue;
-            if(AllSupps[EmbDim][j][i] < 0){
-                double test = convertTo<nmz_float>(AllSupps[EmbDim][j][0]);
-                double den = convertTo<nmz_float>(-AllSupps[EmbDim][j][i]);
-                test /= den;
-                test += 1.0;
-                if(first || test < WeightOfCoord[i]){
-                    WeightOfCoord[i] = test;
-                    first =false;
+    if(use_coord_weights){
+        for(size_t i = 1; i< EmbDim; ++i){
+            bool first = true;
+            for(size_t j = 0; j < max_sparse.size(); ++j){
+                if(!max_sparse[j])
+                    continue;
+                if(AllSupps[EmbDim][j][i] < 0){
+                    double test = convertTo<nmz_float>(AllSupps[EmbDim][j][0]);
+                    double den = convertTo<nmz_float>(-AllSupps[EmbDim][j][i]);
+                    test /= den;
+                    test += 1.0;
+                    if(first || test < WeightOfCoord[i]){
+                        WeightOfCoord[i] = test;
+                        first =false;
+                    }
                 }
             }
         }
     }
-
-    cout << "WWWWWWWWWWWW " << WeightOfCoord;
+    else{
+        for(auto& w: WeightOfCoord)
+            w = 1.0;
+    }
+#ifdef NMZ_DEVELOP
+    if(verbose)
+        verboseOutput() << "Weights of coordinates " << WeightOfCoord;
+#endif
 
     dynamic_bitset covered(EmbDim);  // registers covered coordinates
     covered[0] = 1; // the 0-th coordinate is covered by all local PL
@@ -1818,6 +1826,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::initialize(const Matrix<IntegerPL>& 
     patching_allowed = true;
     count_only = false;
     system_unsolvable = false;
+    use_coord_weights = false;
     TotalNrLP = 0;
     NrLP.resize(EmbDim + 1);
 
@@ -1902,6 +1911,12 @@ void ProjectAndLift<IntegerPL, IntegerRet>::set_LLL(bool on_off) {
 template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL, IntegerRet>::set_no_relax(bool on_off) {
     no_relax = on_off;
+}
+
+//---------------------------------------------------------------------------
+template <typename IntegerPL, typename IntegerRet>
+void ProjectAndLift<IntegerPL, IntegerRet>::set_coord_weights(bool on_off) {
+    use_coord_weights = on_off;
 }
 
 //---------------------------------------------------------------------------

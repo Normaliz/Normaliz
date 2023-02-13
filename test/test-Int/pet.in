@@ -39,7 +39,8 @@ inhom_equations 36
 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 5 0 0 0 0 0 0 0 0 0 0 0 0 0 0 5 0 0 0 0 0 0 0 0 0 5 0 0 0 0 0 6 0 0 7 7 0  -49
 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 5 0 0 0 0 0 0 0 0 0 0 0 0 0 0 5 0 0 0 0 0 0 0 0 0 5 0 0 0 0 0 6 0 0 7 7  -48
 convert_equations
-LatticePoints
+LatticePoint
+UseWeightsPatching
 
 polynomial_equations 240
 -x[11]*x[15] - x[26]*x[30] + x[23]*x[36] - x[30]*x[40] - x[33]*x[43] - x[35]*x[45] + x[27]*x[46] - x[36]*x[46] + x[28]*x[52] + x[29]*x[55] + x[30]*x[56] + x[21]*x[8];
