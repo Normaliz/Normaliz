@@ -572,18 +572,20 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
 
     StartTime();
 
-    /* size_t min_fall_back = 0;
+    // cout << NrRemainingLP;
+
+    size_t min_fall_back = 0;
     bool min_found = false;
     size_t max_fall_back = 0;
-    for(size_t i = 0; i < coord; ++i){
-        if(NrRemiaaingLP[i] > 0){
+    for(size_t i = 0; i < this_patch; ++i){
+        if(NrRemainingLP[i] > 0){
             max_fall_back = i;
             if(!min_found){
                 min_found = true;
                 min_fall_back = i;
             }
         }
-    }*/
+    }
 
     /* if(verbose){
         verboseOutput() << "coord " << coord;
@@ -670,8 +672,14 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
     // parallelization. But it is unclear whether this can be achieved.
 
     while (true) {
-        if(verbose)
-            verboseOutput() <<  LevelPatches[coord] << " / " << coord << " left " << nr_to_match - nr_points_matched << endl;
+        if(verbose){
+            verboseOutput() <<  LevelPatches[coord] << " / " << coord << " left " << nr_to_match - nr_points_matched;
+#ifdef NMZ_DEVELOP
+            if(min_fall_back > 0)
+                verboseOutput() << " min " << min_fall_back << " max " << max_fall_back;
+#endif
+            verboseOutput()    << endl;
+        }
 
         bool skip_remaining;
         std::exception_ptr tmp_exception;
@@ -887,7 +895,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         if(verbose)
             verboseOutput() << "----------" << endl;*/
 
-        NrRemainingLP[coord] = nr_to_match - nr_points_matched;
+        NrRemainingLP[this_patch] = nr_to_match - nr_points_matched;
 
         if(!last_coord && NewLatticePoints.size() > 0)
             extend_points_to_next_coord(NewLatticePoints, this_patch + 1);
