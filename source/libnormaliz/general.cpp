@@ -64,6 +64,7 @@ namespace libnormaliz {
 
 bool verbose = false;
 bool constructor_verbose = true;
+bool polynomial_verbose = false;
 
 volatile sig_atomic_t nmz_interrupted = 0;
 const int default_thread_limit = 8;
@@ -119,6 +120,12 @@ bool setVerboseDefault(bool v) {
     // we want to return the old value
     bool old = verbose;
     verbose = v;
+    return old;
+}
+
+bool setPolynomialVerbose(bool onoff){
+    bool old = polynomial_verbose;
+    polynomial_verbose = onoff;
     return old;
 }
 

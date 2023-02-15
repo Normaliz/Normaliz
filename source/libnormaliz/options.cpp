@@ -316,7 +316,11 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
             return true;  // indicate printing of help text
         }
         if (LongOption == "verbose") {
-            verbose = true;
+            verbose = true;  // global verbose
+            continue;
+        }
+        if (LongOption == "list_polynomials") {
+            polynomial_verbose = true; // global
             continue;
         }
         if (LongOption == "version") {

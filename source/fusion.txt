@@ -1,0 +1,347 @@
+Total: 32021 samples
+    7375  23.0%  23.0%    22430  70.0% libnormaliz::ProjectAndLift::extend_points_to_next_coord [clone ._omp_fn.0]
+    3240  10.1%  33.2%     3313  10.3% libnormaliz::OurTerm::evaluate
+    2964   9.3%  42.4%     2964   9.3% gomp_barrier_wait_end
+    2004   6.3%  48.7%     2004   6.3% __memcpy_avx_unaligned_erms
+    1978   6.2%  54.8%     2134   6.7% libnormaliz::v_select_coordinates
+    1647   5.1%  60.0%     2249   7.0% _int_free
+    1497   4.7%  64.7%     5955  18.6% libnormaliz::OurPolynomial::evaluate
+    1322   4.1%  68.8%     3118   9.7% __libc_malloc
+    1105   3.5%  72.2%     1105   3.5% gomp_iter_ull_dynamic_next
+    1050   3.3%  75.5%     1050   3.3% unlink_chunk.isra.0
+     865   2.7%  78.2%      865   2.7% std::_Vector_base::_Vector_impl_data::_Vector_impl_data (inline)
+     803   2.5%  80.7%     1796   5.6% _int_malloc
+     799   2.5%  83.2%      799   2.5% std::_List_iterator::operator++ (inline)
+     608   1.9%  85.1%      665   2.1% std::__lexicographical_compare_impl (inline)
+     606   1.9%  87.0%     1145   3.6% libnormaliz::check_range (inline)
+     597   1.9%  88.9%      597   1.9% CoCoA::symbol::myCmp
+     539   1.7%  90.6%      539   1.7% libnormaliz::Iabs (inline)
+     290   0.9%  91.5%      290   0.9% std::__detail::_List_node_base::_M_hook
+     268   0.8%  92.3%     1256   3.9% malloc_consolidate
+     243   0.8%  93.1%      334   1.0% std::__adjust_heap
+     184   0.6%  93.6%      902   2.8% std::__introsort_loop [clone .isra.0]
+     181   0.6%  94.2%      181   0.6% std::vector::size (inline)
+     165   0.5%  94.7%      275   0.9% sysmalloc
+     111   0.3%  95.1%      111   0.3% __free
+     109   0.3%  95.4%      109   0.3% __mprotect
+     105   0.3%  95.7%      196   0.6% std::__unguarded_linear_insert
+      84   0.3%  96.0%      535   1.7% std::_Rb_tree::_M_get_insert_unique_pos
+      84   0.3%  96.3%     1945   6.1% std::vector::operator=
+      73   0.2%  96.5%     3184   9.9% operator new
+      72   0.2%  96.7%      737   2.3% std::operator<  (inline)
+      57   0.2%  96.9%       57   0.2% std::__lc_rai::__newlast1 (inline)
+      54   0.2%  97.1%       54   0.2% _init
+      48   0.1%  97.2%      126   0.4% CoCoA::OrdvArith::LexImpl::myAssignFromExpv
+      48   0.1%  97.4%      335   1.0% std::_Rb_tree::_M_lower_bound (inline)
+      46   0.1%  97.5%       46   0.1% operator delete
+      45   0.1%  97.6%       45   0.1% CoCoA::OrdvArith::base::myCompress
+      45   0.1%  97.8%       46   0.1% libnormaliz::dynamic_bitset::operator[] (inline)
+      44   0.1%  97.9%     1638   5.1% CoCoA::AreDistinct
+      41   0.1%  98.0%     6957  21.7% libnormaliz::ProjectAndLift::extend_points_to_next_coord
+      41   0.1%  98.2%       57   0.2% std::__cxx11::basic_string::_M_construct
+      39   0.1%  98.3%       48   0.1% std::vector::_M_realloc_insert
+      38   0.1%  98.4%     2647   8.3% __gnu_cxx::new_allocator::allocate (inline)
+      32   0.1%  98.5%     1978   6.2% std::__copy_move::__copy_m (inline)
+      30   0.1%  98.6%     2019   6.3% std::__cxx11::list::push_back (inline)
+      27   0.1%  98.7%      563   1.8% std::_Rb_tree::_M_insert_unique
+      23   0.1%  98.8%       23   0.1% std::vector::operator[] (inline)
+      21   0.1%  98.8%     1155   3.6% CoCoA::SparsePolyRingBase::mySymbolValue
+      20   0.1%  98.9%       45   0.1% CoCoA::OrdvArith::LexImpl::myComputeExpv
+      20   0.1%  99.0%      157   0.5% std::vector::_M_range_insert
+      19   0.1%  99.0%       19   0.1% __gmpn_sqr_basecase
+      18   0.1%  99.1%       18   0.1% std::_Vector_base::_Vector_impl_data::_M_copy_data (inline)
+      16   0.0%  99.1%       16   0.0% CoCoA::OrdvArith::base::myDecompress
+      16   0.0%  99.2%       29   0.1% libnormaliz::ProjectAndLift::lift_points_to_this_dim [clone ._omp_fn.0]
+      16   0.0%  99.2%       16   0.0% libnormaliz::dynamic_bitset::reference::operator bool (inline)
+      16   0.0%  99.3%       16   0.0% std::char_traits::assign (inline)
+      15   0.0%  99.3%     2143   6.7% std::_Vector_base::_M_create_storage (inline)
+      12   0.0%  99.4%     2062   6.4% __gnu_cxx::new_allocator::deallocate (inline)
+      12   0.0%  99.4%      367   1.1% std::map::operator[]
+      11   0.0%  99.4%       78   0.2% std::__make_heap
+      10   0.0%  99.5%       10   0.0% __memset_avx2_unaligned_erms
+      10   0.0%  99.5%       10   0.0% std::local_Rb_tree_decrement
+       9   0.0%  99.5%        9   0.0% CoCoA::OrdvArith::base::myAssignZero
+       9   0.0%  99.5%       24   0.1% std::_Rb_tree_iterator::operator-- (inline)
+       8   0.0%  99.6%        8   0.0% CoCoA::IsInRange
+       8   0.0%  99.6%     1891   5.9% std::_Vector_base::_M_deallocate (inline)
+       8   0.0%  99.6%     1844   5.8% std::__cxx11::_List_base::_M_clear
+       8   0.0%  99.6%      571   1.8% std::set::insert (inline)
+       7   0.0%  99.7%        7   0.0% CoCoA::OrdvArith::base::myAssign
+       6   0.0%  99.7%        6   0.0% gomp_loop_ull_dynamic_next
+       6   0.0%  99.7%     2130   6.7% std::_Vector_base::_M_allocate (inline)
+       6   0.0%  99.7%     1122   3.5% std::__cxx11::list::splice (inline)
+       5   0.0%  99.7%        5   0.0% gomp_team_barrier_wait_end
+       5   0.0%  99.8%        5   0.0% std::_Rb_tree_decrement
+       5   0.0%  99.8%      203   0.6% std::__final_insertion_sort
+       4   0.0%  99.8%        4   0.0% std::__cxx11::_List_base::_M_inc_size (inline)
+       3   0.0%  99.8%       18   0.1% CoCoA::DistrMPolyInlPP::myCopySummand
+       3   0.0%  99.8%       82   0.3% CoCoA::DistrMPolyInlPP::myPushFront@d41700
+       3   0.0%  99.8%       16   0.0% CoCoA::PPMonoidBase::mySymbolValue
+       3   0.0%  99.8%     2279   7.1% CoCoA::RingBase::myNew
+       3   0.0%  99.8%        3   0.0% __gmpn_add_n
+       3   0.0%  99.8%        3   0.0% libnormaliz::Matrix::operator[] (inline)
+       3   0.0%  99.9%        3   0.0% std::__detail::_List_node_base::_M_transfer
+       3   0.0%  99.9%        3   0.0% std::vector::capacity (inline)
+       3   0.0%  99.9%     1897   5.9% std::vector::~vector (inline)
+       2   0.0%  99.9%       20   0.1% CoCoA::DistrMPolyInlPP::DistrMPolyInlPP
+       2   0.0%  99.9%        2   0.0% CoCoA::PPMonoidOvImpl::myCmp
+       2   0.0%  99.9%        2   0.0% __libc_write (inline)
+       2   0.0%  99.9%        2   0.0% __madvise
+       2   0.0%  99.9%        7   0.0% std::_Rb_tree::_M_erase
+       2   0.0%  99.9%     1991   6.2% std::__cxx11::list::_M_insert (inline)
+       2   0.0%  99.9%       28   0.1% std::__insertion_sort
+       2   0.0%  99.9%        6   0.0% std::vector::_M_default_initialize (inline)
+       2   0.0%  99.9%     2609   8.1% std::vector::vector (inline)
+       1   0.0%  99.9%        1   0.0% CoCoA::OrdvArith::base::myPowerOverflowCheck
+       1   0.0%  99.9%        1   0.0% CoCoA::PPMonoidOvImpl::myAssign
+       1   0.0%  99.9%        6   0.0% CoCoA::PPMonoidOvImpl::myNew@d36e20
+       1   0.0%  99.9%        1   0.0% CoCoA::RingBase::mySymbols
+       1   0.0%  99.9%        3   0.0% CoCoA::RingQQImpl::myDelete
+       1   0.0%  99.9%        5   0.0% CoCoA::RingQQImpl::myNew
+       1   0.0%  99.9%        1   0.0% CoCoA::RingZZImpl::myAssign
+       1   0.0% 100.0%        1   0.0% __dynamic_cast
+       1   0.0% 100.0%        1   0.0% __gmpn_mul_1
+       1   0.0% 100.0%        1   0.0% __gmpn_rshift
+       1   0.0% 100.0%        1   0.0% __gmpn_sub_n
+       1   0.0% 100.0%        1   0.0% __gmpn_toom2_sqr
+       1   0.0% 100.0%        1   0.0% __gmpz_export
+       1   0.0% 100.0%        1   0.0% brk
+       1   0.0% 100.0%        5   0.0% libnormaliz::ProjectAndLift::fiber_interval
+       1   0.0% 100.0%        2   0.0% libnormaliz::v_cyclic_shift_right
+       1   0.0% 100.0%        1   0.0% libnormaliz::v_support
+       1   0.0% 100.0%        4   0.0% std::_Rb_tree::_M_clone_node (inline)
+       1   0.0% 100.0%       18   0.1% std::_Rb_tree::_M_emplace_hint_unique
+       1   0.0% 100.0%        1   0.0% std::_Rb_tree::_M_get_insert_hint_unique_pos
+       1   0.0% 100.0%        1   0.0% std::_Rb_tree::operator=
+       1   0.0% 100.0%        4   0.0% std::__cxx11::list::_M_transfer (inline)
+       1   0.0% 100.0%        1   0.0% std::num_get::_M_extract_int
+       1   0.0% 100.0%        1   0.0% std::vector::emplace_back
+       0   0.0% 100.0%        6   0.0% CoCoA::::CheckIndets
+       0   0.0% 100.0%        2   0.0% CoCoA::::CmpLPP
+       0   0.0% 100.0%        4   0.0% CoCoA::::FillRange
+       0   0.0% 100.0%       22   0.1% CoCoA::::ReadExpr
+       0   0.0% 100.0%        8   0.0% CoCoA::::ReadFactor
+       0   0.0% 100.0%       12   0.0% CoCoA::::ReadProduct
+       0   0.0% 100.0%        1   0.0% CoCoA::::div_SameRing
+       0   0.0% 100.0%        7   0.0% CoCoA::AreArityConsistent
+       0   0.0% 100.0%        6   0.0% CoCoA::AreGoodIndetNames
+       0   0.0% 100.0%        1   0.0% CoCoA::ClearDenom
+       0   0.0% 100.0%        1   0.0% CoCoA::DistrMPolyInlPP::myAddMonomial
+       0   0.0% 100.0%        1   0.0% CoCoA::DistrMPolyInlPP::myAddMulLM
+       0   0.0% 100.0%        1   0.0% CoCoA::DistrMPolyInlPP::myAddMulSummand
+       0   0.0% 100.0%        7   0.0% CoCoA::DistrMPolyInlPP::myPushBack
+       0   0.0% 100.0%       61   0.2% CoCoA::DistrMPolyInlPP::myPushFront@d415c0
+       0   0.0% 100.0%       21   0.1% CoCoA::DistrMPolyInlPP::operator=
+       0   0.0% 100.0%       10   0.0% CoCoA::DistrMPolyInlPP::ourDeleteSummands
+       0   0.0% 100.0%       10   0.0% CoCoA::DistrMPolyInlPP::~DistrMPolyInlPP
+       0   0.0% 100.0%        2   0.0% CoCoA::GlobalManager::GlobalManager
+       0   0.0% 100.0%       70   0.2% CoCoA::NewPPMonoidOv
+       0   0.0% 100.0%       69   0.2% CoCoA::NewPolyRing_DMPI@c9d530
+       0   0.0% 100.0%      139   0.4% CoCoA::NewPolyRing_DMPI@c9d6a0
+       0   0.0% 100.0%      147   0.5% CoCoA::NewPolyRing_DMPI@c9d800
+       0   0.0% 100.0%        5   0.0% CoCoA::PPMonoidBase::PPMonoidBase
+       0   0.0% 100.0%        2   0.0% CoCoA::PPMonoidBase::myNewCheckVecSize
+       0   0.0% 100.0%        8   0.0% CoCoA::PPMonoidElem::PPMonoidElem
+       0   0.0% 100.0%       60   0.2% CoCoA::PPMonoidOvImpl::PPMonoidOvImpl
+       0   0.0% 100.0%        2   0.0% CoCoA::PPMonoidOvImpl::myNew@d36e60
+       0   0.0% 100.0%        1   0.0% CoCoA::PowerOverflowCheck
+       0   0.0% 100.0%        9   0.0% CoCoA::PushBack
+       0   0.0% 100.0%        2   0.0% CoCoA::RandomSource::RandomSource
+       0   0.0% 100.0%     2332   7.3% CoCoA::ReadExpr@bf6750
+       0   0.0% 100.0%     2332   7.3% CoCoA::ReadExpr@bf70c0
+       0   0.0% 100.0%        1   0.0% CoCoA::RingBase::myPower
+       0   0.0% 100.0%       63   0.2% CoCoA::RingDistrMPolyInlPPImpl::RingDistrMPolyInlPPImpl
+       0   0.0% 100.0%        9   0.0% CoCoA::RingDistrMPolyInlPPImpl::myDelete
+       0   0.0% 100.0%       82   0.3% CoCoA::RingDistrMPolyInlPPImpl::myMonomial
+       0   0.0% 100.0%        1   0.0% CoCoA::RingDistrMPolyInlPPImpl::myNegate
+       0   0.0% 100.0%        1   0.0% CoCoA::RingDistrMPolyInlPPImpl::myNew@c9c340
+       0   0.0% 100.0%       23   0.1% CoCoA::RingDistrMPolyInlPPImpl::myNew@c9c6e0
+       0   0.0% 100.0%     2279   7.1% CoCoA::RingElem::RingElem
+       0   0.0% 100.0%        3   0.0% CoCoA::RingElem::RingElem (inline)
+       0   0.0% 100.0%        9   0.0% CoCoA::RingElem::operator=
+       0   0.0% 100.0%       10   0.0% CoCoA::RingElem::~RingElem
+       0   0.0% 100.0%        1   0.0% CoCoA::RingZZImpl::myIsDivisible
+       0   0.0% 100.0%        1   0.0% CoCoA::RingZZImpl::myNew
+       0   0.0% 100.0%        1   0.0% CoCoA::SparsePolyRingBase::myClearDenom
+       0   0.0% 100.0%        1   0.0% CoCoA::SparsePolyRingBase::myCommonDenom
+       0   0.0% 100.0%        2   0.0% CoCoA::SparsePolyRingBase::myMul
+       0   0.0% 100.0%        1   0.0% CoCoA::SparsePolyRingBase::mySquare
+       0   0.0% 100.0%        1   0.0% CoCoA::SparsePolyRingBase::mySymbols
+       0   0.0% 100.0%        7   0.0% CoCoA::SymbolRange@bfa640
+       0   0.0% 100.0%        7   0.0% CoCoA::SymbolRange@bfadb0
+       0   0.0% 100.0%        1   0.0% CoCoA::add
+       0   0.0% 100.0%        2   0.0% CoCoA::operator*=
+       0   0.0% 100.0%        1   0.0% CoCoA::operator+=
+       0   0.0% 100.0%        1   0.0% CoCoA::operator-
+       0   0.0% 100.0%        1   0.0% CoCoA::operator/
+       0   0.0% 100.0%        2   0.0% CoCoA::operator<
+       0   0.0% 100.0%        2   0.0% CoCoA::operator>>
+       0   0.0% 100.0%        1   0.0% CoCoA::power
+       0   0.0% 100.0%        2   0.0% CoCoA::symbol::myInput
+       0   0.0% 100.0%        3   0.0% CoCoA::symbol::symbol
+       0   0.0% 100.0%      155   0.5% CoCoA::symbols
+       0   0.0% 100.0%     2974   9.3% GOMP_parallel
+       0   0.0% 100.0%        2   0.0% _IO_file_overflow
+       0   0.0% 100.0%        2   0.0% _IO_new_do_write
+       0   0.0% 100.0%        2   0.0% _IO_new_file_write
+       0   0.0% 100.0%        2   0.0% _IO_putc
+       0   0.0% 100.0%        1   0.0% __default_morecore
+       0   0.0% 100.0%        7   0.0% __gmp_default_allocate
+       0   0.0% 100.0%        2   0.0% __gmp_expr::__gmp_expr (inline)
+       0   0.0% 100.0%        1   0.0% __gmp_expr::~__gmp_expr (inline)
+       0   0.0% 100.0%        1   0.0% __gmpn_sqr
+       0   0.0% 100.0%        1   0.0% __gmpn_toom3_sqr
+       0   0.0% 100.0%        1   0.0% __gmpq_clear
+       0   0.0% 100.0%        2   0.0% __gmpq_init
+       0   0.0% 100.0%        1   0.0% __gmpq_set
+       0   0.0% 100.0%        2   0.0% __gmpz_init_set
+       0   0.0% 100.0%        1   0.0% __gmpz_mul
+       0   0.0% 100.0%        3   0.0% __gmpz_realloc
+       0   0.0% 100.0%        1   0.0% __gmpz_set
+       0   0.0% 100.0%        1   0.0% __gmpz_tdiv_qr
+       0   0.0% 100.0%     1179   3.7% __gnu_cxx::new_allocator::construct (inline)
+       0   0.0% 100.0%     1662   5.2% __gnu_cxx::new_allocator::destroy (inline)
+       0   0.0% 100.0%     9492  29.6% __libc_start_main
+       0   0.0% 100.0%        2   0.0% __libc_write
+       0   0.0% 100.0%     9492  29.6% _start
+       0   0.0% 100.0%    22450  70.1% clone
+       0   0.0% 100.0%    22450  70.1% gomp_thread_start
+       0   0.0% 100.0%        4   0.0% gomp_work_share_end
+       0   0.0% 100.0%        3   0.0% libnormaliz::Cone::Cone
+       0   0.0% 100.0%     6978  21.8% libnormaliz::Cone::compute
+       0   0.0% 100.0%        1   0.0% libnormaliz::Cone::find_lower_and_upper_bounds
+       0   0.0% 100.0%        1   0.0% libnormaliz::Cone::mpqclass_input_to_integer
+       0   0.0% 100.0%        2   0.0% libnormaliz::Cone::prepare_input_constraints
+       0   0.0% 100.0%        3   0.0% libnormaliz::Cone::process_multi_input
+       0   0.0% 100.0%        2   0.0% libnormaliz::Cone::process_multi_input_inner
+       0   0.0% 100.0%     6973  21.8% libnormaliz::Cone::project_and_lift
+       0   0.0% 100.0%     2507   7.8% libnormaliz::Cone::setPolyParams
+       0   0.0% 100.0%     2507   7.8% libnormaliz::Cone::setPolynomialEquations
+       0   0.0% 100.0%     6978  21.8% libnormaliz::Cone::try_approximation_or_projection
+       0   0.0% 100.0%        4   0.0% libnormaliz::Cone::~Cone
+       0   0.0% 100.0%        2   0.0% libnormaliz::Matrix::Matrix
+       0   0.0% 100.0%        1   0.0% libnormaliz::Matrix::append
+       0   0.0% 100.0%        1   0.0% libnormaliz::Matrix::remove_duplicate_and_zero_rows
+       0   0.0% 100.0%        2   0.0% libnormaliz::Matrix::submatrix
+       0   0.0% 100.0%        5   0.0% libnormaliz::Matrix::~Matrix (inline)
+       0   0.0% 100.0%     2505   7.8% libnormaliz::OurPolynomial::OurPolynomial
+       0   0.0% 100.0%        7   0.0% libnormaliz::OurPolynomial::OurPolynomial (inline)
+       0   0.0% 100.0%        2   0.0% libnormaliz::OurPolynomial::cyclic_shift_right
+       0   0.0% 100.0%        1   0.0% libnormaliz::OurPolynomial::shift_coordinates
+       0   0.0% 100.0%        4   0.0% libnormaliz::OurPolynomial::~OurPolynomial (inline)
+       0   0.0% 100.0%     2506   7.8% libnormaliz::OurPolynomialSystem::OurPolynomialSystem
+       0   0.0% 100.0%        2   0.0% libnormaliz::OurPolynomialSystem::OurPolynomialSystem (inline)
+       0   0.0% 100.0%        2   0.0% libnormaliz::OurPolynomialSystem::cyclic_shift_right
+       0   0.0% 100.0%        4   0.0% libnormaliz::OurPolynomialSystem::operator= (inline)
+       0   0.0% 100.0%        1   0.0% libnormaliz::OurPolynomialSystem::shift_coordinates
+       0   0.0% 100.0%        5   0.0% libnormaliz::OurPolynomialSystem::~OurPolynomialSystem (inline)
+       0   0.0% 100.0%        1   0.0% libnormaliz::OurTerm::OurTerm
+       0   0.0% 100.0%        7   0.0% libnormaliz::OurTerm::OurTerm (inline)
+       0   0.0% 100.0%        2   0.0% libnormaliz::OurTerm::cyclic_shift_right
+       0   0.0% 100.0%        1   0.0% libnormaliz::OurTerm::shift_coordinates
+       0   0.0% 100.0%        4   0.0% libnormaliz::OurTerm::~OurTerm (inline)
+       0   0.0% 100.0%        1   0.0% libnormaliz::ProjectAndLift::ProjectAndLift
+       0   0.0% 100.0%        8   0.0% libnormaliz::ProjectAndLift::check_and_prepare_sparse
+       0   0.0% 100.0%     6965  21.8% libnormaliz::ProjectAndLift::compute
+       0   0.0% 100.0%        3   0.0% libnormaliz::ProjectAndLift::compute_covers
+       0   0.0% 100.0%     6957  21.7% libnormaliz::ProjectAndLift::compute_latt_points_by_patching
+       0   0.0% 100.0%        1   0.0% libnormaliz::ProjectAndLift::initialize
+       0   0.0% 100.0%        6   0.0% libnormaliz::ProjectAndLift::lift_points_to_this_dim
+       0   0.0% 100.0%        5   0.0% libnormaliz::ProjectAndLift::~ProjectAndLift
+       0   0.0% 100.0%        1   0.0% libnormaliz::Sublattice_Representation::Sublattice_Representation
+       0   0.0% 100.0%        2   0.0% libnormaliz::Sublattice_Representation::~Sublattice_Representation
+       0   0.0% 100.0%        1   0.0% libnormaliz::convert
+       0   0.0% 100.0%        2   0.0% libnormaliz::convert (inline)
+       0   0.0% 100.0%        6   0.0% libnormaliz::dynamic_bitset::dynamic_bitset (inline)
+       0   0.0% 100.0%        1   0.0% libnormaliz::dynamic_bitset::operator= (inline)
+       0   0.0% 100.0%        3   0.0% libnormaliz::dynamic_bitset::operator| (inline)
+       0   0.0% 100.0%        1   0.0% libnormaliz::dynamic_bitset::reference::reference (inline)
+       0   0.0% 100.0%        2   0.0% libnormaliz::dynamic_bitset::~dynamic_bitset (inline)
+       0   0.0% 100.0%       14   0.0% libnormaliz::makeZZCoeff
+       0   0.0% 100.0%        3   0.0% libnormaliz::v_scalar_product_vectors_unequal_lungth
+       0   0.0% 100.0%     9492  29.6% main
+       0   0.0% 100.0%     9492  29.6% process_data
+       0   0.0% 100.0%        2   0.0% randseed_mt
+       0   0.0% 100.0%        1   0.0% sbrk
+       0   0.0% 100.0%    22450  70.1% start_thread
+       0   0.0% 100.0%       12   0.0% std::_Construct (inline)
+       0   0.0% 100.0%       11   0.0% std::_Destroy (inline)
+       0   0.0% 100.0%       11   0.0% std::_Destroy_aux::__destroy (inline)
+       0   0.0% 100.0%        4   0.0% std::_Rb_tree::_Alloc_node::operator (inline)
+       0   0.0% 100.0%        4   0.0% std::_Rb_tree::_M_copy
+       0   0.0% 100.0%        4   0.0% std::_Rb_tree::_M_copy (inline)
+       0   0.0% 100.0%        4   0.0% std::_Rb_tree::_M_create_node (inline)
+       0   0.0% 100.0%        2   0.0% std::_Rb_tree::_M_destroy_node (inline)
+       0   0.0% 100.0%        3   0.0% std::_Rb_tree::_M_drop_node (inline)
+       0   0.0% 100.0%        4   0.0% std::_Rb_tree::_M_erase (inline)
+       0   0.0% 100.0%        4   0.0% std::_Rb_tree::_M_get_node (inline)
+       0   0.0% 100.0%        1   0.0% std::_Rb_tree::_M_insert_ (inline)
+       0   0.0% 100.0%        1   0.0% std::_Rb_tree::_M_put_node (inline)
+       0   0.0% 100.0%        4   0.0% std::_Rb_tree::_Rb_tree (inline)
+       0   0.0% 100.0%        6   0.0% std::_Rb_tree::find
+       0   0.0% 100.0%      332   1.0% std::_Rb_tree::lower_bound (inline)
+       0   0.0% 100.0%        4   0.0% std::_Rb_tree::~_Rb_tree (inline)
+       0   0.0% 100.0%     3008   9.4% std::_Vector_base::_Vector_base (inline)
+       0   0.0% 100.0%      865   2.7% std::_Vector_base::_Vector_impl::_Vector_impl (inline)
+       0   0.0% 100.0%       18   0.1% std::_Vector_base::_Vector_impl_data::_M_swap_data (inline)
+       0   0.0% 100.0%     1891   5.9% std::_Vector_base::~_Vector_base (inline)
+       0   0.0% 100.0%     1978   6.2% std::__copy_move_a (inline)
+       0   0.0% 100.0%     1978   6.2% std::__copy_move_a2 (inline)
+       0   0.0% 100.0%        2   0.0% std::__cxx11::_List_base::_M_clear (inline)
+       0   0.0% 100.0%      519   1.6% std::__cxx11::_List_base::_M_get_node (inline)
+       0   0.0% 100.0%      178   0.6% std::__cxx11::_List_base::_M_put_node (inline)
+       0   0.0% 100.0%        2   0.0% std::__cxx11::_List_base::~_List_base (inline)
+       0   0.0% 100.0%        5   0.0% std::__cxx11::basic_string::_M_set_length (inline)
+       0   0.0% 100.0%       11   0.0% std::__cxx11::basic_string::_S_copy (inline)
+       0   0.0% 100.0%       11   0.0% std::__cxx11::basic_string::_S_copy_chars (inline)
+       0   0.0% 100.0%     1695   5.3% std::__cxx11::list::_M_create_node (inline)
+       0   0.0% 100.0%        2   0.0% std::__cxx11::list::_M_initialize_dispatch (inline)
+       0   0.0% 100.0%     1844   5.8% std::__cxx11::list::clear (inline)
+       0   0.0% 100.0%        2   0.0% std::__cxx11::list::emplace_back (inline)
+       0   0.0% 100.0%        2   0.0% std::__cxx11::list::insert
+       0   0.0% 100.0%        2   0.0% std::__cxx11::list::list (inline)
+       0   0.0% 100.0%        2   0.0% std::__cxx11::list::~list (inline)
+       0   0.0% 100.0%        4   0.0% std::__fill_n_a (inline)
+       0   0.0% 100.0%      665   2.1% std::__lexicographical_compare::__lc (inline)
+       0   0.0% 100.0%      665   2.1% std::__lexicographical_compare_aux (inline)
+       0   0.0% 100.0%      164   0.5% std::__uninitialized_copy::__uninit_copy (inline)
+       0   0.0% 100.0%      164   0.5% std::__uninitialized_copy_a (inline)
+       0   0.0% 100.0%        4   0.0% std::__uninitialized_default_n (inline)
+       0   0.0% 100.0%        4   0.0% std::__uninitialized_default_n_1::__uninit_default_n (inline)
+       0   0.0% 100.0%        4   0.0% std::__uninitialized_default_n_a (inline)
+       0   0.0% 100.0%        4   0.0% std::__uninitialized_fill_n::__uninit_fill_n (inline)
+       0   0.0% 100.0%        4   0.0% std::__uninitialized_fill_n_a (inline)
+       0   0.0% 100.0%     2647   8.3% std::allocator_traits::allocate (inline)
+       0   0.0% 100.0%     1179   3.7% std::allocator_traits::construct (inline)
+       0   0.0% 100.0%     2062   6.4% std::allocator_traits::deallocate (inline)
+       0   0.0% 100.0%     1662   5.2% std::allocator_traits::destroy (inline)
+       0   0.0% 100.0%     1978   6.2% std::copy (inline)
+       0   0.0% 100.0%        2   0.0% std::endl (inline)
+       0   0.0% 100.0%        4   0.0% std::fill_n (inline)
+       0   0.0% 100.0%        1   0.0% std::istream::_M_extract
+       0   0.0% 100.0%      737   2.3% std::less::operator (inline)
+       0   0.0% 100.0%      665   2.1% std::lexicographical_compare (inline)
+       0   0.0% 100.0%        3   0.0% std::map::find (inline)
+       0   0.0% 100.0%      332   1.0% std::map::lower_bound (inline)
+       0   0.0% 100.0%        4   0.0% std::map::map (inline)
+       0   0.0% 100.0%        1   0.0% std::map::operator= (inline)
+       0   0.0% 100.0%        2   0.0% std::map::~map (inline)
+       0   0.0% 100.0%        2   0.0% std::ostream::operator<< (inline)
+       0   0.0% 100.0%        2   0.0% std::ostream::put
+       0   0.0% 100.0%        2   0.0% std::set::~set (inline)
+       0   0.0% 100.0%      164   0.5% std::uninitialized_copy (inline)
+       0   0.0% 100.0%        4   0.0% std::uninitialized_fill_n (inline)
+       0   0.0% 100.0%        1   0.0% std::use_facet
+       0   0.0% 100.0%        4   0.0% std::vector::_M_allocate_and_copy (inline)
+       0   0.0% 100.0%        1   0.0% std::vector::_M_default_append
+       0   0.0% 100.0%        2   0.0% std::vector::_M_fill_initialize (inline)
+       0   0.0% 100.0%        2   0.0% std::vector::_M_fill_insert
+       0   0.0% 100.0%       44   0.1% std::vector::_M_move_assign (inline)
+       0   0.0% 100.0%       44   0.1% std::vector::operator= (inline)
+       0   0.0% 100.0%        4   0.0% std::vector::push_back (inline)
+       0   0.0% 100.0%        3   0.0% std::vector::reserve
+       0   0.0% 100.0%        1   0.0% std::vector::resize (inline)
+       0   0.0% 100.0%      571   1.8% std::vector::vector
+       0   0.0% 100.0%        3   0.0% std::vector::~vector
+       0   0.0% 100.0%        1   0.0% std::ws
+       0   0.0% 100.0%     9492  29.6% void compute_and_output
