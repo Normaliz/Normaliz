@@ -688,6 +688,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         int omp_start_level = omp_get_level();
 
         size_t nr_latt_points_total = 0;  //statistics for this run of the while loop
+        size_t nr_caught_by_restricted = 0;  //restricted inequalities
+        size_t nr_caught_by_equations = 0;  //statistics for this run of the while loop
 
         vector<vector<size_t> > poly_equs_stat;
         vector<size_t> poly_equs_stat_total;
@@ -766,13 +768,18 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                     NewLattPoint[new_coords_key[j]] = LocalSolutions[i][j + intersection_key.size()];
 
                 bool can_be_inserted = true;
-
+#ifdef NMZ_DEVELOP
 #pragma omp atomic
                 nr_latt_points_total++;
+#endif
                 if(can_be_inserted){
                     for(auto pp = order_poly_equs.begin(); pp!= order_poly_equs.end(); ++pp){
                         if(PolyEqusThread[tn][*pp].evaluate(NewLattPoint) != 0){
                             can_be_inserted = false;
+#ifdef NMZ_DEVELOP
+#pragma omp atomic
+                            nr_caught_by_equations++;
+#endif
                             if(!poly_equs_minimized[coord])
                                 poly_equs_stat[tn][*pp]++;
                             else
@@ -785,6 +792,10 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                     for(auto pp = order_poly_inequs.begin(); pp!= order_poly_inequs.end(); ++pp){
                         if(PolyInequsThread[tn][*pp].evaluate(NewLattPoint) < 0){
                             can_be_inserted = false;
+#ifdef NMZ_DEVELOP
+#pragma omp atomic
+                            nr_caught_by_restricted++;
+#endif
                             if(!poly_inequs_minimized[coord])
                                 poly_inequs_stat[tn][*pp]++;
                             else
@@ -880,12 +891,16 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
              for(size_t thr = 0; thr < PolyEqusThread.size(); ++thr)
                 PolyInequsThread[thr] = EffectivePolyInequs;
         }
-
-        /*if(verbose){
-            // verboseOutput() << " --- ext " << nr_latt_points_total << endl;
-            // verboseOutput() << " cst " << nr_new_latt_points << endl;
-            // verboseOutput() << "rtd " << nr_caught_by_restricted << endl;
-        }*/
+#ifdef NMZ_DEVELOP
+        if(verbose){
+            verboseOutput() << "ext " << nr_latt_points_total;
+            if(PolyEqusThread[0].size() > 0)
+                verboseOutput() << " equ " << nr_caught_by_equations;
+            if(PolyInequsThread[0].size() > 0)
+                verboseOutput() << " ine " << nr_caught_by_restricted;
+            verboseOutput() << endl;
+        }
+#endif
 
         MeasureTime(false, "Elapsed ");
 
