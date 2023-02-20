@@ -158,6 +158,7 @@ std::ostream& errorOutput() {
 }
 
 struct timeval TIME_global_begin, TIME_global_end;
+double GlobalTimeBound;
 
 void StartGlobalTime() {
     gettimeofday(&TIME_global_begin, 0);
@@ -176,6 +177,8 @@ void MeasureGlobalTime(bool verbose) {
 #ifdef NMZ_DEVELOP
 struct timeval TIME_begin, TIME_end;
 
+// The next two functionms can be used for measuring time without nesting.
+// The start time is a global variable
 void StartTime() {
     gettimeofday(&TIME_begin, 0);
 }
@@ -190,6 +193,8 @@ void MeasureTime(bool verbose, const std::string& step) {
     TIME_begin = TIME_end;
 }
 
+// The next two functions use local variables
+
 void StartTimeVar(struct timeval& var_TIME_begin) {
     gettimeofday(&var_TIME_begin, 0);
 }
@@ -202,6 +207,16 @@ double MeasureTimeVar(const struct timeval var_TIME_begin) {
     double elapsed = seconds + microseconds * 1e-6;
     return elapsed;
 }
+
+double TimeSinceStart(){
+    struct timeval time_end;
+    gettimeofday(&time_end, 0);
+    long seconds = time_end.tv_sec - TIME_global_begin.tv_sec;
+    long microseconds = time_end.tv_usec - TIME_global_begin.tv_usec;
+    double elapsed = seconds + microseconds * 1e-6;
+    return elapsed;
+}
+
 #else
 void StartTime() {
     return;
@@ -215,6 +230,10 @@ void StartTimeVar(struct timeval var_TIME_begin){
 }
 
 double MeasureTimeVar(const struct timeval var_TIME_begin, bool verbose, const std::string& step) {
+    return 0;
+}
+
+double TimeSinceStart(){
     return 0;
 }
 

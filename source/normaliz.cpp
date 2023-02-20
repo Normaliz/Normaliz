@@ -346,6 +346,17 @@ int process_data(OptionsHandler& options, const string& command_line) {
             exit(0);
         }
 
+        GlobalTimeBound = -1.0;
+        string name_time = "normaliz.time";
+        const char* file_time = name_time.c_str();
+        ifstream in_time;
+        in_time.open(file_time, ifstream::in);
+        if (in_time.is_open()) {
+            in_time >> GlobalTimeBound;
+            cout << "TIME BOUND " << GlobalTimeBound << endl;
+            in_time.close();
+        }
+
         string name_in = options.getProjectName() + ".in";
         const char* file_in = name_in.c_str();
         ifstream in;

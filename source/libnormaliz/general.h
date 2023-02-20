@@ -154,6 +154,8 @@ void StartGlobalTime();
 void MeasureGlobalTime(bool verbose);
 void StartTimeVar(struct timeval& var_TIME_begin);
 double MeasureTimeVar(const struct timeval var_TIME_begin);
+double TimeSinceStart();
+NORMALIZ_DLL_EXPORT extern double GlobalTimeBound;
 
 } /* end namespace libnormaliz */
 

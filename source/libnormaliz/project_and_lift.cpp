@@ -672,6 +672,14 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
     // parallelization. But it is unclear whether this can be achieved.
 
     while (true) {
+
+#ifdef NMZ_DEVELOP
+        if(GlobalTimeBound > 0 &&  TimeSinceStart() > GlobalTimeBound){
+            cerr << "Stopped after " << GlobalTimeBound  << " seconds" << endl;
+            exit(1);
+        }
+#endif
+
         if(verbose){
             verboseOutput() <<  LevelPatches[coord] << " / " << coord << " left " << nr_to_match - nr_points_matched;
 #ifdef NMZ_DEVELOP
@@ -1638,6 +1646,14 @@ void ProjectAndLift<IntegerPL, IntegerRet>::lift_points_to_this_dim(list<vector<
     bool has_poly_inequs = (PolyInequalities.size() > 0);
 
     while (not_done) {
+
+#ifdef NMZ_DEVELOP
+        if(GlobalTimeBound > 0 &&  TimeSinceStart() > GlobalTimeBound){
+            cerr << "Stopped after " << GlobalTimeBound  << " seconds" << endl;
+            exit(1);
+        }
+#endif
+
         not_done = false;
         bool message_printed = false;
 
