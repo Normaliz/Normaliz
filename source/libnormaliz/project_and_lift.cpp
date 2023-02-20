@@ -691,6 +691,13 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         size_t nr_caught_by_restricted = 0;  //restricted inequalities
         size_t nr_caught_by_equations = 0;  //statistics for this run of the while loop
 
+        size_t nr_points_done_in_this_round = 0;
+
+#ifdef NMZ_DEVELOP
+        struct timeval time_begin;
+        StartTimeVar(time_begin);
+#endif
+
         vector<vector<size_t> > poly_equs_stat;
         vector<size_t> poly_equs_stat_total;
         if(!poly_equs_minimized[coord]){
@@ -749,6 +756,9 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
 
 #pragma omp atomic
             nr_points_matched++;
+
+#pragma omp atomic
+            nr_points_done_in_this_round++;
 
             /*if(ppp % 2 != 0){
                 (*P)[0] = 0;
@@ -891,18 +901,29 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
              for(size_t thr = 0; thr < PolyEqusThread.size(); ++thr)
                 PolyInequsThread[thr] = EffectivePolyInequs;
         }
+
+       NrRemainingLP[this_patch] = nr_to_match - nr_points_matched;
+
+        double expected_number_of_rounds = NrRemainingLP[this_patch];
+        if(nr_points_done_in_this_round > 0){
+            expected_number_of_rounds/= nr_points_done_in_this_round;
+        }
+
 #ifdef NMZ_DEVELOP
         if(verbose){
-            verboseOutput() << "ext " << nr_latt_points_total;
+            verboseOutput() << "done " << nr_points_done_in_this_round;
+            verboseOutput() << " ext " << nr_latt_points_total;
             if(PolyEqusThread[0].size() > 0)
                 verboseOutput() << " equ " << nr_caught_by_equations;
             if(PolyInequsThread[0].size() > 0)
                 verboseOutput() << " ine " << nr_caught_by_restricted;
+            if(nr_points_done_in_this_round > 0)
+                verboseOutput() << " exp rnd " << expected_number_of_rounds;
             verboseOutput() << endl;
         }
 #endif
 
-        MeasureTime(false, "Elapsed ");
+        // MeasureTime(false, "Elapsed ");
 
         /* for(auto& P: NewLatticePoints)
             cout << P;
@@ -910,11 +931,21 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         if(verbose)
             verboseOutput() << "----------" << endl;*/
 
-        NrRemainingLP[this_patch] = nr_to_match - nr_points_matched;
-
         if(!last_coord && NewLatticePoints.size() > 0)
             extend_points_to_next_coord(NewLatticePoints, this_patch + 1);
         NewLatticePoints.clear();
+
+#ifdef NMZ_DEVELOP
+        if(nr_points_done_in_this_round > 0 && NrRemainingLP[this_patch] > 0){
+            // cout << "expected rounds " << expected_number_of_rounds << endl;
+            double time_spent = MeasureTimeVar(time_begin);
+            // cout << "spent " << time_spent << endl;
+            double expected_time = time_spent*expected_number_of_rounds;
+            if(verbose)
+                verboseOutput() << "expected future time on level  " << LevelPatches[coord] << "  " << expected_time << " sec " << endl;
+        }
+#endif
+
         if(nr_points_matched == nr_to_match)
             break;
 

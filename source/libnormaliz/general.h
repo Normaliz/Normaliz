@@ -152,6 +152,8 @@ void StartTime();
 void MeasureTime(bool verbose, const std::string& step);
 void StartGlobalTime();
 void MeasureGlobalTime(bool verbose);
+void StartTimeVar(struct timeval& var_TIME_begin);
+double MeasureTimeVar(const struct timeval var_TIME_begin);
 
 } /* end namespace libnormaliz */
 

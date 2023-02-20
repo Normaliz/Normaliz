@@ -189,6 +189,19 @@ void MeasureTime(bool verbose, const std::string& step) {
         verboseOutput() << step << ": " << elapsed << " sec" << endl;
     TIME_begin = TIME_end;
 }
+
+void StartTimeVar(struct timeval& var_TIME_begin) {
+    gettimeofday(&var_TIME_begin, 0);
+}
+
+double MeasureTimeVar(const struct timeval var_TIME_begin) {
+    struct timeval time_end;
+    gettimeofday(&time_end, 0);
+    long seconds = time_end.tv_sec - var_TIME_begin.tv_sec;
+    long microseconds = time_end.tv_usec - var_TIME_begin.tv_usec;
+    double elapsed = seconds + microseconds * 1e-6;
+    return elapsed;
+}
 #else
 void StartTime() {
     return;
@@ -196,6 +209,16 @@ void StartTime() {
 void MeasureTime(bool verbose, const std::string& step) {
     return;
 }
+
+void StartTimeVar(struct timeval var_TIME_begin){
+    return;
+}
+
+double MeasureTimeVar(const struct timeval var_TIME_begin, bool verbose, const std::string& step) {
+    return 0;
+}
+
+
 #endif
 
 unsigned int getVersion()
