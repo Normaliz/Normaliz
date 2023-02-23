@@ -703,7 +703,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
 
 #ifdef NMZ_DEVELOP
         struct timeval time_begin;
-        StartTimeVar(time_begin);
+        StartTime(time_begin);
 #endif
 
         vector<vector<size_t> > poly_equs_stat;
@@ -946,7 +946,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
 #ifdef NMZ_DEVELOP
         if(nr_points_done_in_this_round > 0 && NrRemainingLP[this_patch] > 0){
             // cout << "expected rounds " << expected_number_of_rounds << endl;
-            double time_spent = MeasureTimeVar(time_begin);
+            double time_spent = MeasureTime(time_begin);
             // cout << "spent " << time_spent << endl;
             double expected_time = time_spent*expected_number_of_rounds;
             if(verbose)

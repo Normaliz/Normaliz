@@ -157,49 +157,23 @@ std::ostream& errorOutput() {
     return *error_ostream_ptr;
 }
 
-struct timeval TIME_global_begin, TIME_global_end;
-double GlobalTimeBound;
+struct timeval TIME_global_begin, TIME_step_begin;
+double GlobalTimeBound = -1.0; // can be set in normaliz.cfg
+// -1.0 means: no time bound
 
-void StartGlobalTime() {
-    gettimeofday(&TIME_global_begin, 0);
-}
-
-void MeasureGlobalTime(bool verbose) {
-    gettimeofday(&TIME_global_end, 0);
-    long seconds = TIME_global_end.tv_sec - TIME_global_begin.tv_sec;
-    long microseconds = TIME_global_end.tv_usec - TIME_global_begin.tv_usec;
-    double elapsed = seconds + microseconds * 1e-6;
-    if (verbose)
-        verboseOutput() << "Normaliz elapsed wall clock time: " << elapsed << " sec" << endl;
-    TIME_global_begin = TIME_global_end;
-}
-
-#ifdef NMZ_DEVELOP
-struct timeval TIME_begin, TIME_end;
-
-// The next two functionms can be used for measuring time without nesting.
-// The start time is a global variable
-void StartTime() {
-    gettimeofday(&TIME_begin, 0);
-}
-
-void MeasureTime(bool verbose, const std::string& step) {
-    gettimeofday(&TIME_end, 0);
-    long seconds = TIME_end.tv_sec - TIME_begin.tv_sec;
-    long microseconds = TIME_end.tv_usec - TIME_begin.tv_usec;
-    double elapsed = seconds + microseconds * 1e-6;
-    if (verbose)
-        verboseOutput() << step << ": " << elapsed << " sec" << endl;
-    TIME_begin = TIME_end;
-}
-
-// The next two functions use local variables
-
-void StartTimeVar(struct timeval& var_TIME_begin) {
+void StartTime(struct timeval& var_TIME_begin) {
     gettimeofday(&var_TIME_begin, 0);
 }
 
-double MeasureTimeVar(const struct timeval var_TIME_begin) {
+void StartTime(){
+        StartTime(TIME_step_begin);
+}
+
+void StartGlobalTime() {
+    StartTime(TIME_global_begin);
+}
+
+double MeasureTime(const struct timeval var_TIME_begin) {
     struct timeval time_end;
     gettimeofday(&time_end, 0);
     long seconds = time_end.tv_sec - var_TIME_begin.tv_sec;
@@ -209,36 +183,25 @@ double MeasureTimeVar(const struct timeval var_TIME_begin) {
 }
 
 double TimeSinceStart(){
-    struct timeval time_end;
-    gettimeofday(&time_end, 0);
-    long seconds = time_end.tv_sec - TIME_global_begin.tv_sec;
-    long microseconds = time_end.tv_usec - TIME_global_begin.tv_usec;
-    double elapsed = seconds + microseconds * 1e-6;
+    double elapsed = MeasureTime(TIME_global_begin);
     return elapsed;
 }
 
-#else
-void StartTime() {
-    return;
-}
-void MeasureTime(bool verbose, const std::string& step) {
-    return;
+void MeasureGlobalTime(bool verbose) {
+    double elapsed = TimeSinceStart();
+    if (verbose)
+        verboseOutput() << "Normaliz elapsed wall clock time: " << elapsed << " sec" << endl;
 }
 
-void StartTimeVar(struct timeval var_TIME_begin){
-    return;
+void PrintTime(const struct timeval var_TIME_begin, bool verbose, const std::string& step){
+    double elapsed = MeasureTime(var_TIME_begin);
+    if (verbose)
+        verboseOutput() << step << ": " << elapsed << " sec" << endl;
 }
 
-double MeasureTimeVar(const struct timeval var_TIME_begin, bool verbose, const std::string& step) {
-    return 0;
+void MeasureTime(bool verbose, const std::string& step){
+    PrintTime(TIME_step_begin,verbose,step);
 }
-
-double TimeSinceStart(){
-    return 0;
-}
-
-
-#endif
 
 unsigned int getVersion()
 {

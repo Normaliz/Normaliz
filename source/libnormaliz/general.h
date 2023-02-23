@@ -148,13 +148,16 @@ std::ostream& errorOutput();
 
 void interrupt_signal_handler(int signal);
 
-void StartTime();
-void MeasureTime(bool verbose, const std::string& step);
+void StartTime(struct timeval& var_TIME_begin);
 void StartGlobalTime();
-void MeasureGlobalTime(bool verbose);
-void StartTimeVar(struct timeval& var_TIME_begin);
-double MeasureTimeVar(const struct timeval var_TIME_begin);
+void StartTime();
+double MeasureTime(const struct timeval var_TIME_begin);
+void MeasureTime(bool verbose, const std::string& step);
 double TimeSinceStart();
+void MeasureGlobalTime(bool verbose);
+void PrintTime(const struct timeval var_TIME_begin, bool verbose, const std::string& step);
+
+
 NORMALIZ_DLL_EXPORT extern double GlobalTimeBound;
 
 } /* end namespace libnormaliz */
