@@ -939,10 +939,11 @@ void binomial_list::start_bb(binomial_tree& red_tree){
 }
 
 
-void binomial_list::buchberger(const monomial_order& mo,
+void binomial_list::buchberger(const exponent_vec& weight_vec,
+                               const bool degrevlex_mode,
                                const dynamic_bitset& sat_supp) {
 
-    mon_ord = mo;
+    mon_ord = monomial_order(degrevlex_mode, weight_vec);
     sat_support  = sat_supp;
 
     /* size_t Bind = 0;
@@ -979,7 +980,7 @@ void binomial_list::buchberger(const monomial_order& mo,
     StartTime();
 
     size_t inserted = 0;
-    binomial_tree red_tree(mo, sat_supp); // our reduction tree
+    binomial_tree red_tree(mon_ord, sat_supp); // our reduction tree
     start_bb(red_tree); // inserts the input into red_tree and auto-reduces it
 
     size_t nr_vars = sat_supp.size();
@@ -1063,11 +1064,6 @@ void binomial_list::buchberger(const monomial_order& mo,
     MeasureTime(verbose, "Buchberger");
 }
 
-void binomial_list::buchberger(const monomial_order& mo) {
-    dynamic_bitset sat_supp(mo.size());
-    buchberger(mo, sat_supp);
-}
-
 matrix_t binomial_list::to_matrix() const {
     matrix_t bmat(0, get_number_indets());
     for (auto b : *this)
@@ -1121,7 +1117,9 @@ void s_poly_insert(binomial_list& G, binomial_list_by_degrees& B){
     }
 }
 
-binomial_list binomial_list::graph_minimize(const vector<long long>& grading, bool& success){
+// minimizatiom by trying to connect lead and tail in tghe graph whose edges are defined by
+// previous minimal geneartors
+binomial_list binomial_list::graph_minimize(const vector<long long>& weight, bool& success){
 
     StartTime();
     success = true;
@@ -1130,9 +1128,9 @@ binomial_list binomial_list::graph_minimize(const vector<long long>& grading, bo
         return *this;
 
     // settings for *this
-    sat_support = dynamic_bitset(grading.size());
-    sat_support.flip(); // we have a positive grading and can take revlex
-    mon_ord = monomial_order(true, grading);
+    sat_support = dynamic_bitset(weight.size());
+    sat_support.flip(); // we have a positive weight and can take revlex
+    mon_ord = monomial_order(true, weight);
 
     binomial_tree Min_red_tree(mon_ord, sat_support);
     Min_red_tree.set_minimization_tree();
@@ -1140,7 +1138,7 @@ binomial_list binomial_list::graph_minimize(const vector<long long>& grading, bo
     binomial_list Vmin; // minimal Markov
     binomial_list Vstopped; //returned in case of failure
 
-    binomial_list_by_degrees  W(*this, grading); // ordered version of *this
+    binomial_list_by_degrees  W(*this, weight); // ordered version of *this
     set<exponent_vec> G_set;
 
     size_t min_degree = W.begin()->first;
@@ -1220,11 +1218,11 @@ binomial_list binomial_list::graph_minimize(const vector<long long>& grading, bo
 }
 
 
-// frealizes the algorithm in Kreuzer-Robbiano CCA II, Theorem 4.6.7
+// realizes the algorithm in Kreuzer-Robbiano CCA II, Theorem 4.6.7
 // notation as used there
 // not used anymore
- binomial_list binomial_list::bb_and_minimize(const vector<long long>& grading){
- //binomial_list binomial_list::bb_and_minimize(const vector<long long>& grading, bool starting_from_GB, binomial_list& G){
+ binomial_list binomial_list::bb_and_minimize(const vector<long long>& weight){
+ //binomial_list binomial_list::bb_and_minimize(const vector<long long>& weight, bool starting_from_GB, binomial_list& G){
 
     StartTime();
 
@@ -1236,9 +1234,9 @@ binomial_list binomial_list::graph_minimize(const vector<long long>& grading, bo
     bool starting_from_GB = true;
 
     // settings for *this
-    sat_support = dynamic_bitset(grading.size());
-    sat_support.flip(); // we have a positive grading and can take revlex
-    mon_ord = monomial_order(true, grading);
+    sat_support = dynamic_bitset(weight.size());
+    sat_support.flip(); // we have a positive weight and can take revlex
+    mon_ord = monomial_order(true, weight);
     normalize();
 
     binomial_list G; // the GB built by degrees
@@ -1248,8 +1246,8 @@ binomial_list binomial_list::graph_minimize(const vector<long long>& grading, bo
 
     binomial_list Vmin; // minimal Markov
 
-    binomial_list_by_degrees  W(*this, grading); // ordered version of *this
-    binomial_list_by_degrees B(grading);
+    binomial_list_by_degrees  W(*this, weight); // ordered version of *this
+    binomial_list_by_degrees B(weight);
     set<exponent_vec> G_set;
 
     long long min_degree;

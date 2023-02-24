@@ -129,9 +129,10 @@ public:
     void auto_reduce(binomial_tree& red_ree, const bool = false);
     template<typename Iterator>
     void intermediate_auto_reduce(binomial_tree& red_tree, Iterator& new_binom);
-    void buchberger(const monomial_order& mo,
-                    const dynamic_bitset& sat_supp);
-    void buchberger(const monomial_order& mo);
+    void buchberger(const exponent_vec& weight_vec,
+                               const bool degrevlex_mode,
+                               const dynamic_bitset& sat_supp);
+    // void buchberger(const monomial_order& mo);
 
     matrix_t to_matrix() const;
     void pretty_print(std::ostream& out,

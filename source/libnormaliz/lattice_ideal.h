@@ -40,67 +40,6 @@ using std::ostream;
 using std::transform;
 using std::pair;
 
-class groebner_project {
-public:
-    groebner_project() {}
-    explicit groebner_project(const matrix_t& binomial_matrix,
-                              const monomial_order& mo);
-    explicit groebner_project(const matrix_t& binomial_matrix,
-                              const exponent_vec& weight_vec,
-                              const bool degrevlex_mode);
-    explicit groebner_project(const matrix_t& binomial_matrix,
-                              const monomial_order& mo,
-                              const dynamic_bitset& sat_supp);
-    explicit groebner_project(const matrix_t& binomial_matrix,
-                              const exponent_vec& weight_vec,
-                              const bool degrevlex_mode,
-                              const dynamic_bitset& sat_supp);
-
-    size_t get_number_indets() const;
-    // lattice get_lattice() const;
-    binomial_list get_binomials() const;
-    monomial_order get_monomial_order() const;
-
-    // void set_lattice(const lattice& l);
-    // void set_binomials(const binomial_list& blst);
-    void set_monomial_order(const monomial_order& mo);
-
-    binomial_list get_groebner_basis() const;
-    binomial_list get_minimal_markov() const;
-
-    void write_gb() const;
-    void pretty_print(std::ostream& out,
-                      const bool with_row_nr = false) const;
-
-    void set_degree_bound(const long deg_bound);
-    void set_grading(const vector<long long>& grad);
-    void set_verbose(bool verb);
-
-
-private:
-    void print_usage() const;
-    std::vector<std::string> command_line{};
-    std::string input_filename{};
-    std::string output_filename{};
-
-    // lattice lat{};
-    binomial_list binomials{};
-    monomial_order mon_ord{};
-    dynamic_bitset saturation_support{};
-
-    // mutable bool lattice_binomials_sync{false};
-
-    mutable binomial_list gb{};
-    void compute_gb() const;
-    // void compute_minimal_markov() const;
-    mutable bool gb_computed{false};
-    mutable bool min_computed{false};
-
-    long degree_bound;
-    vector<long long> grading;
-    bool verbose;
-};
-
 using namespace libnormaliz;
 typedef long long Integer;
 
