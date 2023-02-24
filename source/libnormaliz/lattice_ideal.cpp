@@ -91,6 +91,7 @@ Matrix<Integer> select_by_degree(const Matrix<Integer>& M,
 MarkovProjectAndLift::MarkovProjectAndLift(Matrix<Integer>& LatticeIdeal, const bool verb){
 
     verbose = verb;
+    degree_bound = -1;
 
     // cout << "Given lattice ideal in Laurent polynomial ring" << endl;
     // LatticeIdeal.pretty_print(cout);
@@ -574,6 +575,7 @@ void MarkovProjectAndLift::compute(Matrix<long long>& Mark, Matrix<long long>& M
 }
 
 void MarkovProjectAndLift::set_degree_bound(const long deg_bound) {
+    assert(grading.size() > 0);
     degree_bound = deg_bound;
 }
 
@@ -607,6 +609,7 @@ void LatticeIdeal::set_degree_bound(const long deg_bound) {
 }
 
 void LatticeIdeal::set_min_degree(const long deg) {
+    assert(Grading.size() > 0); // make sonly sense with grading
     min_degree = deg;
     setComputed(ConeProperty::MarkovBasis, false);
     setComputed(ConeProperty::GroebnerBasis, false);

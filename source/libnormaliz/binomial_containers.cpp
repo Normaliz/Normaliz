@@ -687,6 +687,7 @@ binomial_list::binomial_list(const matrix_t& binomial_matrix) {
 }
 
 void binomial_list::set_degree_bound(const long deg_bound){
+    assert(grading.size() > 0);
     degree_bound = deg_bound;
 }
 
