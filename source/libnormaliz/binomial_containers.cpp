@@ -680,6 +680,7 @@ vector<mpz_class> monomial_list::compute_HilbertSeries_inner(int level, const ve
 
 binomial_list::binomial_list(const matrix_t& binomial_matrix) {
     degree_bound = -1;
+    degree_bound_set = false;
     for (size_t i = 0; i < binomial_matrix.nr_of_rows(); ++i) {
         binomial bi(binomial_matrix[i]);
         push_back(bi);
@@ -902,8 +903,12 @@ bool binomial_list::make_and_reduce_s_poly(binomial& s_poly, const Iterator matc
                 || (match->positive_coprime(*new_binom)) // coprime heads
                 || (criterion_gm_left(match, new_binom))  )         // GM "left"
         return true;
-    winf_red++;
+
     s_poly = *match - *new_binom;
+    if(degree_bound_set && pos_degree(s_poly, grading) > degree_bound)
+        return true;
+
+    winf_red++;
     s_poly.normalize(mon_ord);
 
     bool tail_criterion = false;
@@ -946,6 +951,18 @@ void binomial_list::buchberger(const exponent_vec& weight_vec,
 
     mon_ord = monomial_order(degrevlex_mode, weight_vec);
     sat_support  = sat_supp;
+
+    if(degree_bound >= 0){
+        degree_bound_set = true;
+        assert(grading.size() > 0);
+
+        for(auto b = begin(); b != end(); ){
+            if(pos_degree(*b, grading) > degree_bound)
+                b = erase(b);
+            else
+                ++b;
+        }
+    }
 
     /* size_t Bind = 0;
     bool too_many = false;
@@ -1111,6 +1128,8 @@ void s_poly_insert(binomial_list& G, binomial_list_by_degrees& B){
             continue;
 
         s_poly = last_bin - *match;
+        if(G.degree_bound_set && pos_degree(s_poly, G.grading) > G.degree_bound)
+            continue;
         s_poly.normalize(G.mon_ord);
         size_t deg = libnormaliz::v_scalar_product(B.grading, s_poly.get_exponent_pos());
         s_poly.set_support_keys(G.sat_support);
@@ -1120,8 +1139,10 @@ void s_poly_insert(binomial_list& G, binomial_list_by_degrees& B){
 
 // minimizatiom by trying to connect lead and tail in tghe graph whose edges are defined by
 // previous minimal geneartors
-binomial_list binomial_list::graph_minimize(const vector<long long>& weight, bool& success){
+binomial_list binomial_list::graph_minimize(bool& success){
 
+    assert(grading.size() > 0);
+    vector<long long> weight = grading;
     StartTime();
     success = true;
 
@@ -1139,7 +1160,7 @@ binomial_list binomial_list::graph_minimize(const vector<long long>& weight, boo
     binomial_list Vmin; // minimal Markov
     binomial_list Vstopped; //returned in case of failure
 
-    binomial_list_by_degrees  W(*this, weight); // ordered version of *this
+    binomial_list_by_degrees  W(*this); // ordered version of *this
     set<exponent_vec> G_set;
 
     size_t min_degree = W.begin()->first;
@@ -1243,11 +1264,16 @@ binomial_list binomial_list::graph_minimize(const vector<long long>& weight, boo
     binomial_list G; // the GB built by degrees
     G.mon_ord = mon_ord;
     G.sat_support = sat_support;
+    G.grading = grading;
+    G.degree_bound = degree_bound;
+    if(degree_bound >= 0)
+        G.degree_bound_set = true;
+
     binomial_tree G_red_tree(mon_ord, sat_support);
 
     binomial_list Vmin; // minimal Markov
 
-    binomial_list_by_degrees  W(*this, weight); // ordered version of *this
+    binomial_list_by_degrees  W(*this); // ordered version of *this
     binomial_list_by_degrees B(weight);
     set<exponent_vec> G_set;
 
@@ -1311,13 +1337,20 @@ binomial_list binomial_list::graph_minimize(const vector<long long>& weight, boo
 // binomial list by degrees
 // -----------------------------------------------------
 
-binomial_list_by_degrees::binomial_list_by_degrees(const binomial_list& BL, const vector<long long>& grad){
+binomial_list_by_degrees::binomial_list_by_degrees(const binomial_list& BL){
 
-    grading = grad;
+    grading = BL.mon_ord.get_weight();  // we want bto keep the order in BL as much as possible
+    vector<long long> bounding_grad = BL.grading;
+    long long degree_bound = BL.degree_bound;
+
+    bool no_degree_bound = true;
+    if(degree_bound > -1)
+        no_degree_bound = false;
     if(!BL.empty())
         assert(grading.size() == BL.front().size());
     for(auto& b: BL){
-        bin_insert(b);
+        if(no_degree_bound || pos_degree(b, bounding_grad) <= degree_bound)
+            bin_insert(b);
     }
 }
 

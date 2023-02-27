@@ -4025,7 +4025,7 @@ ConeProperties Cone<Integer>::monoid_compute(ConeProperties ToCompute) {
         setComputed(ConeProperty::Multiplicity);
     }
 
-    Matrix<long long> LatticeId = InputGensLL.transpose().kernel();
+    Matrix<long long> LatticeId = InputGensLL.transpose().kernel(!ToCompute.test(ConeProperty::NoLLL));
 
     lattice_ideal_compute_inner(ToCompute,LatticeId,ValuesGradingOnMonoid,verbose);
 

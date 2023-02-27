@@ -117,7 +117,7 @@ MarkovProjectAndLift::MarkovProjectAndLift(Matrix<Integer>& LatticeIdeal, const 
     nr_vars = LatticeBasis.nr_of_columns();
     rank = LatticeBasis.row_echelon_reduce();
     // cout << "Row echelon form of lattice basis" << endl;
-    // LatticeBasis.pretty_print(cout);
+    //LatticeBasis.debug_print();
     // cout << "rank " << rank << endl;
     LatticeBasis.resize(rank);
     start_column_key();
@@ -150,7 +150,6 @@ void MarkovProjectAndLift::start_column_key(){
     }
 }
 
-// not used at present
 // makes kind of a Hermite normal form
 void MarkovProjectAndLift::make_normal_form(){
 
@@ -340,10 +339,15 @@ bool MarkovProjectAndLift::lift_next_not_yet_lifted(bool allow_revlex){
         verboseOutput() << "Computing minimal Markov basis" << endl;
     binomial_list gr(CurrentMarkov);
     gr.set_verbose(verbose);
-    // binomial_list dummy;
-    // binomial_list min_markov = gr.bb_and_minimize(LiftedWeight, true, dummy);
     bool graph_success;
-    binomial_list min_markov = gr.graph_minimize(LiftedWeight, graph_success);
+    if(degree_bound >= 0){
+        gr.set_grading(grading);
+        gr.set_degree_bound(degree_bound);
+    }
+    else{
+        gr.set_grading(LiftedWeight);
+    }
+    binomial_list min_markov = gr.graph_minimize(graph_success);
     if(!graph_success){
         min_markov = gr.bb_and_minimize(LiftedWeight);
     }
@@ -565,6 +569,7 @@ void MarkovProjectAndLift::compute(Matrix<long long>& Mark, Matrix<long long>& M
 
     find_projection();
     lift_unbounded(); // straight no longer used
+    CurrentMarkov.debug_print();
     lift_not_yet_lifted(true); // revlex allowed
     columns_to_old_order();
 
@@ -666,6 +671,10 @@ HilbertSeries  LatticeIdeal::getHilbertSeries(){
 void LatticeIdeal::computeMarkov(){
 
     MarkovProjectAndLift PandL(OurInput, verbose);
+    if(Grading.size() > 0 && degree_bound != -1){
+        PandL.set_grading(Grading);
+        PandL.set_degree_bound(degree_bound);
+    }
     PandL.compute(Markov, MinimalMarkov);
     if(MinimalMarkov.nr_of_rows() > 0){
         is_positively_graded = true;
@@ -983,160 +992,5 @@ void HilbertBasisMonoid::put_HilbertBasisKey_into(vector<key_t>& Ind){
         sort(HilbertBasisKey.begin(), HilbertBasisKey.end());
         swap(Ind, HilbertBasisKey);
 }
-
-
-    /*cout << "====================" << endl;
-    cout << "Statistics for project-and-lift" << endl;
-    cout << "s_poly           " << winf_s_poly << endl;
-    cout << "head coprime     " << winf_ini_coprime << endl;
-    cout << "tail not coprime " << winf_tail_not_coprime << endl;
-    cout << "gm_left          " << winf_gm_left << endl;
-    cout << "gm left comps    " << winf_gm_steps << endl;
-    cout << "reduction        " << winf_red << endl;
-    cout << "reduction to 0   " << winf_red_tail << endl;
-    // cout << "reduction to zero  " << winf_red_zero << endl;
-    cout << "surviving s-poly " << winf_s_poly- winf_ini_coprime - winf_tail_not_coprime
-    - winf_gm_left - winf_red_tail - winf_red_zero << endl;
-    cout << "reduction comps  " << winf_red_steps << endl;
-    cout << "entered_nodes    " << winf_entered_nodes << endl;
-    cout << "====================" << endl;*/
-
-        /* cout << "====================" << endl;
-        cout << "Statistics for Gröbner basis in chosen monomial order" << endl;
-        cout << "s_poly           " << winf_s_poly << endl;
-        cout << "head coprime     " << winf_ini_coprime << endl;
-        cout << "tail not coprime " << winf_tail_not_coprime << endl;
-        cout << "gm_left          " << winf_gm_left << endl;
-        cout << "gm left comps    " << winf_gm_steps << endl;
-        cout << "reduction        " << winf_red << endl;
-        cout << "reduction to 0   " << winf_red_tail << endl;
-        // cout << "reduction to zero  " << winf_red_zero << endl;
-        cout << "surviving s-poly " << winf_s_poly- winf_ini_coprime - winf_tail_not_coprime
-        - winf_gm_left - winf_red_tail - winf_red_zero << endl;
-        cout << "reduction steps  " << winf_red_steps << endl;
-        cout << "entered_nodes    " << winf_entered_nodes << endl;
-        cout << "====================" << endl;*/
-
-       /*cout << "====================" << endl;
-        cout << "Statistics for Gröbner basis in chosen monomial order" << endl;
-        cout << "s_poly           " << winf_s_poly << endl;
-        cout << "head coprime     " << winf_ini_coprime << endl;
-        cout << "tail not coprime " << winf_tail_not_coprime << endl;
-        cout << "gm_left          " << winf_gm_left << endl;
-        cout << "gm left comps    " << winf_gm_steps << endl;
-        cout << "reduction        " << winf_red << endl;
-        cout << "reduction to 0   " << winf_red_tail << endl;
-        // cout << "reduction to zero  " << winf_red_zero << endl;
-        cout << "surviving s-poly " << winf_s_poly- winf_ini_coprime - winf_tail_not_coprime
-        - winf_gm_left - winf_red_tail - winf_red_zero << endl;
-        cout << "reduction steps  " << winf_red_steps << endl;
-        cout << "entered_nodes    " << winf_entered_nodes << endl;
-        cout << "====================" << endl;
-
-        reset_statistics();*/
-
-
-/*
- *
-    cout << "Start project and lift" << endl;
-
-    compute_final_GB = (Lex || RevLex || DegLex);
-
-    PreComputedFinalGrading.resize(nr_vars);
-    Cone<Integer> WeightCone(Type::equations, LattiiceIdealInput); // intersects with positive orthant
-    Matrix<Integer> ExtRays = WeightCone.getExtremeRaysMatrix();
-    for(size_t i = 0; i < ExtRays.nr_of_rows(); ++i){
-            PreComputedFinalGrading = v_add(PreComputedFinalGrading,ExtRays[i]);
-    }
-    v_make_prime(PreComputedFinalGrading);
-    is_positively_graded = true;
-
-    is_positively_graded = all_of(PreComputedFinalGrading.begin(),
-                                  PreComputedFinalGrading.end(), [] (long long d){return d >= 0;});
-
-    find_projection();
-    lift_unbounded(); // straight no longer used
-    lift_not_yet_lifted(true); // revlex allowed
-    columns_to_old_order();
-
-    cout << "Precomputed grading on final quotient " << endl;
-    cout << PreComputedFinalGrading;
-
-    if(Hilb && is_positively_graded){
-
-        OURStartTime();
-        cout << "Final quotient psoitively graded" << endl;
-        binomial_list bl_HilbertSeries(CurrentMarkov);
-
-        vector<long long> StandardGrading(PreComputedFinalGrading.size(),1);
-        bool is_stadard_graded = true;
-        for(size_t i = 0; i< CurrentMarkov.nr_of_rows(); ++i){
-            if(v_scalar_product(StandardGrading, CurrentMarkov[i]) != 0){
-                    is_stadard_graded = false;
-                    break;
-            }
-        }
-        if(is_stadard_graded){
-            PreComputedFinalGrading = StandardGrading;
-            cout << "Final quotient standard graded. Using standard grading" << endl;
-        }
-
-        // MinMarkov.pretty_print(cout);
-        vector<mpz_class> numerator = bl_HilbertSeries.compute_HilbertSeries(PreComputedFinalGrading);
-        // cout << "Hilb numerator " << numerator;
-        vector<long long> numerator_long_long;
-        convert(numerator_long_long, numerator);
-        vector<long> PreComputedFinalGrading_long;
-        convert(PreComputedFinalGrading_long, PreComputedFinalGrading);
-        HilbSer = HilbertSeries(numerator_long_long, PreComputedFinalGrading_long);
-        HilbSer.simplify();
-        cout << "Hilbert series numerator  " << HilbSer.getNum();
-        cout << "Hilbert series denominator " <<  HilbSer.getDenom();
-        OURMeasureTime(true, "Hilbert series");
-
-        cout << "---------------------------------------------------" << endl;
-    }
-
-
-    string FinalGB;
-    vector<Integer> all_one(nr_vars,1);
-    bool use_rev_lex = false;
-
-    if(Lex){
-        FinalGB = "lex";
-        all_one = vector<Integer> (nr_vars,0);
-    }
-    if(RevLex){
-        FinalGB = "RevLex";
-        use_rev_lex = true;
-    }
-    if(DegLex){
-        FinalGB = "Deglex";
-    }
-
-    GroebnerBasis.resize(0, nr_vars); // for correct format
-    if(Lex || RevLex || DegLex){
-
-
-        cout << "Final Gröbner basis " << FinalGB << endl;
-
-        CurrentSatturationSupport = dynamic_bitset(nr_vars);
-        if(is_positively_graded)
-            CurrentSatturationSupport.flip();
-
-        groebner_project grp(CurrentMarkov, all_one, use_rev_lex, CurrentSatturationSupport);
-
-        binomial_list gr = grp.get_groebner_basis();
-        // gr.pretty_print(cout);
-        GroebnerBasis = gr.to_matrix();
-        if(gr.size() == 0) // can happen, must set the right format
-            CurrentMarkov.resize(0, nr_vars);
-        //CurrentMarkov.pretty_print(cout);
-    }
-
-    if(MinimalMarkov.nr_of_rows() > 0)
-        return MinimalMarkov;
-
-*/
 
 } // namespace

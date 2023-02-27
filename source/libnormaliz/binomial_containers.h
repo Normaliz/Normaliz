@@ -147,7 +147,7 @@ public:
                                 binomial_tree& red_tree);
 
     // combinatorial minimization of Markov
-    binomial_list  graph_minimize(const vector<long long>& weight, bool& success); // const vector<long long>& grading);
+    binomial_list  graph_minimize(bool& success); // const vector<long long>& grading);
     // minimization by degree controlled Buchberger
     binomial_list  bb_and_minimize(const vector<long long>& weight); // const vector<long long>& grading);
     vector<mpz_class> compute_HilbertSeries(const vector<long long>& given_grading);
@@ -158,6 +158,7 @@ public:
     mutable dynamic_bitset sat_support;
     vector<long long> grading;
     long degree_bound;
+    bool degree_bound_set;
     // bool only_monomials= false;
     // Premise: *b < *c, i.e. *b = min{*b, *c}
     template<typename Iterator>
@@ -200,7 +201,7 @@ class binomial_list_by_degrees : public set<pair<size_t, binomial> > {
 
 public:
 
-    binomial_list_by_degrees(const binomial_list& BL, const vector<long long>& grad);
+    binomial_list_by_degrees(const binomial_list& BL);
     binomial_list_by_degrees(const vector<long long>& grad);
     vector<long long> grading;
     void bin_insert(const binomial& b);
