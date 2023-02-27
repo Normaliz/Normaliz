@@ -43,4 +43,5 @@ MarkovBasis
 gb_min_degree 3
 gb_degree_bound 3
 BinomialsPacked
+NoLLL
 
