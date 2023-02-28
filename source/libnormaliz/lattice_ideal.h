@@ -118,6 +118,7 @@ public:
 
     void set_degree_bound(const long deg_bound);
     void set_min_degree(const long deg);
+    void set_gb_weight(const vector<long long>& given_weight);
 
 
 private:
@@ -140,6 +141,7 @@ private:
 
     long degree_bound;
     long min_degree;
+    vector<long long> gb_weight;
 
 };
 

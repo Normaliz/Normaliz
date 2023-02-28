@@ -75,6 +75,7 @@ enum InputType {
     //
     grading,
     dehomogenization,
+    gb_weight,
     //
     // lattice ideals and friends
     //
@@ -194,6 +195,9 @@ inline InputType to_type(const string& type_string) {
     }
     if (type_string == "dehomogenization") {
         return Type::dehomogenization;
+    }
+    if (type_string == "gb_weight") {
+        return Type::gb_weight;
     }
     if (type_string == "5" || type_string == "equations") {
         return Type::equations;
@@ -335,8 +339,8 @@ inline long type_nr_columns_correction(InputType t) {
 /* returns true if the input of this type is a vector */
 inline bool type_is_vector(InputType type) {
     if (type == Type::grading || type == Type::signs || type == Type::strict_signs || type == Type::dehomogenization ||
-        type == Type::offset || type == Type::open_facets || type == Type::projection_coordinates || type == Type::scale ||
-        type == Type::rational_offset) {
+        type == Type::offset || type == Type::open_facets || type == Type::projection_coordinates
+        || type == Type::scale || type == Type::rational_offset || type == Type::gb_weight) {
         return true;
     }
     return false;

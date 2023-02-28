@@ -150,6 +150,8 @@ Cone<renf_elem_class>::Cone(const string project) {
 template <typename Integer>
 void check_length_of_vectors_in_input(const InputMap<Integer>& multi_input_data, size_t dim) {
     for (auto& it : multi_input_data) {
+        if(it.first == Type::gb_weight)
+            continue;
         size_t prescribed_length = dim + type_nr_columns_correction(it.first);
         for (auto& v : it.second.get_elements()) {
             if (v.size() == 0)
@@ -199,7 +201,7 @@ void Cone<Integer>::check_consistency_of_dimension(const InputMap<InputNumber>& 
         /* if(type_is_number(it->first))
             continue;*/
         test_dim = it->second[0].size() - type_nr_columns_correction(it->first) + inhom_corr;
-        if (test_dim != dim) {
+        if (test_dim != dim && it->first != Type::gb_weight) {
             throw BadInputException("Inconsistent dimensions in input!");
         }
     }
@@ -894,8 +896,23 @@ void Cone<Integer>::process_multi_input_inner(InputMap<Integer>& multi_input_dat
     }
 
     if (lattice_ideal_input || monoid_input) {
-        if (multi_input_data.size() > 2 || (multi_input_data.size() == 2 && !contains(multi_input_data, Type::grading))){
-            throw BadInputException("Only grading allowed with mononid for monoid or binomial ideal!");
+        size_t max_nr_types = 3;
+        bool normal_tor_id = false;
+        if(lattice_ideal_input && contains(multi_input_data, Type::normal_toric_ideal)){
+            max_nr_types = 2;
+            normal_tor_id = true;
+        }
+        if (multi_input_data.size() > max_nr_types){
+            throw BadInputException("Not all input types llowed with mononid or binomial ideal!");
+        }
+        if (normal_tor_id && multi_input_data.size() == 2 && !contains(multi_input_data, Type::grading)){
+            throw BadInputException("Only grading allowed as an additional input type for (normal_)toric_ideal");
+        }
+        if (multi_input_data.size() == 2 && !(contains(multi_input_data, Type::grading) || contains(multi_input_data, Type::gb_weight))){
+            throw BadInputException("Only grading and gb_weight as additional input types for monoid or binomial ideal");
+        }
+        if (multi_input_data.size() == 3 && !(contains(multi_input_data, Type::grading) && contains(multi_input_data, Type::gb_weight))){
+            throw BadInputException("Only grading and gb_weight as additional input types for monoid or binomial ideal");
         }
     }
 
@@ -990,6 +1007,13 @@ void Cone<Integer>::process_multi_input_inner(InputMap<Integer>& multi_input_dat
             lf[0].push_back(0);  // first we extend grading trivially to have the right dimension
         setGrading(lf[0]);       // will eventually be set in full_cone.cpp
     }
+
+    Matrix<Integer> lw = find_input_matrix(multi_input_data, Type::gb_weight);
+    if (lw.nr_of_rows() > 1) {
+        throw BadInputException("Bad gb_weight, has " + toString(lw.nr_of_rows()) + " rows (should be 1)!");
+    }
+    if(lw.nr_of_rows() == 1)
+        GB_Weight = lw[0];
 
     INTERRUPT_COMPUTATION_BY_EXCEPTION
 
@@ -4111,6 +4135,16 @@ ConeProperties Cone<Integer>::lattice_ideal_compute_inner(ConeProperties ToCompu
         LattId.set_degree_bound(gb_degree_bound);
     if(gb_min_degree != -1) // default value -1 woiuld not harm
         LattId.set_min_degree(gb_min_degree);// but is clearer so
+
+    if(GB_Weight.size() > 0){
+        if(ToCompute.test(ConeProperty::DegLex))
+            throw BadInputException("gb_weight not allowed for DegLex");
+        vector<long long> weightLL;
+        convert(weightLL, GB_Weight);
+        LattId.set_gb_weight(weightLL);
+        if(GB_Weight.size() != LatticeId.nr_of_columns())
+            throw BadInputException("gb_weight has wrong length");
+    }
 
     LattId.compute(ToCompute);
     if(LattId.isComputed(ConeProperty::GroebnerBasis)){

@@ -569,7 +569,6 @@ void MarkovProjectAndLift::compute(Matrix<long long>& Mark, Matrix<long long>& M
 
     find_projection();
     lift_unbounded(); // straight no longer used
-    CurrentMarkov.debug_print();
     lift_not_yet_lifted(true); // revlex allowed
     columns_to_old_order();
 
@@ -611,6 +610,10 @@ void LatticeIdeal::set_degree_bound(const long deg_bound) {
     degree_bound = deg_bound;
     setComputed(ConeProperty::MarkovBasis, false);
     setComputed(ConeProperty::GroebnerBasis, false);
+}
+
+void LatticeIdeal::set_gb_weight(const vector<long long>& given_weight){
+    gb_weight = given_weight;
 }
 
 void LatticeIdeal::set_min_degree(const long deg) {
@@ -689,12 +692,20 @@ void LatticeIdeal::computeGroebner(ConeProperties ToCompute){
 
     string FinalGB = "RevLex";
     vector<Integer> all_one(Markov.nr_of_columns(),1);
+    if(gb_weight.size() > 0){
+        all_one = gb_weight;
+        FinalGB += " weighted";
+    }
     bool use_rev_lex = true;
 
     if(ToCompute.test(ConeProperty::Lex)){
         FinalGB = "Lex";
         use_rev_lex = false;
         all_one = vector<Integer> (nr_vars,0);
+        if(gb_weight.size() > 0){
+            all_one = gb_weight;
+          FinalGB += " weighted";
+        }
     }
     if(ToCompute.test(ConeProperty::DegLex)){
         use_rev_lex = false;

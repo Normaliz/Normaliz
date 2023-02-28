@@ -898,6 +898,9 @@ InputMap<Number> readNormalizInput(istream& in,
     set<NumParam::Param> num_par_already_set;
     bool we_have_a_polynomial = false;
     bool convert_equations = false;
+    size_t length_weight = 0;
+    bool monoid_read = false;
+    bool lattice_ideal_read = false;
 
     InputMap<Number> input_map;
 
@@ -1063,14 +1066,36 @@ InputMap<Number> readNormalizInput(istream& in,
 
                 input_type = to_type(type_string);
 
+                if(type_string == "monoid")
+                    monoid_read = true;
+
+                if(type_string == "lattice_ideal")
+                    lattice_ideal_read = true;
+
+                if(type_string == "gb_weight"){
+                    if(!(monoid_read || lattice_ideal_read))
+                        throw BadInputException("gb_weight must follow monoid or lattice_ideal");
+                    if(monoid_read){
+                        length_weight = input_map[Type::monoid].nr_of_rows();
+                    }
+                    else{
+                        length_weight = dim;
+                    }
+                }
+
                 if (dim_known)
                     nr_columns = dim + type_nr_columns_correction(input_type);
+
+                if(type_string == "gb_weight")
+                    nr_columns = length_weight;
 
                 if (type_is_vector(input_type)) {
                     nr_rows_or_columns = nr_rows = 1;
                     in >> std::ws;  // eat up any leading white spaces
                     c = in.peek();
                     if (c == 'u') {  // must be unit vector
+                        if(type_string == "gb_weight")
+                            throw BadInputException("gb_weight cannot be unit vector");
                         string vec_kind;
                         in >> vec_kind;
                         if (vec_kind != "unit_vector") {
@@ -1110,7 +1135,7 @@ InputMap<Number> readNormalizInput(istream& in,
                         }
 
                         vector<Number> sparse_vec;
-                        nr_columns = dim + type_nr_columns_correction(input_type);
+                        // nr_columns = dim + type_nr_columns_correction(input_type);
                         bool success = read_sparse_vector(in, sparse_vec, nr_columns);
                         if (!success) {
                             throw BadInputException("Error while reading " + type_string + " as a sparse vector!");
