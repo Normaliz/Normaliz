@@ -4054,13 +4054,22 @@ ConeProperties Cone<Integer>::monoid_compute(ConeProperties ToCompute) {
     lattice_ideal_compute_inner(ToCompute,LatticeId,ValuesGradingOnMonoid,verbose);
 
     if(ToCompute.test(ConeProperty::AmbientAutomorphisms)){
-        compute_input_automorphisms(ToCompute);
+        compute_ambient_automorphisms(ToCompute);
         setComputed(ConeProperty::AmbientAutomorphisms);
     }
 
     if(ToCompute.test(ConeProperty::InputAutomorphisms)){
         compute_input_automorphisms(ToCompute);
         setComputed(ConeProperty::InputAutomorphisms);
+    }
+
+    if(ToCompute.test(ConeProperty::Automorphisms)){
+        ToCompute.set(ConeProperty::InputAutomorphisms);
+        Generators = HilbertBasis;
+        HilbertBasis.debug_print();
+        compute_input_automorphisms(ToCompute);
+        ToCompute.reset(ConeProperty::Automorphisms);
+        setComputed(ConeProperty::Automorphisms);
     }
 
     ToCompute.reset(is_Computed);

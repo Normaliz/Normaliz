@@ -282,13 +282,13 @@ void ConeProperties::check_monoid_goals() const{
     copy.reset(ConeProperty::GroebnerBasis);
     copy.reset(ConeProperty::AmbientAutomorphisms);
     copy.reset(ConeProperty::InputAutomorphisms);
+    copy.reset(ConeProperty::Automorphisms);
     copy.reset(ConeProperty::Representations);
     copy.reset(ConeProperty::SingularLocus);
     copy.reset(ConeProperty::CodimSingularLocus);
     copy.reset(ConeProperty::Lex);
     copy.reset(ConeProperty::DegLex);
     copy.reset(ConeProperty::RevLex);
-    copy.reset(ConeProperty::IsSerreR1);
     if (copy.any()) {
         errorOutput() << copy << endl;
         throw BadInputException("Cone Property in last line not allowed for monoids");
