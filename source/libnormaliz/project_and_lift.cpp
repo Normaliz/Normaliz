@@ -477,6 +477,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_covers() {
         bool first = true;
         size_t min_at;
         double min_added_weight = 0; // =0 to make gcc happy
+
         for( size_t i = 0; i < covering_equations.size(); ++i){
             if(used_covering_equations[i])
                 continue;

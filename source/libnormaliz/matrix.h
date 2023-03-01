@@ -161,6 +161,9 @@ class Matrix {
 
     size_t row_echelon_inner_bareiss(bool& success, Integer& det);
 
+    // makes entries above dial  <= 0
+    bool reduce_rows_upwards_negative();
+
     vector<vector<Integer>*> submatrix_pointers(const vector<key_t>& key);
 
     //---------------------------------------------------------------------------

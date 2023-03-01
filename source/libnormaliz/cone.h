@@ -670,6 +670,7 @@ class Cone {
     HilbertSeries EhrSeries;
     IntegrationData IntData;
     vector<Integer> Grading;
+    vector<Integer> GB_Weight;
     vector<Integer> Dehomogenization;
     vector<Integer> IntHullNorm;  // used in computation of integer hulls for guessing extreme rays
     vector<Integer> Norm;         // used by v_standardize in the number field case

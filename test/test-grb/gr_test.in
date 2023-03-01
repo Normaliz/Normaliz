@@ -5,3 +5,8 @@ lattice_ideal 4
 0 1 1 0 -2 0
 0 0 0 1 1 -2
 GroebnerBasis
+gb_weight
+1 2 3 1 7 3
+grading
+1 1 1 1 1 1
+Lex

@@ -44,7 +44,8 @@ enum Quality {
     graded,
     integral,
     input_gen,
-    input_ineq
+    input_ineq,
+    monoid
 };
 
 enum Type { rational_primal, rational_dual, integral_standard, matrix };  // can be used in IsoType;

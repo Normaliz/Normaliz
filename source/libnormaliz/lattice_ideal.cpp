@@ -33,7 +33,7 @@ namespace  libnormaliz{
 typedef long long Integer;
 typedef mpz_class BigInt;
 
-Integer find_nopnzero_degree(const Matrix<Integer>& M,
+Integer find_nonzero_degree(const Matrix<Integer>& M,
                                        const vector<Integer>& grading, const long min_degree){
     bool first = true;
     Integer degree_found = -1;
@@ -63,10 +63,13 @@ void sort_by_pos_degree(Matrix<Integer>& M, const vector<Integer>& grading){
     M.order_rows_by_perm(perm);
 }
 
+
+// degree_bound = - 2: find first degree with elements of degree >= min_degree
+// not used at present
 Matrix<Integer> select_by_degree(const Matrix<Integer>& M,
                                        const vector<Integer>& grading, long degree_bound, const long min_degree){
     if(degree_bound == -2){
-        degree_bound = find_nopnzero_degree(M, grading, min_degree);
+        degree_bound = find_nonzero_degree(M, grading, min_degree);
     }
     vector<key_t> satisfies_degree_bound;
     for(size_t i = 0; i < M.nr_of_rows(); ++i){
@@ -80,108 +83,6 @@ Matrix<Integer> select_by_degree(const Matrix<Integer>& M,
     return M.submatrix(satisfies_degree_bound);
 }
 
-groebner_project::groebner_project(const matrix_t& binomial_matrix,
-                                   const monomial_order& mo) :
-binomials(binomial_matrix),
-mon_ord(mo) {}
-
-groebner_project::groebner_project(const matrix_t& binomial_matrix,
-                                   const exponent_vec& weight_vec,
-                                   const bool degrevlex_mode) :
-groebner_project(binomial_matrix, monomial_order(degrevlex_mode, weight_vec)) {}
-
-groebner_project::groebner_project(const matrix_t& binomial_matrix,
-                                   const monomial_order& mo,
-                                   const dynamic_bitset& sat_supp) :
-binomials(binomial_matrix),
-mon_ord(mo),
-saturation_support(sat_supp) {}
-
-groebner_project::groebner_project(const matrix_t& binomial_matrix,
-                                   const exponent_vec& weight_vec,
-                                   const bool degrevlex_mode,
-                                   const dynamic_bitset& sat_supp) :
-groebner_project(binomial_matrix,
-                 monomial_order(degrevlex_mode, weight_vec),
-                 sat_supp) {}
-
-
-binomial_list groebner_project::get_binomials() const {
-    return binomials;
-}
-
-monomial_order groebner_project::get_monomial_order() const {
-    return mon_ord;
-}
-
-binomial_list groebner_project::get_groebner_basis() const {
-    if (!gb_computed)
-        compute_gb();
-    return gb;
-}
-
-/*binomial_list groebner_project::get_minimal_markov() const {
-    if (!min_computed)
-        compute_minimal_markov();
-    return gb;
-}
-
-void groebner_project::set_monomial_order(const monomial_order& mo) {
-    mon_ord = mo;
-    gb_computed = false;
-    min_computed = false;
-}*/
-
-void groebner_project::write_gb() const {
-    ofstream outfile(output_filename);
-    outfile << "COMMAND:\n";
-    for (size_t i = 0; i < command_line.size(); ++i) {
-        outfile << command_line[i];
-        if (i + 1 != command_line.size())
-            outfile << " ";
-    }
-    outfile << "\n========================================"
-               "===================================\n"
-               "INPUT (card. " << get_binomials().size() << "):\n";
-    get_binomials().pretty_print(outfile, false);
-    outfile << mon_ord.get_type_string() << "\n";
-    static_cast<matrix_t>(mon_ord.get_weight()).pretty_print(outfile);
-    outfile << "========================================"
-               "===================================\n"
-               "OUTPUT (card. " << get_groebner_basis().size() << "):\n";
-    get_groebner_basis().pretty_print(outfile, false);
-    outfile.close();
-}
-
-void groebner_project::pretty_print(ostream& out,
-                                    const bool with_row_nr) const {
-    get_binomials().pretty_print(out, with_row_nr);
-    out << "monomial order:\n" << mon_ord.get_type_string() << "\n";
-    static_cast<matrix_t>(mon_ord.get_weight()).pretty_print(out, with_row_nr);
-}
-
-void groebner_project::print_usage() const {
-    cout << "Usage: " << command_line[0] << " -o outfile infile" << endl;
-}
-
-void groebner_project::compute_gb() const {
-    gb = binomials;
-    gb.set_verbose(verbose);
-    gb.buchberger(mon_ord, saturation_support);
-    gb_computed = true;
-}
-
-void groebner_project::set_degree_bound(const long deg_bound) {
-    degree_bound = deg_bound;
-}
-
-void groebner_project::set_grading(const vector<long long>& grad){
-    grading = grad;
-}
-
-void groebner_project::set_verbose(bool verb){
-    verbose = verb;
-}
 
 //---------------------------------------------------------------
 //         MarkovProjectAndLift
@@ -190,6 +91,7 @@ void groebner_project::set_verbose(bool verb){
 MarkovProjectAndLift::MarkovProjectAndLift(Matrix<Integer>& LatticeIdeal, const bool verb){
 
     verbose = verb;
+    degree_bound = -1;
 
     // cout << "Given lattice ideal in Laurent polynomial ring" << endl;
     // LatticeIdeal.pretty_print(cout);
@@ -215,7 +117,7 @@ MarkovProjectAndLift::MarkovProjectAndLift(Matrix<Integer>& LatticeIdeal, const 
     nr_vars = LatticeBasis.nr_of_columns();
     rank = LatticeBasis.row_echelon_reduce();
     // cout << "Row echelon form of lattice basis" << endl;
-    // LatticeBasis.pretty_print(cout);
+    //LatticeBasis.debug_print();
     // cout << "rank " << rank << endl;
     LatticeBasis.resize(rank);
     start_column_key();
@@ -248,7 +150,6 @@ void MarkovProjectAndLift::start_column_key(){
     }
 }
 
-// not used at present
 // makes kind of a Hermite normal form
 void MarkovProjectAndLift::make_normal_form(){
 
@@ -407,13 +308,11 @@ bool MarkovProjectAndLift::lift_next_not_yet_lifted(bool allow_revlex){
         }
     }
     CurrentOrder = full_support_of_weight;
-    groebner_project grp(CurrentMarkov, CurrentWeight, full_support_of_weight, CurrentSatturationSupport);
+    binomial_list grp(CurrentMarkov);
     grp.set_verbose(verbose);
     // cout << CurrentWeight; // *****************
-    if(degree_bound != -1)
-        grp.set_degree_bound(degree_bound);
-    binomial_list gr = grp.get_groebner_basis();
-    CurrentMarkov = gr.to_matrix();
+    grp.buchberger(CurrentWeight, full_support_of_weight, CurrentSatturationSupport);
+    CurrentMarkov = grp.to_matrix();
     if(verbose)
         verboseOutput() << "Size of current Markov after Buchberger " << CurrentMarkov.nr_of_rows() << endl;
     add_new_coordinate_to_Markov();
@@ -438,12 +337,17 @@ bool MarkovProjectAndLift::lift_next_not_yet_lifted(bool allow_revlex){
 
     if(verbose)
         verboseOutput() << "Computing minimal Markov basis" << endl;
-    gr = binomial_list(CurrentMarkov);
+    binomial_list gr(CurrentMarkov);
     gr.set_verbose(verbose);
-    binomial_list dummy;
-    // binomial_list min_markov = gr.bb_and_minimize(LiftedWeight, true, dummy);
     bool graph_success;
-    binomial_list min_markov = gr.graph_minimize(LiftedWeight, graph_success);
+    if(degree_bound >= 0){
+        gr.set_grading(grading);
+        gr.set_degree_bound(degree_bound);
+    }
+    else{
+        gr.set_grading(LiftedWeight);
+    }
+    binomial_list min_markov = gr.graph_minimize(graph_success);
     if(!graph_success){
         min_markov = gr.bb_and_minimize(LiftedWeight);
     }
@@ -675,6 +579,7 @@ void MarkovProjectAndLift::compute(Matrix<long long>& Mark, Matrix<long long>& M
 }
 
 void MarkovProjectAndLift::set_degree_bound(const long deg_bound) {
+    assert(grading.size() > 0);
     degree_bound = deg_bound;
 }
 
@@ -707,7 +612,12 @@ void LatticeIdeal::set_degree_bound(const long deg_bound) {
     setComputed(ConeProperty::GroebnerBasis, false);
 }
 
+void LatticeIdeal::set_gb_weight(const vector<long long>& given_weight){
+    gb_weight = given_weight;
+}
+
 void LatticeIdeal::set_min_degree(const long deg) {
+    assert(Grading.size() > 0); // make sonly sense with grading
     min_degree = deg;
     setComputed(ConeProperty::MarkovBasis, false);
     setComputed(ConeProperty::GroebnerBasis, false);
@@ -764,6 +674,10 @@ HilbertSeries  LatticeIdeal::getHilbertSeries(){
 void LatticeIdeal::computeMarkov(){
 
     MarkovProjectAndLift PandL(OurInput, verbose);
+    if(Grading.size() > 0 && degree_bound != -1){
+        PandL.set_grading(Grading);
+        PandL.set_degree_bound(degree_bound);
+    }
     PandL.compute(Markov, MinimalMarkov);
     if(MinimalMarkov.nr_of_rows() > 0){
         is_positively_graded = true;
@@ -778,12 +692,20 @@ void LatticeIdeal::computeGroebner(ConeProperties ToCompute){
 
     string FinalGB = "RevLex";
     vector<Integer> all_one(Markov.nr_of_columns(),1);
+    if(gb_weight.size() > 0){
+        all_one = gb_weight;
+        FinalGB = "weighted " + FinalGB;
+    }
     bool use_rev_lex = true;
 
     if(ToCompute.test(ConeProperty::Lex)){
         FinalGB = "Lex";
         use_rev_lex = false;
         all_one = vector<Integer> (nr_vars,0);
+        if(gb_weight.size() > 0){
+            all_one = gb_weight;
+          FinalGB = "weighted " + FinalGB;
+        }
     }
     if(ToCompute.test(ConeProperty::DegLex)){
         use_rev_lex = false;
@@ -799,16 +721,16 @@ void LatticeIdeal::computeGroebner(ConeProperties ToCompute){
     // cout << CurrentSatturationSupport.size() << "   " << CurrentSatturationSupport  << endl;
     reset_statistics();
 
-    groebner_project grp(Markov, all_one, use_rev_lex, CurrentSatturationSupport);
+    binomial_list grp(Markov);
     grp.set_verbose(verbose);
     if(degree_bound != -1){ // so far no effect
         assert(Grading.size() > 0);
         grp.set_grading(Grading);
         grp.set_degree_bound(degree_bound);
     }
-    binomial_list gr = grp.get_groebner_basis();
+    grp.buchberger(all_one, use_rev_lex, CurrentSatturationSupport);
 
-    Groebner = gr.to_matrix();
+    Groebner = grp.to_matrix();
 
     // Groebner = select_by_degree(Groebner, Grading, degree_bound, min_degree);
     if(verbose)
@@ -1081,160 +1003,5 @@ void HilbertBasisMonoid::put_HilbertBasisKey_into(vector<key_t>& Ind){
         sort(HilbertBasisKey.begin(), HilbertBasisKey.end());
         swap(Ind, HilbertBasisKey);
 }
-
-
-    /*cout << "====================" << endl;
-    cout << "Statistics for project-and-lift" << endl;
-    cout << "s_poly           " << winf_s_poly << endl;
-    cout << "head coprime     " << winf_ini_coprime << endl;
-    cout << "tail not coprime " << winf_tail_not_coprime << endl;
-    cout << "gm_left          " << winf_gm_left << endl;
-    cout << "gm left comps    " << winf_gm_steps << endl;
-    cout << "reduction        " << winf_red << endl;
-    cout << "reduction to 0   " << winf_red_tail << endl;
-    // cout << "reduction to zero  " << winf_red_zero << endl;
-    cout << "surviving s-poly " << winf_s_poly- winf_ini_coprime - winf_tail_not_coprime
-    - winf_gm_left - winf_red_tail - winf_red_zero << endl;
-    cout << "reduction comps  " << winf_red_steps << endl;
-    cout << "entered_nodes    " << winf_entered_nodes << endl;
-    cout << "====================" << endl;*/
-
-        /* cout << "====================" << endl;
-        cout << "Statistics for Gröbner basis in chosen monomial order" << endl;
-        cout << "s_poly           " << winf_s_poly << endl;
-        cout << "head coprime     " << winf_ini_coprime << endl;
-        cout << "tail not coprime " << winf_tail_not_coprime << endl;
-        cout << "gm_left          " << winf_gm_left << endl;
-        cout << "gm left comps    " << winf_gm_steps << endl;
-        cout << "reduction        " << winf_red << endl;
-        cout << "reduction to 0   " << winf_red_tail << endl;
-        // cout << "reduction to zero  " << winf_red_zero << endl;
-        cout << "surviving s-poly " << winf_s_poly- winf_ini_coprime - winf_tail_not_coprime
-        - winf_gm_left - winf_red_tail - winf_red_zero << endl;
-        cout << "reduction steps  " << winf_red_steps << endl;
-        cout << "entered_nodes    " << winf_entered_nodes << endl;
-        cout << "====================" << endl;*/
-
-       /*cout << "====================" << endl;
-        cout << "Statistics for Gröbner basis in chosen monomial order" << endl;
-        cout << "s_poly           " << winf_s_poly << endl;
-        cout << "head coprime     " << winf_ini_coprime << endl;
-        cout << "tail not coprime " << winf_tail_not_coprime << endl;
-        cout << "gm_left          " << winf_gm_left << endl;
-        cout << "gm left comps    " << winf_gm_steps << endl;
-        cout << "reduction        " << winf_red << endl;
-        cout << "reduction to 0   " << winf_red_tail << endl;
-        // cout << "reduction to zero  " << winf_red_zero << endl;
-        cout << "surviving s-poly " << winf_s_poly- winf_ini_coprime - winf_tail_not_coprime
-        - winf_gm_left - winf_red_tail - winf_red_zero << endl;
-        cout << "reduction steps  " << winf_red_steps << endl;
-        cout << "entered_nodes    " << winf_entered_nodes << endl;
-        cout << "====================" << endl;
-
-        reset_statistics();*/
-
-
-/*
- *
-    cout << "Start project and lift" << endl;
-
-    compute_final_GB = (Lex || RevLex || DegLex);
-
-    PreComputedFinalGrading.resize(nr_vars);
-    Cone<Integer> WeightCone(Type::equations, LattiiceIdealInput); // intersects with positive orthant
-    Matrix<Integer> ExtRays = WeightCone.getExtremeRaysMatrix();
-    for(size_t i = 0; i < ExtRays.nr_of_rows(); ++i){
-            PreComputedFinalGrading = v_add(PreComputedFinalGrading,ExtRays[i]);
-    }
-    v_make_prime(PreComputedFinalGrading);
-    is_positively_graded = true;
-
-    is_positively_graded = all_of(PreComputedFinalGrading.begin(),
-                                  PreComputedFinalGrading.end(), [] (long long d){return d >= 0;});
-
-    find_projection();
-    lift_unbounded(); // straight no longer used
-    lift_not_yet_lifted(true); // revlex allowed
-    columns_to_old_order();
-
-    cout << "Precomputed grading on final quotient " << endl;
-    cout << PreComputedFinalGrading;
-
-    if(Hilb && is_positively_graded){
-
-        OURStartTime();
-        cout << "Final quotient psoitively graded" << endl;
-        binomial_list bl_HilbertSeries(CurrentMarkov);
-
-        vector<long long> StandardGrading(PreComputedFinalGrading.size(),1);
-        bool is_stadard_graded = true;
-        for(size_t i = 0; i< CurrentMarkov.nr_of_rows(); ++i){
-            if(v_scalar_product(StandardGrading, CurrentMarkov[i]) != 0){
-                    is_stadard_graded = false;
-                    break;
-            }
-        }
-        if(is_stadard_graded){
-            PreComputedFinalGrading = StandardGrading;
-            cout << "Final quotient standard graded. Using standard grading" << endl;
-        }
-
-        // MinMarkov.pretty_print(cout);
-        vector<mpz_class> numerator = bl_HilbertSeries.compute_HilbertSeries(PreComputedFinalGrading);
-        // cout << "Hilb numerator " << numerator;
-        vector<long long> numerator_long_long;
-        convert(numerator_long_long, numerator);
-        vector<long> PreComputedFinalGrading_long;
-        convert(PreComputedFinalGrading_long, PreComputedFinalGrading);
-        HilbSer = HilbertSeries(numerator_long_long, PreComputedFinalGrading_long);
-        HilbSer.simplify();
-        cout << "Hilbert series numerator  " << HilbSer.getNum();
-        cout << "Hilbert series denominator " <<  HilbSer.getDenom();
-        OURMeasureTime(true, "Hilbert series");
-
-        cout << "---------------------------------------------------" << endl;
-    }
-
-
-    string FinalGB;
-    vector<Integer> all_one(nr_vars,1);
-    bool use_rev_lex = false;
-
-    if(Lex){
-        FinalGB = "lex";
-        all_one = vector<Integer> (nr_vars,0);
-    }
-    if(RevLex){
-        FinalGB = "RevLex";
-        use_rev_lex = true;
-    }
-    if(DegLex){
-        FinalGB = "Deglex";
-    }
-
-    GroebnerBasis.resize(0, nr_vars); // for correct format
-    if(Lex || RevLex || DegLex){
-
-
-        cout << "Final Gröbner basis " << FinalGB << endl;
-
-        CurrentSatturationSupport = dynamic_bitset(nr_vars);
-        if(is_positively_graded)
-            CurrentSatturationSupport.flip();
-
-        groebner_project grp(CurrentMarkov, all_one, use_rev_lex, CurrentSatturationSupport);
-
-        binomial_list gr = grp.get_groebner_basis();
-        // gr.pretty_print(cout);
-        GroebnerBasis = gr.to_matrix();
-        if(gr.size() == 0) // can happen, must set the right format
-            CurrentMarkov.resize(0, nr_vars);
-        //CurrentMarkov.pretty_print(cout);
-    }
-
-    if(MinimalMarkov.nr_of_rows() > 0)
-        return MinimalMarkov;
-
-*/
 
 } // namespace

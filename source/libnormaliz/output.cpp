@@ -471,8 +471,12 @@ void Output<Integer>::write_aut() const {
     if (Result->getAutomorphismGroup().getOrder() == 1)
         return;
 
-    if (Result->getAutomorphismGroup().IsIntegralityChecked()) {
-        if (Result->getAutomorphismGroup().IsIntegral())
+    bool monoid_autos = false;
+    if(qualities_string.find("Monoid") != string::npos)
+        monoid_autos = true;
+
+    if (Result->getAutomorphismGroup().IsIntegralityChecked() || monoid_autos) {
+        if (Result->getAutomorphismGroup().IsIntegral() || monoid_autos)
             out << "Automorphisms are integral" << endl;
         else
             out << "Automorphisms are not integral" << endl;
@@ -481,6 +485,11 @@ void Output<Integer>::write_aut() const {
         out << "Integrality not known" << endl;
 
     out << "************************************************************************" << endl;
+
+    if(monoid_autos){
+        write_aut_ambient(out, "Hilbert basis elements");
+        return;
+    }
 
     if (qualities_string.find("generators") != string::npos) {
         write_aut_ambient(out, "input generators");
@@ -517,8 +526,8 @@ void Output<Integer>::write_aut() const {
 
 template <typename Integer>
 void Output<Integer>::write_aut_ambient(ofstream& out, const string& gen_name) const {
-    write_perms_and_orbits(out, Result->getAutomorphismGroup().getGensPerms(), Result->getAutomorphismGroup().getGensOrbits(),
-                           gen_name);
+    write_perms_and_orbits(out, Result->getAutomorphismGroup().getGensPerms(),
+                Result->getAutomorphismGroup().getGensOrbits(), gen_name);
     out << "************************************************************************" << endl;
 
     string qualities_string = Result->getAutomorphismGroup().getQualitiesString();

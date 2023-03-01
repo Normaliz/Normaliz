@@ -1722,6 +1722,54 @@ bool Matrix<Integer>::reduce_rows_upwards() {
     return true;
 }
 
+#ifdef ENFNORMALIZ
+template <>
+bool Matrix<renf_elem_class>::reduce_rows_upwards_negative(){
+    assert(false);
+    return true;
+}
+#endif
+
+template <typename Integer>
+bool Matrix<Integer>::reduce_rows_upwards_negative() {
+    // assumes that "this" is in row echelon form
+    // and reduces every column in which the rank jumps
+    // by its lowest element such that the nonzero remainders
+    // arer chosen negative
+
+    if (nr == 0)
+        return true;
+
+    for (size_t row = 0; row < nr; ++row) {
+        size_t col;
+        for (col = 0; col < nc; ++col)
+            if (elem[row][col] != 0)
+                break;
+        if (col == nc)
+            continue;
+        if (elem[row][col] < 0)
+            v_scalar_multiplication<Integer>(elem[row], -1);
+
+        for (long i = row - 1; i >= 0; --i) {
+            Integer quot, rem;
+
+            minimal_remainder(elem[i][col], elem[row][col], quot, rem);
+            if(rem > 0){
+                rem -= elem[row][col];
+                quot += 1;
+            }
+            elem[i][col] = rem;
+            for (size_t j = col + 1; j < nc; ++j) {
+                elem[i][j] -= quot * elem[row][j];
+                if (!check_range(elem[i][j])) {
+                    return false;
+                }
+            }
+        }
+    }
+    return true;
+}
+
 template <>
 bool Matrix<nmz_float>::reduce_rows_upwards() {
     assert(false);  // for the time being

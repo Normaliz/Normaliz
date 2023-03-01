@@ -1693,6 +1693,12 @@ NMZTESTS +=						\
 	test-Int/Condorcet-v-sd-dd.ref			\
 	test-Int/Condorcet-v-sd-dd.in			\
 	test-Int/Condorcet-v-sd-dd.ref			\
+	test-mrk/3x7.in					\
+	test-mrk/3x7.ref				\
+	test-mrk/3x7.mrk.ref				\
+	test-mrk/cuww1.in				\
+	test-mrk/cuww1.ref				\
+	test-mrk/cuww1.mrk.ref				\
 	test-mrk/Kwak10.in				\
 	test-mrk/Kwak10.ref				\
 	test-mrk/Kwak10.mrk.ref				\
@@ -1720,9 +1726,6 @@ NMZTESTS +=						\
 	test-grb/PowerSum-80.in				\
 	test-grb/PowerSum-80.ref			\
 	test-grb/PowerSum-80.grb.ref			\
-	test-mrk/3x7.in					\
-	test-mrk/3x7.ref				\
-	test-mrk/3x7.mrk.ref				\
 	test-grb/gr_test.in				\
 	test-grb/gr_test.ref				\
 	test-grb/gr_test.grb.ref			\
