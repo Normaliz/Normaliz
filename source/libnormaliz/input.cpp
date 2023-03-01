@@ -1069,12 +1069,12 @@ InputMap<Number> readNormalizInput(istream& in,
                 if(type_string == "monoid")
                     monoid_read = true;
 
-                if(type_string == "lattice_ideal")
+                if(type_string == "lattice_ideal" || type_string == "toric_ideal")
                     lattice_ideal_read = true;
 
                 if(type_string == "gb_weight"){
                     if(!(monoid_read || lattice_ideal_read))
-                        throw BadInputException("gb_weight must follow monoid or lattice_ideal");
+                        throw BadInputException("gb_weight must follow monoid, lattice_ideal or toric_ideal");
                     if(monoid_read){
                         length_weight = input_map[Type::monoid].nr_of_rows();
                     }

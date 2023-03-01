@@ -289,8 +289,18 @@ string quality_to_string(AutomParam::Quality quality) {
         return "Algebraic";
     if (quality == AutomParam::graded)
         return "Graded";
+    if (quality == AutomParam::monoid)
+        return "Monoid";
     assert(false);
     return string();  // silence compiler warning
+}
+
+template <typename Integer>
+void AutomorphismGroup<Integer>::fromInputToMonoid(){
+
+    if(Qualities.find(AutomParam::input_gen) != Qualities.end())
+        Qualities.erase(AutomParam::input_gen);
+    Qualities.insert(AutomParam::monoid);
 }
 
 template <typename Integer>

@@ -4064,11 +4064,11 @@ ConeProperties Cone<Integer>::monoid_compute(ConeProperties ToCompute) {
     }
 
     if(ToCompute.test(ConeProperty::Automorphisms)){
-        ToCompute.set(ConeProperty::InputAutomorphisms);
+        ToCompute.set(ConeProperty::InputAutomorphisms); // we cheat a little bit
         Generators = HilbertBasis;
-        HilbertBasis.debug_print();
         compute_input_automorphisms(ToCompute);
-        ToCompute.reset(ConeProperty::Automorphisms);
+        Automs.fromInputToMonoid();
+        ToCompute.reset(ConeProperty::InputAutomorphisms);
         setComputed(ConeProperty::Automorphisms);
     }
 
@@ -4145,7 +4145,7 @@ ConeProperties Cone<Integer>::lattice_ideal_compute_inner(ConeProperties ToCompu
     if(gb_min_degree != -1) // default value -1 woiuld not harm
         LattId.set_min_degree(gb_min_degree);// but is clearer so
 
-    if(GB_Weight.size() > 0){
+    if(GB_Weight.size() > 0 && ToCompute.test(ConeProperty::GroebnerBasis)){
         if(ToCompute.test(ConeProperty::DegLex))
             throw BadInputException("gb_weight not allowed for DegLex");
         vector<long long> weightLL;
@@ -4153,6 +4153,14 @@ ConeProperties Cone<Integer>::lattice_ideal_compute_inner(ConeProperties ToCompu
         LattId.set_gb_weight(weightLL);
         if(GB_Weight.size() != LatticeId.nr_of_columns())
             throw BadInputException("gb_weight has wrong length");
+
+        long long weight_bound = 1;
+        if(ToCompute.test(ConeProperty::Lex))
+            weight_bound = 0;
+        for(auto& w: weightLL){
+            if(w < weight_bound)
+                throw BadInputException("weight vector violates sign condition");
+        }
     }
 
     LattId.compute(ToCompute);

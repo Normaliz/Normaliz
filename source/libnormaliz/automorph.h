@@ -161,6 +161,8 @@ class AutomorphismGroup {
     bool IsAmbient() const;
     bool IsInput() const;
 
+    void fromInputToMonoid();
+
     list<vector<Integer> > orbit_primal(const vector<Integer>& v) const;
     void add_images_to_orbit(const vector<Integer>& v, set<vector<Integer> >& orbit) const;
 

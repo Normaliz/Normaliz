@@ -694,7 +694,7 @@ void LatticeIdeal::computeGroebner(ConeProperties ToCompute){
     vector<Integer> all_one(Markov.nr_of_columns(),1);
     if(gb_weight.size() > 0){
         all_one = gb_weight;
-        FinalGB += " weighted";
+        FinalGB = "weighted " + FinalGB;
     }
     bool use_rev_lex = true;
 
@@ -704,7 +704,7 @@ void LatticeIdeal::computeGroebner(ConeProperties ToCompute){
         all_one = vector<Integer> (nr_vars,0);
         if(gb_weight.size() > 0){
             all_one = gb_weight;
-          FinalGB += " weighted";
+          FinalGB = "weighted " + FinalGB;
         }
     }
     if(ToCompute.test(ConeProperty::DegLex)){
