@@ -606,9 +606,9 @@ class Cone {
     Matrix<Integer> Congruences;
     Matrix<Integer> Binomials;
     // we must register some information about thew input
-    bool lattice_ideal_input;
-    bool pure_lattice_ideal;
-    bool lattice_ideal_toric;
+    bool lattice_ideal_input; // input is abinomial ideal
+    bool pure_lattice_ideal; // input type is lattice_ideal
+    bool lattice_ideal_toric; // input lattice_ideal is already toric
     bool monoid_input;  // setbtrue for input types monoid and toric_ideal
     bool normal_monoid_input; // set true for normal_toric_ideal input
     bool explicit_monoid_input; // type monoid explicit in construction, and not only derived from toric ideal

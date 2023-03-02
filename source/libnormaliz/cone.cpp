@@ -3969,8 +3969,15 @@ ConeProperties Cone<Integer>::monoid_compute(ConeProperties ToCompute) {
     }
     ToCompute.check_monoid_goals();
 
-    if(ToCompute.test(ConeProperty::InputAutomorphisms) &&
-                ToCompute.test(ConeProperty::AmbientAutomorphisms))
+    size_t nr_autos = 0;
+    if(ToCompute.test(ConeProperty::InputAutomorphisms))
+        nr_autos++;
+    if(ToCompute.test(ConeProperty::AmbientAutomorphisms))
+        nr_autos++;
+    if(ToCompute.test(ConeProperty::Automorphisms))
+        nr_autos++;
+
+    if(nr_autos > 1)
         throw BadInputException("Oly one type of automorphism group can be computed in one run");
 
     if(ToCompute.test(ConeProperty::HilbertQuasiPolynomial))
@@ -4218,6 +4225,13 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     // Two special comoputations housed in a cone
     if (ToCompute.none()) {
         LEAVE_CONE return ConeProperties();
+    }
+
+    if(lattice_ideal_input && (ToCompute.test(ConeProperty::AmbientAutomorphisms)
+                    || ToCompute.test(ConeProperty::InputAutomorphisms))){
+        string error_message = "Automorphisms depending on embedding not computable for";
+        error_message += "binomial ideal input";
+        throw BadInputException(error_message);
     }
 
     if(pure_lattice_ideal){

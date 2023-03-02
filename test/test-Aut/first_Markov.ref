@@ -1,0 +1,34 @@
+3 Hilbert basis elements
+2 support hyperplanes
+
+embedding dimension = 2
+rank = 2 (maximal)
+external index = 2
+internal index = 1
+original monoid is integrally closed in chosen lattice
+
+grading:
+1 1 
+with denominator = 2
+
+
+Monoid automorphism group has order 2 (possibly approximation if very large)
+Automorphisms are integral
+***********************************************************************
+
+3 Hilbert basis elements:
+ 0 2
+ 1 1
+ 2 0
+
+2 support hyperplanes:
+ 0 1
+ 1 0
+
+1 congruences:
+ 1 1 2
+
+2 basis elements of generated  lattice:
+ 1 1
+ 0 2
+

@@ -1,0 +1,44 @@
+6 original generators of the toric ring
+2 extreme rays
+2 support hyperplanes
+
+f-vector:
+1 2 1 
+
+embedding dimension = 2
+rank = 2 (maximal)
+external index = 2
+internal index = 1
+
+grading:
+1 1 
+with denominator = 2
+
+degrees of extreme rays:
+1:2  
+
+***********************************************************************
+
+6 original generators:
+ 0 2
+ 0 2
+ 2 0
+ 1 1
+ 1 1
+ 1 1
+
+2 extreme rays:
+ 0 2
+ 2 0
+
+2 support hyperplanes:
+ 0 1
+ 1 0
+
+1 congruences:
+ 1 1 2
+
+2 basis elements of generated  lattice:
+ 1 1
+ 0 2
+
