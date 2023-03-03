@@ -1,0 +1,11 @@
+amb_space 3
+monoid 6
+1 0 0
+2 3 5
+0 0 1
+1 1 2
+0 1 3
+3 1 0
+GroebnerBasis
+gb_weight
+1 2 3 4 5 6

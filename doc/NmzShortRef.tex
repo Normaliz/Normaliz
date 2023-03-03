@@ -126,7 +126,7 @@
 
 \def\ttt{\texttt}
 
-\def\version{3.10.0}
+\def\version{3.10.1}
 \def\NmzDir{normaliz-\version}
 
 \def\ContLine#1{\hyperref[#1]{\large #1}\\[6pt]}
@@ -705,6 +705,8 @@ Further admitted types for precomputed data: \ttt{grading}, \ttt{dehomogenizatio
 	
 	\itemtt[hilbert\_basis\_rec\_cone] is a matrix with $d$ columns. It contains the precomputed Hilbert basis of the recession cone.
 	
+	\itemtt[gb\_weight] is a weight vector for the monomial order of Gröbner bases. Its length depends on other input data: it is \verb|amb_space| for \verb|lattice ideal| and \verb|toric_ideal|. For \verb|monoid| it is the number of generators of the monoid.
+	
 \end{itemize}
 
 \EndOfPage
@@ -1029,6 +1031,8 @@ All computation goals and algorithmic variants can be given as long options on t
 	Normaliz in which Normaliz writes additional
 	information about its current activities to the
 	standard output.
+	
+	\itemtt[--list\_polynomials] lists the input polynomials on the terminal for easier debugging. Can be part of the input file without \verb|--|.
 	
 	\itemtt[-x=<T>] Here \ttt{<T>} stands for a positive
 	integer limiting the number of threads that Normaliz

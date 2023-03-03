@@ -705,7 +705,7 @@ Normaliz checks whether all generators of the (recession) monoid have
 positive degree (after passage to the quotient modulo the unit group in the nonpointed case).
 Vertices of polyhedra may have degrees $\le 0$.
 
-\subsubsection{With binomil ideal input}\label{grad_lattid}
+\subsubsection{With binomial ideal input}\label{grad_lattid}
 
 In this case the unit vectors correspond to generators of the
 monoid. Therefore the degrees assigned to them must be
@@ -733,6 +733,14 @@ The input type \verb|dehomogenization| can only be combined with homogeneous inp
 A potential application is the adaptation of other input formats to Normaliz. The output must then be interpreted accordingly.
 
 Section~\ref{dehom_ex}, \verb|dehomogenization.in|.
+
+\subsection{Weight vector for Gröbner bases}
+
+For the computation of Gröbner bases one can specify a weight vedtor by
+\begin{itemize}
+	\itemtt[gb\_weight]
+\end{itemize}
+It is a vecor with nonnegative entries for \verb|Lex| as a tiebrteaker and positive entries for \verb|RevLeX| (default choice). The length derpends on the type of input. See Section \ref{m,arkov} for a discussion and examples.
 
 \subsection{Open facets}\label{open_facets}
 

@@ -1367,9 +1367,9 @@ NMZTESTS = test-/23.in					\
 	test-Fac/factr_hom.in				\
 	test-Fac/factr_hom.ref				\
 	test-Fac/factr_hom.fac.ref			\
-	test-Fac/first_Markov.in			\
-	test-Fac/first_Markov.ref			\
-	test-Fac/first_Markov.fac.ref			\
+	test-Fac/gr_test.in				\
+	test-Fac/gr_test.ref				\
+	test-Fac/gr_test.fac.ref			\
 	test-Inc/cube-8.in				\
 	test-Inc/cube-8.ref				\
 	test-Inc/cube-8.inc.ref				\
@@ -1423,9 +1423,9 @@ NMZTESTS +=						\
 	test-Aut/cube_3.in				\
 	test-Aut/cube_3.ref				\
 	test-Aut/cube_3.aut.ref				\
-	test-Aut/first-Markov.in			\
-	test-Aut/first-Markov.ref			\
-	test-Aut/first-Markov.aut.ref			\
+	test-Aut/first_Markov.in			\
+	test-Aut/first_Markov.ref			\
+	test-Aut/first_Markov.aut.ref			\
 	test-Aut/pythagoras_int.in			\
 	test-Aut/pythagoras_int.ref			\
 	test-Aut/pythagoras_int.aut.ref			\

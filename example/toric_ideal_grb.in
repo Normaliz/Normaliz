@@ -1,0 +1,11 @@
+amb_space 6
+toric_ideal 3
+2 1  0 -1 -1  -1
+1 0 -1  2 -1  -1
+1 1  1  0 -2  -1
+total_degree
+GroebnerBasis
+gb_weight
+1 2 3 4 5 6
+Lex
+

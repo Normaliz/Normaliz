@@ -116,11 +116,14 @@ EXTRA_DIST =					\
 	tame.in					\
 	tame_prec.in				\
 	monoid.in				\
+	monoid_auto.in				\
+	monoid_wqeight.in			\
 	representations.in			\
 	A443monoid.in				\
 	Kwak80.in				\
 	cone_latt_markov.in			\
 	toric_ideal.in				\
+	toric_ideal_auto.in			\
 	lin_bin.in				\
 	normal_toric_ideal.in			\
 	non_toric.in
