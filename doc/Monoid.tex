@@ -172,7 +172,20 @@ GroebnerBasis
 gb_weight
 1 2 3 4 5 6
 \end{Verbatim}
-Inspect \verb|monoid_weight.grb|!
+and the Gröbner basis is
+\begin{Verbatim}
+9
+6
+-1 0 1 1 -1 0 
+-1 -1 -1 3 0 0 
+-2 0 2 -1 0 1 
+0 -1 -2 2 1 0 
+-1 0 1 -2 1 1 
+-2 -1 0 1 1 1 
+1 -1 -3 1 2 0 
+-1 -1 -1 0 2 1 
+2 -1 -4 0 3 0
+\end{Verbatim}
 
 \textbf{Warning:} \enspace Don't confuse \verb|grading| and \verb|gb_weight|. The binoimials must be homogeneous polynomials for the grading so that the grading has no effect on picking the initial monomial. Therefore a grading (or homogeneous weight) has no effect on the Grobner basis compoutation.
 
@@ -403,20 +416,7 @@ gb_weight
 1 2 3 4 5 6
 Lex
 \end{Verbatim}
-and the Gröbner basis is
-\begin{Verbatim}
-9
-6
--1 0 1 1 -1 0 
--1 -1 -1 3 0 0 
--2 0 2 -1 0 1 
-0 -1 -2 2 1 0 
--1 0 1 -2 1 1 
--2 -1 0 1 1 1 
-1 -1 -3 1 2 0 
--1 -1 -1 0 2 1 
-2 -1 -4 0 3 0
-\end{Verbatim}
+and the Gröbner basis is the same as for \verb|monoid_weight.in|
 
 \subsubsection{Normalization of monoids from binomials}\label{normal_toric_ideal}
 
@@ -455,11 +455,11 @@ In the output file we find
 2 2 3
 2 3 5
 \end{Verbatim}
-The ``original generators" are the same as above, as they should be. Also the default grading is the same, and the default computation goals are identical as well. But the Hilbert series, Markov basis, Gröbner basis etc. are computed for the normalization, as the user can see by playing with the commented out computation goals.
+The ``original generators" are the same as above, as they should be. Also the default grading is the same, and the default computation goals are identical as well. But the Hilbert series, Markov basis, Gröbner basis etc. are computed for the normalization, as the user can see by playing with the commented out computation goals. A weight vector for the Gröbner basis is not allowed since the generators of the normalization are not predictable.
 
 \textbf{Note:}\enspace Until version 3.9.4 the input type \verb|normal_toric_ideal| was called \verb|lattice_ideal|, which has a different meaning now and is discussed in the next subsection.
 
-\verb|normal_toric_ideal| is transformed into \verb|cone_and_lattice|. Thus all computation gfoals and options of \verb|cone_and_lattice| can be used with the exception of \verb|AmbientAutomorphisms| and \verb|InputAutomorphisms|.
+\verb|normal_toric_ideal| is transformed into \verb|cone_and_lattice|. Thus all computation goals and options of \verb|cone_and_lattice| can be used with the exception of \verb|AmbientAutomorphisms| and \verb|InputAutomorphisms|.
 
 \subsection{Lattice ideals}\label{lattice_ideal}
 
@@ -492,10 +492,10 @@ The default computation goal is \verb|MarkovBsis|. In our case the result is
 Attention: the last binomial is $x_1^6-1$ so that the residue class of $x_1$ is a torsion element in the monoid of residue classes.
 
 For internal reasons and the exchange of data with external programs we can ask
-\begin{Verbatim}
-IsLatticeIdealToric
-\end{Verbatim}
+\begin{itemize}
+ \itemtt[IsLatticeIdealToric]
+\end{itemize}
 
-In addition to \verb|MarkovBasis nd \verb|IsLatticeIdealToric| |there is only one more allowed computation goal, namely \verb|GroebnerfBasis|. There are no monoid generators for \verb|lattice_ideal|.
+In addition to \verb|MarkovBasis| nd \verb|IsLatticeIdealToric| there is only one more allowed computation goal, namely \verb|GroebnerfBasis|. There are no monoid generators for \verb|lattice_ideal| (not even if the idfeal is toric).
 
 \textbf{Note:} In versions until 3.9.4 \verb|lattice_ideal| had the meaning of \verb|normal_toric_ideal|.

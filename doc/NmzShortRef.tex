@@ -510,7 +510,7 @@ Inhomogeneous constraints:\index{inhomogeneous constraints}\index{constraints!in
 	$$
 	for the elements $(z_1,\dots,z_d)\in\ZZ^d$. \example{ChineseRemainder}
 	
-	\itemtt[convert\_equations] converts equations in the input file into inequalities. Can be useful to avoid superfluous coorddinate transformations. Require the addiion of \verb|nonnegative| if no other inequalities are present. \example{pet.in}
+	\itemtt[convert\_equations] converts equations in the input file into inequalities. Can be useful to avoid superfluous coorddinate transformations. Require the addiion of \verb|nonnegative| if no other inequalities are present. \example{pet}
 	
 \end{itemize}
 
@@ -601,7 +601,7 @@ Polynomial equations of type $f(x) = 0$ and uinequalities of type $f(x) \ge 0$ c
 	\itemtt[polynomial\_equations <n>]
 	\itemtt[polynomial\_inequalities <n>]
 \end{itemize}
-where \verb|<n>| is the number of polynomials that follow. Everey polynomial must be concuded by a semicolon. \example{pet.in}
+where \verb|<n>| is the number of polynomials that follow. Everey polynomial must be concuded by a semicolon. \example{pet}
 
 \EndOfPage
 
@@ -609,11 +609,11 @@ where \verb|<n>| is the number of polynomials that follow. Everey polynomial mus
 
 \begin{itemize}
 	
-	\itemtt[lattice\_ideal] is a matrix with $d$ columns containing the generators of a lattice ideal $L$ in the Laurent polynomial ring. It defines the intersection of $L$ with the polynomial ring.
+	\itemtt[lattice\_ideal] is a matrix with $d$ columns containing the generators of a lattice ideal $L$ in the Laurent polynomial ring. It defines the intersection of $L$ with the polynomial ring. \example{non\_toric}
 	
-	\itemtt[toric\_ideal] is a matrix with $d$ columns containing the generators of a lattice ideal in the Laurent polynomial ring. It defines the smallest toric ideal $T$ in the polynomial ring contaioning the generators and the affine monoid underlying the quotient of the polynomial ring modulo $T$.
+	\itemtt[toric\_ideal] is a matrix with $d$ columns containing the generators of a lattice ideal in the Laurent polynomial ring. It defines the smallest toric ideal $T$ in the polynomial ring contaioning the generators and the affine monoid underlying the quotient of the polynomial ring modulo $T$. \example{toric\_ideal}
 	
-	\itemtt[normal\_toric\_ideal] is a matrix with $d$ columns containing the generators of a lattice ideal in the Laurent polynomial ring. It It goes one step further than \verb|toric_ideal| by passing further to the normalizaion of the affime monoid.
+	\itemtt[normal\_toric\_ideal] is a matrix with $d$ columns containing the generators of a lattice ideal in the Laurent polynomial ring. It It goes one step further than \verb|toric_ideal| by passing further to the normalizaion of the affime monoid. \example{normal\_toric\_ideal}
 		
 \end{itemize}
 \vspace*{-0.5cm}
@@ -636,6 +636,7 @@ where \verb|<n>| is the number of polynomials that follow. Everey polynomial mus
 	\itemtt[gb\_min\_degree <n>] sets the lower bound for elements in a Gröbner or Markov basis  to \verb|<n>|.
 \end{itemize}
 
+\vspace*{-0.5cm}
 
 \SubSectStart{Types for precomputed data}\index{precomputed types}
 
@@ -852,7 +853,7 @@ There are dual cone we have:
 
 \SubSubSectStart{Automorphism groups}
 \begin{itemize}
-	\itemtt[Automorphisms] computes the integral automorphisms of rational polyhedra and the algebraic automorphisms of algebraic polytopes.\example{pythagoras\_int}
+	\itemtt[Automorphisms] computes the integral automorphisms of monoids and rational polyhedra and the algebraic automorphisms of algebraic polytopes.\example{pythagoras\_int}
 	
 	\itemtt [RationalAutomorphisms] computes the rational automorphisms of rational polytopes.\\ \example{pythagoras\_rat}
 	
@@ -870,9 +871,8 @@ There are dual cone we have:
 
 \SubSubSectStart{M;arkov and Gröbner bases}
 \begin{itemize}
-	\itemtt[MarkovBasis] computes a dsystem of generators of a givemn lattice or toric ideal defining an affine monoid.
-	
-	\itemtt[GroebnerBasis] computes a Gröbner basis of a lttice or toric ideal.
+	\itemtt[MarkovBasis] computes a dsystem of generators of a givemn lattice or toric ideal defining an affine monoid. \example{monoid}
+	\itemtt[GroebnerBasis] computes a Gröbner basis of a lttice or toric ideal.\example{toric\_ideal\_grb}
 \end{itemize}
 
 \EndOfPageSub
