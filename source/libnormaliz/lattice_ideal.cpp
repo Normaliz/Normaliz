@@ -164,7 +164,7 @@ void MarkovProjectAndLift::make_normal_form(){
                 LatticeBasis[j][k] -= fact* LatticeBasis[i][k];
         }
     }
-
+    // LatticeBasis.debug_print();
     // cout << "Lattice basis after transformation " << endl;
     // LatticeBasis.pretty_print(cout);
 
@@ -447,7 +447,7 @@ bool MarkovProjectAndLift::find_and_lift_next_unbounded(){
     update_bookkeeping(new_column);
 
     if(verbose)
-        verboseOutput() << "Lift step " << ColumnKey.size() - 1 <<  " un-bounded to original coordinate "
+        verboseOutput() << "Lift step " << ColumnKey.size() - 1 <<  " un-bounded to sorted coordinate "
                 << ColumnKey.back()  <<  ", original coordinate " << StartPerm[ ColumnKey.back() ] << endl;
 
     vector<Integer> new_vector = LatticeBasisReorderedTranspose.MxV(ExtRays[good_ext_ray]);
