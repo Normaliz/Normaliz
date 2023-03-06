@@ -395,17 +395,6 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_covers() {
 
     LevelPatches.resize(EmbDim);
 
-    if(PolyEquations.empty()){
-        for(size_t i = 0; i < EmbDim; ++i){
-            if(AllPatches[i].size() > 0)
-                InsertionOrderPatches.push_back(i);
-        }
-
-        for(size_t k = 0; k < InsertionOrderPatches.size(); ++k)
-            LevelPatches[InsertionOrderPatches[k]] = k;
-        return;
-    }
-
 #ifdef NMZ_DEVELOP
     if(verbose){
         for(size_t i = 0; i < EmbDim; ++i){
@@ -413,6 +402,95 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_covers() {
         }
     }
 #endif
+
+
+    if(PolyEquations.empty()){
+        /* for(size_t i = 0; i < EmbDim; ++i){
+            if(AllPatches[i].size() > 0)
+                InsertionOrderPatches.push_back(i);
+        }
+
+        for(size_t k = 0; k < InsertionOrderPatches.size(); ++k)
+            LevelPatches[InsertionOrderPatches[k]] = k;
+        return;*/
+
+        bool first = true;
+        size_t min_nr_union = 0;
+        size_t min_at = 0;
+        long real_patch = -1;
+        for(size_t i = 0; i < EmbDim; ++i){
+            dynamic_bitset supp_i = AllPatches[i];
+            if(AllPatches[i].size() > 0){
+                real_patch = i;
+                for(size_t j = i+1; j < EmbDim; ++j){
+                    if(AllPatches[j].size()== 0)
+                        continue;
+                    size_t nr_union = (AllPatches[i] & AllPatches[j]).count();
+                    if(first || nr_union < min_nr_union){
+                        first = false;
+                        min_nr_union = nr_union;
+                        min_at = i;
+                    }
+                }
+
+            }
+        }
+
+        if(first){ //means: only one patch
+            if(real_patch == -1)
+                return;
+            InsertionOrderPatches.push_back(real_patch);
+            return;
+        }
+
+        InsertionOrderPatches.push_back(min_at);
+        dynamic_bitset covered_coords = AllPatches[min_at];
+        size_t nr_covered_coords= covered_coords.count();
+        dynamic_bitset inserted_patches(EmbDim);
+        inserted_patches [min_at] = true;
+
+        while(nr_covered_coords < EmbDim) {
+            size_t min_at = 0;
+            bool first = true;
+            dynamic_bitset min_covered_coords(EmbDim);
+            size_t min_nr_covered_coords = 0;
+            for(size_t i = 0; i < EmbDim; ++i){
+                if(AllPatches[i].size() == 0 || inserted_patches[i])
+                    continue;
+                dynamic_bitset test_covered_coords = covered_coords | AllPatches[i];
+                size_t test_nr_covered = test_covered_coords.count();
+                if(first || test_nr_covered < min_nr_covered_coords){
+                    first = false;
+                    min_at = i;
+                    min_covered_coords = test_covered_coords;
+                    min_nr_covered_coords = test_nr_covered;
+                }
+            }
+            InsertionOrderPatches.push_back(min_at);
+            inserted_patches[min_at] = true;
+            covered_coords = min_covered_coords;
+            nr_covered_coords = min_nr_covered_coords;
+        }
+
+        for(size_t j = 0; j < EmbDim; ++j){
+            if(!inserted_patches[j] && AllPatches[j].size() > 0)
+                InsertionOrderPatches.push_back(j);
+        }
+
+        if(verbose){
+            verboseOutput() << "Insertion order linear patches " << endl;
+            verboseOutput() << InsertionOrderPatches << endl;
+        }
+
+        for(size_t k = 0; k < InsertionOrderPatches.size(); ++k)
+            LevelPatches[InsertionOrderPatches[k]] = k;
+
+        return;
+
+    } // PolyEquations empty
+
+
+
 
     // First we cover the supports of polynom,ial equations by patches
     // using as few patches as possioble
