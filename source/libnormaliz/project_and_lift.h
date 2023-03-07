@@ -48,6 +48,7 @@ class ProjectAndLift {
                                           // and to be lifted to full dimension
 
     vector<Matrix<IntegerPL> > AllSupps; // thwe support hyperplanes in all dimensions
+    vector<Matrix<IntegerRet> > AllCongs; // thwe support hyperplanes in all dimensions
     vector<vector<size_t> > AllOrders;
     vector<size_t> AllNrEqus;  // the numbers of equations --- well defined
                                // in dimensions < start dimension !!!!
@@ -169,6 +170,9 @@ class ProjectAndLift {
     void reorder_coordinates(); // to use polynomial constraints as early as possible
     void compute_covers();
 
+    void add_congruences_from_equations();
+    void restrict_congruences();
+
     // void make_LLL_coordinates();
 
    public:
@@ -224,6 +228,8 @@ ProjectAndLift<IntegerPL, IntegerRet>::ProjectAndLift(const ProjectAndLift<Integ
     for (size_t i = 0; i < AllSupps.size(); ++i)
         convert(AllSupps[i], Original.AllSupps[i]);
     convert(Congs, Original.Congs);
+    for (size_t i = 0; i < AllCongs.size(); ++i)
+        convert(AllCongs[i], Original.AllCongs[i]);
     TotalNrLP = 0;
     Grading = Original.Grading;
     count_only = Original.count_only;

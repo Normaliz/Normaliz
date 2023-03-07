@@ -33,6 +33,123 @@ using std::list;
 using std::pair;
 
 //---------------------------------------------------------------------------
+
+
+template <typename Integer>
+Matrix<Integer> reconstruct_equations(const Matrix<Integer>& Inequalities){
+
+    Matrix<Integer> Equations(0,Inequalities.nr_of_columns());
+    if(Inequalities.nr_of_rows() == 0)
+        return Equations;
+
+    vector<Integer> test(Inequalities.nr_of_columns());
+    set<vector<Integer> > Ineq;
+    for(size_t i = 0; i < Inequalities.nr_of_rows(); ++i){
+        Ineq.insert(Inequalities[i]);
+    }
+
+    Integer MinusOne = -1;
+    for(size_t i = 0; i < Inequalities.nr_of_rows(); ++i){
+        test = Inequalities[i];
+        v_scalar_multiplication(test, MinusOne);
+        if(Ineq.find(test) != Ineq.end()){
+            Equations.append(Inequalities[i]);
+            Ineq.erase(test); // we don't want it twice
+            Ineq.erase(Inequalities[i]);
+        }
+    }
+
+    Equations.remove_duplicate_and_zero_rows();
+    return Equations;
+}
+
+template <typename Integer>
+Matrix<Integer> equations_to_congruences(const Matrix<Integer>& Equations, const vector<key_t> order_of_coords) {
+
+    Matrix<Integer> Congruences(0, Equations.nr_of_columns() +1);
+
+    for(size_t i=0; i< Equations.nr_of_rows(); ++i){
+        Integer modulus = 0;
+        for(size_t j = order_of_coords.size() - 1; j >= 1; --j){
+            modulus= libnormaliz::gcd(modulus, Equations[i][j]);
+            if(modulus == 0)
+                continue;
+            if(modulus == 1)
+                break;
+            vector<Integer> cong(Congruences.nr_of_columns());
+            for(size_t k = 0; k < cong.size() - 1; ++k)
+                cong[k] = Equations[i][k] % modulus;
+            cong.back() = modulus;
+            Congruences.append(cong);
+        }
+    }
+
+    Congruences.remove_duplicate_and_zero_rows();
+    return Congruences;
+}
+
+template <>
+Matrix<renf_elem_class> equations_to_congruences(const Matrix<renf_elem_class>& Equations, const vector<key_t> order_of_coords) {
+    assert(false);
+    return{};
+}
+
+template <>
+Matrix<nmz_float> equations_to_congruences(const Matrix<nmz_float>& Equations, const vector<key_t> order_of_coords) {
+    assert(false);
+    return{};
+}
+
+template <typename IntegerPL, typename IntegerRet>
+void ProjectAndLift<IntegerPL,IntegerRet>::add_congruences_from_equations() {
+
+    if(using_renf<IntegerPL>() && using_float<IntegerPL>()){
+            return;
+    }
+
+    Matrix<IntegerPL> RecosntructedEquations = reconstruct_equations(AllSupps[EmbDim]);
+    RecosntructedEquations.debug_print();
+    vector<key_t> ordercoords = identity_key(EmbDim);
+    Matrix<IntegerPL> CongsFromEquations = equations_to_congruences(RecosntructedEquations, ordercoords);
+    Matrix<IntegerRet> CFERet;
+    convert(CFERet, CongsFromEquations);
+    // CongsFromEquations.debug_print();
+    Congs.append(CFERet);
+}
+
+template <typename IntegerPL, typename IntegerRet>
+void ProjectAndLift<IntegerPL,IntegerRet>::restrict_congruences() {
+
+    if(using_renf<IntegerPL>() && using_float<IntegerPL>()){
+            return;
+    }
+
+    Congs.debug_print();
+    for(size_t i = 0; i < AllCongs.size(); ++i){
+        AllCongs[i] = Matrix<IntegerRet>(0, i+1);
+        for(size_t j = 0; j <Congs.nr_of_rows(); ++j){
+            if(Congs[j][i] == 0)
+                continue;
+            bool restrictable = true;
+            for(size_t k = i+1; k < EmbDim; ++k){
+                if(Congs[j][k] != 0){
+                    restrictable = false;
+                    break;
+                }
+            }
+            if(!restrictable)
+                continue;
+            vector<IntegerRet> new_cong = Congs[j];
+            new_cong.resize(i+1);
+            new_cong.back() = Congs[j].back();
+            AllCongs[i].append(new_cong);
+        }
+        assert(AllCongs[i].nr_of_columns() == AllSupps[i].nr_of_columns() +1);
+        cout << "iiiiiiiiiiii " << i << endl;
+        AllCongs[i].debug_print('+');
+    }
+}
+
 // computes c1*v1-c2*v2
 template <typename Integer>
 vector<Integer> FM_comb(Integer c1, const vector<Integer>& v1, Integer c2, const vector<Integer>& v2, bool& is_zero) {
@@ -1956,6 +2073,7 @@ template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL, IntegerRet>::initialize(const Matrix<IntegerPL>& Supps, size_t rank) {
     EmbDim = Supps.nr_of_columns();  // our embedding dimension
     AllSupps.resize(EmbDim + 1);
+    AllCongs.resize(EmbDim);
     AllOrders.resize(EmbDim + 1);
     AllNrEqus.resize(EmbDim + 1);
     AllSupps[EmbDim] = Supps;
@@ -2147,6 +2265,8 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute(bool all_points, bool liftin
             Grading = LLL_Coordinates.to_sublattice_dual_no_div(Grading);
     }
 
+    add_congruences_from_equations();
+
     count_only = do_only_count;  // count_only belongs to *this
 
     if(primitive && patching_allowed && all_points){
@@ -2168,6 +2288,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute(bool all_points, bool liftin
                 verboseOutput() << "for general system" << endl;
             compute_projections(EmbDim, 1, StartInd, StartPair, StartParaInPair, StartRank);
         }
+        restrict_congruences();
     }
 
     if(system_unsolvable)
