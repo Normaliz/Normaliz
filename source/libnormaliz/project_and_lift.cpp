@@ -103,18 +103,19 @@ Matrix<nmz_float> equations_to_congruences(const Matrix<nmz_float>& Equations, c
 template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL,IntegerRet>::add_congruences_from_equations() {
 
-    if(using_renf<IntegerPL>() && using_float<IntegerPL>()){
+    if(using_renf<IntegerPL>() || using_float<IntegerPL>()){
             return;
     }
 
     Matrix<IntegerPL> RecosntructedEquations = reconstruct_equations(AllSupps[EmbDim]);
-    RecosntructedEquations.debug_print();
+    // RecosntructedEquations.debug_print();
     vector<key_t> ordercoords = identity_key(EmbDim);
     Matrix<IntegerPL> CongsFromEquations = equations_to_congruences(RecosntructedEquations, ordercoords);
     Matrix<IntegerRet> CFERet;
     convert(CFERet, CongsFromEquations);
     // CongsFromEquations.debug_print();
     Congs.append(CFERet);
+    Congs.remove_duplicate_and_zero_rows();
 }
 
 template <typename IntegerPL, typename IntegerRet>
@@ -124,14 +125,14 @@ void ProjectAndLift<IntegerPL,IntegerRet>::restrict_congruences() {
             return;
     }
 
-    Congs.debug_print();
-    for(size_t i = 0; i < AllCongs.size(); ++i){
+    // Congs.debug_print();
+    for(size_t i = 1; i < AllCongs.size(); ++i){
         AllCongs[i] = Matrix<IntegerRet>(0, i+1);
         for(size_t j = 0; j <Congs.nr_of_rows(); ++j){
-            if(Congs[j][i] == 0)
+            if(Congs[j][i-1] == 0)
                 continue;
             bool restrictable = true;
-            for(size_t k = i+1; k < EmbDim; ++k){
+            for(size_t k = i; k < EmbDim; ++k){
                 if(Congs[j][k] != 0){
                     restrictable = false;
                     break;
@@ -144,9 +145,9 @@ void ProjectAndLift<IntegerPL,IntegerRet>::restrict_congruences() {
             new_cong.back() = Congs[j].back();
             AllCongs[i].append(new_cong);
         }
-        assert(AllCongs[i].nr_of_columns() == AllSupps[i].nr_of_columns() +1);
-        cout << "iiiiiiiiiiii " << i << endl;
-        AllCongs[i].debug_print('+');
+        // assert(AllCongs[i].nr_of_columns() == AllSupps[i].nr_of_columns() +1);
+        // cout << "iiiiiiiiiiii " << i << endl;
+        // AllCongs[i].debug_print('-');
     }
 }
 
@@ -391,10 +392,10 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
 #endif
         // for the "local" project-and-lift we need their suport hyperplanes
         vector<key_t> LocalKey = bitset_to_key(AllPatches[coord]);
-        Matrix<IntegerPL> LocalSuppsRaw;
+        Matrix<IntegerPL> LocalSuppsRaw; // could be avoided, only for convenience
         LocalSuppsRaw = AllSupps[EmbDim].submatrix(relevant_supps_now);
         // convert(LocalSuppsRaw, AllSupps[EmbDim].submatrix(relevant_supps_now));
-        Matrix<IntegerPL> Localsupps = LocalSuppsRaw.transpose().submatrix(LocalKey).transpose(); // select columns
+        // Matrix<IntegerPL> Localsupps = LocalSuppsRaw.transpose().submatrix(LocalKey).transpose(); // select columns
 
         // in For the "local" project-and-lift we must put the intersection coordinates first
         // then the new coordinates
@@ -408,11 +409,36 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
         }
 
         // for the "local" project-and-lift we must correspondingly reorder the support hyperplanes.
-        Matrix<IntegerPL> LocalSuppsReordered(Localsupps.nr_of_rows(), nr_coordinates);
-        for(size_t i = 0; i < Localsupps.nr_of_rows(); ++i){
+        Matrix<IntegerPL> LocalSuppsReordered(LocalSuppsRaw.nr_of_rows(), nr_coordinates);
+        for(size_t i = 0; i < LocalSuppsRaw.nr_of_rows(); ++i){
             for(size_t j = 0; j < nr_coordinates; ++j)
                 LocalSuppsReordered[i][j]= LocalSuppsRaw[i][OrderedCoordinates[j]];
         }
+
+        // Now we selct the congruences that apply locally
+        /*
+        dynamic_bitset relevant_congs_now(Congs.nr_of_rows());
+        for(size_t k = 0; k < relevant_congs_now.size(); ++k){ // TODO define globally like Indicator
+            dynamic_bitset cong_support_lhs(EmbDim);
+            for(size_t i = 0; i < EmbDim; ++i){
+                if(Congs[k][i] != 0)
+                    cong_support_lhs[i] = true;
+            }
+            if(cong_support_lhs.is_subset_of(Indicator[coord]))
+                relevant_congs_now[k] = true;
+        }
+
+        Matrix<IntegerRet> LocalCongsRaw;
+        LocalCongsRaw = Congs.submatrix(bitset_to_key(relevant_congs_now));
+        Matrix<IntegerRet> LocalCongs = LocalCongsRaw.transpose().submatrix(LocalKey).transpose();
+
+        Matrix<IntegerRet> LocalCongsReordered(LocalCongs.nr_of_rows(), nr_coordinates);
+        for(size_t i = 0; i < LocalCongs.nr_of_rows(); ++i){
+            for(size_t j = 0; j < nr_coordinates; ++j)
+                LocalCongsReordered[i][j]= LocalCongsRaw[i][OrderedCoordinates[j]];
+        }
+        // Congs done
+        */
 
         // Now we can set up the local project-and-lift
         vector<dynamic_bitset> DummyInd;
@@ -420,7 +446,9 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
         PL.set_LLL(false);
         PL.set_primitive();
         PL.set_verbose(false);
+        // PL.set_congruences(LocalCongsReordered);
         PL.compute_projections_primitive(LocalKey.size());
+        PL.restrict_congruences(); // here since we don't go via compute (and it should be done only once)
         AllLocalPL[coord] = PL;
 
         dynamic_bitset new_covered = covered | AllPatches[coord];
@@ -1764,8 +1792,8 @@ void ProjectAndLift<IntegerPL, IntegerRet>::finalize_latt_point(const vector<Int
             return;
     }
 
-    if (!Congs.check_congruences(NewPoint))
-        return;
+    /* if (!Congs.check_congruences(NewPoint)) // already checked
+        return;*/
 #pragma omp atomic
     TotalNrLP++;
 
@@ -1816,8 +1844,11 @@ template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL, IntegerRet>::lift_points_to_this_dim(list<vector<IntegerRet> >& Deg1Proj) {
     if (Deg1Proj.empty())
         return;
+
     size_t dim1 = Deg1Proj.front().size(); // length iof vectors so far
     size_t dim = dim1 + 1; // old length // extended length
+
+    // AllCongs[dim].debug_print();
 
     if(dim > EmbDim){ // can happen in patching algorithm
         used_supps.reset(); // to make finalize_latt_point work
@@ -1928,6 +1959,9 @@ void ProjectAndLift<IntegerPL, IntegerRet>::lift_points_to_this_dim(list<vector<
                                 continue;
                             }
 
+                            if (!AllCongs[dim].check_congruences(NewPoint))
+                                continue;
+
                             if (dim == EmbDim) {
                                 finalize_latt_point(NewPoint, tn);
                             }
@@ -1960,6 +1994,8 @@ void ProjectAndLift<IntegerPL, IntegerRet>::lift_points_to_this_dim(list<vector<
 
         for (size_t i = 0; i < Deg1Thread.size(); ++i)
             Deg1Lifted.splice(Deg1Lifted.begin(), Deg1Thread[i]);
+
+        // Matrix<IntegerRet>(Deg1Lifted).debug_print();
 
         if (dim == EmbDim){
             collect_results(Deg1Lifted);
@@ -2007,6 +2043,10 @@ void ProjectAndLift<IntegerPL, IntegerRet>::lift_point_recursively(vector<Intege
         for (size_t j = 0; j < dim1; ++j)
             NewPoint[j] = latt_point_proj[j];
         NewPoint[dim1] = k;
+
+        if (!AllCongs[dim].check_congruences(NewPoint))
+            continue;
+
         if (dim == final_dim && NewPoint != excluded_point) {
             final_latt_point = NewPoint;
             break;
@@ -2073,10 +2113,11 @@ template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL, IntegerRet>::initialize(const Matrix<IntegerPL>& Supps, size_t rank) {
     EmbDim = Supps.nr_of_columns();  // our embedding dimension
     AllSupps.resize(EmbDim + 1);
-    AllCongs.resize(EmbDim);
+    AllCongs.resize(EmbDim + 1);
     AllOrders.resize(EmbDim + 1);
     AllNrEqus.resize(EmbDim + 1);
     AllSupps[EmbDim] = Supps;
+    Congs.resize(0, EmbDim+1);
     AllSupps[EmbDim].remove_duplicate_and_zero_rows();
     AllOrders[EmbDim] = order_supps(AllSupps[EmbDim]);
     DoneWithDim.resize(EmbDim+1);
@@ -2275,6 +2316,8 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute(bool all_points, bool liftin
         check_and_prepare_sparse();
     }
 
+    restrict_congruences();
+
     if(!sparse){
         if (verbose)
             verboseOutput() << "Projection";
@@ -2288,7 +2331,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute(bool all_points, bool liftin
                 verboseOutput() << "for general system" << endl;
             compute_projections(EmbDim, 1, StartInd, StartPair, StartParaInPair, StartRank);
         }
-        restrict_congruences();
+        //restrict_congruences();
     }
 
     if(system_unsolvable)

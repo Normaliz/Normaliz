@@ -225,10 +225,11 @@ ProjectAndLift<IntegerPL, IntegerRet>::ProjectAndLift(const ProjectAndLift<Integ
     no_relax = Original.no_relax;
     convert(GD, Original.GD);
     AllSupps.resize(EmbDim + 1);
+    AllCongs.resize(EmbDim + 1);
     for (size_t i = 0; i < AllSupps.size(); ++i)
         convert(AllSupps[i], Original.AllSupps[i]);
     convert(Congs, Original.Congs);
-    for (size_t i = 0; i < AllCongs.size(); ++i)
+    for (size_t i = 0; i < Original.AllCongs.size(); ++i)
         convert(AllCongs[i], Original.AllCongs[i]);
     TotalNrLP = 0;
     Grading = Original.Grading;
