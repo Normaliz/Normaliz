@@ -236,13 +236,13 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
         verboseOutput() << "Preparing data for patching algorithm " << endl;
 
     // now we want to find the sparse upper bounds with maximal support
-    vector<dynamic_bitset> help(nr_all_supps);
+    vector<dynamic_bitset> help(nr_all_supps); // TODO find them, not only preparation
     for(size_t i = 0; i < nr_all_supps; ++i){
         help[i].resize(EmbDim);
         if(sparse_bounds[i])
             help[i] = Indicator[i];
     }
-    dynamic_bitset max_sparse = sparse_bounds;
+    dynamic_bitset max_sparse = sparse_bounds; // TODO here they must be found. So far: all
 
     // find weights of coords
     WeightOfCoord.resize(EmbDim);
@@ -274,6 +274,17 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
     if(verbose)
         verboseOutput() << "Weights of coordinates " << WeightOfCoord;
 #endif
+
+    // Wec want to give global congruences to the patches
+    vector<dynamic_bitset> CongIndicator;
+    for(size_t k = 0; k < Congs.nr_of_rows(); ++k){
+        dynamic_bitset cong_support(EmbDim);  // modulus not indicated
+        for(size_t i = 0; i < EmbDim; ++i){
+            if(Congs[k][i] != 0)
+                cong_support[i] = true;
+        }
+        CongIndicator.push_back(cong_support);
+    }
 
     dynamic_bitset covered(EmbDim);  // registers covered coordinates
     covered[0] = 1; // the 0-th coordinate is covered by all local PL
@@ -416,29 +427,23 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
         }
 
         // Now we selct the congruences that apply locally
-        /*
         dynamic_bitset relevant_congs_now(Congs.nr_of_rows());
-        for(size_t k = 0; k < relevant_congs_now.size(); ++k){ // TODO define globally like Indicator
-            dynamic_bitset cong_support_lhs(EmbDim);
-            for(size_t i = 0; i < EmbDim; ++i){
-                if(Congs[k][i] != 0)
-                    cong_support_lhs[i] = true;
-            }
-            if(cong_support_lhs.is_subset_of(Indicator[coord]))
+        for(size_t k = 0; k < relevant_congs_now.size(); ++k){
+            if(CongIndicator[k].is_subset_of((AllPatches[coord])))
                 relevant_congs_now[k] = true;
         }
 
         Matrix<IntegerRet> LocalCongsRaw;
         LocalCongsRaw = Congs.submatrix(bitset_to_key(relevant_congs_now));
-        Matrix<IntegerRet> LocalCongs = LocalCongsRaw.transpose().submatrix(LocalKey).transpose();
 
-        Matrix<IntegerRet> LocalCongsReordered(LocalCongs.nr_of_rows(), nr_coordinates);
-        for(size_t i = 0; i < LocalCongs.nr_of_rows(); ++i){
+        Matrix<IntegerRet> LocalCongsReordered(LocalCongsRaw.nr_of_rows(), nr_coordinates + 1); // +1 for modulus
+        for(size_t i = 0; i < LocalCongsRaw.nr_of_rows(); ++i){
             for(size_t j = 0; j < nr_coordinates; ++j)
                 LocalCongsReordered[i][j]= LocalCongsRaw[i][OrderedCoordinates[j]];
+            LocalCongsReordered[i][nr_coordinates] = LocalCongsRaw[i].back(); // modulus transferred
         }
         // Congs done
-        */
+
 
         // Now we can set up the local project-and-lift
         vector<dynamic_bitset> DummyInd;
@@ -446,7 +451,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
         PL.set_LLL(false);
         PL.set_primitive();
         PL.set_verbose(false);
-        // PL.set_congruences(LocalCongsReordered);
+        PL.set_congruences(LocalCongsReordered);
         PL.compute_projections_primitive(LocalKey.size());
         PL.restrict_congruences(); // here since we don't go via compute (and it should be done only once)
         AllLocalPL[coord] = PL;
