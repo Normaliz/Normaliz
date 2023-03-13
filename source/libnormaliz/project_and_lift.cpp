@@ -1177,6 +1177,10 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
 
        NrRemainingLP[this_patch] = nr_to_match - nr_points_matched;
 
+       if(min_fall_back == 0 && NrRemainingLP[this_patch] == 0){
+            LocalSolutions_by_intersecion.clear();
+       }
+
         double expected_number_of_rounds = NrRemainingLP[this_patch];
         if(nr_points_done_in_this_round > 0){
             expected_number_of_rounds/= nr_points_done_in_this_round;
