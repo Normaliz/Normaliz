@@ -85,6 +85,8 @@ Matrix<Integer> equations_to_congruences(const Matrix<Integer>& Equations, const
     }
 
     Congruences.remove_duplicate_and_zero_rows();
+    // cout << "From equations to Congruences" << endl;
+    // Congruences.debug_print();
     return Congruences;
 }
 
@@ -116,6 +118,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::add_congruences_from_equations() {
     // CongsFromEquations.debug_print();
     Congs.append(CFERet);
     Congs.remove_duplicate_and_zero_rows();
+
+    // Congs.debug_print('$');
 }
 
 template <typename IntegerPL, typename IntegerRet>
@@ -295,6 +299,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
     AllPatches.resize(EmbDim);
     active_coords.resize(EmbDim);
 
+    AllCongsRestricted.resize(EmbDim);
     AllPolyEqus.resize(EmbDim);
     AllPolyEqusThread.resize(EmbDim);
     for(auto& T: AllPolyEqusThread)
@@ -453,10 +458,28 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
         PL.set_verbose(false);
         PL.set_congruences(LocalCongsReordered);
         PL.compute_projections_primitive(LocalKey.size());
+        // cout << "In local PLs" << endl;
+        PL.add_congruences_from_equations();
         PL.restrict_congruences(); // here since we don't go via compute (and it should be done only once)
+        cout << "coord " << coord << endl;
+        PL.Congs.debug_print();
         AllLocalPL[coord] = PL;
 
         dynamic_bitset new_covered = covered | AllPatches[coord];
+
+        // now we find the congruences that can be restricted to new_covered, but not to
+        // covered or AllPatches[coord]
+
+        AllCongsRestricted[coord].resize(0, EmbDim + 1);
+        for(size_t i = 0; i < Congs.nr_of_rows(); ++i){
+            if(!CongIndicator[i].is_subset_of(new_covered))
+                continue;
+            if(CongIndicator[i].is_subset_of(covered))
+                continue;
+            if(CongIndicator[i].is_subset_of(AllPatches[coord]))
+                continue;
+            AllCongsRestricted[coord].append(Congs[i]);
+        }
 
         // Collect relevant polynomial constraints
         vector<key_t> PolyEqusKey, PolyInequsKey, RestrictablePolyInequsKey;
@@ -841,6 +864,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
     Matrix<IntegerRet>& LocalSolutions = AllLocalSolutions[coord];
     dynamic_bitset covered = AllCovered[coord];
 
+    Matrix<IntegerRet>& CongsRestricted = AllCongsRestricted[coord];
+
     vector<key_t> CoveredKey = bitset_to_key(covered);
     // cout << "Covered " << CoveredKey;
 
@@ -927,6 +952,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         size_t nr_latt_points_total = 0;  //statistics for this run of the while loop
         size_t nr_caught_by_restricted = 0;  //restricted inequalities
         size_t nr_caught_by_equations = 0;  //statistics for this run of the while loop
+        size_t nr_caught_by_congs = 0;  //statistics for this run of the while loop
+
 
         size_t nr_points_done_in_this_round = 0;
 
@@ -1052,6 +1079,15 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                     }
                 }
                 if(can_be_inserted){
+                    if(!CongsRestricted.check_congruences(NewLattPoint)){
+                        can_be_inserted = false;
+#ifdef NMZ_DEVELOP
+#pragma omp atomic
+                            nr_caught_by_congs++;
+#endif
+                    }
+                }
+                if(can_be_inserted){
                     nr_points_in_thread++;
                     if(last_coord)
                         finalize_latt_point(NewLattPoint, tn);
@@ -1154,6 +1190,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                 verboseOutput() << " equ " << nr_caught_by_equations;
             if(PolyInequsThread[0].size() > 0)
                 verboseOutput() << " ine " << nr_caught_by_restricted;
+            if(CongsRestricted.nr_of_rows() > 0)
+                verboseOutput() << " cgr " << nr_caught_by_congs;
             if(nr_points_done_in_this_round > 0)
                 verboseOutput() << " exp rnd " << expected_number_of_rounds;
             verboseOutput() << endl;
@@ -1895,6 +1933,8 @@ void ProjectAndLift<IntegerPL, IntegerRet>::lift_points_to_this_dim(list<vector<
         skip_remaining = false;
         int omp_start_level = omp_get_level();
 
+        // size_t nr_cong_killed = 0;
+
 
 #pragma omp parallel
         {
@@ -1964,8 +2004,11 @@ void ProjectAndLift<IntegerPL, IntegerRet>::lift_points_to_this_dim(list<vector<
                                 continue;
                             }
 
-                            if (!AllCongs[dim].check_congruences(NewPoint))
+                            if (!AllCongs[dim].check_congruences(NewPoint)){
+// #pragma omp atomic
+                                // nr_cong_killed++;
                                 continue;
+                            }
 
                             if (dim == EmbDim) {
                                 finalize_latt_point(NewPoint, tn);
@@ -1993,6 +2036,8 @@ void ProjectAndLift<IntegerPL, IntegerRet>::lift_points_to_this_dim(list<vector<
             }  // lifting
 
         }  // pararllel
+
+        // cout << "CONG KILLED " << nr_cong_killed << " Congs " << AllCongs[dim].nr_of_rows()  <<  endl;
 
         if (!(tmp_exception == 0))
             std::rethrow_exception(tmp_exception);
@@ -2311,7 +2356,9 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute(bool all_points, bool liftin
             Grading = LLL_Coordinates.to_sublattice_dual_no_div(Grading);
     }
 
+    // cout << "Global Global Global" << endl;
     add_congruences_from_equations();
+    restrict_congruences();
 
     count_only = do_only_count;  // count_only belongs to *this
 
@@ -2320,8 +2367,6 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute(bool all_points, bool liftin
             verboseOutput() << "Checking if patching possible" << endl;
         check_and_prepare_sparse();
     }
-
-    restrict_congruences();
 
     if(!sparse){
         if (verbose)

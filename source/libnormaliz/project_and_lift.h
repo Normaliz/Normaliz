@@ -48,7 +48,7 @@ class ProjectAndLift {
                                           // and to be lifted to full dimension
 
     vector<Matrix<IntegerPL> > AllSupps; // thwe support hyperplanes in all dimensions
-    vector<Matrix<IntegerRet> > AllCongs; // thwe support hyperplanes in all dimensions
+    vector<Matrix<IntegerRet> > AllCongs; // congruences derived from Congs and equations by coarsening
     vector<vector<size_t> > AllOrders;
     vector<size_t> AllNrEqus;  // the numbers of equations --- well defined
                                // in dimensions < start dimension !!!!
@@ -122,6 +122,7 @@ class ProjectAndLift {
     // vector<Matrix<IntegerRet> > AllExtraInequalities;
     // vector<vector<key_z> > AllPolyEqusKey;
     // vector<vector<key_t> > AllPolyInequsKey;
+    vector<Matrix<IntegerRet> > AllCongsRestricted; // the congruences that can be restrictd to the unions of patches built successively
     vector<OurPolynomialSystem<IntegerRet> > AllPolyEqus; // indexed by coord, poly equs applied with this coord
     vector<OurPolynomialSystem<IntegerRet> > AllPolyInequs; // ditto for inequalities
     // vector<OurPolynomialSystem<IntegerRet> > AllRestrictablePolyInequs; // resstricted inequalities derived from equations
