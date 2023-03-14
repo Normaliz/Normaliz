@@ -102,6 +102,40 @@ Matrix<nmz_float> equations_to_congruences(const Matrix<nmz_float>& Equations, c
     return{};
 }
 
+template<typename Integer>
+void coarsen_this_cong(const vector<Integer>& cong, const size_t k, set<vector<Integer> >& CongSet){
+
+    for(size_t i = k; i < cong.size() - 1; ++i){
+        if(cong[i] == 0)
+            continue;
+        Integer new_mod = libnormaliz::gcd(cong[i], cong.back());
+        if(new_mod == 1)
+            break;
+        vector<Integer> coarser_cong(cong.size());
+        for(size_t j = 0; j < cong.size() - 1; ++j)
+            coarser_cong[j] = cong[j] % new_mod;
+        coarser_cong.back() = new_mod;
+        CongSet.insert(coarser_cong);
+        coarsen_this_cong(coarser_cong, i + 1, CongSet);
+    }
+}
+
+template <typename IntegerPL, typename IntegerRet>
+void ProjectAndLift<IntegerPL,IntegerRet>::coarsen_congs() {
+
+    set<vector<IntegerRet> > CongSet;
+
+    for(size_t i = 0; i < Congs.nr_of_rows(); ++i)
+        CongSet.insert(Congs[i]);
+
+    for(size_t i = 0; i < Congs.nr_of_rows(); ++i)
+        coarsen_this_cong(Congs[i],0, CongSet);
+
+    Congs.resize(0);
+    for(auto& c: CongSet)
+        Congs.append(c);
+}
+
 template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL,IntegerRet>::add_congruences_from_equations() {
 
@@ -279,17 +313,6 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
         verboseOutput() << "Weights of coordinates " << WeightOfCoord;
 #endif
 
-    // Wec want to give global congruences to the patches
-    vector<dynamic_bitset> CongIndicator;
-    for(size_t k = 0; k < Congs.nr_of_rows(); ++k){
-        dynamic_bitset cong_support(EmbDim);  // modulus not indicated
-        for(size_t i = 0; i < EmbDim; ++i){
-            if(Congs[k][i] != 0)
-                cong_support[i] = true;
-        }
-        CongIndicator.push_back(cong_support);
-    }
-
     dynamic_bitset covered(EmbDim);  // registers covered coordinates
     covered[0] = 1; // the 0-th coordinate is covered by all local PL
     AllLocalPL.resize(EmbDim);
@@ -370,6 +393,19 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
 
     //  Indicator[next_supp] ersetzen durch AllPatches
 
+    // we process the congruences
+    coarsen_congs();
+    // Wec want to give global congruences to the patches
+    vector<dynamic_bitset> CongIndicator;
+    for(size_t k = 0; k < Congs.nr_of_rows(); ++k){
+        dynamic_bitset cong_support(EmbDim);  // modulus not indicated
+        for(size_t i = 0; i < EmbDim; ++i){
+            if(Congs[k][i] != 0)
+                cong_support[i] = true;
+        }
+        CongIndicator.push_back(cong_support);
+    }
+
     for(auto& coord: InsertionOrderPatches){
 
         // now we want to build "local" systems
@@ -432,6 +468,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
         }
 
         // Now we selct the congruences that apply locally
+
         dynamic_bitset relevant_congs_now(Congs.nr_of_rows());
         for(size_t k = 0; k < relevant_congs_now.size(); ++k){
             if(CongIndicator[k].is_subset_of((AllPatches[coord])))
