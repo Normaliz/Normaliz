@@ -63,45 +63,6 @@ Matrix<Integer> reconstruct_equations(const Matrix<Integer>& Inequalities){
     return Equations;
 }
 
-template <typename Integer>
-Matrix<Integer> equations_to_congruences(const Matrix<Integer>& Equations, const vector<key_t> order_of_coords) {
-
-    Matrix<Integer> Congruences(0, Equations.nr_of_columns() +1);
-
-    for(size_t i=0; i< Equations.nr_of_rows(); ++i){
-        Integer modulus = 0;
-        for(size_t j = order_of_coords.size() - 1; j >= 1; --j){
-            modulus= libnormaliz::gcd(modulus, Equations[i][j]);
-            if(modulus == 0)
-                continue;
-            if(modulus == 1)
-                break;
-            vector<Integer> cong(Congruences.nr_of_columns());
-            for(size_t k = 0; k < cong.size() - 1; ++k)
-                cong[k] = Equations[i][k] % modulus;
-            cong.back() = modulus;
-            Congruences.append(cong);
-        }
-    }
-
-    Congruences.remove_duplicate_and_zero_rows();
-    // cout << "From equations to Congruences" << endl;
-    // Congruences.debug_print();
-    return Congruences;
-}
-
-template <>
-Matrix<renf_elem_class> equations_to_congruences(const Matrix<renf_elem_class>& Equations, const vector<key_t> order_of_coords) {
-    assert(false);
-    return{};
-}
-
-template <>
-Matrix<nmz_float> equations_to_congruences(const Matrix<nmz_float>& Equations, const vector<key_t> order_of_coords) {
-    assert(false);
-    return{};
-}
-
 template<typename Integer>
 void coarsen_this_cong(const vector<Integer>& cong, const size_t k, set<vector<Integer> >& CongSet){
 
@@ -120,20 +81,14 @@ void coarsen_this_cong(const vector<Integer>& cong, const size_t k, set<vector<I
     }
 }
 
-template <typename IntegerPL, typename IntegerRet>
-void ProjectAndLift<IntegerPL,IntegerRet>::coarsen_congs() {
+template<>
+void coarsen_this_cong(const vector<renf_elem_class>& cong, const size_t k, set<vector<renf_elem_class> >& CongSet){
+    assert(false);
+}
 
-    set<vector<IntegerRet> > CongSet;
-
-    for(size_t i = 0; i < Congs.nr_of_rows(); ++i)
-        CongSet.insert(Congs[i]);
-
-    for(size_t i = 0; i < Congs.nr_of_rows(); ++i)
-        coarsen_this_cong(Congs[i],0, CongSet);
-
-    Congs.resize(0);
-    for(auto& c: CongSet)
-        Congs.append(c);
+template<>
+void coarsen_this_cong(const vector<nmz_float>& cong, const size_t k, set<vector<nmz_float> >& CongSet){
+    assert(false);
 }
 
 template <typename IntegerPL, typename IntegerRet>
@@ -143,15 +98,23 @@ void ProjectAndLift<IntegerPL,IntegerRet>::add_congruences_from_equations() {
             return;
     }
 
+    set<vector<IntegerRet> > CongSet;
+    for(size_t i = 0; i < Congs.nr_of_rows(); ++i)
+        CongSet.insert(Congs[i]);
+    for(size_t i = 0; i < Congs.nr_of_rows(); ++i){
+        coarsen_this_cong(Congs[i], 0, CongSet);
+    }
     Matrix<IntegerPL> RecosntructedEquations = reconstruct_equations(AllSupps[EmbDim]);
-    // RecosntructedEquations.debug_print();
-    vector<key_t> ordercoords = identity_key(EmbDim);
-    Matrix<IntegerPL> CongsFromEquations = equations_to_congruences(RecosntructedEquations, ordercoords);
-    Matrix<IntegerRet> CFERet;
-    convert(CFERet, CongsFromEquations);
-    // CongsFromEquations.debug_print();
-    Congs.append(CFERet);
-    Congs.remove_duplicate_and_zero_rows();
+    for(size_t i = 0; i< RecosntructedEquations.nr_of_rows(); ++i){
+        vector<IntegerRet> cong_candidate;
+        convert(cong_candidate, RecosntructedEquations[i]);
+        cong_candidate.resize(RecosntructedEquations.nr_of_columns() + 1);
+        coarsen_this_cong(cong_candidate, 0, CongSet);
+    }
+
+    Congs.resize(0);
+    for(auto& c: CongSet)
+        Congs.append(c);
 
     // Congs.debug_print('$');
 }
@@ -393,9 +356,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
 
     //  Indicator[next_supp] ersetzen durch AllPatches
 
-    // we process the congruences
-    coarsen_congs();
-    // Wec want to give global congruences to the patches
+    // Wec want to restrict global congruences
     vector<dynamic_bitset> CongIndicator;
     for(size_t k = 0; k < Congs.nr_of_rows(); ++k){
         dynamic_bitset cong_support(EmbDim);  // modulus not indicated
@@ -497,7 +458,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
         PL.compute_projections_primitive(LocalKey.size());
         // cout << "In local PLs" << endl;
         PL.add_congruences_from_equations();
-        PL.restrict_congruences(); // here since we don't go via compute (and it should be done only once)
+        PL.restrict_congruences();
         cout << "coord " << coord << endl;
         PL.Congs.debug_print();
         AllLocalPL[coord] = PL;

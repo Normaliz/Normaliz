@@ -172,7 +172,6 @@ class ProjectAndLift {
     void compute_covers();
 
     void add_congruences_from_equations();
-    void coarsen_congs();
     void restrict_congruences();
 
     // void make_LLL_coordinates();
