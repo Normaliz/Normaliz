@@ -133,6 +133,7 @@ class ProjectAndLift {
     dynamic_bitset poly_equs_minimized; // redisters whether the polynomial equations at a coord have been minimized
     dynamic_bitset poly_inequs_minimized; //  ditto for the inequalities from equations
     vector<double> WeightOfCoord;
+    vector<dynamic_bitset> CongIndicator; // stores supports of congruences
 
     vector<size_t> NrRemainingLP;
     vector<size_t> NrDoneLP;
@@ -169,10 +170,12 @@ class ProjectAndLift {
     void check_and_prepare_sparse();
 
     void reorder_coordinates(); // to use polynomial constraints as early as possible
+    vector<pair<size_t, vector<key_t> > > cover_supports(const vector<dynamic_bitset>& supports);
     void compute_covers();
 
     void add_congruences_from_equations();
     void restrict_congruences();
+    void find_order_congruences();
 
     // void make_LLL_coordinates();
 

@@ -190,7 +190,6 @@ vector<Integer> FM_comb(Integer c1, const vector<Integer>& v1, Integer c2, const
 template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
 
-    // reorder_coordinates();
 
     size_t nr_all_supps = AllSupps[EmbDim].nr_of_rows();
 
@@ -342,6 +341,28 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
 
     }
 
+    // Wec want to restrict global congruences
+    for(size_t k = 0; k < Congs.nr_of_rows(); ++k){
+        dynamic_bitset cong_support(EmbDim);  // modulus not indicated
+        for(size_t i = 0; i < EmbDim; ++i){
+            if(Congs[k][i] != 0)
+                cong_support[i] = true;
+        }
+        CongIndicator.push_back(cong_support);
+        /*
+        bool is_local = false;
+        for(auto& p: AllPatches){
+            if(p.size() > 0 && cong_support.is_subset_of(p)){
+                is_local = true;
+                break;
+            }
+        }
+        if(!is_local){
+            GlobalCongsSupport.push_back(cong_support);
+            cout << "Not local" << endl;
+        }*/
+    }
+
     compute_covers();
     // exit(0);
 
@@ -355,17 +376,6 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
     // Now wer go over the insertion order
 
     //  Indicator[next_supp] ersetzen durch AllPatches
-
-    // Wec want to restrict global congruences
-    vector<dynamic_bitset> CongIndicator;
-    for(size_t k = 0; k < Congs.nr_of_rows(); ++k){
-        dynamic_bitset cong_support(EmbDim);  // modulus not indicated
-        for(size_t i = 0; i < EmbDim; ++i){
-            if(Congs[k][i] != 0)
-                cong_support[i] = true;
-        }
-        CongIndicator.push_back(cong_support);
-    }
 
     for(auto& coord: InsertionOrderPatches){
 
@@ -558,120 +568,18 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
 
 //---------------------------------------------------------------------------
 
+// First we cover the supports of polynomial equations by patches
+// using as few patches as possioble
+// The results are stored in covering_patches
 template <typename IntegerPL, typename IntegerRet>
-void ProjectAndLift<IntegerPL,IntegerRet>::compute_covers() {
+vector<pair<size_t, vector<key_t> > > ProjectAndLift<IntegerPL,IntegerRet>::
+              cover_supports(const vector<dynamic_bitset>& supports) {
 
-    // Note the indices of thze patches are the coordinates
-    // with whom they are associated
-
-    LevelPatches.resize(EmbDim);
-
-#ifdef NMZ_DEVELOP
-    if(verbose){
-        for(size_t i = 0; i < EmbDim; ++i){
-            verboseOutput() << i << " ----- " << bitset_to_key(AllPatches[i]);
-        }
-    }
-#endif
-
-
-    if(PolyEquations.empty()){
-        /* for(size_t i = 0; i < EmbDim; ++i){
-            if(AllPatches[i].size() > 0)
-                InsertionOrderPatches.push_back(i);
-        }
-
-        for(size_t k = 0; k < InsertionOrderPatches.size(); ++k)
-            LevelPatches[InsertionOrderPatches[k]] = k;
-        return;*/
-
-        bool first = true;
-        size_t min_nr_union = 0;
-        size_t min_at = 0;
-        long real_patch = -1;
-        for(size_t i = 0; i < EmbDim; ++i){
-            dynamic_bitset supp_i = AllPatches[i];
-            if(AllPatches[i].size() > 0){
-                real_patch = i;
-                for(size_t j = i+1; j < EmbDim; ++j){
-                    if(AllPatches[j].size()== 0)
-                        continue;
-                    size_t nr_union = (AllPatches[i] & AllPatches[j]).count();
-                    if(first || nr_union < min_nr_union){
-                        first = false;
-                        min_nr_union = nr_union;
-                        min_at = i;
-                    }
-                }
-
-            }
-        }
-
-        if(first){ //means: only one patch
-            if(real_patch == -1)
-                return;
-            InsertionOrderPatches.push_back(real_patch);
-            return;
-        }
-
-        InsertionOrderPatches.push_back(min_at);
-        dynamic_bitset covered_coords = AllPatches[min_at];
-        size_t nr_covered_coords= covered_coords.count();
-        dynamic_bitset inserted_patches(EmbDim);
-        inserted_patches [min_at] = true;
-
-        while(nr_covered_coords < EmbDim) {
-            size_t min_at = 0;
-            bool first = true;
-            dynamic_bitset min_covered_coords(EmbDim);
-            size_t min_nr_covered_coords = 0;
-            for(size_t i = 0; i < EmbDim; ++i){
-                if(AllPatches[i].size() == 0 || inserted_patches[i])
-                    continue;
-                dynamic_bitset test_covered_coords = covered_coords | AllPatches[i];
-                size_t test_nr_covered = test_covered_coords.count();
-                if(first || test_nr_covered < min_nr_covered_coords){
-                    first = false;
-                    min_at = i;
-                    min_covered_coords = test_covered_coords;
-                    min_nr_covered_coords = test_nr_covered;
-                }
-            }
-            InsertionOrderPatches.push_back(min_at);
-            inserted_patches[min_at] = true;
-            covered_coords = min_covered_coords;
-            nr_covered_coords = min_nr_covered_coords;
-        }
-
-        for(size_t j = 0; j < EmbDim; ++j){
-            if(!inserted_patches[j] && AllPatches[j].size() > 0)
-                InsertionOrderPatches.push_back(j);
-        }
-
-        if(verbose){
-            verboseOutput() << "Insertion order linear patches " << endl;
-            verboseOutput() << InsertionOrderPatches << endl;
-        }
-
-        for(size_t k = 0; k < InsertionOrderPatches.size(); ++k)
-            LevelPatches[InsertionOrderPatches[k]] = k;
-
-        return;
-
-    } // PolyEquations empty
-
-
-
-
-    // First we cover the supports of polynom,ial equations by patches
-    // using as few patches as possioble
-    // The results are stored in covering_patches
     vector<pair<size_t, vector<key_t> > > covering_equations;
+    size_t dim = EmbDim;
 
-    size_t dim = PolyEquations[0].support.size();
-
-    for(size_t i = 0; i< PolyEquations.size(); ++i){
-        dynamic_bitset poly_supp = PolyEquations[i].support;
+    for(size_t i = 0; i< supports.size(); ++i){
+        dynamic_bitset poly_supp = supports[i];
         dynamic_bitset already_covered(dim);
         size_t nr_patches_needed = 0;
         vector<key_t> patches_used;
@@ -701,6 +609,113 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_covers() {
         }
     }
 
+    return covering_equations;
+}
+
+template <typename IntegerPL, typename IntegerRet>
+void ProjectAndLift<IntegerPL,IntegerRet>::find_order_congruences() {
+
+    for(size_t i = 0; i < AllPatches.size(); ++i){
+        if(AllPatches[i].size() > 0){
+            InsertionOrderPatches.push_back(i);
+            break;
+        }
+    }
+
+    dynamic_bitset used_covering_congruences(Congs.nr_of_rows());
+    dynamic_bitset covered_coords = AllPatches[InsertionOrderPatches[0]];
+    dynamic_bitset used_patches(EmbDim);
+    used_patches[InsertionOrderPatches[0]] = true;
+    while(covered_coords.count() < EmbDim && used_covering_congruences.count() < Congs.nr_of_rows()){
+        bool first = true;
+        size_t max_at = 0;
+        size_t max_nr_congs = 0;
+        dynamic_bitset max_covered(EmbDim);
+        for(size_t i = 0; i < AllPatches.size(); ++i){
+            if(AllPatches[i].size() == 0 || used_patches[i])
+                continue;
+            
+            dynamic_bitset test_covered = covered_coords | AllPatches[i];
+            size_t nr_congs = 0;
+            for(size_t j = 0; j < Congs.nr_of_rows(); ++j){
+                if(CongIndicator[j].is_subset_of(covered_coords))
+                    continue;
+                if(CongIndicator[j].is_subset_of(AllPatches[i]))
+                    continue;
+                if(!CongIndicator[j].is_subset_of(test_covered))
+                    continue;                
+                nr_congs++;
+            }
+            if(first || nr_congs > max_nr_congs){
+                first = false;
+                max_at = i;
+                max_nr_congs = nr_congs;
+                max_covered = test_covered;
+            }
+        }
+        InsertionOrderPatches.push_back(max_at);
+        used_patches[max_at] = true;
+        covered_coords |= AllPatches[max_at];
+        for(size_t j = 0; j < Congs.nr_of_rows(); ++j){  // register used congs
+            if(CongIndicator[j].is_subset_of(max_covered))
+                used_covering_congruences[j] = true;
+        }
+    }
+    
+    // There could be patches not involved in congruencs
+    for(size_t j = 0; j < EmbDim; ++j){
+        if(!used_patches[j] && AllPatches[j].size() > 0)
+            InsertionOrderPatches.push_back(j);
+    }
+
+    if(verbose){
+        verboseOutput() << "Insertion order linear patches " << endl;
+        verboseOutput() << InsertionOrderPatches << endl;
+    }
+
+    for(size_t k = 0; k < InsertionOrderPatches.size(); ++k)
+        LevelPatches[InsertionOrderPatches[k]] = k;
+}
+
+template <typename IntegerPL, typename IntegerRet>
+void ProjectAndLift<IntegerPL,IntegerRet>::compute_covers() {
+
+    // Note the indices of thze patches are the coordinates
+    // with whom they are associated
+
+    LevelPatches.resize(EmbDim);
+
+#ifdef NMZ_DEVELOP
+    if(verbose){
+        for(size_t i = 0; i < EmbDim; ++i){
+            verboseOutput() << i << " ----- " << bitset_to_key(AllPatches[i]);
+        }
+    }
+#endif
+
+    if(PolyEquations.empty()){ // && Congs.nr_of_rows() == 0){
+        for(size_t i = 0; i < EmbDim; ++i){
+            if(AllPatches[i].size() > 0)
+                InsertionOrderPatches.push_back(i);
+        }
+
+        for(size_t k = 0; k < InsertionOrderPatches.size(); ++k)
+            LevelPatches[InsertionOrderPatches[k]] = k;
+        return;
+    }
+    
+    if(PolyEquations.empty()){ // no polynomial equations but congruences
+        find_order_congruences();
+        return;
+    }
+
+    vector<dynamic_bitset> our_supports;
+    for(size_t i = 0; i < PolyEquations.size();++i)
+            our_supports.push_back(PolyEquations[i].support);
+
+    vector<pair<size_t, vector<key_t> > > covering_equations =
+            cover_supports(our_supports);
+
     // Now we must find an order of the supports of the polynomial equations
     // in which we insert their patches.
     // The idea is to have as miuch overlap in the covered coordinates as
@@ -716,6 +731,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_covers() {
         verboseOutput() << endl;
     }
 #endif
+
+    size_t dim = EmbDim;
 
     vector<key_t> InsertionOrderEquations;
     dynamic_bitset used_covering_equations(covering_equations.size());
@@ -904,6 +921,11 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         LocalSolutions = LocalSolutionsNow;
     else
         LocalSolutions.append(LocalSolutionsNow);
+
+#ifdef NMZ_DEVELOP 
+    if(verbose)
+        verboseOutput() << "Local solutions " << LocalSolutions.nr_of_rows() << endl;
+#endif
 
     // Next the newly computed extensions are registered
     vector<IntegerRet> overlap(intersection_key.size());
@@ -1278,6 +1300,8 @@ vector<size_t> ProjectAndLift<IntegerPL, IntegerRet>::order_supps(const Matrix<I
 }
 
 //---------------------------------------------------------------------------
+
+// not used
 template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL, IntegerRet>::reorder_coordinates(){
 
