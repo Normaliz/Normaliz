@@ -6353,7 +6353,7 @@ template <typename Integer>
 void Cone<Integer>::setPolynomialEquations(const vector<string>& poly_equs) {
 #ifdef NMZ_COCOA
     if(verbose)
-        verboseOutput() << "Processing polynomial equations" << endl;
+        verboseOutput() << "Processing polynomial equations (may take a while)" << endl;
     PolynomialEquations = OurPolynomialSystem<Integer>(poly_equs, dim, verbose && polynomial_verbose);
     PolynomialEquations.shift_coordinates(-1); // in the input we count coordinates from 1
     is_Computed.reset(ConeProperty::LatticePoints);
@@ -6372,7 +6372,7 @@ template <typename Integer>
 void Cone<Integer>::setPolynomialInequalities(const vector<string>& poly_inequs) {
 #ifdef NMZ_COCOA
     if(verbose)
-        verboseOutput() << "Processing polynomial inequalities" << endl;
+        verboseOutput() << "Processing polynomial inequalities (may take a while)" << endl;
     PolynomialInequalities = OurPolynomialSystem<Integer>(poly_inequs, dim,  verbose && polynomial_verbose);
     PolynomialInequalities.shift_coordinates(-1); // in the input we count coordinates from 1
     is_Computed.reset(ConeProperty::LatticePoints);

@@ -463,8 +463,10 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
         // cout << "In local PLs" << endl;
         PL.add_congruences_from_equations();
         PL.restrict_congruences();
+#ifdef NMZ_DEVELOP
         cout << "coord " << coord << endl;
         PL.Congs.debug_print();
+#endif
         AllLocalPL[coord] = PL;
 
         dynamic_bitset new_covered = covered | AllPatches[coord];
@@ -837,10 +839,14 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
 
     size_t min_fall_back = 0;
     bool min_found = false;
+#ifdef NMZ_DEVELOP
     size_t max_fall_back = 0;
+#endif
     for(size_t i = 0; i < this_patch; ++i){
         if(NrRemainingLP[i] > 0){
+#ifdef NMZ_DEVELOP
             max_fall_back = i;
+#endif
             if(!min_found){
                 min_found = true;
                 min_fall_back = i;
@@ -964,11 +970,11 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         int omp_start_level = omp_get_level();
 
         size_t nr_latt_points_total = 0;  //statistics for this run of the while loop
+#ifdef NMZ_DEVELOP
         size_t nr_caught_by_restricted = 0;  //restricted inequalities
         size_t nr_caught_by_equations = 0;  //statistics for this run of the while loop
         size_t nr_caught_by_congs = 0;  //statistics for this run of the while loop
-
-
+#endif
         size_t nr_points_done_in_this_round = 0;
 
 #ifdef NMZ_DEVELOP
