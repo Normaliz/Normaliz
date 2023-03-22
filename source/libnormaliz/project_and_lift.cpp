@@ -147,7 +147,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::restrict_congruences() {
             AllCongs[i].append(new_cong);
         }
         // assert(AllCongs[i].nr_of_columns() == AllSupps[i].nr_of_columns() +1);
-        // cout << "iiiiiiiiiiii " << i << endl;
+        //cout << "iiiiiiiiiiii " << i << endl;
         // AllCongs[i].debug_print('-');
     }
 }
@@ -246,33 +246,38 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
 
     // find weights of coords
     WeightOfCoord.resize(EmbDim);
+    vector<IntegerRet> CoordUpperBounds(EmbDim);
+    CoordUpperBounds[0] = 1;
     WeightOfCoord[0] = 1.0;
-    if(use_coord_weights){
-        for(size_t i = 1; i< EmbDim; ++i){
-            bool first = true;
-            for(size_t j = 0; j < max_sparse.size(); ++j){
-                if(!max_sparse[j])
-                    continue;
-                if(AllSupps[EmbDim][j][i] < 0){
-                    double test = convertTo<nmz_float>(AllSupps[EmbDim][j][0]);
-                    double den = convertTo<nmz_float>(-AllSupps[EmbDim][j][i]);
-                    test /= den;
-                    test += 1.0;
-                    if(first || test < WeightOfCoord[i]){
-                        WeightOfCoord[i] = test;
-                        first =false;
-                    }
+    for(size_t i = 1; i< EmbDim; ++i){
+        bool first = true;
+        for(size_t j = 0; j < max_sparse.size(); ++j){
+            if(!max_sparse[j])
+                continue;
+            if(AllSupps[EmbDim][j][i] < 0){
+                IntegerRet IntTest = convertTo<IntegerRet>(AllSupps[EmbDim][j][0])/(-convertTo<IntegerRet>(AllSupps[EmbDim][j][i]));
+                double test = convertTo<nmz_float>(AllSupps[EmbDim][j][0]);
+                double den = convertTo<nmz_float>(-AllSupps[EmbDim][j][i]);
+                test /= den;
+                test += 1.0;
+                if(IntTest > CoordUpperBounds[i])
+                    CoordUpperBounds[i] = IntTest;
+                if(first || test < WeightOfCoord[i]){
+                    WeightOfCoord[i] = test;
+                    first =false;
                 }
             }
         }
     }
-    else{
+    if(!use_coord_weights){
         for(auto& w: WeightOfCoord)
             w = 1.0;
     }
 #ifdef NMZ_DEVELOP
-    if(verbose)
-        verboseOutput() << "Weights of coordinates " << WeightOfCoord;
+    if(verbose){
+        verboseOutput() << "Weights of coordinates " << WeightOfCoord << endl;
+        verboseOutput() << "Upperbounds " << CoordUpperBounds;
+    }
 #endif
 
     dynamic_bitset covered(EmbDim);  // registers covered coordinates
@@ -349,18 +354,6 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
                 cong_support[i] = true;
         }
         CongIndicator.push_back(cong_support);
-        /*
-        bool is_local = false;
-        for(auto& p: AllPatches){
-            if(p.size() > 0 && cong_support.is_subset_of(p)){
-                is_local = true;
-                break;
-            }
-        }
-        if(!is_local){
-            GlobalCongsSupport.push_back(cong_support);
-            cout << "Not local" << endl;
-        }*/
     }
 
     compute_covers();
@@ -417,6 +410,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
         vector<key_t> LocalKey = bitset_to_key(AllPatches[coord]);
         Matrix<IntegerPL> LocalSuppsRaw; // could be avoided, only for convenience
         LocalSuppsRaw = AllSupps[EmbDim].submatrix(relevant_supps_now);
+        // LocalSuppsRaw.debug_print('+');
         // convert(LocalSuppsRaw, AllSupps[EmbDim].submatrix(relevant_supps_now));
         // Matrix<IntegerPL> Localsupps = LocalSuppsRaw.transpose().submatrix(LocalKey).transpose(); // select columns
 
@@ -634,7 +628,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::find_order_congruences() {
         for(size_t i = 0; i < AllPatches.size(); ++i){
             if(AllPatches[i].size() == 0 || used_patches[i])
                 continue;
-            
+
             dynamic_bitset test_covered = covered_coords | AllPatches[i];
             size_t nr_congs = 0;
             for(size_t j = 0; j < Congs.nr_of_rows(); ++j){
@@ -643,7 +637,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::find_order_congruences() {
                 if(CongIndicator[j].is_subset_of(AllPatches[i]))
                     continue;
                 if(!CongIndicator[j].is_subset_of(test_covered))
-                    continue;                
+                    continue;
                 nr_congs++;
             }
             if(first || nr_congs > max_nr_congs){
@@ -661,7 +655,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::find_order_congruences() {
                 used_covering_congruences[j] = true;
         }
     }
-    
+
     // There could be patches not involved in congruencs
     for(size_t j = 0; j < EmbDim; ++j){
         if(!used_patches[j] && AllPatches[j].size() > 0)
@@ -703,7 +697,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_covers() {
             LevelPatches[InsertionOrderPatches[k]] = k;
         return;
     }
-    
+
     if(PolyEquations.empty()){ // no polynomial equations but congruences
         find_order_congruences();
         return;
@@ -922,7 +916,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
     else
         LocalSolutions.append(LocalSolutionsNow);
 
-#ifdef NMZ_DEVELOP 
+#ifdef NMZ_DEVELOP
     if(verbose)
         verboseOutput() << "Local solutions " << LocalSolutions.nr_of_rows() << endl;
 #endif
