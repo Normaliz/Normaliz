@@ -742,7 +742,7 @@ void LatticeIdeal::computeGroebner(ConeProperties ToCompute){
 
 void LatticeIdeal::computeHilbertSeries(){
 
-    assert(degree_bound = -1);
+    assert(degree_bound == -1);
     assert(Grading.size() > 0);
 
     StartTime();

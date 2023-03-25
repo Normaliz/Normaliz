@@ -347,13 +347,26 @@ int process_data(OptionsHandler& options, const string& command_line) {
         }
 
         GlobalTimeBound = -1.0;
+        GlobalPredictionTimeBound = -1.0;
         string name_time = "normaliz.time";
         const char* file_time = name_time.c_str();
         ifstream in_time;
         in_time.open(file_time, ifstream::in);
         if (in_time.is_open()) {
-            in_time >> GlobalTimeBound;
-            cout << "TIME BOUND " << GlobalTimeBound << endl;
+            double test_input;
+            in_time >> test_input;
+            if(!in_time.fail()){
+                GlobalTimeBound = test_input;
+                if(verbose)
+                    verboseOutput() << "TIME BOUND " << GlobalTimeBound << endl;
+            }
+
+            in_time >> test_input;
+            if(!in_time.fail()){
+                GlobalPredictionTimeBound = test_input;
+                if(verbose)
+                    verboseOutput() << "TIME PREDICTION BOUND " << GlobalPredictionTimeBound << endl;
+            }
             in_time.close();
         }
 

@@ -159,6 +159,7 @@ void PrintTime(const struct timeval var_TIME_begin, bool verbose, const std::str
 
 
 NORMALIZ_DLL_EXPORT extern double GlobalTimeBound;
+NORMALIZ_DLL_EXPORT extern double GlobalPredictionTimeBound;
 
 } /* end namespace libnormaliz */
 

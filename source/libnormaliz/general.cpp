@@ -159,6 +159,7 @@ std::ostream& errorOutput() {
 
 struct timeval TIME_global_begin, TIME_step_begin;
 double GlobalTimeBound = -1.0; // can be set in normaliz.cfg
+double GlobalPredictionTimeBound = -1.0;
 // -1.0 means: no time bound
 
 void StartTime(struct timeval& var_TIME_begin) {

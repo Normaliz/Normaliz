@@ -464,8 +464,12 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
         PL.add_congruences_from_equations();
         PL.restrict_congruences();
 #ifdef NMZ_DEVELOP
-        cout << "coord " << coord << endl;
-        PL.Congs.debug_print();
+        if(verbose){
+            if(PL.Congs.nr_of_rows() >0 ){
+                cout << "coord " << coord << endl;
+                PL.Congs.debug_print();
+            }
+        }
 #endif
         AllLocalPL[coord] = PL;
 
@@ -1243,6 +1247,9 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
             double expected_time = time_spent*expected_number_of_rounds;
             if(verbose)
                 verboseOutput() << "expected future time on level  " << LevelPatches[coord] << "  " << expected_time << " sec " << endl;
+            if(GlobalPredictionTimeBound > 0 && expected_time > GlobalPredictionTimeBound){
+                    verboseOutput() << "expected time exceeds bound of " << GlobalPredictionTimeBound << "sec" << endl;
+                }
         }
 #endif
 
