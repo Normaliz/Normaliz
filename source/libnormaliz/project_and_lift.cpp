@@ -384,8 +384,9 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
 
         // next we add what is implied by other upper bounds
         for(size_t i = 0; i < nr_all_supps; ++i){
-            if(!used_supps[i] && upper_bounds[i])
+            if(!used_supps[i] && upper_bounds[i]){
                 relevant_supps_now.push_back(i);
+            }
         }
 
         // now the intersections and new_coords
@@ -489,7 +490,38 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
             AllCongsRestricted[coord].append(Congs[i]);
         }
 
+         // now the extra constraints, in perticular the polynomial ones
+         // First the linear inequalities
+         // will be added to thepolynomial ones TODO simplify
+         Matrix<IntegerRet> ExtraInequalities(0, EmbDim);
+         for(size_t i = 0; i <nr_all_supps ; ++i){
+            if(used_supps[i])
+                continue;
+            if(Indicator[i].is_subset_of(covered))
+                continue;
+            if(Indicator[i].is_subset_of(AllPatches[coord]))
+                continue;
+            if((Indicator[i] & new_covered).count() == 0)
+                continue;
+            bool can_be_restricted = true;
+            for(size_t j = 0; j< EmbDim; ++j){
+                if(new_covered[j])
+                    continue;
+                if(AllSupps[EmbDim][i][j] > 0){
+                    can_be_restricted = false;
+                    break;
+                }
+            }
+            if(can_be_restricted){
+                vector<IntegerRet> inequ;
+                convert(inequ, AllSupps[EmbDim][i]);
+                // cout << "*** " << inequ;
+                ExtraInequalities.append(inequ);
+            }
+        }
+
         // Collect relevant polynomial constraints
+        // The keys are used for terminal output
         vector<key_t> PolyEqusKey, PolyInequsKey, RestrictablePolyInequsKey;
 
         // first the equations
@@ -538,6 +570,10 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
                 continue;
             AllPolyInequs[coord].push_back(RestrictablePolyInequs[i]);
             RestrictablePolyInequsKey.push_back(i);
+        }
+
+        for(size_t i = 0; i < ExtraInequalities.nr_of_rows(); ++i){
+            AllPolyInequs[coord].push_back(OurPolynomial<IntegerRet>(ExtraInequalities[i]));
         }
 
         for(auto& T: AllPolyInequsThread[coord]){ // vcopy for each thread
@@ -1070,6 +1106,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
 #pragma omp atomic
                 nr_latt_points_total++;
 #endif
+
                 if(can_be_inserted){
                     for(auto pp = order_poly_equs.begin(); pp!= order_poly_equs.end(); ++pp){
                         if(PolyEqusThread[tn][*pp].evaluate(NewLattPoint) != 0){

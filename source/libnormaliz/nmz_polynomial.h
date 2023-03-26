@@ -82,6 +82,7 @@ public:
     Number evaluate_restricted(const vector<Number>& argument, const dynamic_bitset& set_of_var) const;
     OurPolynomial();
     OurPolynomial(const string& poly_string, const size_t dim, const bool);
+    OurPolynomial(const vector<Number>& linear_form);
     key_t get_highest_indet() const;
     void shift_coordinates(const int& shift);
     void swap_coordinates(const key_t& first, const key_t& second);

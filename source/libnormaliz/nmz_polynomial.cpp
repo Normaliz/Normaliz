@@ -176,6 +176,21 @@ OurPolynomial<Number>::OurPolynomial(){
 }
 
 template<typename Number>
+OurPolynomial<Number>::OurPolynomial(const vector<Number>& linear_form){
+
+    for(size_t i = 0; i < linear_form.size(); ++i){
+        if(linear_form[i] == 0)
+            continue;
+        dynamic_bitset term_supp(linear_form.size());
+        term_supp[i] = true;
+        map<key_t, long> term_mon;
+        term_mon[i] = 1;
+        this->push_back(OurTerm<Number>(linear_form[i], term_mon, term_supp));
+    }
+    this->support = v_support(linear_form);
+}
+
+template<typename Number>
 key_t OurPolynomial<Number>::get_highest_indet() const{
         return highest_indet;
 }
