@@ -731,7 +731,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_covers() {
 
     if( (PolyEquations.empty() && Congs.nr_of_rows() == 0)
         || (!PolyEquations.empty() && change_patching_order)
-        || (Congs.nr_of_rows() >0 && !change_patching_order) )
+        || (PolyEquations.empty() && Congs.nr_of_rows() >0 && !change_patching_order) )
     {
         for(size_t i = 0; i < EmbDim; ++i){
             if(AllPatches[i].size() > 0)
