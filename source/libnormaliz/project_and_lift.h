@@ -95,6 +95,7 @@ class ProjectAndLift {
     bool no_relax;
     bool count_only;
     bool use_coord_weights;
+    bool change_patching_order;
 
     bool system_unsolvable;
 
@@ -196,6 +197,7 @@ class ProjectAndLift {
     void set_no_relax(bool on_off);
     void set_primitive();
     void set_coord_weights(bool on_off);
+    void set_change_patching_order(bool on_off);
     void set_patching_allowed(bool on_off);
     void set_vertices(const Matrix<IntegerPL>& Verts);
     void set_congruences(const Matrix<IntegerRet>& congruences);

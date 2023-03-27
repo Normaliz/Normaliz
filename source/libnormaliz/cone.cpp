@@ -7319,6 +7319,7 @@ void Cone<renf_elem_class>::project_and_lift(const ConeProperties& ToCompute,
         PL.set_primitive();
         PL.set_LLL(false);
         PL.set_patching_allowed(!ToCompute.test(ConeProperty::NoPatching));
+        PL.set_change_patching_order(ToCompute.test(ConeProperty::ChangePatchingOrder));
     }
     PL.set_grading_denom(1);
     PL.set_verbose(verbose);
@@ -7436,6 +7437,7 @@ void Cone<Integer>::project_and_lift(const ConeProperties& ToCompute,
                     PL.set_primitive();
                     PL.set_LLL(false);
                     PL.set_patching_allowed(!ToCompute.test(ConeProperty::NoPatching));
+                    PL.set_change_patching_order(ToCompute.test(ConeProperty::ChangePatchingOrder));
                 }
                 PL.set_grading_denom(GDMI);
                 vector<MachineInteger> GOPMI;
@@ -7494,6 +7496,7 @@ void Cone<Integer>::project_and_lift(const ConeProperties& ToCompute,
                 PL.set_primitive();
                 PL.set_LLL(false);
                 PL.set_patching_allowed(!ToCompute.test(ConeProperty::NoPatching));
+                PL.set_change_patching_order(ToCompute.test(ConeProperty::ChangePatchingOrder));
             }
             PL.set_grading_denom(GradingDenom);
             PL.set_grading(GradingOnPolytope);

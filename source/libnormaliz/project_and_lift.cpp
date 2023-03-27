@@ -729,7 +729,10 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_covers() {
     }
 #endif
 
-    if(PolyEquations.empty()){ // && Congs.nr_of_rows() == 0){
+    if( (PolyEquations.empty() && Congs.nr_of_rows() == 0)
+        || (!PolyEquations.empty() && change_patching_order)
+        || (Congs.nr_of_rows() >0 && !change_patching_order) )
+    {
         for(size_t i = 0; i < EmbDim; ++i){
             if(AllPatches[i].size() > 0)
                 InsertionOrderPatches.push_back(i);
@@ -740,7 +743,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_covers() {
         return;
     }
 
-    if(PolyEquations.empty()){ // no polynomial equations but congruences
+    if(PolyEquations.empty() && change_patching_order){ // no polynomial equations but congruences
         find_order_congruences();
         return;
     }
@@ -2256,6 +2259,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::initialize(const Matrix<IntegerPL>& 
     count_only = false;
     system_unsolvable = false;
     use_coord_weights = false;
+    change_patching_order = false;
     TotalNrLP = 0;
     NrLP.resize(EmbDim + 1);
 
@@ -2346,6 +2350,12 @@ void ProjectAndLift<IntegerPL, IntegerRet>::set_no_relax(bool on_off) {
 template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL, IntegerRet>::set_coord_weights(bool on_off) {
     use_coord_weights = on_off;
+}
+
+//---------------------------------------------------------------------------
+template <typename IntegerPL, typename IntegerRet>
+void ProjectAndLift<IntegerPL, IntegerRet>::set_change_patching_order(bool on_off) {
+    change_patching_order = on_off;
 }
 
 //---------------------------------------------------------------------------

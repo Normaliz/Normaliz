@@ -245,6 +245,8 @@ enum Enum {
     NoCoarseProjection,
     MaxDegRepresentations,
     UseWeightsPatching,
+    ChangePatchingOrder,
+    MinimizePolyEquations,
     //
     Dynamic,
     Static,
