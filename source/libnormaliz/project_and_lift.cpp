@@ -307,6 +307,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
 
     poly_equs_minimized.resize(EmbDim);
     poly_inequs_minimized.resize(EmbDim);
+    poly_congs_minimized.resize(EmbDim);
 
     // First we compute the patches
     for(size_t coord = 1; coord < EmbDim; coord++){
@@ -1024,7 +1025,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         StartTime(time_begin);
 #endif
 
-        vector<vector<size_t> > poly_equs_stat;
+        vector<vector<size_t> > poly_equs_stat; // TODO make macro
         vector<size_t> poly_equs_stat_total;
         if(!poly_equs_minimized[coord]){
             poly_equs_stat.resize(omp_get_max_threads());  // counts the number of "successful". i.e. != 0,
@@ -1040,6 +1041,15 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
             for(auto& p:poly_inequs_stat)                    // evaluations of a restricted mpolynomial inequalities
                 p.resize(PolyInequsThread[0].size());
             poly_inequs_stat_total.resize(poly_inequs_stat[0].size());
+        }
+
+        vector<vector<size_t> > poly_congs_stat;
+        vector<size_t> poly_congs_stat_total;
+        if(!poly_congs_minimized[coord]){
+            poly_congs_stat.resize(omp_get_max_threads());  // counts the number of "successful". i.e. != 0,
+            for(auto& p:poly_congs_stat)                    // evaluations of a mpolynomial erquation
+                p.resize(CongsRestricted.size());
+            poly_congs_stat_total.resize(poly_congs_stat[0].size());
         }
 
 #pragma omp parallel
@@ -1065,6 +1075,9 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         list<key_t> order_poly_inequs;
         for(key_t k = 0; k < PolyInequsThread[tn].size(); ++k)
             order_poly_inequs.push_back(k);
+        list<key_t> order_poly_congs;
+        for(key_t k = 0; k < CongsRestricted.size(); ++k)
+            order_poly_congs.push_back(k);
 
 #pragma omp for schedule(dynamic)
         for (size_t ppp = 0; ppp < nr_to_match; ++ppp) {
@@ -1126,17 +1139,20 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                     }
                 }
                 if(can_be_inserted){
-                    for(size_t i = 0; i < CongsRestricted.size(); ++i){
-                        if(!CongsRestricted[i].check(NewLattPoint)){
+                    for(auto pp = order_poly_congs.begin(); pp!= order_poly_congs.end(); ++pp){
+                        if(!CongsRestricted[*pp].check(NewLattPoint)){
 #ifdef NMZ_DEVELOP
 #pragma omp atomic
                             nr_caught_by_congs++;
 #endif
                             can_be_inserted = false;
+                            if(!poly_congs_minimized[coord])
+                                poly_congs_stat[tn][*pp]++;
+                            else
+                                order_poly_congs.splice(order_poly_congs.begin(), order_poly_congs, pp);
                             break;
                         }
                     }
-
                 }
                 if(can_be_inserted){
                     for(auto pp = order_poly_inequs.begin(); pp!= order_poly_inequs.end(); ++pp){
@@ -1191,6 +1207,14 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
             // cout << "PPPP " << poly_equs_stat_total;
         }
 
+        if(!poly_congs_minimized[coord]){
+            for(size_t i = 0; i< poly_congs_stat.size(); ++i){
+                    for(size_t j = 0; j < poly_congs_stat[0].size(); ++j)
+                        poly_congs_stat_total[j] += poly_congs_stat[i][j];
+            }
+            // cout << "PPPP " << poly_congs_stat_total;
+        }
+
         if(!poly_inequs_minimized[coord]){
             for(size_t i = 0; i< poly_equs_stat.size(); ++i){
                     for(size_t j = 0; j < poly_inequs_stat[0].size(); ++j)
@@ -1223,6 +1247,19 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
 
             for(size_t thr = 0; thr < PolyEqusThread.size(); ++thr)
                     PolyEqusThread[thr] = EffectivePolys;
+        }
+
+       if(!poly_congs_minimized[coord] &&  nr_latt_points_total > nr_new_latt_points_for_elimination_equs){
+            poly_congs_minimized[coord] = true;
+            vector<OurPolynomialCong<IntegerRet> >EffectivePolys;
+            for(size_t i = 0; i < CongsRestricted.size(); ++i){
+                if(poly_congs_stat_total[i] > 0)
+                    EffectivePolys.push_back(CongsRestricted[i]);
+            }
+
+            if(verbose && CongsRestricted.size() > 0)
+                verboseOutput() << LevelPatches[coord] << " / " << coord << " active polynomial congruences " << EffectivePolys.size() << " of " <<  CongsRestricted.size() << endl;
+            CongsRestricted = EffectivePolys;
         }
 
         //Discard ineffective restrictable plolynjomial inequalities

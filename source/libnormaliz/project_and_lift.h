@@ -132,6 +132,7 @@ class ProjectAndLift {
     // vector<vector<OurPolynomialSystem<IntegerRet> > > AllRestrictablePolyInequsThread; // ditto for inequalities
     dynamic_bitset used_supps; // registers which inequalities are used in the patching process
     dynamic_bitset poly_equs_minimized; // redisters whether the polynomial equations at a coord have been minimized
+    dynamic_bitset poly_congs_minimized; // ditto for congruences
     dynamic_bitset poly_inequs_minimized; //  ditto for the inequalities from equations
     vector<double> WeightOfCoord;
     vector<dynamic_bitset> CongIndicator; // stores supports of congruences
