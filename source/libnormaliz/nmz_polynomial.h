@@ -94,6 +94,21 @@ public:
 };
 
 template<typename Number>
+class OurPolynomialCong{
+
+public:
+
+    OurPolynomial<Number> poly;
+    Number modulus;
+
+    OurPolynomialCong();
+    OurPolynomialCong(const OurPolynomial<Number>& pol, const Number& mod);
+    OurPolynomialCong(vector<Number> cong);
+
+    bool check(const vector<Number>& v) const;
+};
+
+template<typename Number>
 class OurPolynomialSystem : public std::vector<OurPolynomial<Number> > {
 
 public:

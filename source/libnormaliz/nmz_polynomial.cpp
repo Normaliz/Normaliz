@@ -299,6 +299,41 @@ bool OurPolynomial<Number>::check_restriction(const dynamic_bitset& set_of_var) 
 }*/
 
 //-------------------------------------------------------------------
+//             OurPolynomialCong
+//-------------------------------------------------------------------
+
+template<typename Number>
+OurPolynomialCong<Number>::OurPolynomialCong(){
+
+}
+
+template<typename Number>
+OurPolynomialCong<Number>::OurPolynomialCong(const OurPolynomial<Number>& pol, const Number& mod){
+        poly = pol;
+        modulus = mod;
+}
+
+template<typename Number>
+OurPolynomialCong<Number>::OurPolynomialCong(vector<Number> cong){
+        modulus = cong.back();
+        cong.pop_back();
+        poly = OurPolynomial<Number>(cong);
+}
+
+template<typename Number>
+bool OurPolynomialCong<Number>::check(const vector<Number>& v) const{
+    if(poly.evaluate(v) % modulus != 0)
+        return false;
+    return true;
+}
+
+template<>
+bool OurPolynomialCong<renf_elem_class>::check(const vector<renf_elem_class>& v) const{
+    assert(false);
+    return false;
+}
+
+//-------------------------------------------------------------------
 //             OurPolynomialSystem
 //-------------------------------------------------------------------
 

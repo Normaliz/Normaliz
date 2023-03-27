@@ -489,6 +489,12 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
                 continue;
             AllCongsRestricted[coord].append(Congs[i]);
         }
+#ifdef NMZ_DEVELOP
+        if(verbose && AllCongsRestricted[coord].nr_of_rows() > 0)
+            AllCongsRestricted[coord].debug_print('$');
+
+#endif
+
 
          // now the extra constraints, in perticular the polynomial ones
          // First the linear inequalities
