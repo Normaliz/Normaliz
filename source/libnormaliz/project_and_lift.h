@@ -123,7 +123,7 @@ class ProjectAndLift {
     // vector<Matrix<IntegerRet> > AllExtraInequalities;
     // vector<vector<key_z> > AllPolyEqusKey;
     // vector<vector<key_t> > AllPolyInequsKey;
-    vector<Matrix<IntegerRet> > AllCongsRestricted; // the congruences that can be restrictd to the unions of patches built successively
+    vector<vector<OurPolynomialCong<IntegerRet> > > AllCongsRestricted; // the congruences that can be restrictd to the unions of patches built successively
     vector<OurPolynomialSystem<IntegerRet> > AllPolyEqus; // indexed by coord, poly equs applied with this coord
     vector<OurPolynomialSystem<IntegerRet> > AllPolyInequs; // ditto for inequalities
     // vector<OurPolynomialSystem<IntegerRet> > AllRestrictablePolyInequs; // resstricted inequalities derived from equations

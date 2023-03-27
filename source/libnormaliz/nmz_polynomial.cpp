@@ -482,6 +482,13 @@ template class OurPolynomial<mpz_class>;
 template class OurPolynomial<renf_elem_class>;
 #endif
 
+template class OurPolynomialCong<long>;
+template class OurPolynomialCong<long long>;
+template class OurPolynomialCong<mpz_class>;
+#ifdef ENFNORMALIZ
+template class OurPolynomialCong<renf_elem_class>;
+#endif
+
 template class OurPolynomialSystem<long>;
 template class OurPolynomialSystem<long long>;
 template class OurPolynomialSystem<mpz_class>;

@@ -479,7 +479,6 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
         // now we find the congruences that can be restricted to new_covered, but not to
         // covered or AllPatches[coord]
 
-        AllCongsRestricted[coord].resize(0, EmbDim + 1);
         for(size_t i = 0; i < Congs.nr_of_rows(); ++i){
             if(!CongIndicator[i].is_subset_of(new_covered))
                 continue;
@@ -487,14 +486,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
                 continue;
             if(CongIndicator[i].is_subset_of(AllPatches[coord]))
                 continue;
-            AllCongsRestricted[coord].append(Congs[i]);
+            AllCongsRestricted[coord].push_back(OurPolynomialCong<IntegerRet>(Congs[i]));
         }
-#ifdef NMZ_DEVELOP
-        if(verbose && AllCongsRestricted[coord].nr_of_rows() > 0)
-            AllCongsRestricted[coord].debug_print('$');
-
-#endif
-
 
          // now the extra constraints, in perticular the polynomial ones
          // First the linear inequalities
@@ -928,7 +921,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
     Matrix<IntegerRet>& LocalSolutions = AllLocalSolutions[coord];
     dynamic_bitset covered = AllCovered[coord];
 
-    Matrix<IntegerRet>& CongsRestricted = AllCongsRestricted[coord];
+    vector<OurPolynomialCong<IntegerRet> >& CongsRestricted = AllCongsRestricted[coord];
 
     vector<key_t> CoveredKey = bitset_to_key(covered);
     // cout << "Covered " << CoveredKey;
@@ -1133,13 +1126,17 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                     }
                 }
                 if(can_be_inserted){
-                    if(!CongsRestricted.check_congruences(NewLattPoint)){
-                        can_be_inserted = false;
+                    for(size_t i = 0; i < CongsRestricted.size(); ++i){
+                        if(!CongsRestricted[i].check(NewLattPoint)){
 #ifdef NMZ_DEVELOP
 #pragma omp atomic
                             nr_caught_by_congs++;
 #endif
+                            can_be_inserted = false;
+                            break;
+                        }
                     }
+
                 }
                 if(can_be_inserted){
                     for(auto pp = order_poly_inequs.begin(); pp!= order_poly_inequs.end(); ++pp){
@@ -1265,7 +1262,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                 verboseOutput() << " equ " << nr_caught_by_equations;
             if(PolyInequsThread[0].size() > 0)
                 verboseOutput() << " ine " << nr_caught_by_restricted;
-            if(CongsRestricted.nr_of_rows() > 0)
+            if(CongsRestricted.size() > 0)
                 verboseOutput() << " cgr " << nr_caught_by_congs;
             if(nr_points_done_in_this_round > 0)
                 verboseOutput() << " exp rnd " << expected_number_of_rounds;
