@@ -1124,6 +1124,15 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                     }
                 }
                 if(can_be_inserted){
+                    if(!CongsRestricted.check_congruences(NewLattPoint)){
+                        can_be_inserted = false;
+#ifdef NMZ_DEVELOP
+#pragma omp atomic
+                            nr_caught_by_congs++;
+#endif
+                    }
+                }
+                if(can_be_inserted){
                     for(auto pp = order_poly_inequs.begin(); pp!= order_poly_inequs.end(); ++pp){
                         if(PolyInequsThread[tn][*pp].evaluate(NewLattPoint) < 0){
                             can_be_inserted = false;
@@ -1137,15 +1146,6 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                                 order_poly_inequs.splice(order_poly_inequs.begin(), order_poly_inequs, pp);
                             break;
                         }
-                    }
-                }
-                if(can_be_inserted){
-                    if(!CongsRestricted.check_congruences(NewLattPoint)){
-                        can_be_inserted = false;
-#ifdef NMZ_DEVELOP
-#pragma omp atomic
-                            nr_caught_by_congs++;
-#endif
                     }
                 }
                 if(can_be_inserted){
