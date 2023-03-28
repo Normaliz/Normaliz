@@ -1347,7 +1347,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         }
 #endif
 
-        if(nr_points_matched == nr_to_match)
+        if(nr_points_matched == nr_to_match || single_point_found)
             break;
 
     }  // while not done
@@ -1946,6 +1946,9 @@ bool ProjectAndLift<IntegerPL, IntegerRet>::fiber_interval(IntegerRet& MinInterv
 template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL, IntegerRet>::finalize_latt_point(const vector<IntegerRet>& NewPoint, const int tn) {
 
+    if(only_single_point && single_point_found)
+        return;
+
     vector<IntegerPL> NewPointPL;
     if(sparse){ // we must make sure that all inequalities are applied to our lattice point
         convert(NewPointPL, NewPoint);
@@ -1965,13 +1968,25 @@ void ProjectAndLift<IntegerPL, IntegerRet>::finalize_latt_point(const vector<Int
 
     /* if (!Congs.check_congruences(NewPoint)) // already checked
         return;*/
+
+    if(only_single_point){
+#pragma omp critical(FINALSOL)
+        {
+        if(!single_point_found){
+            if(verbose)
+                verboseOutput() << "Final solution 1 -----  "  << NewPoint;
+            }
+            SingleDeg1Point = NewPoint;
+        }
+        single_point_found = true;
+        TotalNrLP = 1;
+    }
+
+    if(only_single_point && single_point_found)
+        return;
+
 #pragma omp atomic
     TotalNrLP++;
-
-    if(verbose){
-#pragma omp critical(FINALSOL)
-        verboseOutput() << "Final solution " << TotalNrLP << " -----  "  << NewPoint;
-    }
 
     if (!count_only)
         Deg1Thread[tn].push_back(NewPoint);
@@ -2319,6 +2334,8 @@ void ProjectAndLift<IntegerPL, IntegerRet>::initialize(const Matrix<IntegerPL>& 
     system_unsolvable = false;
     use_coord_weights = false;
     change_patching_order = false;
+    single_point_found = false;
+    only_single_point = false; // if we don't come via compute
     TotalNrLP = 0;
     NrLP.resize(EmbDim + 1);
 
@@ -2471,6 +2488,9 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute(bool all_points, bool liftin
 
     assert(all_points || !do_only_count);  // counting maks only sense for all points
 
+    //used in patching
+    only_single_point = !all_points;
+
     if (use_LLL) {
         LLL_coordinates_without_1st_col(LLL_Coordinates, AllSupps[EmbDim], Vertices, verbose);
         // Note: LLL_Coordinates is of type IntegerRet.
@@ -2502,7 +2522,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute(bool all_points, bool liftin
 
     count_only = do_only_count;  // count_only belongs to *this
 
-    if(primitive && patching_allowed && all_points){
+    if(primitive && patching_allowed){
         if(verbose)
             verboseOutput() << "Checking if patching possible" << endl;
         check_and_prepare_sparse();
@@ -2527,13 +2547,13 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute(bool all_points, bool liftin
     if(system_unsolvable)
         return;
 
-    if (all_points) {
-        if(sparse){
+    if(all_points){
+        if(sparse){ // all & sparse
             if(verbose)
-                verboseOutput() << "Patching" << endl;
+                verboseOutput() << "Patching for all points" << endl;
             compute_latt_points_by_patching();
         }
-        else{
+        else{ // al and mot sparse
             if (verbose)
                 verboseOutput() << "Lifting" << endl;
             if (!lifting_float || (lifting_float && using_float<IntegerPL>())) {
@@ -2542,14 +2562,19 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute(bool all_points, bool liftin
             else {
                 compute_latt_points_float();  // with intermediate conversion to float
             }
-            /* if(verbose)
-                verboseOutput() << "Number of lattice points " << TotalNrLP << endl;*/
         }
     }
-    else {
-        if (verbose)
-            verboseOutput() << "Try finding a lattice point" << endl;
-        find_single_point();
+    else{ // single
+        if(sparse){ // single and sparse
+            if(verbose)
+                verboseOutput() << "Patching for a single point" << endl;
+            compute_latt_points_by_patching();
+        }
+        else{ // single and not sparse
+            if (verbose)
+                verboseOutput() << "Try finding a lattice point" << endl;
+            find_single_point();
+        }
     }
 }
 

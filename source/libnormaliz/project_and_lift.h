@@ -102,6 +102,8 @@ class ProjectAndLift {
     bool primitive; // true = using positive_bounded (a priori x >= 0 and upper bounds)
     bool sparse; // true = using the patching method
     bool patching_allowed; // if true blocks patching
+    bool only_single_point;
+    bool single_point_found;
 
     // data for patching method
     vector<dynamic_bitset> Indicator; // indicaor of nonzero coordinates in inequality

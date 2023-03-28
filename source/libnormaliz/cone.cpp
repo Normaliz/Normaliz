@@ -4256,8 +4256,16 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     set_extended_tests(ToCompute);
 #endif
 
+    if(ToCompute.test(ConeProperty::LatticePoints) && ToCompute.test(ConeProperty::SingleLatticePoint)){
+            throw BadInputException("Only one of SingleLatticePoint and LatticePoints allowd");
+    }
+
     if(ToCompute.test(ConeProperty::SingleLatticePoint)){ // we single out SingleLatticePoint
-        compute(ConeProperty::SingleLatticePointInternal);
+        ConeProperties SingleComp;
+        SingleComp.set(ConeProperty::SingleLatticePointInternal);
+        SingleComp.set(ConeProperty::NoCoarseProjection,ToCompute.test(ConeProperty::NoCoarseProjection));
+        SingleComp.set(ConeProperty::NoPatching,ToCompute.test(ConeProperty::NoPatching));
+        compute(SingleComp);
     }
     if(ToCompute.test(ConeProperty::SingleLatticePointInternal)){
         ToCompute.set(ConeProperty::SingleLatticePoint);
