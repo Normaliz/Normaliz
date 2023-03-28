@@ -651,17 +651,17 @@ vector<pair<size_t, vector<key_t> > > ProjectAndLift<IntegerPL,IntegerRet>::
 template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL,IntegerRet>::find_order_congruences() {
 
-    for(size_t i = 0; i < AllPatches.size(); ++i){
+    /* for(size_t i = 0; i < AllPatches.size(); ++i){
         if(AllPatches[i].size() > 0){
             InsertionOrderPatches.push_back(i);
             break;
         }
-    }
+    }*/
 
     dynamic_bitset used_covering_congruences(Congs.nr_of_rows());
-    dynamic_bitset covered_coords = AllPatches[InsertionOrderPatches[0]];
+    dynamic_bitset covered_coords(EmbDim); // = AllPatches[InsertionOrderPatches[0]];
     dynamic_bitset used_patches(EmbDim);
-    used_patches[InsertionOrderPatches[0]] = true;
+    // used_patches[InsertionOrderPatches[0]] = true;
     while(covered_coords.count() < EmbDim && used_covering_congruences.count() < Congs.nr_of_rows()){
         bool first = true;
         size_t max_at = 0;
@@ -698,7 +698,44 @@ void ProjectAndLift<IntegerPL,IntegerRet>::find_order_congruences() {
         }
     }
 
-    // There could be patches not involved in congruencs
+    finalize_order(used_patches);
+}
+
+template <typename IntegerPL, typename IntegerRet>
+void ProjectAndLift<IntegerPL,IntegerRet>::find_order_linear() {
+
+
+    dynamic_bitset covered_coords(EmbDim);
+    dynamic_bitset used_patches(EmbDim);
+    while(covered_coords.count() < EmbDim){
+        bool first = true;
+        size_t min_at = 0;
+        size_t nr_min_covered = 0;
+        dynamic_bitset min_covered(EmbDim);
+        for(size_t i = 0; i < AllPatches.size(); ++i){
+            if(AllPatches[i].size() == 0 || used_patches[i])
+                continue;
+
+            dynamic_bitset test_covered = covered_coords | AllPatches[i];
+            if(first || test_covered.count() < nr_min_covered){
+                first = false;
+                min_at = i;
+                min_covered = test_covered;
+                nr_min_covered = min_covered.count();
+            }
+        }
+        InsertionOrderPatches.push_back(min_at);
+        used_patches[min_at] = true;
+        covered_coords |= AllPatches[min_at];
+    }
+
+    finalize_order(used_patches);
+}
+
+template <typename IntegerPL, typename IntegerRet>
+void ProjectAndLift<IntegerPL,IntegerRet>::finalize_order(const dynamic_bitset& used_patches) {
+
+    // There could be patches not used.
     for(size_t j = 0; j < EmbDim; ++j){
         if(!used_patches[j] && AllPatches[j].size() > 0)
             InsertionOrderPatches.push_back(j);
@@ -711,7 +748,9 @@ void ProjectAndLift<IntegerPL,IntegerRet>::find_order_congruences() {
 
     for(size_t k = 0; k < InsertionOrderPatches.size(); ++k)
         LevelPatches[InsertionOrderPatches[k]] = k;
+
 }
+
 
 template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL,IntegerRet>::compute_covers() {
@@ -733,13 +772,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_covers() {
         || (!PolyEquations.empty() && change_patching_order)
         || (PolyEquations.empty() && Congs.nr_of_rows() >0 && !change_patching_order) )
     {
-        for(size_t i = 0; i < EmbDim; ++i){
-            if(AllPatches[i].size() > 0)
-                InsertionOrderPatches.push_back(i);
-        }
-
-        for(size_t k = 0; k < InsertionOrderPatches.size(); ++k)
-            LevelPatches[InsertionOrderPatches[k]] = k;
+        find_order_linear();
         return;
     }
 
@@ -822,27 +855,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_covers() {
         }
     }
 
-    // There could be patches not involved in polynomial equations
-    for(size_t j = 0; j < EmbDim; ++j){
-        if(!inserted_patches[j] && AllPatches[j].size() > 0)
-            InsertionOrderPatches.push_back(j);
-    }
-
-    if(verbose){
-        verboseOutput() << "Insertion order linear patches " << endl;
-        verboseOutput() << InsertionOrderPatches << endl;
-    }
-
-    for(size_t k = 0; k < InsertionOrderPatches.size(); ++k)
-        LevelPatches[InsertionOrderPatches[k]] = k;
-
-    /*
-    set<key_t> HI;
-    for(auto& P: PolyEquations)
-        HI.insert(P.highest_indet);
-    for(auto& H: HI)
-        cout << H << " ";
-    cout << endl;*/
+    finalize_order(inserted_patches);
 }
 
 //---------------------------------------------------------------------------
@@ -1249,6 +1262,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                     PolyEqusThread[thr] = EffectivePolys;
         }
 
+       // the same for the congruences
        if(!poly_congs_minimized[coord] &&  nr_latt_points_total > nr_new_latt_points_for_elimination_equs){
             poly_congs_minimized[coord] = true;
             vector<OurPolynomialCong<IntegerRet> >EffectivePolys;
@@ -1406,14 +1420,14 @@ void ProjectAndLift<IntegerPL, IntegerRet>::reorder_coordinates(){
 
     while(true){
         bool first = true;
-        dynamic_bitset test_coevered(dim);
+        dynamic_bitset test_covered(dim);
         size_t nr_new_covered = 0;
         for(size_t i = 0; i < PolyEquations.size(); ++i){
             if(PolyEquations[i].support.is_subset_of(covered))
                 continue;
-            test_coevered = covered | PolyEquations[i].support;
-            if(first || test_coevered.count() < nr_new_covered){
-                new_covered = test_coevered;
+            test_covered = covered | PolyEquations[i].support;
+            if(first || test_covered.count() < nr_new_covered){
+                new_covered = test_covered;
                 nr_new_covered = new_covered.count();
             }
         }
@@ -1953,6 +1967,11 @@ void ProjectAndLift<IntegerPL, IntegerRet>::finalize_latt_point(const vector<Int
         return;*/
 #pragma omp atomic
     TotalNrLP++;
+
+    if(verbose){
+#pragma omp critical(FINALSOL)
+        verboseOutput() << "Final solution " << TotalNrLP << " -----  "  << NewPoint;
+    }
 
     if (!count_only)
         Deg1Thread[tn].push_back(NewPoint);
