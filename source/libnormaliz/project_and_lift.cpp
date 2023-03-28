@@ -872,8 +872,10 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_latt_points_by_patching() {
     if(verbose)
         verboseOutput() << "Final number of lattice points "  << NrLP[EmbDim] << endl;
 
-    for(auto& n: NrRemainingLP){
-            assert(n == 0);
+    if(!only_single_point){
+        for(auto& n: NrRemainingLP){
+                assert(n == 0);
+        }
     }
 }
 
