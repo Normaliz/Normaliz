@@ -1063,6 +1063,14 @@ InputMap<Number> readNormalizInput(istream& in,
                     convert_equations = true;
                     continue;
                 }
+                if(type_string == "parallel_threads"){
+
+                    long nr_threads;
+                    in >> nr_threads;
+                    if(in.fail())
+                        throw BadInputException("Error after parallel_threads");
+                    set_thread_limit(nr_threads);
+                }
 
                 input_type = to_type(type_string);
 

@@ -976,7 +976,10 @@ For several computation goals there exist more than a single algorithm in  Norma
 	\itemtt[NoCoarseProjection] blocks coarse projection.
 	\itemtt[NoPatching] blocks the patching variant of project-and-lift.
 	
-	\itemtt [Approximate, -r], approximation of rational polytopes for lattice point computation.\bigskip
+	\itemtt [Approximate, -r], approximation of rational polytopes for lattice point computation.
+	\itemtt[UseWeightsPatching] mkwa Normaliz use ''weights of cordinates'' in scheduling the patching algorithm in the presence of polynomail equations.
+	\itemtt[ChamgePatchingOrder] toggles between different orders in scheduling the patching algorithm.
+	\bigskip
 	
 	\itemtt[BottomDecomposition, -b] tells Normaliz to use bottom decomposition in the primal algorithm.
 
@@ -1018,14 +1021,14 @@ Options can be long options starting with \verb|--| or short options, a single l
 ./normaliz -c -x=16 example/A553
 ./normaliz -c example/Condorcet --HilbertSeries --NoMatricesOutput
 \end{Verbatim}
-Note that on MS Windows the slash \verb|/| must be replaced by a backslash \verb|\|.\bigskip
+Note that on MS Windows the slash \verb|/| must be replaced by a backslash \verb|\|.%\bigskip
 
 All computation goals and algorithmic variants can be given as long options on the command line. There are other options for execution and output.
 
 \begin{itemize}
 	\itemtt [-{}-help, -?] displays a help screen listing the Normaliz options.
 
-	\itemtt [-{}-version] displays information about the Normaliz executable.\bigskip
+	\itemtt [-{}-version] displays information about the Normaliz executable.%\bigskip
 	
 	\itemtt[{-}{-}verbose, -c] activates the verbose (``console'') behavior of
 	Normaliz in which Normaliz writes additional
@@ -1039,13 +1042,11 @@ All computation goals and algorithmic variants can be given as long options on t
 	is allowed access on your system. The default value is
 	$8$. 
 	
-	\ttt{-x=0} switches off the limit set by Normaliz.
+	\itemtt[]-x=1] forces serial execution. \ttt{-x=0} switches off the limit set by Normaliz.
+
+	\itemtt[parallel\_threads <n>] sets the thread limit in the input file.
 	
-	If you want to run
-	Normaliz in a strictly serial mode, choose
-	\ttt{-x=1}.
-	
-	\itemtt[{-}{-}ignore, -i] This option disables all options in the input file.\bigskip
+	\itemtt[{-}{-}ignore, -i] This option disables all options in the input file.%\bigskip
 	
 	\itemtt[{-}{-}files, -f] Normaliz writes the additional output files
 	with suffixes \ttt{gen}, \ttt{cst}, and \ttt{inv},
@@ -1053,7 +1054,7 @@ All computation goals and algorithmic variants can be given as long options on t
 	
 	\itemtt[{-}{-}all-files, -a] includes \ttt{Files}, Normaliz writes all
 	available output files (except \verb|typ|, the face lattice, the triangulation or the
-	Stanley decomposition, unless these have been requested).\bigskip
+	Stanley decomposition, unless these have been requested).%\bigskip
 	
 	\itemtt[{-}{-OutputDir=<outdir>}] The path \ttt{<outdir>} is an absolute path or a path relative to the current directory (which is not necessarily the directory of \verb|<project>.in|.)
 	
