@@ -269,10 +269,10 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
             }
         }
     }
-    if(!use_coord_weights){
+    /* if(!use_coord_weights){
         for(auto& w: WeightOfCoord)
             w = 1.0;
-    }
+    }*/
 #ifdef NMZ_DEVELOP
     if(verbose){
         verboseOutput() << "Weights of coordinates " << WeightOfCoord << endl;
@@ -768,6 +768,12 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_covers() {
     }
 #endif
 
+    vector<double> EquWeights = WeightOfCoord; // for local use
+    if(!use_coord_weights){
+            for(auto& w: EquWeights)
+                w = 1.0;
+    }
+
     if( (PolyEquations.empty() && Congs.nr_of_rows() == 0)
         || (!PolyEquations.empty() && change_patching_order)
         || (PolyEquations.empty() && Congs.nr_of_rows() >0 && !change_patching_order) )
@@ -830,7 +836,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_covers() {
             for(size_t i = 0; i < covered_coords.size(); ++i){
                 if(covered_coords[i] || !test_covered_coords[i])
                     continue;
-                 new_added_weight += WeightOfCoord[i];
+                 new_added_weight += EquWeights[i];
             }
             if(first || new_added_weight < min_added_weight){
                 first = false;

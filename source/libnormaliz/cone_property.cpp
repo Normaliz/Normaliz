@@ -840,10 +840,6 @@ void ConeProperties::check_sanity(bool inhomogeneous) {  //, bool input_automorp
     if (CPs.test(ConeProperty::IsTriangulationNested) || CPs.test(ConeProperty::IsTriangulationPartial))
         throw BadInputException("ConeProperty not allowed in compute().");
 
-    if(CPs.test(ConeProperty::LatticePoints) && CPs.test(ConeProperty::LatticePoints)){
-            throw BadInputException("Only one of SingleLatticePoint and LatticePoints allowd");
-    }
-
     if ((CPs.test(ConeProperty::Approximate) || CPs.test(ConeProperty::DualMode)) && CPs.test(ConeProperty::NumberLatticePoints))
         throw BadInputException("NumberLatticePoints not compuiable with DualMode or Approximate.");
 
