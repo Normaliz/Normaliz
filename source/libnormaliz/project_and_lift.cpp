@@ -710,18 +710,23 @@ void ProjectAndLift<IntegerPL,IntegerRet>::find_order_linear() {
     while(covered_coords.count() < EmbDim){
         bool first = true;
         size_t min_at = 0;
-        size_t nr_min_covered = 0;
+        double nr_min_weight = 0;
         dynamic_bitset min_covered(EmbDim);
         for(size_t i = 0; i < AllPatches.size(); ++i){
             if(AllPatches[i].size() == 0 || used_patches[i])
                 continue;
 
             dynamic_bitset test_covered = covered_coords | AllPatches[i];
-            if(first || test_covered.count() < nr_min_covered){
+            double test_weight = 0;
+            for(size_t i = 0;i < test_covered.size(); ++i){
+                if(test_covered[i])
+                    test_weight += WeightOfCoord[i];
+            }
+            if(first || test_weight < nr_min_weight){
                 first = false;
                 min_at = i;
                 min_covered = test_covered;
-                nr_min_covered = min_covered.count();
+                nr_min_weight = test_weight;
             }
         }
         InsertionOrderPatches.push_back(min_at);
