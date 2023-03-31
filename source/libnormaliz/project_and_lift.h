@@ -96,6 +96,7 @@ class ProjectAndLift {
     bool count_only;
     bool use_coord_weights;
     bool change_patching_order;
+    bool first_solution_printed;
 
     bool system_unsolvable;
 

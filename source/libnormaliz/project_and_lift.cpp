@@ -778,6 +778,11 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_covers() {
             for(auto& w: EquWeights)
                 w = 1.0;
     }
+    else{
+        for(auto& w: EquWeights)
+            w *= w;
+
+    }
 
     if( (PolyEquations.empty() && Congs.nr_of_rows() == 0)
         || (!PolyEquations.empty() && change_patching_order)
@@ -1982,17 +1987,19 @@ void ProjectAndLift<IntegerPL, IntegerRet>::finalize_latt_point(const vector<Int
     /* if (!Congs.check_congruences(NewPoint)) // already checked
         return;*/
 
-    if(only_single_point){
+    if(only_single_point || !first_solution_printed){
 #pragma omp critical(FINALSOL)
         {
-        if(!single_point_found){
+        if(!first_solution_printed){
             if(verbose)
                 verboseOutput() << "Final solution 1 -----  "  << NewPoint;
             }
             SingleDeg1Point = NewPoint;
         }
         single_point_found = true;
-        TotalNrLP = 1;
+        first_solution_printed = true;
+        if(only_single_point)
+            TotalNrLP = 1;
     }
 
     if(only_single_point && single_point_found)
@@ -2348,6 +2355,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::initialize(const Matrix<IntegerPL>& 
     use_coord_weights = false;
     change_patching_order = false;
     single_point_found = false;
+    first_solution_printed = false;
     only_single_point = false; // if we don't come via compute
     TotalNrLP = 0;
     NrLP.resize(EmbDim + 1);
