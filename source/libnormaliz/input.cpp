@@ -1009,6 +1009,10 @@ InputMap<Number> readNormalizInput(istream& in,
                     options.activateNoMatricesOutput();
                     continue;
                 }
+                if (type_string == "NoOutputOnInterrupt") {
+                    options.activateNoOutputOnInterrupt();
+                    continue;
+                }
                 if (type_string == "NoSuppHypsOutput") {
                     options.activateNoSuppHypsOutput();
                     continue;

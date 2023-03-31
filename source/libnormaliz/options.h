@@ -96,6 +96,11 @@ class OptionsHandler {
         if (!ignoreInFileOpt)
             no_matrices_output = true;
     }
+    inline void activateNoOutputOnInterrupt() {
+        if (!ignoreInFileOpt)
+            no_output_on_interrupt = true;
+    }
+
 
     inline void activateNoSuppHypsOutput() {
         if (!ignoreInFileOpt)
@@ -133,10 +138,13 @@ class OptionsHandler {
     inline bool isBinomialsPacked() const {
         return binomials_packed;
     }
-
+    inline bool isNoOutputOnInterrupt() const {
+        return no_output_on_interrupt;
+    }
     inline bool isNoMatricesOutput() const {
         return no_matrices_output;
     }
+
 
     inline bool isNoSuppHypsOutput() const {
         return no_supp_hyps_output;

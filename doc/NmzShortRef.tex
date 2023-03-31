@@ -1046,25 +1046,8 @@ All computation goals and algorithmic variants can be given as long options on t
 
 	\itemtt[parallel\_threads <n>] sets the thread limit in the input file.
 	
-	\itemtt[{-}{-}ignore, -i] This option disables all options in the input file.%\bigskip
+	\itemtt[{-}{-}ignore, -i] This option disables all options in the input file.
 	
-	\itemtt[{-}{-}files, -f] Normaliz writes the additional output files
-	with suffixes \ttt{gen}, \ttt{cst}, and \ttt{inv},
-	provided the data of these files have been computed.
-	
-	\itemtt[{-}{-}all-files, -a] includes \ttt{Files}, Normaliz writes all
-	available output files (except \verb|typ|, the face lattice, the triangulation or the
-	Stanley decomposition, unless these have been requested).%\bigskip
-	
-	\itemtt[{-}{-OutputDir=<outdir>}] The path \ttt{<outdir>} is an absolute path or a path relative to the current directory (which is not necessarily the directory of \verb|<project>.in|.)
-	
-	\itemtt[NoExtRaysOutput] suppresses the output of extreme rays in the \verb|out| file.
-	
-	\itemtt[NoHilbertBasisOutput] does the same for Hilbert bases and lattice points.
-
-	\itemtt[NoSuppHypsOutput] suppresses the output of support hyperplanes in the \verb|out| file.
-
-	\itemtt[NoMatricesOutput] restricts the \verb|out| file to the ``preamble''.
 \end{itemize}
 \TopIndex
 
@@ -1104,20 +1087,33 @@ The main output file is \verb|<project>.out|. However, some data are written to 
 	
 \end{itemize}
 
-Via the option \ttt{WritePreComp} Normaliz can write an input file with precomputed data that can then be read by further computations. It has the suffix
-\begin{itemize}
-	
-	\itemtt[precomp.in]
+Moreover, there are truly optional output files that serve as a file interface. See manual.\bigskip
 
-\end{itemize}
+The content and the writing of output files can be controlled by further options:
 
 \begin{itemize}
+	\itemtt[{-}{-}files, -f] Normaliz writes the additional output files
+	with suffixes \ttt{gen}, \ttt{cst}, and \ttt{inv},
+	provided the data of these files have been computed.
 	
-	\itemtt[BinomialsPacked] chooses a packed format for \ttt{mrk}, \ttt{grb} and \ttt{rep}.
+	\itemtt[{-}{-}all-files, -a] includes \ttt{Files}, Normaliz writes all
+	available output files (except \verb|typ|, the face lattice, the triangulation or the
+	Stanley decomposition, unless these have been requested).%\bigskip
 	
+	\itemtt[{-}{-OutputDir=<outdir>}] The path \ttt{<outdir>} is an absolute path or a path relative to the current directory (which is not necessarily the directory of \verb|<project>.in|.)
+	
+	\itemtt[NoExtRaysOutput] suppresses the output of extreme rays in the \verb|out| file.
+	
+	\itemtt[NoHilbertBasisOutput] does the same for Hilbert bases and lattice points.
+	
+	\itemtt[NoSuppHypsOutput] suppresses the output of support hyperplanes in the \verb|out| file.
+	
+	\itemtt[NoMatricesOutput] restricts the \verb|out| file to the ``preamble''.
+	
+	\itemtt[NoOutputOnInterrupt] prevents the output of data after Ctrl-C.
 \end{itemize}
 
-Moreover, there are truly optional output files that serve as a file interface. See manual.
+
 
 \TopIndex
 

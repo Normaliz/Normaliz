@@ -143,7 +143,7 @@ int main(int argc, char* argv[]) {
     renf_class K("a^2 - 5", "a", "2.0 +/- 1.0");
     cout << "Constructed" << endl;
    renf_elem_class b(K, "a+1");
-   // std::cout << "number " << b << std::endl;
+   // cout << "number " << b << std::endl;
    cout << "Survived " << endl;*/
 
     // signal handler for interrupt
@@ -228,14 +228,18 @@ void compute_and_output(OptionsHandler& options,
             MyCone.compute(AddInputOptions);
         }
     } catch (const NotComputableException& e) {
-        std::cout << "Not all desired data could be computed." << endl;
-        std::cout << e.what() << endl;
-        std::cout << "Writing only available data." << endl;
+        cout << "Not all desired data could be computed." << endl;
+        cout << e.what() << endl;
+        cout << "Writing only available data." << endl;
     } catch (const InterruptException& e) {
-        std::cout << endl;
-        std::cout << "Computation was interrupted." << endl;
-        std::cout << e.what() << endl;
-        std::cout << "Writing only available data." << endl;
+        cout << endl;
+        cout << "Computation was interrupted." << endl;
+        cout << e.what() << endl;
+        if(no_output_on_interrupt){
+            cout << "No output on interrupt set" << endl;
+            exit(10);
+        }
+        cout << "Writing only available data." << endl;
     }
     Out.setCone(MyCone);
     Out.set_renf(number_field);
