@@ -244,42 +244,6 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
     }
     dynamic_bitset max_sparse = sparse_bounds; // TODO here they must be found. So far: all
 
-    // find weights of coords
-    WeightOfCoord.resize(EmbDim);
-    vector<IntegerRet> CoordUpperBounds(EmbDim);
-    CoordUpperBounds[0] = 1;
-    WeightOfCoord[0] = 1.0;
-    for(size_t i = 1; i< EmbDim; ++i){
-        bool first = true;
-        for(size_t j = 0; j < max_sparse.size(); ++j){
-            if(!max_sparse[j])
-                continue;
-            if(AllSupps[EmbDim][j][i] < 0){
-                IntegerRet IntTest = convertTo<IntegerRet>(AllSupps[EmbDim][j][0])/(-convertTo<IntegerRet>(AllSupps[EmbDim][j][i]));
-                double test = convertTo<nmz_float>(AllSupps[EmbDim][j][0]);
-                double den = convertTo<nmz_float>(-AllSupps[EmbDim][j][i]);
-                test /= den;
-                test += 1.0;
-                if(IntTest > CoordUpperBounds[i])
-                    CoordUpperBounds[i] = IntTest;
-                if(first || test < WeightOfCoord[i]){
-                    WeightOfCoord[i] = test;
-                    first =false;
-                }
-            }
-        }
-    }
-    /* if(!use_coord_weights){
-        for(auto& w: WeightOfCoord)
-            w = 1.0;
-    }*/
-#ifdef NMZ_DEVELOP
-    if(verbose){
-        verboseOutput() << "Weights of coordinates " << WeightOfCoord << endl;
-        verboseOutput() << "Upperbounds " << CoordUpperBounds;
-    }
-#endif
-
     dynamic_bitset covered(EmbDim);  // registers covered coordinates
     covered[0] = 1; // the 0-th coordinate is covered by all local PL
     AllLocalPL.resize(EmbDim);
@@ -710,7 +674,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::find_order_linear() {
     while(covered_coords.count() < EmbDim){
         bool first = true;
         size_t min_at = 0;
-        double nr_min_weight = 0;
+        double min_weight = 0;
         dynamic_bitset min_covered(EmbDim);
         for(size_t i = 0; i < AllPatches.size(); ++i){
             if(AllPatches[i].size() == 0 || used_patches[i])
@@ -718,15 +682,15 @@ void ProjectAndLift<IntegerPL,IntegerRet>::find_order_linear() {
 
             dynamic_bitset test_covered = covered_coords | AllPatches[i];
             double test_weight = 0;
-            for(size_t i = 0;i < test_covered.size(); ++i){
-                if(test_covered[i])
-                    test_weight += WeightOfCoord[i];
+            for(size_t j = 0;j < test_covered.size(); ++j){
+                if(!covered_coords[j] && test_covered[j])
+                    test_weight += WeightOfCoord[i][j];
             }
-            if(first || test_weight < nr_min_weight){
+            if(first || test_weight < min_weight){
                 first = false;
                 min_at = i;
                 min_covered = test_covered;
-                nr_min_weight = test_weight;
+                min_weight = test_weight;
             }
         }
         InsertionOrderPatches.push_back(min_at);
@@ -773,29 +737,48 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_covers() {
     }
 #endif
 
-    vector<double> EquWeights = WeightOfCoord; // for local use
-    if(!use_coord_weights){
-            for(auto& w: EquWeights)
-                w = 1.0;
+    WeightOfCoord.resize(EmbDim,EmbDim);
+    for(size_t i = 1; i< EmbDim; ++i){
+        if(AllPatches[i].size() == 0)
+            continue;
+        WeightOfCoord[i][0] = 0;
+        for(size_t j = 1; j < EmbDim; ++j){
+            if(!AllPatches[i][j])
+                continue;
+            if(use_coord_weights){
+                double num = convertTo<nmz_float>(AllSupps[EmbDim][j][0]);
+                double den = convertTo<nmz_float>(-AllSupps[EmbDim][j][i]);
+                WeightOfCoord[i][j] = num/den;
+            }
+            else
+                WeightOfCoord[i][j] = 1.0;
+        }
     }
-    else{
-        for(auto& w: EquWeights)
-            w *= w;
 
+#ifdef NMZ_DEVELOP
+    if(verbose && use_coord_weights){
+        WeightOfCoord.debug_print('$');
+    }
+#endif
+
+    assert(!linear_order_patches || !cong_order_patches);
+
+    if(!linear_order_patches && !cong_order_patches){
+        if(PolyEquations.empty())
+            linear_order_patches = true;
     }
 
-    if( (PolyEquations.empty() && Congs.nr_of_rows() == 0)
-        || (!PolyEquations.empty() && change_patching_order)
-        || (PolyEquations.empty() && Congs.nr_of_rows() >0 && !change_patching_order) )
-    {
+    if(linear_order_patches){
         find_order_linear();
         return;
     }
 
-    if(PolyEquations.empty() && change_patching_order){ // no polynomial equations but congruences
+    if(cong_order_patches){
         find_order_congruences();
         return;
     }
+
+    // now we coompute the order base on polynomial equations
 
     vector<dynamic_bitset> our_supports;
     for(size_t i = 0; i < PolyEquations.size();++i)
@@ -836,18 +819,31 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_covers() {
             if(used_covering_equations[i])
                 continue;
             test_covered_coords = covered_coords;
-            for(auto& c: covering_equations[i].second) // finding the coordinates covered by this patch
+            for(auto& c: covering_equations[i].second) // does equation add anything ?
                 test_covered_coords |= AllPatches[c];
             if(test_covered_coords == covered_coords){
-                used_covering_equations[i] = true; // no new coordinates, not used explicitly , but not needed
+                used_covering_equations[i] = true; // no new coordinates
                 continue;
             }
-            double new_added_weight = 0;
-            for(size_t i = 0; i < covered_coords.size(); ++i){
+            vector<double> coord_added_weight(EmbDim);
+            dynamic_bitset weight_found(EmbDim);
+            for(size_t i = 0; i < EmbDim; ++i){
                 if(covered_coords[i] || !test_covered_coords[i])
                     continue;
-                 new_added_weight += EquWeights[i];
+                for(auto& c: covering_equations[i].second){
+                    if(!AllPatches[c][i])
+                        continue;
+                    if(!weight_found[i])
+                        coord_added_weight[i] = WeightOfCoord[c][i];
+                    else{
+                        coord_added_weight[i] = std::min(WeightOfCoord[c][i],coord_added_weight[i]);
+                    }
+                }
             }
+            double new_added_weight = 0;
+            for(auto& w: coord_added_weight)
+                new_added_weight += w;
+
             if(first || new_added_weight < min_added_weight){
                 first = false;
                 min_added_weight = new_added_weight;
@@ -1996,10 +1992,11 @@ void ProjectAndLift<IntegerPL, IntegerRet>::finalize_latt_point(const vector<Int
             }
             SingleDeg1Point = NewPoint;
         }
-        single_point_found = true;
         first_solution_printed = true;
-        if(only_single_point)
+        if(only_single_point){
             TotalNrLP = 1;
+            single_point_found = true;
+        }
     }
 
     if(only_single_point && single_point_found)
@@ -2353,10 +2350,11 @@ void ProjectAndLift<IntegerPL, IntegerRet>::initialize(const Matrix<IntegerPL>& 
     count_only = false;
     system_unsolvable = false;
     use_coord_weights = false;
-    change_patching_order = false;
     single_point_found = false;
     first_solution_printed = false;
-    only_single_point = false; // if we don't come via compute
+    only_single_point = false; // if in case don't come via compute
+    linear_order_patches = false;
+    cong_order_patches = false;
     TotalNrLP = 0;
     NrLP.resize(EmbDim + 1);
 
@@ -2451,8 +2449,14 @@ void ProjectAndLift<IntegerPL, IntegerRet>::set_coord_weights(bool on_off) {
 
 //---------------------------------------------------------------------------
 template <typename IntegerPL, typename IntegerRet>
-void ProjectAndLift<IntegerPL, IntegerRet>::set_change_patching_order(bool on_off) {
-    change_patching_order = on_off;
+void ProjectAndLift<IntegerPL, IntegerRet>::set_linear_order_patches(bool on_off) {
+    linear_order_patches = on_off;
+}
+
+//---------------------------------------------------------------------------
+template <typename IntegerPL, typename IntegerRet>
+void ProjectAndLift<IntegerPL, IntegerRet>::set_cong_order_patches(bool on_off) {
+    cong_order_patches = on_off;
 }
 
 //---------------------------------------------------------------------------

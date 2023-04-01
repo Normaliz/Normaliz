@@ -177,7 +177,8 @@ ConeProperties all_options() {
     ret.set(ConeProperty::MaxDegRepresentations);
     ret.set(ConeProperty::ConeForMonoid);
     ret.set(ConeProperty::UseWeightsPatching);
-    ret.set(ConeProperty::ChangePatchingOrder);
+    ret.set(ConeProperty::LinearOrderPatches);
+    ret.set(ConeProperty::CongOrderPatches);
     ret.set(ConeProperty::MinimizePolyEquations);
     return ret;
 }
@@ -833,6 +834,9 @@ void ConeProperties::check_conflicting_variants() {
         nr_var++;
     if (nr_var > 1)
         throw BadInputException("Only one of DualMode, PrimalMode, Approximate, Projection, ProjectionFloat allowed.");
+
+    if(CPs.test(ConeProperty::LinearOrderPatches) && CPs.test(ConeProperty::CongOrderPatches))
+        throw BadInputException("Only one of LinearOrderPatches and CongOrderPatches allowed");
 }
 
 void ConeProperties::check_sanity(bool inhomogeneous) {  //, bool input_automorphisms) {
@@ -1041,10 +1045,11 @@ vector<string> initializeCPN() {
     CPN.at(ConeProperty::ConeForMonoid) = "ConeForMonoid";
     CPN.at(ConeProperty::UseWeightsPatching) = "UseWeightsPatching";
     CPN.at(ConeProperty::MinimizePolyEquations) = "MinimizePolyEquations";
-    CPN.at(ConeProperty::ChangePatchingOrder) = "ChangePatchingOrder";
+    CPN.at(ConeProperty::LinearOrderPatches) = "LinearOrderPatches";
+    CPN.at(ConeProperty::CongOrderPatches) = "CongPatches";
 
     // detect changes in size of Enum, to remember to update CPN!
-    static_assert(ConeProperty::EnumSize == 150, "ConeProperties Enum size does not fit! Update cone_property.cpp!");
+    static_assert(ConeProperty::EnumSize == 151, "ConeProperties Enum size does not fit! Update cone_property.cpp!");
     // assert all fields contain an non-empty string
     for (size_t i = 0; i < ConeProperty::EnumSize; i++) {
         // bstd::cout << "iii " << i << "  " << CPN.at(i) << endl;

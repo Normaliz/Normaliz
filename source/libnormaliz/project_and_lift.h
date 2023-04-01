@@ -95,7 +95,8 @@ class ProjectAndLift {
     bool no_relax;
     bool count_only;
     bool use_coord_weights;
-    bool change_patching_order;
+    bool linear_order_patches;
+    bool cong_order_patches;
     bool first_solution_printed;
 
     bool system_unsolvable;
@@ -137,8 +138,8 @@ class ProjectAndLift {
     dynamic_bitset poly_equs_minimized; // redisters whether the polynomial equations at a coord have been minimized
     dynamic_bitset poly_congs_minimized; // ditto for congruences
     dynamic_bitset poly_inequs_minimized; //  ditto for the inequalities from equations
-    vector<double> WeightOfCoord;
     vector<dynamic_bitset> CongIndicator; // stores supports of congruences
+    Matrix<double> WeightOfCoord;
 
     vector<size_t> NrRemainingLP;
     vector<size_t> NrDoneLP;
@@ -203,7 +204,6 @@ class ProjectAndLift {
     void set_no_relax(bool on_off);
     void set_primitive();
     void set_coord_weights(bool on_off);
-    void set_change_patching_order(bool on_off);
     void set_patching_allowed(bool on_off);
     void set_vertices(const Matrix<IntegerPL>& Verts);
     void set_congruences(const Matrix<IntegerRet>& congruences);
@@ -211,6 +211,8 @@ class ProjectAndLift {
     void set_PolyEquations(const OurPolynomialSystem<IntegerRet>& PolyEqs);
     void set_PolyInequalities(const OurPolynomialSystem<IntegerRet>& PolyInequs);
     void set_startList(const list<vector<IntegerRet> >& start_from);
+    void set_linear_order_patches(const bool on_off);
+    void set_cong_order_patches(const bool on_off);
 
     void compute(bool do_all_points = true, bool lifting_float = false, bool count_only = false);
     void compute_only_projection(size_t down_to);
