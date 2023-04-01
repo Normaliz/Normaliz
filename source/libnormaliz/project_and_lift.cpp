@@ -269,6 +269,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
     AllLocalSolutions_by_intersecion.resize(EmbDim);
     AllLocalSolutions.resize(EmbDim);
 
+    DefiningSupps.resize(EmbDim);
+
     poly_equs_minimized.resize(EmbDim);
     poly_inequs_minimized.resize(EmbDim);
     poly_congs_minimized.resize(EmbDim);
@@ -307,6 +309,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
 
         // The coordinates of the patch found
         AllPatches[coord] = Indicator[next_supp];
+        DefiningSupps[coord] = AllSupps[EmbDim][next_supp];
         covered |= AllPatches[coord];
 
     }
@@ -430,7 +433,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
         PL.add_congruences_from_equations();
         PL.restrict_congruences();
 #ifdef NMZ_DEVELOP
-        if(verbose){
+        if(false){ // verbose){
             if(PL.Congs.nr_of_rows() >0 ){
                 cout << "coord " << coord << endl;
                 PL.Congs.debug_print();
@@ -552,7 +555,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
         if(verbose && PolyInequsKey.size() > 0)
             verboseOutput() << endl << " poly inequalities " << PolyInequsKey;
         if(verbose && RestrictablePolyInequsKey.size() > 0)
-            verboseOutput() << endl <<  " restrictable poly inequalities " << RestrictablePolyInequsKey;
+            verboseOutput() << endl <<  "restrictable poly inequalities " << RestrictablePolyInequsKey;
         if(verbose)
             verboseOutput() << "---------------------------------------------------------------" << endl;
 #endif
@@ -746,8 +749,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_covers() {
             if(!AllPatches[i][j])
                 continue;
             if(use_coord_weights){
-                double num = convertTo<nmz_float>(AllSupps[EmbDim][j][0]);
-                double den = convertTo<nmz_float>(-AllSupps[EmbDim][j][i]);
+                double num = convertTo<nmz_float>(DefiningSupps[i][0]);
+                double den = convertTo<nmz_float>(-DefiningSupps[i][j]);
                 WeightOfCoord[i][j] = num/den;
             }
             else
@@ -756,8 +759,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_covers() {
     }
 
 #ifdef NMZ_DEVELOP
-    if(verbose && use_coord_weights){
-        WeightOfCoord.debug_print('$');
+    if(verbose){ // && use_coord_weights){
+        WeightOfCoord.sparse_print(cout);
     }
 #endif
 
@@ -827,16 +830,16 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_covers() {
             }
             vector<double> coord_added_weight(EmbDim);
             dynamic_bitset weight_found(EmbDim);
-            for(size_t i = 0; i < EmbDim; ++i){
-                if(covered_coords[i] || !test_covered_coords[i])
+            for(size_t j = 0; j < EmbDim; ++j){
+                if(covered_coords[j] || !test_covered_coords[j])
                     continue;
                 for(auto& c: covering_equations[i].second){
-                    if(!AllPatches[c][i])
+                    if(!AllPatches[c][j])
                         continue;
-                    if(!weight_found[i])
-                        coord_added_weight[i] = WeightOfCoord[c][i];
+                    if(!weight_found[j])
+                        coord_added_weight[j] = WeightOfCoord[c][j];
                     else{
-                        coord_added_weight[i] = std::min(WeightOfCoord[c][i],coord_added_weight[i]);
+                        coord_added_weight[j] = std::min(WeightOfCoord[c][j],coord_added_weight[j]);
                     }
                 }
             }

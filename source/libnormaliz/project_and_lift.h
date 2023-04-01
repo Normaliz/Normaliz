@@ -140,6 +140,7 @@ class ProjectAndLift {
     dynamic_bitset poly_inequs_minimized; //  ditto for the inequalities from equations
     vector<dynamic_bitset> CongIndicator; // stores supports of congruences
     Matrix<double> WeightOfCoord;
+    Matrix<IntegerPL> DefiningSupps;
 
     vector<size_t> NrRemainingLP;
     vector<size_t> NrDoneLP;
