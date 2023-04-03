@@ -243,16 +243,6 @@ NMZTESTS = test-/23.in					\
 	test-/NumSemi.ref				\
 	test-/pet.in					\
 	test-/pet.ref				 	\
-	test-/pet_cong.in				\
-	test-/pet_cong.ref			 	\
-	test-/pet_lin.in				\
-	test-/pet_lin.ref			 	\
-	test-/pet_lin_weight.in				\
-	test-/pet_lin_weight.ref		 	\
-	test-/pet_poly.in				\
-	test-/pet_poly.ref			 	\
-	test-/pet_weight.in				\
-	test-/pet_weight.ref			 	\
 	test-/polyhedron.in				\
 	test-/polyhedron.ref				\
 	test-/parallel_24.in				\
@@ -1507,6 +1497,14 @@ NMZTESTS +=						\
 	test-Int/j462-sd.ref				\
 	test-Int/pet.in					\
 	test-Int/pet.ref				\
+	test-Int/pet_cong.in				\
+	test-Int/pet_cong.ref			 	\
+	test-Int/pet_lin.in				\
+	test-Int/pet_lin.ref			 	\
+	test-Int/pet_lin_weight.in				\
+	test-Int/pet_lin_weight.ref		 	\
+	test-Int/pet_weight.in				\
+	test-Int/pet_weight.ref			 	\
 	test-Int/rational-E.in				\
 	test-Int/more_lattpoints_test.in		\
 	test-Int/more_lattpoints_test.ref		\
