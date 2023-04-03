@@ -1074,6 +1074,7 @@ InputMap<Number> readNormalizInput(istream& in,
                     if(in.fail())
                         throw BadInputException("Error after parallel_threads");
                     set_thread_limit(nr_threads);
+                    continue;
                 }
 
                 input_type = to_type(type_string);

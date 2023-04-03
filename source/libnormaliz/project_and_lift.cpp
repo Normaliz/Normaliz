@@ -758,11 +758,13 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_covers() {
         }
     }
 
+/*
 #ifdef NMZ_DEVELOP
     if(verbose){ // && use_coord_weights){
         WeightOfCoord.sparse_print(cout);
     }
 #endif
+*/
 
     assert(!linear_order_patches || !cong_order_patches);
 

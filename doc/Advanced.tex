@@ -216,16 +216,21 @@ The lattice points in polytopes computed by Normaliz can be further constrained 
 
 To avoid ambiguities, only computation goals for lattice points in polytopes and convex hull data can be computed in the presence of polynomial constraints. 
 
-\verb|pet.in| and \verb|baby.in| are examples with polynomial constraints.
+\verb|pet.in|, \verb|baby.in| and \verb*|poly_equ.in| are examples with polynomial constraints.
 
 If polynmomial equations are present, then Normaliz tries to use them with as few coordinates as possible and schedules the patching algorithm accordingly. However, this can have a negative effect if it makes `bad'' patches used too early. There are two options that can modify this behavior:
 \begin{itemize}
 	\itemtt[UseWeightsPatching] gives a ``weight'' to the coordinates so that ``bad'' patches are biased negatively.
 	
-	\itemtt[ChangePatchingOrder] disables the scheduling by polynomial equations completely.
+	\itemtt[LinearOrderPatching] disables the scheduling by polynomial equations completely. It can be modified by \verb|UseWeightsPatching|.
 \end{itemize}
-These options must be used with care and may require experimentation.
+Moreover it is possible to use another type of constraints:
+\begin{itemize}
+	\itemtt[CongOrderPatching] bases the scheduling on congruences derived from the linear equations in the input. (Can't be modified by \verb|UseWeightsPatching|).
+\end{itemize}
+These options must be used with care and may require experimentation. For a first encounter you can try them on the three examples mentioned above. 
 
+The patching algorithm was developed for computations of fusion rings reported in \cite{ABPP} and extensions.
 \subsubsection{The triangulation based primal algorithm}
 
 With this algorithm, Normaliz computes a partial triangulation as it does for the computation of Hilbert bases (in primal mode) for the cone over the polytope. Then it computes the lattice points in each of the subpolytopes defined by the simplicial subcones in the triangulation. The difference to the Hilbert basis calculation is that all points that do not lie in our polytope $P$ can be discarded right away and that no reduction is necessary.

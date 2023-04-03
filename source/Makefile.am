@@ -93,7 +93,7 @@ noinst_HEADERS = \
   libnormaliz/simplex.h \
   libnormaliz/collection.h
 
-libnormaliz_la_LDFLAGS = -no-undefined -version-info 13:0:10
+libnormaliz_la_LDFLAGS = -no-undefined -version-info 13:1:10
 ## Conjecture: x.y.z yields x-z.z.y
 #libnormaliz_la_LIBADD = $(GMP_LIBS)
 

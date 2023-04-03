@@ -1046,7 +1046,7 @@ vector<string> initializeCPN() {
     CPN.at(ConeProperty::UseWeightsPatching) = "UseWeightsPatching";
     CPN.at(ConeProperty::MinimizePolyEquations) = "MinimizePolyEquations";
     CPN.at(ConeProperty::LinearOrderPatches) = "LinearOrderPatches";
-    CPN.at(ConeProperty::CongOrderPatches) = "CongPatches";
+    CPN.at(ConeProperty::CongOrderPatches) = "CongOrderPatches";
 
     // detect changes in size of Enum, to remember to update CPN!
     static_assert(ConeProperty::EnumSize == 151, "ConeProperties Enum size does not fit! Update cone_property.cpp!");

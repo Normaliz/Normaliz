@@ -229,12 +229,30 @@ NMZTESTS = test-/23.in					\
 	test-/n_6_feas.ref				\
 	test-/n_6_infeas.in				\
 	test-/n_6_infeas.ref				\
+	test-/n8_feas_all.in				\
+	test-/n8_feas_all.ref				\
+	test-/n8_feas_all_nop.in			\
+	test-/n8_feas_all_nop.ref			\
+	test-/n8_feas_single.in				\
+	test-/n8_feas_single.ref			\
+	test-/n8_feas_single_nop.in			\
+	test-/n8_feas_single_nop.ref			\
 	test-/notpointed.in				\
 	test-/notpointed.ref				\
 	test-/NumSemi.in				\
 	test-/NumSemi.ref				\
 	test-/pet.in					\
-	test-/pet.ref				\
+	test-/pet.ref				 	\
+	test-/pet_cong.in				\
+	test-/pet_cong.ref			 	\
+	test-/pet_lin.in				\
+	test-/pet_lin.ref			 	\
+	test-/pet_lin_weight.in				\
+	test-/pet_lin_weight.ref		 	\
+	test-/pet_poly.in				\
+	test-/pet_poly.ref			 	\
+	test-/pet_weight.in				\
+	test-/pet_weight.ref			 	\
 	test-/polyhedron.in				\
 	test-/polyhedron.ref				\
 	test-/parallel_24.in				\
