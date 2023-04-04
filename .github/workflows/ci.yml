@@ -118,7 +118,7 @@ jobs:
         uses: codecov/codecov-action@v1
 
   eantic-nauty-notls-cocoa:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     env:
       BUILDSYSTEM: "eantic-nauty-notls-cocoa"
       NO_COVERAGE: "1"
