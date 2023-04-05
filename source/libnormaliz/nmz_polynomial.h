@@ -51,8 +51,8 @@ class OurPolynomial;
 template<typename Number>
 class OurTerm {
 
-    template <typename>
-    friend class OurPolynomial;
+template <typename>
+friend class OurPolynomial;
 
 public:
 
