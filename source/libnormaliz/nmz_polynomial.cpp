@@ -165,6 +165,20 @@ bool OurTerm<Number>::is_restrictable_inequ(const dynamic_bitset& set_of_var)  c
     return support.is_subset_of(set_of_var) || (coeff <= 0);
 }
 
+#ifdef NMZ_COCOA
+template<typename Number>
+CoCoA::RingElem OurTerm<Number>::ToCoCoA(CoCoA::SparsePolyRing R){
+
+    CoCoA::RingElem f(one(R));
+    mpq_class c;
+    c = convertTo<mpq_class>(coeff);
+    CoCoA::BigRat ccc = BigRatFromMPQ(c.get_mpq_t());
+    CoCoA::RingElem g = zero(CoCoA::RingQQ);
+    CoCoA::RingElem h = ccc*g;
+    return f;
+}
+#endif
+
 //-------------------------------------------------------------------
 //             OurPolynomial
 //-------------------------------------------------------------------

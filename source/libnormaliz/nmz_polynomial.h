@@ -33,6 +33,10 @@
 #include "libnormaliz/dynamic_bitset.h"
 #include "libnormaliz/general.h"
 
+#ifdef NMZ_COCOA
+#include "CoCoA/library.H"
+#endif
+
 namespace libnormaliz {
 
 using namespace std;
@@ -68,6 +72,10 @@ public:
     bool is_restrictable_inequ(const dynamic_bitset& set_of_var)  const;
     void permute_variables(const vector<key_t>& perm);
     void mon2vars_expos();
+
+#ifdef NMZ_COCOA
+    CoCoA::RingElem ToCoCoA(CoCoA::SparsePolyRing R);
+#endif
 };
 
 template<typename Number>
@@ -91,6 +99,11 @@ public:
     // bool check_restriction(const dynamic_bitset& set_of_var) const;
     bool is_restrictable_inequ(const dynamic_bitset& set_of_var)  const;
     void permute_variables(const vector<key_t>& perm);
+
+#ifdef NMZ_COCOA
+    CoCoA::RingElem ToCoCoA(CoCoA::SparsePolyRing R);
+#endif
+
 };
 
 template<typename Number>
@@ -124,6 +137,10 @@ public:
     bool check(const vector<Number>& argument, const bool is_quations, const bool exact_length) const;
 
     bool verbose;
+
+#ifdef NMZ_COCOA
+    vector<CoCoA::RingElem> ToCoCoA(CoCoA::SparsePolyRing R);
+#endif
 
 };
 
