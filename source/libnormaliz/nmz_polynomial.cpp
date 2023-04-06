@@ -461,7 +461,7 @@ OurPolynomial<Number>::OurPolynomial(const string& poly_string, const size_t dim
 }
 
 template<typename Number>
-RingElem OurTerm<Number>::ToCoCoA(SparsePolyRing R){
+RingElem OurTerm<Number>::ToCoCoA(SparsePolyRing R) const{
 
     mpq_class c;
     c = convertTo<mpq_class>(coeff);
@@ -473,7 +473,7 @@ RingElem OurTerm<Number>::ToCoCoA(SparsePolyRing R){
 }
 
 template<typename Number>
-RingElem OurPolynomial<Number>::ToCoCoA(SparsePolyRing R){
+RingElem OurPolynomial<Number>::ToCoCoA(SparsePolyRing R) const{
 
     RingElem p = zero(R);
     for(auto& T:*this)
@@ -482,7 +482,7 @@ RingElem OurPolynomial<Number>::ToCoCoA(SparsePolyRing R){
 }
 
 template<typename Number>
-vector<RingElem> OurPolynomialSystem<Number>::ToCoCoA(SparsePolyRing R){
+vector<RingElem> OurPolynomialSystem<Number>::ToCoCoA(SparsePolyRing R) const{
 
     vector<RingElem> CS;
     for(auto& P:*this)
@@ -490,13 +490,92 @@ vector<RingElem> OurPolynomialSystem<Number>::ToCoCoA(SparsePolyRing R){
     return CS;
 }
 
-#else
+bool poly_reduce(RingElem& r, const RingElem&g, const PPMonoidElem& ini_g, const RingElem& h){
 
-template<typename Number>
-OurPolynomial<Number>::OurPolynomial(const string& poly_string, const size_t dim, const bool verbose){
-    assert(false);
+    if(!IsDivisible(ini_g, LPP(h)))
+        return false;
+
+    PPMonoidElem quot_PP = ini_g/LPP(h);
+    RingElem quot_coeff = LC(g)/LC(h);
+    RingElem quot = monomial(owner(h), quot_coeff, quot_PP);
+    r = g - quot*h;
+    return true;
 }
 
+bool GB_reduce(const RingElem& f, vector<RingElem>& GB){
+
+    RingElem g = f;
+    RingElem r;
+
+    while(g != 0){
+        PPMonoidElem ini_g = LPP(g);
+        bool reducible = false;
+        for(auto& h: GB){
+            if(poly_reduce(r,g, ini_g, h)){
+                reducible = true;
+                g = r;
+                break;
+            }
+        }
+        if(!reducible)
+            break;
+    }
+    if(g != 0){
+        GB.push_back(g);
+        return true;
+    }
+    else
+        return false;
+}
+
+template<typename Number>
+OurPolynomialSystem<Number> OurPolynomialSystem<Number>::minimize_equations(const Matrix<Number>& LinEqus) const{
+
+    cout << "RRRRRRRRRRRRRR  " << LinEqus.rank() << endl;
+
+    size_t EmbDim = LinEqus.nr_of_columns();
+
+    CoCoA::GlobalManager CoCoAFoundations;
+    CoCoA::SparsePolyRing R = CoCoA::NewPolyRing_DMPI(CoCoA::RingQQ(), EmbDim , CoCoA::lex);
+
+    vector<RingElem> CPol = ToCoCoA(R);
+    vector<RingElem> HomPol;
+    for(auto& p: CPol){
+        if(deg(p) > 2)
+            throw BadInputException("Minimization of polynomial is_equations only possible for degree <= 2");
+        HomPol.push_back(homogenize(p));
+    }
+    /* for(auto& p: HomPol)
+        cout << p << endl;*/
+
+    OurPolynomialSystem<Number> LinPolys;
+    for(size_t i = 0; i < LinEqus.nr_of_rows(); ++i){ // automatically homogeneous
+        LinPolys.push_back(OurPolynomial<Number>(LinEqus[i]));    }
+    vector<RingElem> CLin = LinPolys.ToCoCoA(R);
+
+    vector<RingElem> GB;
+    OurPolynomialSystem<Number> Minis;
+
+    for(auto& lf: CLin){
+        GB_reduce(lf,GB);
+    }
+    size_t LGGGG = GB.size();
+    cout << "GGGGGGGGGGGGGGGGGGGGGG " << GB.size() << endl;
+
+    for(size_t j = 0; j < this->size(); ++j){
+        if(!GB_reduce(CPol[j],GB))
+            Minis.push_back((*this)[j]);
+    }
+
+    for(auto& p: Minis){
+        cout << endl;
+        cout << p.ToCoCoA(R) << endl;
+    }
+
+    cout << "MMMMMMMM  " << Minis.size()<< " GGGGGGGGGGGG " << GB.size() - LGGGG << endl;
+
+    return Minis;
+}
 
 #endif // NMZ_COCOA
 

@@ -2407,13 +2407,19 @@ void ProjectAndLift<IntegerPL, IntegerRet>::set_congruences(const Matrix<Integer
 
 //---------------------------------------------------------------------------
 template <typename IntegerPL, typename IntegerRet>
-void ProjectAndLift<IntegerPL, IntegerRet>::set_PolyEquations(const OurPolynomialSystem<IntegerRet>& PolyEqus) {
+void ProjectAndLift<IntegerPL, IntegerRet>::set_PolyEquations(const OurPolynomialSystem<IntegerRet>& PolyEqus, const bool minimize) {
     PolyEquations = PolyEqus;
     OurPolynomialSystem<IntegerRet> DerivedPolyInequs = PolyEquations;
     RestrictablePolyInequs.insert(RestrictablePolyInequs.begin(), DerivedPolyInequs.begin(), DerivedPolyInequs.end());
     IntegerRet MinusOne = -1;
     DerivedPolyInequs.multiply_by_constant(MinusOne);
     RestrictablePolyInequs.insert(RestrictablePolyInequs.begin(), DerivedPolyInequs.begin(), DerivedPolyInequs.end());
+    Matrix<IntegerPL> LinEqusPL = reconstruct_equations(AllSupps[EmbDim]);
+    Matrix<IntegerRet> LinEqus;
+    convert(LinEqus, LinEqusPL);
+    if(minimize){
+        PolyEqus.minimize_equations(LinEqus);
+    }
 }
 //---------------------------------------------------------------------------
 template <typename IntegerPL, typename IntegerRet>

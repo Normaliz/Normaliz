@@ -6372,14 +6372,6 @@ void Cone<Integer>::setPolynomialEquations(const vector<string>& poly_equs) {
     if(verbose)
         verboseOutput() << "----------------------" << endl;
 
-    CoCoA::GlobalManager CoCoAFoundations;
-
-    CoCoA::SparsePolyRing R = CoCoA::NewPolyRing_DMPI(CoCoA::RingQQ(), dim , CoCoA::lex);
-
-    vector<CoCoA::RingElem> CP = PolynomialEquations.ToCoCoA(R);
-
-    for(auto& p: CP)
-        cout << p << endl;
 #else
     throw BadInputException("Polynomials only allowed with CoCoALib");
 #endif

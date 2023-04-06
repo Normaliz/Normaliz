@@ -74,7 +74,7 @@ public:
     void mon2vars_expos();
 
 #ifdef NMZ_COCOA
-    CoCoA::RingElem ToCoCoA(CoCoA::SparsePolyRing R);
+    CoCoA::RingElem ToCoCoA(CoCoA::SparsePolyRing R) const;
 #endif
 };
 
@@ -101,7 +101,7 @@ public:
     void permute_variables(const vector<key_t>& perm);
 
 #ifdef NMZ_COCOA
-    CoCoA::RingElem ToCoCoA(CoCoA::SparsePolyRing R);
+    CoCoA::RingElem ToCoCoA(CoCoA::SparsePolyRing R) const;
 #endif
 
 };
@@ -139,8 +139,10 @@ public:
     bool verbose;
 
 #ifdef NMZ_COCOA
-    vector<CoCoA::RingElem> ToCoCoA(CoCoA::SparsePolyRing R);
+    vector<CoCoA::RingElem> ToCoCoA(CoCoA::SparsePolyRing R) const;
 #endif
+
+    OurPolynomialSystem<Number> minimize_equations(const Matrix<Number>& LinEqus) const;
 
 };
 

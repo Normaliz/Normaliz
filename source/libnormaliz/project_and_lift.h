@@ -209,7 +209,7 @@ class ProjectAndLift {
     void set_vertices(const Matrix<IntegerPL>& Verts);
     void set_congruences(const Matrix<IntegerRet>& congruences);
     void set_grading(const vector<IntegerRet>& grad);
-    void set_PolyEquations(const OurPolynomialSystem<IntegerRet>& PolyEqs);
+    void set_PolyEquations(const OurPolynomialSystem<IntegerRet>& PolyEqs, const bool minimize = true);
     void set_PolyInequalities(const OurPolynomialSystem<IntegerRet>& PolyInequs);
     void set_startList(const list<vector<IntegerRet> >& start_from);
     void set_linear_order_patches(const bool on_off);
