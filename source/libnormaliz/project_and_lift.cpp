@@ -2418,7 +2418,14 @@ void ProjectAndLift<IntegerPL, IntegerRet>::set_PolyEquations(const OurPolynomia
     Matrix<IntegerRet> LinEqus;
     convert(LinEqus, LinEqusPL);
     if(minimize){
-        PolyEqus.minimize_equations(LinEqus);
+        if(verbose){
+            verboseOutput() << "Minimizing polynomial equations (may take long time)"<< endl;
+            verboseOutput() << "System has " << PolyEquations.size() << " equations" << endl;
+        }
+        PolyEquations = PolyEquations.minimize_equations(LinEqus);
+        if(verbose){
+            verboseOutput() << "Minimal system has " << PolyEquations.size() << " equations" << endl;
+        }
     }
 }
 //---------------------------------------------------------------------------

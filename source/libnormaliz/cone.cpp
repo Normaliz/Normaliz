@@ -7339,7 +7339,7 @@ void Cone<renf_elem_class>::project_and_lift(const ConeProperties& ToCompute,
     PL.set_vertices(Verts);
     OurPolynomialSystem<mpz_class> PolyEqus_mpz;
     convert(PolyEqus_mpz, PolyEqus);
-    PL.set_PolyEquations(PolyEqus_mpz);
+    PL.set_PolyEquations(PolyEqus_mpz, ToCompute.test(ConeProperty::MinimizePolyEquations));
     OurPolynomialSystem<mpz_class> PolyInequs_mpz;
     convert(PolyInequs_mpz, PolyInequs);
     PL.set_PolyInequalities(PolyInequs_mpz);
@@ -7467,7 +7467,7 @@ void Cone<Integer>::project_and_lift(const ConeProperties& ToCompute,
                 OurPolynomialSystem<MachineInteger> PolyInequs_MI;
                 convert(PolyEqus_MI, PolyEqus);
                 convert(PolyInequs_MI, PolyInequs);
-                PL.set_PolyEquations(PolyEqus_MI);
+                PL.set_PolyEquations(PolyEqus_MI, ToCompute.test(ConeProperty::MinimizePolyEquations));
                 PL.set_PolyInequalities(PolyInequs_MI);
                 if(PolyInequs.size() > 0 || PolyEqus.size() > 0)
                     PL.set_LLL(false);
@@ -7518,7 +7518,7 @@ void Cone<Integer>::project_and_lift(const ConeProperties& ToCompute,
             if(!primitive)
                 PL.set_LLL(!ToCompute.test(ConeProperty::NoLLL));
             PL.set_vertices(Verts);
-            PL.set_PolyEquations(PolyEqus);
+            PL.set_PolyEquations(PolyEqus, ToCompute.test(ConeProperty::MinimizePolyEquations));
             PL.set_PolyInequalities(PolyInequs);
             if(PolyInequs.size() > 0 || PolyEqus.size() > 0)
                 PL.set_LLL(false);

@@ -522,29 +522,22 @@ bool GB_reduce(const RingElem& f, vector<RingElem>& GB){
     }
     if(g != 0){
         GB.push_back(g);
-        return true;
+        return false;
     }
     else
-        return false;
+        return true;
 }
 
 template<typename Number>
-OurPolynomialSystem<Number> OurPolynomialSystem<Number>::minimize_equations(const Matrix<Number>& LinEqus) const{
+OurPolynomialSystem<Number> OurPolynomialSystem<Number>::minimize_equations(const Matrix<Number>& LinEqus) const {
 
-    cout << "RRRRRRRRRRRRRR  " << LinEqus.rank() << endl;
+    // cout << "RRRRRRRRRRRRRR  " << LinEqus.rank() << endl;
 
     size_t EmbDim = LinEqus.nr_of_columns();
 
     CoCoA::GlobalManager CoCoAFoundations;
     CoCoA::SparsePolyRing R = CoCoA::NewPolyRing_DMPI(CoCoA::RingQQ(), EmbDim , CoCoA::lex);
 
-    vector<RingElem> CPol = ToCoCoA(R);
-    vector<RingElem> HomPol;
-    for(auto& p: CPol){
-        if(deg(p) > 2)
-            throw BadInputException("Minimization of polynomial is_equations only possible for degree <= 2");
-        HomPol.push_back(homogenize(p));
-    }
     /* for(auto& p: HomPol)
         cout << p << endl;*/
 
@@ -553,26 +546,37 @@ OurPolynomialSystem<Number> OurPolynomialSystem<Number>::minimize_equations(cons
         LinPolys.push_back(OurPolynomial<Number>(LinEqus[i]));    }
     vector<RingElem> CLin = LinPolys.ToCoCoA(R);
 
+    vector<RingElem> CPol = ToCoCoA(R);
+    vector<RingElem> HomPol;
+    for(auto& p: CPol){
+        if(deg(p) > 2)
+            throw BadInputException("Minimization of polynomial is_equations only possible for degree <= 2");
+        if(deg(p) == 1)
+            HomPol.insert(HomPol.begin(), homogenize(p)); // make sure fegree 1 is inserted into GB before degree 2
+        else
+            HomPol.push_back(homogenize(p));
+    }
+
     vector<RingElem> GB;
     OurPolynomialSystem<Number> Minis;
 
     for(auto& lf: CLin){
         GB_reduce(lf,GB);
     }
-    size_t LGGGG = GB.size();
-    cout << "GGGGGGGGGGGGGGGGGGGGGG " << GB.size() << endl;
+    // size_t LGGGG = GB.size();
+    // cout << "GGGGGGGGGGGGGGGGGGGGGG " << GB.size() << endl;
 
     for(size_t j = 0; j < this->size(); ++j){
-        if(!GB_reduce(CPol[j],GB))
+        if(!GB_reduce(HomPol[j],GB))
             Minis.push_back((*this)[j]);
     }
 
-    for(auto& p: Minis){
+    /* for(auto& p: Minis){
         cout << endl;
         cout << p.ToCoCoA(R) << endl;
     }
 
-    cout << "MMMMMMMM  " << Minis.size()<< " GGGGGGGGGGGG " << GB.size() - LGGGG << endl;
+    cout << "MMMMMMMM  " << Minis.size()<< " GGGGGGGGGGGG " << GB.size() - LGGGG << endl;*/
 
     return Minis;
 }
