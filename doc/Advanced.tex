@@ -99,7 +99,7 @@ In certain cases you must use \verb|-i| on the command line to override the opti
 
 The files \verb|ChF*.in| and \verb|VdM*.in| are taken from the paper ``On the orthogonality of the Chebyshev-Frolov lattice and applications'' by Ch.~Kacwin, J.~Oettershagen and T.~Ullrich (Monatsh.\ Math.\ 184 (2017), 425--441). The file \verb|VdM_16_1048576.in| is based on the linear map given directly by the Vandermonde matrix. A major point of the paper is a coordinate transformation that simplifies computations significantly, and the files \verb|ChF*.in| are based on it.
 
-The files \verb|pet.in| and \verb|baby.in| have been created by Max Alekseyev, Sébastien Palcoux and Gert Vercleyen for the classification of fusion rings.
+The files \verb|pet.in| and \verb|baby.in| have been created in connection with the work on fusion rings. See \cite{ABPP}.
 
 \subsubsection{Project-and-lift}\label{project}
 
@@ -210,6 +210,8 @@ Under certain conditions coarse project-and-lift is modified. Instead of proceed
 \end{itemize}
 To see the effect, try \verb|baby.in| as it is and with \verb|NoPatching|.
 
+The patching algorithm and the use of polynomial equations was developed for computations of fusion rings reported in \cite{ABPP} and extensions.
+
 \subsubsection{Polynomial constraints for lattice points}\label{poly_const}
 
 The lattice points in polytopes computed by Normaliz can be further constrained by polynomial equations an d inequalities (see Section \ref{poly_const_input}). For all algorithms different from project-and-lift the lattice point must be computed completely before the polynomial constraints can be used. It is a significant advantage of project-and-lift and its variants that every polynomial constraint can be applied as soon as all coordinates appearing  in it with a nonzero coefficient have been collected. This helps enormously to stop the extension of coordinates. 
@@ -218,9 +220,13 @@ To avoid ambiguities, only computation goals for lattice points in polytopes and
 
 \verb|pet.in|, \verb|baby.in| and \verb*|poly_equ.in| are examples with polynomial constraints.
 
-If polynmomial equations are present, then Normaliz tries to use them with as few coordinates as possible and schedules the patching algorithm accordingly. However, this can have a negative effect if it makes `bad'' patches used too early. There are two options that can modify this behavior:
+\subsubsection{The patching order}\label{patch_order}
+
+If polynmomial equations are present, then Normaliz tries to use them with as few coordinates as possible and schedules the patching algorithm accordingly. However, this can have a negative effect if it makes `bad'' patches used too early. Also congruences, whether explicitly given in the input or derived by Normaliz from linear equations, can influence the insertion order of the patches. 
+
+There are some options that can modify the default behavior:
 \begin{itemize}
-	\itemtt[UseWeightsPatching] gives a ``weight'' to the coordinates so that ``bad'' patches are biased negatively.
+	\itemtt[UseWeightsPatching] gives a ``weight'' to the coordinates so that ```bad'' patches are biased negatively.
 	
 	\itemtt[LinearOrderPatching] disables the scheduling by polynomial equations completely. It can be modified by \verb|UseWeightsPatching|.
 \end{itemize}
@@ -228,9 +234,14 @@ Moreover it is possible to use another type of constraints:
 \begin{itemize}
 	\itemtt[CongOrderPatching] bases the scheduling on congruences derived from the linear equations in the input. (Can't be modified by \verb|UseWeightsPatching|).
 \end{itemize}
+In very rare case it could be useful to use
+\begin{itemize}
+	\itemtt[MinimizePolyEquations]
+\end{itemize}
+The minimization can take very long. It is only applicable if the polynomials have degree $\le 2$.
+
 These options must be used with care and may require experimentation. For a first encounter you can try them on the three examples mentioned above. 
 
-The patching algorithm was developed for computations of fusion rings reported in \cite{ABPP} and extensions.
 \subsubsection{The triangulation based primal algorithm}
 
 With this algorithm, Normaliz computes a partial triangulation as it does for the computation of Hilbert bases (in primal mode) for the cone over the polytope. Then it computes the lattice points in each of the subpolytopes defined by the simplicial subcones in the triangulation. The difference to the Hilbert basis calculation is that all points that do not lie in our polytope $P$ can be discarded right away and that no reduction is necessary.
