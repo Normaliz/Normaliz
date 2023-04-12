@@ -1020,9 +1020,16 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
     // One could think about exchanging the order of the loops to get better
     // parallelization. But it is unclear whether this can be achieved.
 
+#ifdef NMZ_DEVELOP
+        struct timeval time_begin;
+        StartTime(time_begin);
+        size_t nr_rounds = 0;
+#endif
+
     while (true) {
 
 #ifdef NMZ_DEVELOP
+        nr_rounds++;
         if(GlobalTimeBound > 0 &&  TimeSinceStart() > GlobalTimeBound){
             cerr << "Stopped after " << GlobalTimeBound  << " seconds" << endl;
             exit(1);
@@ -1356,12 +1363,14 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         if(nr_points_done_in_this_round > 0 && NrRemainingLP[this_patch] > 0){
             // cout << "expected rounds " << expected_number_of_rounds << endl;
             double time_spent = MeasureTime(time_begin);
+            double time_per_round = time_spent/nr_rounds;
             // cout << "spent " << time_spent << endl;
-            double expected_time = time_spent*expected_number_of_rounds;
+            double expected_time = time_per_round*expected_number_of_rounds;
             if(verbose)
                 verboseOutput() << "expected future time on level  " << LevelPatches[coord] << "  " << expected_time << " sec " << endl;
             if(GlobalPredictionTimeBound > 0 && expected_time > GlobalPredictionTimeBound){
                     verboseOutput() << "expected time exceeds bound of " << GlobalPredictionTimeBound << "sec" << endl;
+                    exit(1);
                 }
         }
 #endif
