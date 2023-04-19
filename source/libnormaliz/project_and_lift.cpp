@@ -999,7 +999,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
 
 #ifdef NMZ_DEVELOP
     if(verbose)
-        verboseOutput() << "Local solutions " << LocalSolutions.nr_of_rows() << endl;
+        verboseOutput() << "Local solutions total " << LocalSolutions.nr_of_rows() << " new " << LocalSolutionsNow.nr_of_rows() << endl;
 #endif
 
     // Next the newly computed extensions are registered
