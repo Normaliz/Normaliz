@@ -120,7 +120,7 @@ testgrb: $(TEST_FILES_GRB) $(TEST_FILES_GRB_GRB)
 testclo: test-clopt/whow.out
 
 test-clopt/whow.out: $(NORMALIZ) test-clopt/whow.in
-	$(NICE) $(NORMALIZ) -DTtyCbjVXiGS test-clopt/whow --NoSuppHypsOutput --LongLong
+	$(NICE) $(NORMALIZ) -DTtyCbjViGS test-clopt/whow --NoSuppHypsOutput --LongLong
 	mkdir -p Dummy
 	$(NICE) $(NORMALIZ) -JoeFv test-clopt/whow --all-files --NoExtRaysOutput  --OutputDir=Dummy
 	$(NICE) $(NORMALIZ) -kB test-clopt/whow.in --ignore --files --NoMatricesOutput --WritePreComp
