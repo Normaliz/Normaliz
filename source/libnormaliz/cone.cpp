@@ -6328,6 +6328,9 @@ void Cone<Integer>::setNumericalParams(const map<NumParam::Param, long>& num_par
     np = num_params.find(NumParam::gb_min_degree);
     if (np != num_params.end())
         setGBMinDegree(np->second);
+    np = num_params.find(NumParam::nr_splits);
+    if (np != num_params.end())
+        setNrSplits(np->second);
 }
 
 template <typename Integer>
@@ -6438,6 +6441,11 @@ void Cone<Integer>::setGBDegreeBound(const long degree_bound) {
 template <typename Integer>
 void Cone<Integer>::setGBMinDegree(const long min_degree) {
     gb_min_degree = min_degree;
+}
+
+template <typename Integer>
+void Cone<Integer>::setNrSplits(const long nr_splits) {
+    split_modulus = nr_splits; /// split_modulues is global variable
 }
 
 /* <Out of use
@@ -7188,6 +7196,9 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
         Raw.resize_columns(dim);
     }
 
+    if(ToCompute.test(ConeProperty::DistributedComp))
+        setComputed(ConeProperty::DistributedComp);
+
     if(!ToCompute.test(ConeProperty::Approximate) // we can simply sweap the matrices
             || !(CongOri.nr_of_rows() > 0 || isPolynomiallyConstrained() ) ){
         if (inhomogeneous)
@@ -7330,6 +7341,8 @@ void Cone<renf_elem_class>::project_and_lift(const ConeProperties& ToCompute,
         PL.set_patching_allowed(!ToCompute.test(ConeProperty::NoPatching));
         PL.set_cong_order_patches(ToCompute.test(ConeProperty::CongOrderPatches));
         PL.set_linear_order_patches(ToCompute.test(ConeProperty::LinearOrderPatches));
+        if(split_patch == -1) // must exclude Split and DistributedComp simultaneously
+            PL.set_distributed_computation(ToCompute.test(ConeProperty::DistributedComp));
     }
 
     PL.set_grading_denom(1);
@@ -7450,6 +7463,8 @@ void Cone<Integer>::project_and_lift(const ConeProperties& ToCompute,
                     PL.set_patching_allowed(!ToCompute.test(ConeProperty::NoPatching));
                     PL.set_cong_order_patches(ToCompute.test(ConeProperty::CongOrderPatches));
                     PL.set_linear_order_patches(ToCompute.test(ConeProperty::LinearOrderPatches));
+                    if(split_patch == -1) // must exclude Split and DistributedComp simultaneously
+                        PL.set_distributed_computation(ToCompute.test(ConeProperty::DistributedComp));
                 }
                 PL.set_grading_denom(GDMI);
                 vector<MachineInteger> GOPMI;
@@ -7508,8 +7523,10 @@ void Cone<Integer>::project_and_lift(const ConeProperties& ToCompute,
                 PL.set_primitive();
                 PL.set_LLL(false);
                 PL.set_patching_allowed(!ToCompute.test(ConeProperty::NoPatching));
-                    PL.set_cong_order_patches(ToCompute.test(ConeProperty::CongOrderPatches));
-                    PL.set_linear_order_patches(ToCompute.test(ConeProperty::LinearOrderPatches));
+                PL.set_cong_order_patches(ToCompute.test(ConeProperty::CongOrderPatches));
+                PL.set_linear_order_patches(ToCompute.test(ConeProperty::LinearOrderPatches));
+                if(split_patch == -1) // must exclude Split and DistributedComp simultaneously
+                    PL.set_distributed_computation(ToCompute.test(ConeProperty::DistributedComp));
             }
             PL.set_grading_denom(GradingDenom);
             PL.set_grading(GradingOnPolytope);
@@ -9684,6 +9701,8 @@ long Cone<Integer>::getMachineIntegerConeProperty(ConeProperty::Enum property) {
             return this->getEmbeddingDim();
         case ConeProperty::NumberLatticePoints:
             return this->getNumberLatticePoints();
+        case ConeProperty::CodimSingularLocus:
+            return this->getCodimSingularLocus();
         default:
             throw FatalException("Machine integer property without output");
     }

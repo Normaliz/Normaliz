@@ -131,6 +131,10 @@ class OptionsHandler {
         return use_add_chunks;
     }
 
+    inline bool isUseSplit() const {
+        return use_split;
+    }
+
     inline bool isNoExtRaysOutput() const {
         return no_ext_rays_output;
     }
@@ -180,6 +184,7 @@ class OptionsHandler {
     bool no_matrices_output;
     bool no_hilbert_basis_output;
     bool binomials_packed;
+    bool use_split;
 
     bool ignoreInFileOpt;
 
@@ -215,6 +220,7 @@ inline OptionsHandler::OptionsHandler() {
     no_matrices_output = false;
     no_hilbert_basis_output = false;
     binomials_packed = false;
+    use_split = false;
 }
 
 template <typename Integer>

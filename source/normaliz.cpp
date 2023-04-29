@@ -219,6 +219,7 @@ void compute_and_output(OptionsHandler& options,
     MyCone.setFaceCodimBound(face_codim_bound);*/
     MyCone.setRenf(number_field);
     MyCone.setProjectName(options.getProjectName());
+    global_project = options.getProjectName();
     try {
         MyCone.compute(options.getToCompute());
         if (add_input.size() > 0) {
@@ -241,6 +242,13 @@ void compute_and_output(OptionsHandler& options,
         }
         cout << "Writing only available data." << endl;
     }
+
+    if(split_patch != -1){
+        cout << "No file <project>.out for split computation" << endl;
+        MeasureGlobalTime(verbose);
+        exit(0);
+    }
+
     Out.setCone(MyCone);
     Out.set_renf(number_field);
 
@@ -350,6 +358,16 @@ int process_data(OptionsHandler& options, const string& command_line) {
             exit(0);
         }
 
+        if(options.isUseSplit()){
+            string name = options.getProjectName() + ".split.data";
+            ifstream split_control(name.c_str());
+            split_control >> split_patch >> split_modulus;
+            if(split_res >= split_modulus){
+                cerr << "Index of split too large, must be < " << split_modulus << endl;
+                exit(1);
+            }
+        }
+
         GlobalTimeBound = -1.0;
         GlobalPredictionTimeBound = -1.0;
         string name_time = "normaliz.time";
@@ -373,6 +391,19 @@ int process_data(OptionsHandler& options, const string& command_line) {
             }
             in_time.close();
         }
+
+        /* string name_split = "normaliz.split";
+        const char* file_split = name_split.c_str();
+        ifstream in_split;
+        in_split.open(file_split, ifstream::in);
+        if (in_split.is_open()) {
+            in_split >> split_patch >> split_modulus >> split_res;
+            if(in_split.fail()){
+                verboseOutput() << "Split data incomplete" << endl;
+                exit(1);
+            }
+            in_split.close();
+        }*/
 
         string name_in = options.getProjectName() + ".in";
         const char* file_in = name_in.c_str();

@@ -32,8 +32,22 @@ using std::string;
 using std::list;
 using std::pair;
 
+const size_t default_nr_splits = 500;
 //---------------------------------------------------------------------------
 
+void write_control_file(const size_t distribution_patch, size_t nr_spl){
+
+        string name = global_project +".split.data";
+        ofstream out(name.c_str());
+        if(nr_spl == -1){
+            nr_spl = default_nr_splits;
+        }
+        out << distribution_patch << " " << nr_spl << " " << endl;
+        if(verbose)
+            verboseOutput() << "split_patch " << distribution_patch << " split_modulus " << nr_spl << endl;
+        assert(!out.fail());
+        out.close();
+}
 
 template <typename Integer>
 Matrix<Integer> reconstruct_equations(const Matrix<Integer>& Inequalities){
@@ -889,20 +903,46 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_latt_points_by_patching() {
     if(verbose)
         verboseOutput() << "Final number of lattice points "  << NrLP[EmbDim] << endl;
 
-    if(!only_single_point){
+    if(!only_single_point && !distributed_computation){
         for(auto& n: NrRemainingLP){
                 assert(n == 0);
         }
     }
+
+    if(split_patch != -1){
+        string name = global_project + "." + to_string(split_res);
+        Matrix<IntegerRet> Result(Deg1Points);
+        cout << Result.nr_of_rows() << endl;
+        Result.print(name,"lat");
+    }
 }
 
-const size_t max_nr_new_latt_points_total = 1000000;
+const size_t max_nr_new_latt_points_total = 2000000;
 const size_t nr_new_latt_points_for_elimination_equs = 10000;
 
 //---------------------------------------------------------------------------
 
 template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vector<IntegerRet> >& LatticePoints, const key_t this_patch) {
+
+    if(split_patch == (long) this_patch){
+        assert(!distributed_computation);
+        if(verbose)
+            verboseOutput() << "Spilt level " << split_patch << " modulus " << split_modulus << " residue " << split_res << endl;
+        LatticePoints.sort();
+        list<vector<IntegerRet> > Selection;
+        long i = 0;
+        for(auto& p: LatticePoints){
+            if(i% split_modulus == split_res)
+                Selection.push_back(p);
+            i++;
+        }
+        swap(LatticePoints, Selection);
+    }
+
+    if(distributed_computation){
+        LatticePoints.sort();
+    }
 
     size_t max_nr_per_thread =  max_nr_new_latt_points_total/ omp_get_max_threads();
 
@@ -998,8 +1038,10 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         LocalSolutions.append(LocalSolutionsNow);
 
 #ifdef NMZ_DEVELOP
-    if(verbose)
+    if(verbose){
+        // verboseOutput() << "****************" << endl;
         verboseOutput() << "Local solutions total " << LocalSolutions.nr_of_rows() << " new " << LocalSolutionsNow.nr_of_rows() << endl;
+    }
 #endif
 
     // Next the newly computed extensions are registered
@@ -1059,10 +1101,11 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
 #endif
         size_t nr_points_done_in_this_round = 0;
 
-#ifdef NMZ_DEVELOP
+/* #ifdef NMZ_DEVELOP
         struct timeval time_begin;
         StartTime(time_begin);
 #endif
+*/
 
         vector<vector<size_t> > poly_equs_stat; // TODO make macro
         vector<size_t> poly_equs_stat_total;
@@ -1321,6 +1364,11 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
 
        NrRemainingLP[this_patch] = nr_to_match - nr_points_matched;
 
+       if(NrRemainingLP[this_patch] > 0 && distributed_computation){
+           write_control_file(this_patch, split_modulus);
+           return;
+       }
+
        if(min_fall_back == 0 && NrRemainingLP[this_patch] == 0){
             LocalSolutions_by_intersecion.clear();
             LocalSolutions.resize(0);
@@ -1361,17 +1409,20 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
 
 #ifdef NMZ_DEVELOP
         if(nr_points_done_in_this_round > 0 && NrRemainingLP[this_patch] > 0){
-            // cout << "expected rounds " << expected_number_of_rounds << endl;
+            // cout << "nr_rounds " << nr_rounds << " expected rounds " << expected_number_of_rounds << endl;
             double time_spent = MeasureTime(time_begin);
             double time_per_round = time_spent/nr_rounds;
-            // cout << "spent " << time_spent << endl;
+            // cout << "spent " << time_spent << " time_per_round " << time_per_round << endl;
             double expected_time = time_per_round*expected_number_of_rounds;
             if(verbose)
                 verboseOutput() << "expected future time on level  " << LevelPatches[coord] << "  " << expected_time << " sec " << endl;
+            /*if(verbose) {
+                verboseOutput() << "==============================" << endl;
+            }*/
             if(GlobalPredictionTimeBound > 0 && expected_time > GlobalPredictionTimeBound){
                     verboseOutput() << "expected time exceeds bound of " << GlobalPredictionTimeBound << "sec" << endl;
                     exit(1);
-                }
+            }
         }
 #endif
 
@@ -2369,6 +2420,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::initialize(const Matrix<IntegerPL>& 
     only_single_point = false; // if in case don't come via compute
     linear_order_patches = false;
     cong_order_patches = false;
+    distributed_computation = false;
     TotalNrLP = 0;
     NrLP.resize(EmbDim + 1);
 
@@ -2494,6 +2546,12 @@ void ProjectAndLift<IntegerPL, IntegerRet>::set_primitive() {
 
 //---------------------------------------------------------------------------
 template <typename IntegerPL, typename IntegerRet>
+void ProjectAndLift<IntegerPL, IntegerRet>::set_distributed_computation(const bool on_off) {
+    distributed_computation = on_off;
+}
+
+//---------------------------------------------------------------------------
+template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL, IntegerRet>::set_patching_allowed(bool on_off) {
     patching_allowed = on_off;
 }
@@ -2535,6 +2593,9 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute(bool all_points, bool liftin
     if (!using_GMP<IntegerRet>() && !using_renf<IntegerRet>() && test_arith_overflow_proj_and_lift)
         throw ArithmeticException(0);
 #endif
+
+    if(split_patch != -1)
+        distributed_computation = false;
 
     assert(all_points || !lifting_float);  // only all points allowed with float
 

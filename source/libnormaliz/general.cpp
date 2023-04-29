@@ -90,6 +90,12 @@ bool int_max_value_primary_long_long_computed = false;
 
 vector<vector<vector<long> > > CollectedAutoms(default_thread_limit);  // for use in nmz_nauty.cpp
 
+long split_patch = -1;
+long split_modulus = -1;
+long split_res = -1;
+
+std::string global_project;
+
 #ifdef NMZ_EXTENDED_TESTS
 bool test_arith_overflow_full_cone = false;
 bool test_arith_overflow_dual_mode = false;

@@ -106,6 +106,7 @@ class ProjectAndLift {
     bool patching_allowed; // if true blocks patching
     bool only_single_point;
     bool single_point_found;
+    bool distributed_computation;
 
     // data for patching method
     vector<dynamic_bitset> Indicator; // indicaor of nonzero coordinates in inequality
@@ -214,6 +215,7 @@ class ProjectAndLift {
     void set_startList(const list<vector<IntegerRet> >& start_from);
     void set_linear_order_patches(const bool on_off);
     void set_cong_order_patches(const bool on_off);
+    void set_distributed_computation(const bool on_off);
 
     void compute(bool do_all_points = true, bool lifting_float = false, bool count_only = false);
     void compute_only_projection(size_t down_to);

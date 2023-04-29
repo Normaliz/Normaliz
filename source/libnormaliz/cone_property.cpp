@@ -717,6 +717,7 @@ void ConeProperties::check_compatibility_with_polynomial_constraints(bool inhomo
     wanted.reset(ConeProperty::AffineDim);
     wanted.reset(ConeProperty::NumberLatticePoints);
     wanted.reset(ConeProperty::SingleLatticePoint);
+    wanted.reset(ConeProperty::DistributedComp);
     if(inhomogeneous)
         wanted.reset(ConeProperty::HilbertBasis);
     if(wanted.any()){
@@ -846,6 +847,9 @@ void ConeProperties::check_sanity(bool inhomogeneous) {  //, bool input_automorp
 
     if ((CPs.test(ConeProperty::Approximate) || CPs.test(ConeProperty::DualMode)) && CPs.test(ConeProperty::NumberLatticePoints))
         throw BadInputException("NumberLatticePoints not compuiable with DualMode or Approximate.");
+
+    if(CPs.test(ConeProperty::DistributedComp) && CPs.test(ConeProperty::LatticePoints) && CPs.test(ConeProperty::SignedDec))
+        throw BadInputException("Only one of LatticePoints and SignedDec allowed with DistributedComp");
 
     size_t nr_triangs = 0;
     if (CPs.test(ConeProperty::UnimodularTriangulation))

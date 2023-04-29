@@ -95,42 +95,58 @@ bool OptionsHandler::handle_commandline(int argc, char* argv[]) {
     string ShortOptions;  // all options concatenated (including -)
     // read command line options
     for (int i = 1; i < argc; i++) {
-        if (argv[i][0] == '-') {
-            if (argv[i][1] != '\0') {
-                if (argv[i][1] != 'x') {
-                    if (argv[i][1] == '-') {
-                        string LO = argv[i];
-                        LO.erase(0, 2);
-                        LongOptions.push_back(LO);
-                    }
-                    else
-                        ShortOptions = ShortOptions + argv[i];
-                }
-                else if (argv[i][2] == '=') {
-#ifdef _OPENMP
-                    string Threads = argv[i];
-                    Threads.erase(0, 3);
-                    if ((istringstream(Threads) >> nr_threads) && nr_threads >= 0) {
-                        set_thread_limit(nr_threads);
-                        // omp_set_num_threads(nr_threads); -- now in cone.cpp
-                    }
-                    else {
-                        cerr << "Error: Invalid option string " << argv[i] << endl;
-                        exit(1);
-                    }
-#else
-                    cerr << "Warning: Compiled without OpenMP support, option " << argv[i] << " ignored." << endl;
-#endif
-                }
-                else {
-                    cerr << "Error: Invalid option string " << argv[i] << endl;
-                    exit(1);
-                }
-            }
-        }
-        else {
+        if(argv[i][0] != '-') { // our project
             setProjectName(argv[i]);
+            continue;
         }
+        if (argv[i][1] == '\0') // only -, disregard
+            continue;
+
+        if (argv[i][1] != 'x' && argv[i][1] != 'X') {
+            if (argv[i][1] == '-') { // test for long option
+                string LO = argv[i];
+                LO.erase(0, 2);
+                LongOptions.push_back(LO);
+            }
+            else
+                ShortOptions = ShortOptions + argv[i];
+            continue;
+        }
+        if (argv[i][2] != '='){   // must now be of type -?=
+            cerr << "Error: Invalid option string " << argv[i] << endl;
+            exit(1);
+        }
+
+        if(argv[i][1] == 'x'){
+#ifdef _OPENMP
+            string Threads = argv[i];
+            Threads.erase(0, 3);
+            if ((istringstream(Threads) >> nr_threads) && nr_threads >= 0) {
+                set_thread_limit(nr_threads);
+                // omp_set_num_threads(nr_threads); -- now in cone.cpp
+            }
+            else {
+                cerr << "Error: Invalid option string " << argv[i] << endl;
+                exit(1);
+            }
+#else
+            cerr << "Warning: Compiled without OpenMP support, option " << argv[i] << " ignored." << endl;
+#endif
+            continue;
+        }
+
+        if(argv[i][1] == 'X'){ // used for split processing
+            string Split = argv[i];
+            Split.erase(0, 3);
+            if ((!(istringstream(Split) >> split_res) && split_res >= 0)) {
+                cerr << "Error: Invalid option string " << argv[i] << endl;
+                exit(1);
+            }
+            continue;
+        }
+
+        cerr << "Error: Invalid option string " << argv[i] << endl;
+        exit(1);
     }
     return handle_options(LongOptions, ShortOptions);
 }
@@ -246,6 +262,10 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
                 cerr << "Error: Option -x=<T> has to be separated from other options" << endl;
                 exit(1);
                 break;
+            case 'X':  // should be separated from other options
+                cerr << "Error: Option -X=<S> has to be separated from other options" << endl;
+                exit(1);
+                break;
             case 'I':
                 to_compute.set(ConeProperty::Integral);
                 break;
@@ -269,9 +289,6 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
                 break;
             case 'Y':
                 to_compute.set(ConeProperty::Symmetrize);
-                break;
-            case 'X':
-                to_compute.set(ConeProperty::NoSymmetrization);
                 break;
             case 'G':
                 to_compute.set(ConeProperty::IsGorenstein);
@@ -337,6 +354,10 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
         }
         if (LongOption == "Chunk") {
             use_chunk = true;
+            continue;
+        }
+        if (LongOption == "Split") {
+            use_split = true;
             continue;
         }
         if (LongOption == "AddChunks") {
