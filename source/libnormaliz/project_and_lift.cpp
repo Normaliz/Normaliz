@@ -380,11 +380,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
 
         vector<key_t> intersection_key = bitset_to_key(intersection_coods); // w.r.t. full coordinates
         vector<key_t> new_coords_key = bitset_to_key(new_coords); // w.r.t. to full coordinates
-        // AllIntersectionsKey is based on IntegerRet
-        for(auto& k: intersection_key){
-            long long_k = k;
-            AllIntersections_key[coord].push_back(convertTo<IntegerRet>(long_k));
-        }
+        AllIntersections_key[coord] = intersection_key;
         AllNew_coords_key[coord] = new_coords_key;
 
 #ifdef NMZ_DEVELOP
@@ -926,9 +922,9 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_latt_points_by_patching() {
 
 // evaluate congruence partially and return negative of result
 template <typename IntegerRet>
-IntegerRet eval_cong_partially_neg(const OurPolynomialCong<IntegerRet>& cong,
+IntegerRet eval_cong_partially(const OurPolynomialCong<IntegerRet>& cong,
                                   const vector<IntegerRet>& local_solution_new,
-                                  const dynamic_bitset& restriction){
+                                  const dynamic_bitset& restriction, const bool take_neg){
 
     IntegerRet res = cong.poly.evaluate_restricted(local_solution_new, restriction);
     res %= cong.modulus;
@@ -936,7 +932,7 @@ IntegerRet eval_cong_partially_neg(const OurPolynomialCong<IntegerRet>& cong,
     if(res < 0)
         res += cong.modulus;
     // res = -res mod modulus
-    if(res != 0)
+    if(take_neg && res != 0)
         res = cong.modulus - res;
     return res;
 }
@@ -1071,6 +1067,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
 #endif
 
     // Next the newly computed extensions are registered
+    // based on overlap and the values of the congruences
+    // This allows only patchings that satisfy the congr5uences
     vector<IntegerRet> overlap_plus_cong(intersection_key.size());
     size_t nr_intersect = intersection_key.size();
     size_t nr_cong = CongsRestricted.size();
@@ -1078,13 +1076,17 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
     for(size_t i = nr_old_solutions; i < LocalSolutions.nr_of_rows(); i++){
         for(size_t j = 0; j < intersection_key.size(); ++j)
             overlap_plus_cong[j] = LocalSolutions[i][j];
-        // insert coordinates of local solution into place in full vector
+        // insert "new" coordinates of local solution into place in full vector
+        // On overlap the congruences will be evaluated below
+        // We need that the eval on the new coordinates = - eval on the
+        // other coordiantes
         vector<IntegerRet> local_solution_new(EmbDim);
         for(size_t k = 0; k < new_coords_key.size(); ++k)
             local_solution_new[new_coords_key[k]] = LocalSolutions[i][nr_intersect + k];
-        for(size_t k = 0; k < nr_cong; ++k)
+        for(size_t k = 0; k < nr_cong; ++k){
             overlap_plus_cong[nr_intersect + k] =
-                eval_cong_partially_neg(CongsRestricted[k],local_solution_new, new_coords_ind);
+                eval_cong_partially(CongsRestricted[k],local_solution_new, new_coords_ind, true);
+        }
         LocalSolutions_by_intersecion[overlap_plus_cong].push_back(i);
     }
 
