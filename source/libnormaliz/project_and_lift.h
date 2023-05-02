@@ -117,7 +117,9 @@ class ProjectAndLift {
     vector<key_t> InsertionOrderPatches;
     vector<key_t> LevelPatches; // index of coord in InsertionOrderPatches
     vector<Matrix<IntegerRet> > AllLocalSolutions; // "local" solutions that will be patched
-    vector< map<vector<IntegerRet>, vector<key_t> >> AllLocalSolutions_by_intersecion;
+
+    vector< map< vector<IntegerRet>, map< vector<IntegerRet>, vector<key_t>  > > >  AllLocalSolutions_by_intersection_and_cong;
+
     vector<vector<key_t> > AllIntersections_key;
     vector<vector<key_t> > AllNew_coords_key;
     vector<dynamic_bitset > AllCovered;

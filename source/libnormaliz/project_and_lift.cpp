@@ -280,7 +280,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
 
     NrRemainingLP.resize(EmbDim,0);
     NrDoneLP.resize(EmbDim,0);
-    AllLocalSolutions_by_intersecion.resize(EmbDim);
+    AllLocalSolutions_by_intersection_and_cong.resize(EmbDim);
     AllLocalSolutions.resize(EmbDim);
 
     DefiningSupps.resize(EmbDim);
@@ -1012,14 +1012,15 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
     vector<OurPolynomialSystem<IntegerRet>>& PolyInequsThread = AllPolyInequsThread[coord];
 
     ProjectAndLift<IntegerPL, IntegerRet>& LocalPL = AllLocalPL[coord];
-    map<vector<IntegerRet>, vector<key_t> >& LocalSolutions_by_intersecion = AllLocalSolutions_by_intersecion[coord];
+    map< vector<IntegerRet>, map< vector<IntegerRet>, vector<key_t> > >& LocalSolutions_by_intersection_and_cong =
+            AllLocalSolutions_by_intersection_and_cong[coord];
+
     Matrix<IntegerRet>& LocalSolutions = AllLocalSolutions[coord];
     dynamic_bitset covered = AllCovered[coord];
 
     vector<OurPolynomialCong<IntegerRet> >& CongsRestricted = AllCongsRestricted[coord];
 
     vector<key_t> CoveredKey = bitset_to_key(covered);
-    // cout << "Covered " << CoveredKey;
 
     // We extract the "intersection coordinates" from the LatticePoints
     // and extend them to solutions of the local system LocalPL
@@ -1038,9 +1039,11 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
     // We must remove those from start_list whose extension has already been computed
     // and initialize the others.
 
+    // Matrix<IntegerRet>(start_list).debug_print();
+
     for(auto IC = start_list.begin(); IC != start_list.end(); ){
-        if(LocalSolutions_by_intersecion.find(*IC) == LocalSolutions_by_intersecion.end()){
-            LocalSolutions_by_intersecion[*IC] = {};
+        if(LocalSolutions_by_intersection_and_cong.find(*IC) == LocalSolutions_by_intersection_and_cong.end()){
+            LocalSolutions_by_intersection_and_cong[*IC] = {};
             IC++;
         }
         else{
@@ -1048,7 +1051,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         }
     }
 
-    // Now we extend the "new" intersection coordinates" by the local system
+    // Now we extend the "new" intersection coordinates by the local system
     LocalPL. set_startList(start_list);
     LocalPL.lift_points_to_this_dim(start_list); // computes the extensions
     Matrix<IntegerRet> LocalSolutionsNow(0, intersection_key.size() + new_coords_key.size());
@@ -1064,31 +1067,60 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         // verboseOutput() << "****************" << endl;
         verboseOutput() << "Local solutions total " << LocalSolutions.nr_of_rows() << " new " << LocalSolutionsNow.nr_of_rows() << endl;
     }
+    // LocalSolutionsNow.debug_print('$');
 #endif
 
     // Next the newly computed extensions are registered
-    // based on overlap and the values of the congruences
+    // based on overlap,
+    // and for each overlap by the partial values of the congruences.
     // This allows only patchings that satisfy the congr5uences
-    vector<IntegerRet> overlap_plus_cong(intersection_key.size());
+    vector<IntegerRet> overlap(intersection_key.size());
     size_t nr_intersect = intersection_key.size();
     size_t nr_cong = CongsRestricted.size();
+    vector<IntegerRet> partial_cong_values(nr_cong);
     dynamic_bitset new_coords_ind = key_to_bitset(new_coords_key, EmbDim);
-    for(size_t i = nr_old_solutions; i < LocalSolutions.nr_of_rows(); i++){
-        for(size_t j = 0; j < intersection_key.size(); ++j)
-            overlap_plus_cong[j] = LocalSolutions[i][j];
+
+    for(size_t i = nr_old_solutions; i < LocalSolutions.nr_of_rows(); i++){ // take only the new solutions
+       for(size_t j = 0; j < intersection_key.size(); ++j)
+            overlap[j] = LocalSolutions[i][j];
         // insert "new" coordinates of local solution into place in full vector
         // On overlap the congruences will be evaluated below
-        // We need that the eval on the new coordinates = - eval on the
+        // For patching we need that the eval on the new coordinates = - eval on the
         // other coordiantes
         vector<IntegerRet> local_solution_new(EmbDim);
         for(size_t k = 0; k < new_coords_key.size(); ++k)
             local_solution_new[new_coords_key[k]] = LocalSolutions[i][nr_intersect + k];
         for(size_t k = 0; k < nr_cong; ++k){
-            overlap_plus_cong[nr_intersect + k] =
+            partial_cong_values[k] =
                 eval_cong_partially(CongsRestricted[k],local_solution_new, new_coords_ind, true);
         }
-        LocalSolutions_by_intersecion[overlap_plus_cong].push_back(i);
-    }
+
+        if(LocalSolutions_by_intersection_and_cong.find(overlap) != LocalSolutions_by_intersection_and_cong.end()){
+            if(LocalSolutions_by_intersection_and_cong[overlap].find(partial_cong_values)
+                        != LocalSolutions_by_intersection_and_cong[overlap].end()) {
+                LocalSolutions_by_intersection_and_cong[overlap][partial_cong_values].push_back(i);
+            }
+            else{
+                LocalSolutions_by_intersection_and_cong[overlap][partial_cong_values] ={};
+                LocalSolutions_by_intersection_and_cong[overlap][partial_cong_values].push_back(i);
+            }
+        }
+        else{
+            LocalSolutions_by_intersection_and_cong[overlap] = {};
+            LocalSolutions_by_intersection_and_cong[overlap][partial_cong_values] ={};
+            LocalSolutions_by_intersection_and_cong[overlap][partial_cong_values].push_back(i);
+        }
+    }  // for i
+
+    /* cout << "LLLLL " << LocalSolutions_by_intersection_and_cong.size() << endl;
+    for(auto& LL: LocalSolutions_by_intersection_and_cong){
+            cout << "overlap " << LL.first;
+            for(auto& MM: LL.second){
+                cout << "    cong " << MM.first;
+                cout << "    $$$$ " << MM.second;
+            }
+    }*/
+
 
     bool last_coord = (coord == InsertionOrderPatches.back());
 
@@ -1105,6 +1137,9 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         StartTime(time_begin);
         size_t nr_rounds = 0;
 #endif
+
+        dynamic_bitset full_coords_ind(EmbDim);
+        full_coords_ind.flip();
 
     while (true) {
 
@@ -1135,7 +1170,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
 #ifdef NMZ_DEVELOP
         size_t nr_caught_by_restricted = 0;  //restricted inequalities
         size_t nr_caught_by_equations = 0;  //statistics for this run of the while loop
-        size_t nr_caught_by_congs = 0;  //statistics for this run of the while loop
+        // size_t nr_caught_by_congs = 0;  //statistics for this run of the while loop
 #endif
         size_t nr_points_done_in_this_round = 0;
 
@@ -1163,19 +1198,25 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
             poly_inequs_stat_total.resize(poly_inequs_stat[0].size());
         }
 
-        vector<vector<size_t> > poly_congs_stat;
+        /*vector<vector<size_t> > poly_congs_stat;
         vector<size_t> poly_congs_stat_total;
         if(!poly_congs_minimized[coord]){
             poly_congs_stat.resize(omp_get_max_threads());  // counts the number of "successful". i.e. != 0,
             for(auto& p:poly_congs_stat)                    // evaluations of a mpolynomial erquation
                 p.resize(CongsRestricted.size());
             poly_congs_stat_total.resize(poly_congs_stat[0].size());
-        }
+        }*/
+
+        size_t nr_intersect = intersection_key.size();
+        dynamic_bitset full_support(EmbDim);
+        full_support.flip();
 
 #pragma omp parallel
         {
 
-        vector<IntegerRet> overlap(intersection_key.size());
+        vector<IntegerRet> overlap(nr_intersect);
+        vector<IntegerRet> old_cong(CongsRestricted.size());
+
         vector<IntegerRet> NewLattPoint(EmbDim);
 
         int tn;
@@ -1195,9 +1236,9 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         list<key_t> order_poly_inequs;
         for(key_t k = 0; k < PolyInequsThread[tn].size(); ++k)
             order_poly_inequs.push_back(k);
-        list<key_t> order_poly_congs;
+        /*list<key_t> order_poly_congs;
         for(key_t k = 0; k < CongsRestricted.size(); ++k)
-            order_poly_congs.push_back(k);
+            order_poly_congs.push_back(k);*/
 
 #pragma omp for schedule(dynamic)
         for (size_t ppp = 0; ppp < nr_to_match; ++ppp) {
@@ -1224,15 +1265,25 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                 continue;
             }*/
 
-        try{  // now the given lattice points are extended along their overlaps
-            overlap = v_select_coordinates(*P, intersection_key);
+        NewLattPoint = *P;
+        overlap = v_select_coordinates(NewLattPoint, intersection_key);
+        for(size_t k = 0; k < CongsRestricted.size(); ++k)
+            old_cong[k]  = eval_cong_partially(CongsRestricted[k],NewLattPoint, full_coords_ind, false);
+
+        if(LocalSolutions_by_intersection_and_cong[overlap].find(old_cong)
+                    == LocalSolutions_by_intersection_and_cong[overlap].end()){
+            (*P)[0] = 0;
+            continue;
+        }
+
+        try{  // now the given lattice points are extended along their overlaps and congruence values
 
             // now the extensions of the overlap
-            for(auto& i: LocalSolutions_by_intersecion[overlap]){
+            for(auto& i: LocalSolutions_by_intersection_and_cong[overlap][old_cong]){
 
                 INTERRUPT_COMPUTATION_BY_EXCEPTION
 
-                NewLattPoint = *P;
+
                 for(size_t j = 0; j < new_coords_key.size(); ++j)
                     NewLattPoint[new_coords_key[j]] = LocalSolutions[i][j + intersection_key.size()];
 
@@ -1258,7 +1309,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                         }
                     }
                 }
-                if(can_be_inserted){
+                /* if(can_be_inserted){
                     for(auto pp = order_poly_congs.begin(); pp!= order_poly_congs.end(); ++pp){
                         if(!CongsRestricted[*pp].check(NewLattPoint)){
 #ifdef NMZ_DEVELOP
@@ -1273,7 +1324,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                             break;
                         }
                     }
-                }
+                }*/
                 if(can_be_inserted){
                     for(auto pp = order_poly_inequs.begin(); pp!= order_poly_inequs.end(); ++pp){
                         if(PolyInequsThread[tn][*pp].evaluate(NewLattPoint) < 0){
@@ -1326,14 +1377,14 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
             }
             // cout << "PPPP " << poly_equs_stat_total;
         }
-
+        /*
         if(!poly_congs_minimized[coord]){
             for(size_t i = 0; i< poly_congs_stat.size(); ++i){
                     for(size_t j = 0; j < poly_congs_stat[0].size(); ++j)
                         poly_congs_stat_total[j] += poly_congs_stat[i][j];
             }
             // cout << "PPPP " << poly_congs_stat_total;
-        }
+        }*/
 
         if(!poly_inequs_minimized[coord]){
             for(size_t i = 0; i< poly_equs_stat.size(); ++i){
@@ -1369,6 +1420,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                     PolyEqusThread[thr] = EffectivePolys;
         }
 
+        /*
        // the same for the congruences
        if(!poly_congs_minimized[coord] &&  nr_latt_points_total > nr_new_latt_points_for_elimination_equs){
             poly_congs_minimized[coord] = true;
@@ -1382,6 +1434,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                 verboseOutput() << LevelPatches[coord] << " / " << coord << " active polynomial congruences " << EffectivePolys.size() << " of " <<  CongsRestricted.size() << endl;
             CongsRestricted = EffectivePolys;
         }
+        */
+
 
         //Discard ineffective restrictable plolynjomial inequalities
         if(!poly_inequs_minimized[coord] &&  nr_latt_points_total > nr_new_latt_points_for_elimination_equs){
@@ -1408,7 +1462,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
        }
 
        if(min_fall_back == 0 && NrRemainingLP[this_patch] == 0){
-            LocalSolutions_by_intersecion.clear();
+            LocalSolutions_by_intersection_and_cong.clear();
             LocalSolutions.resize(0);
        }
 
@@ -1425,8 +1479,9 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                 verboseOutput() << " equ " << nr_caught_by_equations;
             if(PolyInequsThread[0].size() > 0)
                 verboseOutput() << " ine " << nr_caught_by_restricted;
+            /* assert(nr_caught_by_congs == 0);
             if(CongsRestricted.size() > 0)
-                verboseOutput() << " cgr " << nr_caught_by_congs;
+                verboseOutput() << " cgr " << nr_caught_by_congs;*/
             if(nr_points_done_in_this_round > 0)
                 verboseOutput() << " exp rnd " << expected_number_of_rounds;
             verboseOutput() << endl;
