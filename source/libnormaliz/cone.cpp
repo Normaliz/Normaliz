@@ -6328,9 +6328,6 @@ void Cone<Integer>::setNumericalParams(const map<NumParam::Param, long>& num_par
     np = num_params.find(NumParam::gb_min_degree);
     if (np != num_params.end())
         setGBMinDegree(np->second);
-    np = num_params.find(NumParam::nr_splits);
-    if (np != num_params.end())
-        setNrSplits(np->second);
 }
 
 template <typename Integer>
@@ -6441,11 +6438,6 @@ void Cone<Integer>::setGBDegreeBound(const long degree_bound) {
 template <typename Integer>
 void Cone<Integer>::setGBMinDegree(const long min_degree) {
     gb_min_degree = min_degree;
-}
-
-template <typename Integer>
-void Cone<Integer>::setNrSplits(const long nr_splits) {
-    split_modulus = nr_splits; /// split_modulues is global variable
 }
 
 /* <Out of use
@@ -7341,7 +7333,7 @@ void Cone<renf_elem_class>::project_and_lift(const ConeProperties& ToCompute,
         PL.set_patching_allowed(!ToCompute.test(ConeProperty::NoPatching));
         PL.set_cong_order_patches(ToCompute.test(ConeProperty::CongOrderPatches));
         PL.set_linear_order_patches(ToCompute.test(ConeProperty::LinearOrderPatches));
-        if(split_patch == -1) // must exclude Split and DistributedComp simultaneously
+        if(split_patches.size() == 0) // must exclude Split and DistributedComp simultaneously
             PL.set_distributed_computation(ToCompute.test(ConeProperty::DistributedComp));
     }
 
@@ -7463,7 +7455,7 @@ void Cone<Integer>::project_and_lift(const ConeProperties& ToCompute,
                     PL.set_patching_allowed(!ToCompute.test(ConeProperty::NoPatching));
                     PL.set_cong_order_patches(ToCompute.test(ConeProperty::CongOrderPatches));
                     PL.set_linear_order_patches(ToCompute.test(ConeProperty::LinearOrderPatches));
-                    if(split_patch == -1) // must exclude Split and DistributedComp simultaneously
+                    if(split_patches.size() == 0) // must exclude Split and DistributedComp simultaneously
                         PL.set_distributed_computation(ToCompute.test(ConeProperty::DistributedComp));
                 }
                 PL.set_grading_denom(GDMI);
@@ -7525,7 +7517,7 @@ void Cone<Integer>::project_and_lift(const ConeProperties& ToCompute,
                 PL.set_patching_allowed(!ToCompute.test(ConeProperty::NoPatching));
                 PL.set_cong_order_patches(ToCompute.test(ConeProperty::CongOrderPatches));
                 PL.set_linear_order_patches(ToCompute.test(ConeProperty::LinearOrderPatches));
-                if(split_patch == -1) // must exclude Split and DistributedComp simultaneously
+                if(split_patches.size() == 0) // must exclude Split and DistributedComp simultaneously
                     PL.set_distributed_computation(ToCompute.test(ConeProperty::DistributedComp));
             }
             PL.set_grading_denom(GradingDenom);

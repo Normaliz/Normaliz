@@ -243,7 +243,7 @@ void compute_and_output(OptionsHandler& options,
         cout << "Writing only available data." << endl;
     }
 
-    if(split_patch != -1){
+    if(split_patches.size() >0){
         cout << "No file <project>.out for split computation" << endl;
         MeasureGlobalTime(verbose);
         exit(0);
@@ -361,9 +361,18 @@ int process_data(OptionsHandler& options, const string& command_line) {
         if(options.isUseSplit()){
             string name = options.getProjectName() + ".split.data";
             ifstream split_control(name.c_str());
-            split_control >> split_patch >> split_modulus;
-            if(split_res >= split_modulus){
-                cerr << "Index of split too large, must be < " << split_modulus << endl;
+            long nr_split_patches;
+            split_control >> nr_split_patches;
+            split_patches.resize(nr_split_patches);
+            split_moduli.resize(nr_split_patches);
+            long nr_splits_total = 1;
+            for(long i = 0; i < nr_split_patches; ++i){
+                    split_control >> split_patches[i] >> split_moduli[i];
+                    nr_splits_total *= split_moduli[i];
+            }
+
+            if(split_res >= nr_splits_total){
+                cerr << "Index of split too large, must be < " << nr_splits_total << endl;
                 exit(1);
             }
         }

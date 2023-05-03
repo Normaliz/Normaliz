@@ -90,8 +90,8 @@ bool int_max_value_primary_long_long_computed = false;
 
 vector<vector<vector<long> > > CollectedAutoms(default_thread_limit);  // for use in nmz_nauty.cpp
 
-long split_patch = -1;
-long split_modulus = -1;
+vector<long> split_patches;
+vector<long> split_moduli;
 long split_res = -1;
 
 std::string global_project;

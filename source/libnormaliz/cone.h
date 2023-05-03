@@ -317,7 +317,6 @@ class Cone {
     void setBlocksizeHollowTri(long block_size);
     void setGBDegreeBound(const long degree_bound);
     void setGBMinDegree(const long min_degree);
-    void setNrSplits(const long nr_spl);
 
     void setProjectName(const string& my_project);
     string getProjectName() const;

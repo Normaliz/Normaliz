@@ -31,20 +31,17 @@ using std::vector;
 using std::string;
 using std::list;
 using std::pair;
-
-const size_t default_nr_splits = 500;
 //---------------------------------------------------------------------------
 
-void write_control_file(const size_t distribution_patch, size_t nr_spl){
+void write_control_file(const size_t split_patch){
 
         string name = global_project +".split.data";
         ofstream out(name.c_str());
-        if(nr_spl == -1){
-            nr_spl = default_nr_splits;
-        }
-        out << distribution_patch << " " << nr_spl << " " << endl;
+        out << "3 " << split_patch  << endl;
         if(verbose)
-            verboseOutput() << "split_patch " << distribution_patch << " split_modulus " << nr_spl << endl;
+            verboseOutput() << "split_patch " << split_patch << endl;;
+        for(size_t i = 0; i< 3; ++i)
+            out << "10 " << split_patch + 1 << " 10 " << split_patch + 2 << " 10" << endl;
         assert(!out.fail());
         out.close();
 }
@@ -53,6 +50,8 @@ template <typename Integer>
 Matrix<Integer> reconstruct_equations(const Matrix<Integer>& Inequalities){
 
     Matrix<Integer> Equations(0,Inequalities.nr_of_columns());
+    if(using_renf<Integer>())
+        return Equations;
     if(Inequalities.nr_of_rows() == 0)
         return Equations;
 
@@ -909,7 +908,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_latt_points_by_patching() {
         }
     }
 
-    if(split_patch != -1){
+    if(split_patches.size() > 0){
         string name = global_project + "." + to_string(split_res);
         Matrix<IntegerRet> Result(Deg1Points);
         cout << Result.nr_of_rows() << endl;
@@ -947,8 +946,19 @@ const size_t nr_new_latt_points_for_elimination_equs = 10000;
 template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vector<IntegerRet> >& LatticePoints, const key_t this_patch) {
 
-    if(split_patch == (long) this_patch){
+    key_t split_patch;
+    long split_modulus;
+    key_t max_split_patch = 0;
+    if(split_patches.size() > 0){
         assert(!distributed_computation);
+        for(size_t i = 0; i < split_patches.size(); ++i){
+            if(this_patch == split_patches[i]){
+                split_patch = split_patches[i];
+                split_modulus = split_moduli[i];
+            }
+
+        }
+        max_split_patch = split_patches.back();
         if(verbose)
             verboseOutput() << "Spilt level " << split_patch << " modulus " << split_modulus << " residue " << split_res << endl;
         LatticePoints.sort();
@@ -962,7 +972,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         swap(LatticePoints, Selection);
     }
 
-    if(distributed_computation){
+    if(distributed_computation){ // really necessary ??
         LatticePoints.sort();
     }
 
@@ -1351,7 +1361,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
             } // for i (inner for loop)
 
             (*P)[0] = 0;  // mark point as done
-            if (nr_points_in_thread > max_nr_per_thread && !last_coord) {  // thread is full
+            if ((max_split_patch == 0 || this_patch >= max_split_patch) &&  nr_points_in_thread > max_nr_per_thread && !last_coord) {  // thread is full and we are allowed to break
                 skip_remaining = true;
 
 #pragma omp flush(skip_remaining)
@@ -1457,7 +1467,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
        NrRemainingLP[this_patch] = nr_to_match - nr_points_matched;
 
        if(NrRemainingLP[this_patch] > 0 && distributed_computation){
-           write_control_file(this_patch, split_modulus);
+           write_control_file(this_patch);
            return;
        }
 
@@ -2687,7 +2697,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute(bool all_points, bool liftin
         throw ArithmeticException(0);
 #endif
 
-    if(split_patch != -1)
+    if(split_patches.size() > 0)
         distributed_computation = false;
 
     assert(all_points || !lifting_float);  // only all points allowed with float

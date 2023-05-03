@@ -139,7 +139,6 @@ enum Param {
     decimal_digits,
     gb_degree_bound,
     gb_min_degree,
-    nr_splits,
     not_a_num_param
 };
 }  // end namespace NumParam
@@ -386,8 +385,6 @@ inline NumParam::Param to_numpar(const string& type_string) {
         return NumParam::gb_degree_bound;
     if (type_string == "gb_min_degree")
         return NumParam::gb_min_degree;
-    if (type_string == "nr_splits")
-        return NumParam::nr_splits;
 
     return NumParam::not_a_num_param;
 }
@@ -411,8 +408,6 @@ inline string numpar_to_string(const NumParam::Param& numpar) {
         return "gb_degree_bound";
     if (numpar == NumParam::gb_min_degree)
         return "gb_min_degree";
-    if (numpar == NumParam::nr_splits)
-        return "nr_splits";
     if (numpar == NumParam::not_a_num_param)
         return "not_a_num_param";
     assert(false);
