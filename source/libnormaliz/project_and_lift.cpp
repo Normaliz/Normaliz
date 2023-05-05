@@ -37,11 +37,10 @@ void write_control_file(const size_t split_patch){
 
         string name = global_project +".split.data";
         ofstream out(name.c_str());
-        out << "3 " << split_patch  << endl;
+        out << "3 " << split_patch;
         if(verbose)
-            verboseOutput() << "split_patch " << split_patch << endl;;
-        for(size_t i = 0; i< 3; ++i)
-            out << "10 " << split_patch + 1 << " 10 " << split_patch + 2 << " 10" << endl;
+            verboseOutput() << "split_patch " << split_patch;
+        out << "10 " << split_patch + 1 << " 10 " << split_patch + 2 << " 10" << endl;
         assert(!out.fail());
         out.close();
 }
@@ -567,8 +566,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
             verboseOutput() << endl << "poly equations " << PolyEqusKey;
         if(verbose && PolyInequsKey.size() > 0)
             verboseOutput() << endl << " poly inequalities " << PolyInequsKey;
-        if(verbose && RestrictablePolyInequsKey.size() > 0)
-            verboseOutput() << endl <<  "restrictable poly inequalities " << RestrictablePolyInequsKey;
+        /* if(verbose && RestrictablePolyInequsKey.size() > 0)
+            verboseOutput() << endl <<  "restrictable poly inequalities " << RestrictablePolyInequsKey; */
         if(verbose)
             verboseOutput() << "---------------------------------------------------------------" << endl;
 #endif
@@ -745,6 +744,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_covers() {
 
     LevelPatches.resize(EmbDim);
 
+    /*
 #ifdef NMZ_DEVELOP
     if(verbose){
         for(size_t i = 0; i < EmbDim; ++i){
@@ -752,6 +752,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_covers() {
         }
     }
 #endif
+*/
 
     WeightOfCoord.resize(EmbDim,EmbDim);
     for(size_t i = 1; i< EmbDim; ++i){
@@ -812,6 +813,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_covers() {
 
     sort(covering_equations.begin(), covering_equations.end());
 
+/*
 #ifdef NMZ_DEVELOP
     if(verbose){
         for(auto& N: covering_equations){
@@ -820,6 +822,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_covers() {
         verboseOutput() << endl;
     }
 #endif
+*/
 
     size_t dim = EmbDim;
 
@@ -938,7 +941,7 @@ IntegerRet eval_cong_partially(const OurPolynomialCong<IntegerRet>& cong,
 
 //---------------------------------------------------------------------------
 
-const size_t max_nr_new_latt_points_total = 2000000;
+const size_t max_nr_new_latt_points_total = 1000000;
 const size_t nr_new_latt_points_for_elimination_equs = 10000;
 
 //---------------------------------------------------------------------------
@@ -946,30 +949,34 @@ const size_t nr_new_latt_points_for_elimination_equs = 10000;
 template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vector<IntegerRet> >& LatticePoints, const key_t this_patch) {
 
-    key_t split_patch;
     long split_modulus;
     key_t max_split_patch = 0;
+    long this_split_res = -1;
+    bool do_split = false;
     if(split_patches.size() > 0){
         assert(!distributed_computation);
         for(size_t i = 0; i < split_patches.size(); ++i){
             if(this_patch == split_patches[i]){
-                split_patch = split_patches[i];
                 split_modulus = split_moduli[i];
+                this_split_res = split_residues[i];
+                do_split = true;
+                break;
             }
-
         }
-        max_split_patch = split_patches.back();
-        if(verbose)
-            verboseOutput() << "Spilt level " << split_patch << " modulus " << split_modulus << " residue " << split_res << endl;
-        LatticePoints.sort();
-        list<vector<IntegerRet> > Selection;
-        long i = 0;
-        for(auto& p: LatticePoints){
-            if(i% split_modulus == split_res)
-                Selection.push_back(p);
-            i++;
+        if(do_split){
+            max_split_patch = split_patches.back();
+            if(verbose)
+                verboseOutput() << "Spilt level " << this_patch << " modulus " << split_modulus << " residue " << this_split_res << endl;
+            LatticePoints.sort();
+            list<vector<IntegerRet> > Selection;
+            long i = 0;
+            for(auto& p: LatticePoints){
+                if(i% split_modulus == this_split_res)
+                    Selection.push_back(p);
+                i++;
+            }
+            swap(LatticePoints, Selection);
         }
-        swap(LatticePoints, Selection);
     }
 
     if(distributed_computation){ // really necessary ??
@@ -1361,7 +1368,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
             } // for i (inner for loop)
 
             (*P)[0] = 0;  // mark point as done
-            if ((max_split_patch == 0 || this_patch >= max_split_patch) &&  nr_points_in_thread > max_nr_per_thread && !last_coord) {  // thread is full and we are allowed to break
+            if(this_patch >= max_split_patch &&  nr_points_in_thread > max_nr_per_thread && !last_coord) {  // thread is full and we are allowed to break
                 skip_remaining = true;
 
 #pragma omp flush(skip_remaining)

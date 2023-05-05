@@ -92,6 +92,7 @@ vector<vector<vector<long> > > CollectedAutoms(default_thread_limit);  // for us
 
 vector<long> split_patches;
 vector<long> split_moduli;
+vector<long> split_residues;
 long split_res = -1;
 
 std::string global_project;

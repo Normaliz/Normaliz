@@ -375,6 +375,17 @@ int process_data(OptionsHandler& options, const string& command_line) {
                 cerr << "Index of split too large, must be < " << nr_splits_total << endl;
                 exit(1);
             }
+            long res = split_res;
+            split_residues.resize(nr_split_patches);
+            for(long i = 0; i < nr_split_patches; ++i){
+                split_residues[i] = res % split_moduli[i];
+                res /=  split_moduli[i];
+            }
+            if(verbose){
+                verboseOutput() << "split levels " << split_patches;
+                verboseOutput() << "split moduli " << split_moduli;
+                verboseOutput() << "split residues " << split_residues;
+            }
         }
 
         GlobalTimeBound = -1.0;
