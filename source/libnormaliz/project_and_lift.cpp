@@ -37,7 +37,7 @@ void write_control_file(const size_t split_patch){
 
         string name = global_project +".split.data";
         ofstream out(name.c_str());
-        out << "3 " << split_patch;
+        out << "3 " << split_patch << " ";
         if(verbose)
             verboseOutput() << "split_patch " << split_patch;
         out << "10 " << split_patch + 1 << " 10 " << split_patch + 2 << " 10" << endl;
@@ -975,7 +975,9 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                     Selection.push_back(p);
                 i++;
             }
+
             swap(LatticePoints, Selection);
+            Selection.clear();
         }
     }
 
