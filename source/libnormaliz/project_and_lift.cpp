@@ -561,13 +561,15 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
 
 #ifdef NMZ_DEVELOP
         if(verbose)
-            verboseOutput() << endl << "index coord " << coord << " nr covered coordinates " << new_covered.count() << " coordinates " << bitset_to_key(new_covered);
+            verboseOutput() << "index coord " << coord << " nr covered coordinates " << new_covered.count() << endl;
         if(verbose && PolyEqusKey.size() > 0)
-            verboseOutput() << endl << "poly equations " << PolyEqusKey;
+            verboseOutput() << "nr poly equations " << PolyEqusKey.size() << endl;
         if(verbose && PolyInequsKey.size() > 0)
-            verboseOutput() << endl << " poly inequalities " << PolyInequsKey;
-        /* if(verbose && RestrictablePolyInequsKey.size() > 0)
-            verboseOutput() << endl <<  "restrictable poly inequalities " << RestrictablePolyInequsKey; */
+            verboseOutput() << " nr poly inequalities " << PolyInequsKey.size() << endl;
+        if(verbose && RestrictablePolyInequsKey.size() > 0)
+            verboseOutput() <<  "nr restrictable poly inequalities " << RestrictablePolyInequsKey.size() << endl;
+        if(verbose && AllCongsRestricted[coord].size() > 0)
+            verboseOutput() <<  "nr congruences " << AllCongsRestricted[coord].size() << endl;
         if(verbose)
             verboseOutput() << "---------------------------------------------------------------" << endl;
 #endif
@@ -643,8 +645,12 @@ void ProjectAndLift<IntegerPL,IntegerRet>::find_order_congruences() {
     // used_patches[InsertionOrderPatches[0]] = true;
     while(covered_coords.count() < EmbDim && used_covering_congruences.count() < Congs.nr_of_rows()){
         bool first = true;
+        bool first_cong = true;
         size_t max_at = 0;
         size_t max_nr_congs = 0;
+        bool have_congs = false;
+        double min_weight = 0;
+        double cong_min_weight = 0;
         dynamic_bitset max_covered(EmbDim);
         for(size_t i = 0; i < AllPatches.size(); ++i){
             if(AllPatches[i].size() == 0 || used_patches[i])
@@ -661,11 +667,43 @@ void ProjectAndLift<IntegerPL,IntegerRet>::find_order_congruences() {
                     continue;
                 nr_congs++;
             }
-            if(first || nr_congs > max_nr_congs){
+            if(!use_coord_weights &&  (first || (nr_congs > max_nr_congs))){
                 first = false;
                 max_at = i;
                 max_nr_congs = nr_congs;
                 max_covered = test_covered;
+            }
+            if(use_coord_weights){
+                if(nr_congs >0)
+                    have_congs = true;
+                double test_weight = 0;
+                for(size_t k = 0; k< EmbDim; ++k){
+                    if(covered_coords[k] || !test_covered[k])
+                        continue;
+                    test_weight += WeightOfCoord[i][k];
+                }
+                if(first){
+                    first = false;
+                    min_weight = test_weight;
+                    max_at = i;
+                }
+                if(have_congs && first_cong){
+                    first_cong = false;
+                    cong_min_weight = test_weight;
+                    max_at = i;
+                }
+                if(have_congs){
+                    if(test_weight < cong_min_weight){
+                        max_at = i;
+                        cong_min_weight = test_weight;
+                    }
+                }
+                if(!have_congs && first_cong){ // still waiting for a congruence
+                    if(test_weight < min_weight){
+                        min_weight = test_weight;
+                        max_at = i;
+                    }
+                }
             }
         }
         InsertionOrderPatches.push_back(max_at);
