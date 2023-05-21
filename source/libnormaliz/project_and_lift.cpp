@@ -1150,17 +1150,17 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
     Matrix<IntegerRet> LocalSolutionsNow(0, intersection_key.size() + new_coords_key.size());
     LocalPL.put_eg1Points_into(LocalSolutionsNow);
     size_t nr_old_solutions = LocalSolutions.nr_of_rows();
+    size_t nr_new_solutions = LocalSolutionsNow.nr_of_rows();
     if(nr_old_solutions == 0)
-        LocalSolutions = LocalSolutionsNow;
+        swap(LocalSolutions,LocalSolutionsNow);
     else
-        LocalSolutions.append(LocalSolutionsNow);
+        LocalSolutions.swap_append(LocalSolutionsNow);
 
 #ifdef NMZ_DEVELOP
     if(verbose){
         // verboseOutput() << "****************" << endl;
-        verboseOutput() << "Local solutions total " << LocalSolutions.nr_of_rows() << " new " << LocalSolutionsNow.nr_of_rows() << endl;
+        verboseOutput() << "Local solutions total " << LocalSolutions.nr_of_rows() << " new " << nr_new_solutions << endl;
     }
-    // LocalSolutionsNow.debug_print('$');
 #endif
 
     // Next the newly computed extensions are registered

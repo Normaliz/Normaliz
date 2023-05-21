@@ -769,6 +769,19 @@ void Matrix<Integer>::append(const Matrix<Integer>& M) {
 //---------------------------------------------------------------------------
 
 template <typename Integer>
+void Matrix<Integer>::swap_append(Matrix<Integer>& M) {
+    assert(nc == M.nc);
+    size_t old_nr = nr;
+    nr += M.nr;
+    elem.resize(nr);
+    for (size_t i=0; i<M.nr; i++) {
+        M.elem[i].swap(elem[old_nr+i]);
+    }
+}
+
+//---------------------------------------------------------------------------
+
+template <typename Integer>
 void Matrix<Integer>::append(const vector<vector<Integer> >& M) {
     if (M.size() == 0)
         return;

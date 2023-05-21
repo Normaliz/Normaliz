@@ -252,7 +252,8 @@ class Matrix {
 
     vector<size_t> maximal_decimal_length_columnwise() const;  // the same per column
 
-    void append(const Matrix& M);                    // appends the rows of M to this
+    void append(const Matrix& M); // appends the rows of M to this
+    void swap_append(Matrix& M); // ditto, but lines are swapped
     void append(const vector<vector<Integer> >& M);  // the same, but for another type of matrix
     void append(const vector<Integer>& v);           // append the row v to this
     void append_column(const vector<Integer>& v);    // append the column v to this
