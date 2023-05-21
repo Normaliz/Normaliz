@@ -568,8 +568,12 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
             verboseOutput() << " nr poly inequalities " << PolyInequsKey.size() << endl;
         if(verbose && RestrictablePolyInequsKey.size() > 0)
             verboseOutput() <<  "nr restrictable poly inequalities " << RestrictablePolyInequsKey.size() << endl;
-        if(verbose && AllCongsRestricted[coord].size() > 0)
+        if(verbose && AllCongsRestricted[coord].size() > 0){
             verboseOutput() <<  "nr congruences " << AllCongsRestricted[coord].size() << endl;
+            verboseOutput() << "supports" << endl;
+            for(auto c: AllCongsRestricted[coord])
+                verboseOutput() << bitset_to_key(c.poly.support);
+        }
         if(verbose)
             verboseOutput() << "---------------------------------------------------------------" << endl;
 #endif
@@ -773,6 +777,32 @@ void ProjectAndLift<IntegerPL,IntegerRet>::finalize_order(const dynamic_bitset& 
 
 }
 
+template <typename IntegerPL, typename IntegerRet>
+bool ProjectAndLift<IntegerPL,IntegerRet>::order_patches_user_defined() {
+
+    string name = global_project + ".order.patches";
+    const char* file_name = name.c_str();
+    ifstream in_order;
+    in_order.open(file_name, ifstream::in);
+    if(in_order.is_open()){
+        long nr_patch;
+        in_order >> nr_patch;
+        dynamic_bitset used_patches(EmbDim);
+        for(size_t i = 0; i < nr_patch; ++i){
+            size_t j;
+            in_order >> j;
+            if(j >= EmbDim || AllPatches[j].empty() )
+                throw BadInputException("File defining insertion order corrupt");
+            used_patches[j] = true;
+            InsertionOrderPatches.push_back(j);
+        }
+        in_order.close();
+        finalize_order(used_patches);
+        return true;
+    }
+
+    return false;
+}
 
 template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL,IntegerRet>::compute_covers() {
@@ -782,7 +812,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_covers() {
 
     LevelPatches.resize(EmbDim);
 
-    /*
+
 #ifdef NMZ_DEVELOP
     if(verbose){
         for(size_t i = 0; i < EmbDim; ++i){
@@ -790,7 +820,13 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_covers() {
         }
     }
 #endif
-*/
+
+
+    if(order_patches_user_defined()){
+        if(verbose)
+            verboseOutput() << "Insertion order user defined" << endl;
+        return;
+    }
 
     WeightOfCoord.resize(EmbDim,EmbDim);
     for(size_t i = 1; i< EmbDim; ++i){
@@ -1208,6 +1244,12 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         }
 #endif
 
+#ifdef NMZ_DEVELOP
+        struct timeval step_time_begin;
+        StartTime(step_time_begin);
+
+#endif
+
         if(verbose){
             verboseOutput() <<  LevelPatches[coord] << " / " << coord << " left " << nr_to_match - nr_points_matched;
 #ifdef NMZ_DEVELOP
@@ -1561,11 +1603,15 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         if(nr_points_done_in_this_round > 0 && NrRemainingLP[this_patch] > 0){
             // cout << "nr_rounds " << nr_rounds << " expected rounds " << expected_number_of_rounds << endl;
             double time_spent = MeasureTime(time_begin);
+            double step_time_spent = MeasureTime(step_time_begin);
             double time_per_round = time_spent/nr_rounds;
             // cout << "spent " << time_spent << " time_per_round " << time_per_round << endl;
             double expected_time = time_per_round*expected_number_of_rounds;
-            if(verbose)
-                verboseOutput() << "expected future time on level  " << LevelPatches[coord] << "  " << expected_time << " sec " << endl;
+            double step_expected_time = step_time_spent*expected_number_of_rounds;
+            if(verbose){
+                verboseOutput() << "expected future time on level  " << LevelPatches[coord] << "  " << expected_time;
+                verboseOutput() << " / "  << step_expected_time << " sec " << endl;
+            }
             /*if(verbose) {
                 verboseOutput() << "==============================" << endl;
             }*/

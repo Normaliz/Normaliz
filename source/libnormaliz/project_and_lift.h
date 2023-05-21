@@ -187,6 +187,7 @@ class ProjectAndLift {
     void restrict_congruences();
     void find_order_congruences();
     void find_order_linear();
+    bool order_patches_user_defined();
     void finalize_order(const dynamic_bitset& used_patches);
 
     // void make_LLL_coordinates();
