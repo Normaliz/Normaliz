@@ -1144,6 +1144,26 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         }
     }
 
+    dynamic_bitset full_coords_ind(EmbDim);
+    full_coords_ind.flip();
+
+    cout << "----" << endl << "IIIIIIIIIIII " << start_list.size() << " / " << LatticePoints.size() << endl;
+
+    if(CongsRestricted.size() > 0){
+        set<pair<vector<IntegerRet>, vector<IntegerRet>> > OurPairs;
+        cout << "CCCCCCCCCCCCCCC " << CongsRestricted.size() << endl;
+
+        for(auto P: LatticePoints){
+            vector<IntegerRet> Cap = v_select_coordinates(P,intersection_key);
+            vector<IntegerRet> Cong(CongsRestricted.size());
+            for(size_t k = 0; k < CongsRestricted.size(); ++k)
+                Cong[k]  = eval_cong_partially(CongsRestricted[k],P, full_coords_ind, false);
+            OurPairs.insert(make_pair(Cap,Cong));
+
+        }
+        cout << "PPPPPPPPPPPP " << OurPairs.size() << endl;
+    }
+
     // Now we extend the "new" intersection coordinates by the local system
     LocalPL. set_startList(start_list);
     LocalPL.lift_points_to_this_dim(start_list); // computes the extensions
@@ -1231,8 +1251,6 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         size_t nr_rounds = 0;
 #endif
 
-        dynamic_bitset full_coords_ind(EmbDim);
-        full_coords_ind.flip();
 
     while (true) {
 
