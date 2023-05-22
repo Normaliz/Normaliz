@@ -1755,4 +1755,28 @@ NMZTESTS +=						\
 	test-grb/3x7.ref				\
 	test-grb/3x7.grb.ref
 
+NMZTESTS +=						\
+	test-patch/A7.in				\
+	test-patch/A7.ref				\
+	test-patch/baby.in				\
+	test-patch/babyref				\
+	test-patch/bracket_1.in				\
+	test-patch/bracket_1.ref			\
+	test-patch/bracket_2CO.in			\
+	test-patch/bracket_2CO.ref			\
+	test-patch/bracket_2COUW.in			\
+	test-patch/bracket_2COUW.ref			\
+	test-patch/bracket_2.in				\
+	test-patch/bracket_2.ref			\
+	test-patch/bracket_3LO.in			\
+	test-patch/bracket_3LO.ref			\
+	test-patch/bracket_3.in				\
+	test-patch/bracket_3.ref			\
+	test-patch/child.in				\
+	test-patch/child.ref				\
+	test-patch/M11.in				\
+	test-patch/M11.ref				\
+	test-patch/pet.in				\
+	test-patch/pet.ref
+
 EXTRA_DIST += $(NMZTESTS)
