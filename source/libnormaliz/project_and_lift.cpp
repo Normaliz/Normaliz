@@ -656,11 +656,18 @@ void ProjectAndLift<IntegerPL,IntegerRet>::find_order_congruences() {
         double min_weight = 0;
         double cong_min_weight = 0;
         dynamic_bitset max_covered(EmbDim);
-        for(size_t i = 0; i < AllPatches.size(); ++i){
-            if(AllPatches[i].size() == 0 || used_patches[i])
+        for(size_t i = 0; i < AllPatches.size(); ++i){  // i is the index of the patch tested for optimality
+            if(AllPatches[i].size() == 0 || used_patches[i]) // used or not existent
                 continue;
 
             dynamic_bitset test_covered = covered_coords | AllPatches[i];
+
+            double test_weight = 0;
+            for(size_t w = 0; w < EmbDim; ++w){
+                if(covered_coords[w] || !test_covered[w])
+                    continue;
+                test_weight += WeightOfCoord[i][w];
+            }
             size_t nr_congs = 0;
             for(size_t j = 0; j < Congs.nr_of_rows(); ++j){
                 if(CongIndicator[j].is_subset_of(covered_coords))
@@ -669,7 +676,31 @@ void ProjectAndLift<IntegerPL,IntegerRet>::find_order_congruences() {
                     continue;
                 if(!CongIndicator[j].is_subset_of(test_covered))
                     continue;
-                nr_congs++;
+                if(!use_coord_weights){ // in this case we optimize the number of "global" congruences
+                    nr_congs++;
+                    continue;
+                }
+                // with use_coord_weights we only count congruences that are not contained
+                // in lower weght patches
+                bool optimal = true; // for the tested congruence
+                for(size_t k = 0; k < EmbDim; ++k){  // k is index of alternative patch
+                    if(AllPatches[k].size() == 0 || used_patches[k])
+                        continue;
+                    if(!CongIndicator[j].is_subset_of(AllPatches[k])) // we count only congruences
+                        continue;                                    // that are not gotten with smaller weight
+                    double alternative_weight = 0; // weight for alternative patch
+                    for(size_t w = 0; w < EmbDim; ++w){
+                        if(covered_coords[w] || !AllPatches[k][w])
+                            continue;
+                        alternative_weight += WeightOfCoord[w][k];
+                    }
+                    if(alternative_weight < test_weight){
+                        optimal = false;
+                        break;
+                    }
+                }
+                if(optimal)
+                    nr_congs++;
             }
             if(!use_coord_weights &&  (first || (nr_congs > max_nr_congs))){
                 first = false;
@@ -680,12 +711,6 @@ void ProjectAndLift<IntegerPL,IntegerRet>::find_order_congruences() {
             if(use_coord_weights){
                 if(nr_congs >0)
                     have_congs = true;
-                double test_weight = 0;
-                for(size_t k = 0; k< EmbDim; ++k){
-                    if(covered_coords[k] || !test_covered[k])
-                        continue;
-                    test_weight += WeightOfCoord[i][k];
-                }
                 if(first){
                     first = false;
                     min_weight = test_weight;
@@ -1147,6 +1172,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
     dynamic_bitset full_coords_ind(EmbDim);
     full_coords_ind.flip();
 
+
+    /* // Statistics for overlaps and congruences
     cout << "----" << endl << "IIIIIIIIIIII " << start_list.size() << " / " << LatticePoints.size() << endl;
 
     if(CongsRestricted.size() > 0){
@@ -1162,7 +1189,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
 
         }
         cout << "PPPPPPPPPPPP " << OurPairs.size() << endl;
-    }
+    }*/
 
     // Now we extend the "new" intersection coordinates by the local system
     LocalPL. set_startList(start_list);
