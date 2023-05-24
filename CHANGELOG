@@ -1,5 +1,11 @@
 # ChangeLog
 
+
+## [3.10.0]  2023-06-10
+
+-- extensive improvements in the patching algorithm for lattice points
+-- weight vectors for Gröbner bases of lattice ideals
+
 ## [3.10.0]  2023-01-20
 
 -- improvements in patching algorithm with polynomoial equations

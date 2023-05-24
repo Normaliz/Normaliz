@@ -1759,7 +1759,7 @@ NMZTESTS +=						\
 	test-patch/A7.in				\
 	test-patch/A7.ref				\
 	test-patch/baby.in				\
-	test-patch/babyref				\
+	test-patch/baby.ref				\
 	test-patch/bracket_1.in				\
 	test-patch/bracket_1.ref			\
 	test-patch/bracket_2CO.in			\
