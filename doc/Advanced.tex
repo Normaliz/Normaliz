@@ -212,6 +212,8 @@ To see the effect, try \verb|baby.in| as it is and with \verb|NoPatching|.
 
 The patching algorithm and the use of polynomial equations was developed for computations of fusion rings reported in \cite{ABPP} and extensions.
 
+Note that the patching algorithm allows distributed computation (se Section \ref{DistPatch})
+
 \subsubsection{Polynomial constraints for lattice points}\label{poly_const}
 
 The lattice points in polytopes computed by Normaliz can be further constrained by polynomial equations an d inequalities (see Section \ref{poly_const_input}). For all algorithms different from project-and-lift the lattice point must be computed completely before the polynomial constraints can be used. It is a significant advantage of project-and-lift and its variants that every polynomial constraint can be applied as soon as all coordinates appearing  in it with a nonzero coefficient have been collected. This helps enormously to stop the extension of coordinates. 
@@ -228,13 +230,19 @@ There are some options that can modify the default behavior:
 \begin{itemize}
 	\itemtt[UseWeightsPatching] gives a ``weight'' to the coordinates so that ```bad'' patches are biased negatively.
 	
-	\itemtt[LinearOrderPatching] disables the scheduling by polynomial equations completely. It can be modified by \verb|UseWeightsPatching|.
+	\itemtt[LinearOrderPatches] disables the scheduling by polynomial equations completely. It can be modified by \verb|UseWeightsPatching|.
 \end{itemize}
 Moreover it is possible to use another type of constraints:
 \begin{itemize}
-	\itemtt[CongOrderPatching] bases the scheduling on congruences derived from the linear equations in the input. (Can't be modified by \verb|UseWeightsPatching|).
+	\itemtt[CongOrderPatches] bases the scheduling on congruences derived from the linear equations in the input. (Can also be modified by \verb|UseWeightsPatching|).
 \end{itemize}
-In very rare case it could be useful to use
+Finally it is possible to define the patching order by hand. To this end one uses an extra input file
+\begin{itemize}
+	\itemtt[<project>.order.patches]
+\end{itemize}
+It contains a sequence of numbers: the first is the number \verb|<n>|of patches that follow, and then the first \verb|<n>| patches are inserted in this order. The remaining ones are inserted linearly.
+
+In very rare cases it could be useful to use
 \begin{itemize}
 	\itemtt[MinimizePolyEquations]
 \end{itemize}

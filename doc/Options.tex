@@ -1,3 +1,5 @@
+% !TeX spellcheck = en_US
+
 \section{Computation goals and algorithmic variants}\label{Goals}
 
 The library \verb|libnormaliz| contains a class \verb|ConeProperties| that collects computation goals, algorithmic variants and additional data that are used to control the work flow in \verb|libnormaliz| as well as the communication with other programs. The latter are not important for the Normaliz user, but are listed as a reference for \verb|libnormaliz|. See Appendix~\ref{libnorm} for a description of \verb|libnormaliz|.
@@ -426,7 +428,7 @@ In rare cases Normaliz can use symmetrization in the computation of multipliciti
 \begin{itemize}
 	\itemtt[Symmetrize, -Y] lets Normaliz compute the multiplicity and/or the Hilbert series via symmetrization (or just compute the symmetrized cone).
 	
-	\itemtt[NoSymmetrization, -X] blocks symmetrization.
+	\itemtt[NoSymmetrization] blocks symmetrization.
 \end{itemize}
 
 The integration involved in symmetrization can be done by signed decomposition.

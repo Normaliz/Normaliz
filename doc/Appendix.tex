@@ -3038,7 +3038,9 @@ An algebraic number is represented by a \verb|list| whose members are rational n
 
 \end{small}
 
-\section{Distributed computation for volume via signed decomposition}\label{distr_comp}
+\section{Distributed computation}
+
+\subsection{Volume via signed decomposition}\label{distr_comp}
 
 Normaliz offers a possibility to compute volumes via signed decomposition by distributing the task to several computers or nodes in a gigh performance cluster that run independently of each other. The principal approach:
 \begin{arab}
@@ -3098,3 +3100,66 @@ normaliz <project> --AddChunks
 \end{Verbatim}
 to sum the partial multiplicities in the files \verb|<project>.mult.<n>| The result is written to the terminal and also to the file \verb|<project>.total.mult|.
 
+\subsection{Lattice points via patching}\label{DistPatch}
+
+The patching algorithm (Section \ref{positive_systems}) allows distributed computation. However, the implementation is still rudimentary since it uses only a static splitting which (in contrast to the volume computation) often does not efficiently use the number of parallel instances that are allowed by the high performance cluster. 
+
+We run a  precomputation
+\begin{Verbatim}
+./normaliz -c <project> --DistributedComp
+\end{Verbatim}
+The only purpose it to find the lowest level where splitting makes sense. The answer is written to the file
+\begin{itemize}
+\itemtt[<project>.split.data]
+\end{itemize}
+It is always a default choice:
+\begin{Verbatim}
+1 <l> 1000
+\end{Verbatim}
+where \verb|<l>| is the lowest level. Often it is necessary to edit this file by hand. The general format is
+\begin{Verbatim}
+<n> <l1> <s1>  ... <ln> <sn>
+\end{Verbatim}
+where \verb*|<n>| is the number of split levels defined by \verb*|<l1>,...<ln>| in increasing order, and the numbers \verb*|<s1>,...,<sn>| list the number of splits as these levels. Example:
+\begin{Verbatim}
+2 1 10 3 100
+\end{Verbatim}
+We split at level 1 into 10 parts, and then each of these parts is split at level 3 into 100 sub-parts. The total number of parts run in parallel is the product of \verb*|<s1>,...,<sn>|, 1000 in the example (and the default choice).
+
+We use a job array defined by 
+\begin{Verbatim}
+#!/bin/sh
+#SBATCH --job-name="tough"
+#SBATCH --comment="tough"
+#SBATCH --time=24:00:00
+#SBATCH --ntasks=8
+#SBATCH --threads-per-core=1
+#SBATCH --mem=50000
+#SBATCH --array=0-999
+
+# each job will see a different ${SLURM_ARRAY_TASK_ID}
+time ../normaliz -c tough --Split -X=${SLURM_ARRAY_TASK_ID}
+\end{Verbatim}
+for the input file \verb*|tough.in|. We need the option
+\begin{itemize}
+\itemtt[Split]
+\end{itemize}
+to indicate that this is a split computation, and 
+\begin{itemize}
+\itemtt[-X=<s>]	
+\end{itemize}
+gives the number \verb*|<s>|of the split to be run by the Normaliz instance identified by \verb*|${SLURM_ARRAY_TASK_ID}|. Note that every split reads the input file, but it does not write a file with suffix \verb*|out|.
+
+Each job writes the computed lattice points to
+\begin{itemize}
+	\itemtt[<project>.<s>.lat]
+\end{itemize}
+where \verb*|<s>| is the number of the split given by \verb*|-X=<s>|. After the computation has been finished the lattice points are harvested by running Normaliz with the option
+\begin{itemize}
+	\itemtt[CollectLat]
+\end{itemize}
+for example \verb*|./normaliz <project> --CollectLat|. The total list of lattice points is written to
+\begin{itemize}
+	\itemtt[<project>.total.lat]
+\end{itemize}
+in the standard format: number of rows, number of columns, the vectors.
