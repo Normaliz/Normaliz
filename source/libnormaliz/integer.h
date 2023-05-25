@@ -108,11 +108,6 @@ inline bool try_convert(mpz_class& ret, const long& val) {
     return true;
 }
 
-inline bool try_convert(mpq_class& ret, const mpz_class& val) {
-    ret = val;
-    return true;
-}
-
 bool try_convert(mpz_class& ret, const long long& val);
 
 bool try_convert(nmz_float& ret, const long& val);
@@ -144,6 +139,16 @@ inline bool try_convert(Type& ret, const Type& val) {
 }
 
 inline bool try_convert(nmz_float& ret, const nmz_float& val) {
+    ret = val;
+    return true;
+}
+
+inline bool try_convert(mpq_class& ret, const mpz_class& val) {
+    ret = val;
+    return true;
+}
+
+inline bool try_convert(mpq_class& ret, const long& val) {
     ret = val;
     return true;
 }
@@ -401,7 +406,6 @@ size_t decimal_length(Integer a);
 template <typename Integer>
 mpz_class nmz_factorial(Integer n);
 
-// formerly convert.h
 // conversion for integers, throws ArithmeticException if conversion fails
 template <typename ToType, typename FromType>
 inline void convert(ToType& ret, const FromType& val) {

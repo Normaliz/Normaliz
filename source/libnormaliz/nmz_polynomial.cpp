@@ -462,6 +462,7 @@ RingElem OurTerm<Number>::ToCoCoA(SparsePolyRing R) const{
     return h;
 }
 
+/*
 // We need the special version for long long to avoid a conversion problem
 template<>
 RingElem OurTerm<long long>::ToCoCoA(SparsePolyRing R) const{
@@ -474,6 +475,19 @@ RingElem OurTerm<long long>::ToCoCoA(SparsePolyRing R) const{
         h *= indet(R,v);
     return h;
 }
+
+// Another special version ...
+template<>
+RingElem OurTerm<mpz_class>::ToCoCoA(SparsePolyRing R) const{
+
+    mpq_class c = coeff;
+    BigRat ccc = BigRatFromMPQ(c.get_mpq_t());
+    RingElem h(R,ccc);
+    for(auto& v:vars)
+        h *= indet(R,v);
+    return h;
+}
+*/
 
 
 template<typename Number>
