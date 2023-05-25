@@ -32,6 +32,7 @@
 
 #include "libnormaliz/dynamic_bitset.h"
 #include "libnormaliz/general.h"
+#include "libnormaliz/matrix.h"
 
 #ifdef NMZ_COCOA
 #include "CoCoA/library.H"

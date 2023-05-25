@@ -344,16 +344,6 @@ OurPolynomialSystem<Number>::OurPolynomialSystem(){
 }
 
 template<typename Number>
-OurPolynomialSystem<Number>::OurPolynomialSystem(const vector<string>& poly_strings, size_t dim, bool verb){
-
-    verbose = verb;
-    for(auto& S: poly_strings){
-        OurPolynomial<Number> poly(S,dim,verbose);
-        this->push_back(poly);
-    }
-}
-
-template<typename Number>
 bool OurPolynomialSystem<Number>::check(const vector<Number>& argument, const bool is_equations, const bool exact_length) const{
 
     Number test;
@@ -472,6 +462,20 @@ RingElem OurTerm<Number>::ToCoCoA(SparsePolyRing R) const{
     return h;
 }
 
+// We need the special version for long long to avoid a conversion problem
+template<>
+RingElem OurTerm<long long>::ToCoCoA(SparsePolyRing R) const{
+
+    mpz_class c_mpz = convertTo<mpz_class>(coeff);
+    mpq_class c = c_mpz;
+    BigRat ccc = BigRatFromMPQ(c.get_mpq_t());
+    RingElem h(R,ccc);
+    for(auto& v:vars)
+        h *= indet(R,v);
+    return h;
+}
+
+
 template<typename Number>
 RingElem OurPolynomial<Number>::ToCoCoA(SparsePolyRing R) const{
 
@@ -526,6 +530,16 @@ bool GB_reduce(const RingElem& f, vector<RingElem>& GB){
     }
     else
         return true;
+}
+
+template<typename Number>
+OurPolynomialSystem<Number>::OurPolynomialSystem(const vector<string>& poly_strings, size_t dim, bool verb){
+
+    verbose = verb;
+    for(auto& S: poly_strings){
+        OurPolynomial<Number> poly(S,dim,verbose);
+        this->push_back(poly);
+    }
 }
 
 template<typename Number>

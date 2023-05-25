@@ -107,6 +107,12 @@ inline bool try_convert(mpz_class& ret, const long& val) {
     ret = val;
     return true;
 }
+
+inline bool try_convert(mpq_class& ret, const mpz_class& val) {
+    ret = val;
+    return true;
+}
+
 bool try_convert(mpz_class& ret, const long long& val);
 
 bool try_convert(nmz_float& ret, const long& val);
@@ -422,11 +428,6 @@ ToType convertTo(const FromType& val) {
 }
 
 inline bool try_convert(mpz_class& ret, const mpq_class&) {
-    assert(false);  // must never be used
-    return false;
-}
-
-inline bool try_convert(mpq_class& ret, const mpz_class&) {
     assert(false);  // must never be used
     return false;
 }

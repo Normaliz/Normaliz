@@ -2724,7 +2724,11 @@ void ProjectAndLift<IntegerPL, IntegerRet>::set_PolyEquations(const OurPolynomia
             verboseOutput() << "Minimizing polynomial equations (may take long time)"<< endl;
             verboseOutput() << "System has " << PolyEquations.size() << " equations" << endl;
         }
+#ifdef NMZ_COCOA
         PolyEquations = PolyEquations.minimize_equations(LinEqus);
+#else
+        assert(false);
+#endif
         if(verbose){
             verboseOutput() << "Minimal system has " << PolyEquations.size() << " equations" << endl;
         }
