@@ -1,0 +1,54 @@
+21 Hilbert basis elements
+4 support hyperplanes
+
+embedding dimension = 3
+rank = 3 (maximal)
+external index = 6
+internal index = 1
+original monoid is not integrally closed in chosen lattice
+
+grading:
+1 1 1 
+with denominator = 6
+
+
+codim singular locus = 1
+***********************************************************************
+
+21 Hilbert basis elements:
+  0  5  1
+  0  6  0
+  1  0  5
+  5  1  0
+  6  0  0
+  6 19 11
+ 30  3  3
+ 12 13 17
+  6 28 14
+ 30  9  9
+ 30 10  8
+  6 31 17
+ 12 19 23
+ 30 10 14
+ 30 11 13
+ 12 26 22
+ 25 12 23
+ 26 11 23
+ 27 10 23
+ 30 11 19
+ 30 12 18
+
+4 support hyperplanes:
+  0 0  1
+  0 1  0
+  1 0  0
+ 25 1 -5
+
+1 congruences:
+ 1 1 1 6
+
+3 basis elements of generated  lattice:
+ 1 0 -1
+ 0 1 -1
+ 0 0  6
+
