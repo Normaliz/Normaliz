@@ -5886,7 +5886,7 @@ void Cone<Integer>::compute_singular_locus(const ConeProperties& ToCompute) {
         Cone<Integer> TestReg(Type::cone_and_lattice, OurMonoidHere, Type::subspace, InFace);
         TestReg.setVerbose(false);
         // InFace.debug_print();
-        // cout << "codim " << F.first << "  " << TestReg.getNrHilbertBasis() << endl;
+        // cout << "codim " << F.first << "  " << TestReg.getNrHilbertBasis() << " IC " << TestReg.isIntegrallyClosed() << endl;
         if(TestReg.isIntegrallyClosed() && TestReg.getNrHilbertBasis() == F.first) // regular
             continue;
         SingularLocus[F.second] = F.first;
@@ -5971,6 +5971,8 @@ void Cone<Integer>::check_integrally_closed(const ConeProperties& ToCompute) {
             compute_unit_group_index();
         setComputed(ConeProperty::UnitGroupIndex);
 
+        // cout << "internal " << internal_index << " group " << unit_group_index << endl;
+
         if (internal_index != 1 || unit_group_index != 1) {
             integrally_closed = false;
             setComputed(ConeProperty::IsIntegrallyClosed);
@@ -5998,7 +6000,8 @@ void Cone<Integer>::compute_unit_group_index() {
     assert(isComputed(ConeProperty::MaximalSubspace));
     compute(ConeProperty::SupportHyperplanes);
     // we want to compute in the maximal linear subspace
-    Sublattice_Representation<Integer> Sub(BasisMaxSubspace, true);
+    // BasisMaxSubspace generates a saturated lattice in the relevant lattice
+    Sublattice_Representation<Integer> Sub(BasisMaxSubspace, false);
     Matrix<Integer> origens_in_subspace(0, dim);
 
     // we must collect all original generators that lie in the maximal subspace
@@ -6014,7 +6017,7 @@ void Cone<Integer>::compute_unit_group_index() {
     }
     Matrix<Integer> M = Sub.to_sublattice(origens_in_subspace);
     unit_group_index = M.full_rank_index();
-    // cout << "Unit group index " << unit_group_index;
+    // cout << "Unit group index " << unit_group_index << endl;
 }
 
 //---------------------------------------------------------------------------
