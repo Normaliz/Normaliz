@@ -23,6 +23,4 @@ monoid
 [30, 12, 18]
 [30, 11, 19]
 ]
-MarkovBasis
-NoLLL
-SingularLocus
+CodimSingularLocus

@@ -177,6 +177,8 @@ NMZTESTS = test-/23.in					\
 	test-/jonagold.ref				\
 	test-/knapsack_11_60_test2.in			\
 	test-/knapsack_11_60_test2.ref			\
+	test-/Kwak10Codim.in				\
+	test-/Kwak10Codim.ref				\
 	test-/latt_cong.in				\
 	test-/latt_cong.ref				\
 	test-/latt_id_nonpointed.in			\

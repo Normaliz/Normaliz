@@ -136,6 +136,8 @@ Large tests
 
 It is possible to run truly large tests via the goal testLARGE. They are time consuming.
 
+The goal testpatch runs tests for the patching algorithm. Takes some time as well.
+
 
 ********************
 **** plain MAKE ****
