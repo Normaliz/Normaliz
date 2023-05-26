@@ -42,6 +42,7 @@ using namespace std;
 #include "libnormaliz/input.h"
 #include "libnormaliz/options.h"
 #include "libnormaliz/chunk.h"
+#include "libnormaliz/collect_lat.h"
 
 using namespace libnormaliz;
 
@@ -219,7 +220,6 @@ void compute_and_output(OptionsHandler& options,
     MyCone.setFaceCodimBound(face_codim_bound);*/
     MyCone.setRenf(number_field);
     MyCone.setProjectName(options.getProjectName());
-    global_project = options.getProjectName();
     try {
         MyCone.compute(options.getToCompute());
         if (add_input.size() > 0) {
@@ -346,6 +346,13 @@ int process_data(OptionsHandler& options, const string& command_line) {
         if (options.getProjectName() == "" && !options.isUseChunk()) {
             cerr << "ERROR: No project name set!" << endl;
             exit(1);
+        }
+
+        global_project = options.getProjectName();
+
+        if(options.isUseCollectLat()){
+            collect_lat();
+            exit(0);
         }
 
         if (options.isUseChunk()) {

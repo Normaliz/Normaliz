@@ -65,7 +65,7 @@ if [ "x$NMZ_SHARED" == x ]; then
 #	else
 		rm source/normaliz
 #	fi
-    make -j4 LDFLAGS="${LDFLAGS} -all-static"
+    make -j4 LDFLAGS="${LDFLAGS} -static"
     make install
     if [[ $OSTYPE != darwin* ]]; then
         strip --strip-unneeded --remove-section=.comment --remove-section=.note ${PREFIX}/lib/libnormaliz.a

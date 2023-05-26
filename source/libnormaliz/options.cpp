@@ -356,6 +356,10 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
             use_chunk = true;
             continue;
         }
+        if (LongOption == "CollectLat") {
+            use_collect_lat = true;
+            continue;
+        }
         if (LongOption == "Split") {
             use_split = true;
             continue;

@@ -71,10 +71,10 @@ matrix.o: $(LIBHEADERS) matrix.cpp
 
 nmz_nauty.o: $(LIBHEADERS) nmz_nauty.cpp
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c nmz_nauty.cpp -o $@
-	
+
 nmz_polynomial.o: $(LIBHEADERS) nmz_polynomial.cpp
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c nmz_polynomial.cpp -o $@
-	
+
 nmz_hash.o: $(LIBHEADERS) nmz_hash.cpp
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c nmz_hash.cpp -o $@
 
@@ -110,21 +110,24 @@ chunk.o:  $(LIBHEADERS) chunk.cpp
 
 signed_dec.o:  $(LIBHEADERS) signed_dec.cpp
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c signed_dec.cpp -o $@
-	
+
 binomial.o:  $(LIBHEADERS) binomial.cpp
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c binomial.cpp -o $@
-	
+
 binomial_containers.o:  $(LIBHEADERS) binomial_containers.cpp
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c binomial_containers.cpp -o $@
-	
+
 lattice_ideal.o:  $(LIBHEADERS) lattice_ideal.cpp
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c lattice_ideal.cpp -o $@
 
+collect_lat.o:  $(LIBHEADERS) collect_lat.cpp
+	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c collect_lat.cpp -o $@
 
-libnormaliz.a: automorph.o collection.o cone_dual_mode.o cone_property.o cone.o descent.o face_lattice.o full_cone.o general.o HilbertSeries.o input.o matrix.o nmz_integral.o nmz_nauty.o nmz_polynomial.o nmz_hash.o offload_handler.o options.o output.o project_and_lift.o reduction.o simplex.o sublattice_representation.o chunk.o signed_dec.o binomial.o binomial_containers.o lattice_ideal.o
+
+libnormaliz.a: automorph.o collection.o cone_dual_mode.o cone_property.o cone.o descent.o face_lattice.o full_cone.o general.o HilbertSeries.o input.o matrix.o nmz_integral.o nmz_nauty.o nmz_polynomial.o nmz_hash.o offload_handler.o options.o output.o project_and_lift.o reduction.o simplex.o sublattice_representation.o chunk.o signed_dec.o binomial.o binomial_containers.o lattice_ideal.o collect_lat.o
 	ar -cr $@ $^
 
-libnormaliz.so: automorph.o collection.o cone_dual_mode.o cone_property.o cone.o descent.o face_lattice.o full_cone.o general.o HilbertSeries.o input.o matrix.o nmz_integral.o nmz_nauty.o nmz_polynomial.o nmz_hash.o offload_handler.o options.o output.o project_and_lift.o reduction.o simplex.o sublattice_representation.o chunk.o signed_dec.o binomial.o binomial_containers.o lattice_ideal.o
+libnormaliz.so: automorph.o collection.o cone_dual_mode.o cone_property.o cone.o descent.o face_lattice.o full_cone.o general.o HilbertSeries.o input.o matrix.o nmz_integral.o nmz_nauty.o nmz_polynomial.o nmz_hash.o offload_handler.o options.o output.o project_and_lift.o reduction.o simplex.o sublattice_representation.o chunk.o signed_dec.o binomial.o binomial_containers.o lattice_ideal.o  collect_lat.o
 	$(CXX) $(CXXFLAGS)  -shared $^ $(LINKFLAGS) -o libnormaliz.so
 
 .PHONY : install

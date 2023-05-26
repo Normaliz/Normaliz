@@ -35,12 +35,12 @@ using std::pair;
 
 void write_control_file(const size_t split_patch){
 
+        if(verbose)
+            verboseOutput() << "split_patch " << split_patch << endl;
+
         string name = global_project +".split.data";
         ofstream out(name.c_str());
-        out << "3 " << split_patch << " ";
-        if(verbose)
-            verboseOutput() << "split_patch " << split_patch;
-        out << "10 " << split_patch + 1 << " 10 " << split_patch + 2 << " 10" << endl;
+        out << "1 " << split_patch << " 1000" << endl;
         assert(!out.fail());
         out.close();
 }

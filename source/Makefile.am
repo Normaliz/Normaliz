@@ -50,6 +50,7 @@ libnormaliz_la_SOURCES = \
   libnormaliz/binomial_containers.cpp \
   libnormaliz/chunk.cpp \
   libnormaliz/collection.cpp \
+  libnormaliz/collect_lat.cpp \
   libnormaliz/cone_dual_mode.cpp \
   libnormaliz/cone_property.cpp \
   libnormaliz/cone.cpp \
@@ -80,6 +81,7 @@ noinst_HEADERS = \
   libnormaliz/binomial.h \
   libnormaliz/binomial_containers.h \
   libnormaliz/chunk.h \
+  libnormaliz/collect_lat.h \
   libnormaliz/cone_dual_mode.h \
   libnormaliz/face_lattice.h \
   libnormaliz/full_cone.h \
