@@ -660,6 +660,14 @@ the output of data can be blocked. Can be set in the input file or on the comman
 
 If Ctrl-C is pressed during the output phase, Normaliz is stopped immediately.
 
+\subsection{Time bound}\label{time_bound}
+
+In order to set a time bound for the execution of Normaliz one creates a file
+\begin{itemize}
+	\itemtt[normaliz.time]
+\end{itemize}
+in the working directory. It contains a single floating number that bounds the wall clock time of Normaliz. At present it is only implemented in the project-and-lift algorithm for lattice points. 
+
 \subsection{Control of output files}\label{outcontrol}
 
 In the default setting Normaliz writes only the output file

@@ -513,6 +513,10 @@ int process_data(OptionsHandler& options, const string& command_line) {
         cerr << e.what() << endl;
         cerr << "FatalException caught... exiting." << endl;
         exit(2);
+    } catch (const TimeBoundException& e) {
+        cerr << e.what() << endl;
+        cerr << "Time bound exceeded ... exiting." << endl;
+        exit(6);
     } catch (const NmzCoCoAException& e) {
         cerr << e.what() << endl;
         cerr << "NmzCoCoAException caught... exiting." << endl;

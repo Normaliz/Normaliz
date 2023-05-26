@@ -1197,7 +1197,9 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
     Matrix<IntegerRet> LocalSolutionsNow(0, intersection_key.size() + new_coords_key.size());
     LocalPL.put_eg1Points_into(LocalSolutionsNow);
     size_t nr_old_solutions = LocalSolutions.nr_of_rows();
+#ifdef NMZ_DEVELOP
     size_t nr_new_solutions = LocalSolutionsNow.nr_of_rows();
+#endif
     if(nr_old_solutions == 0)
         swap(LocalSolutions,LocalSolutionsNow);
     else
@@ -1275,19 +1277,19 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
 #ifdef NMZ_DEVELOP
         struct timeval time_begin;
         StartTime(time_begin);
-        size_t nr_rounds = 0;
 #endif
+
+        size_t nr_rounds = 0;
 
 
     while (true) {
 
-#ifdef NMZ_DEVELOP
+
         nr_rounds++;
         if(GlobalTimeBound > 0 &&  TimeSinceStart() > GlobalTimeBound){
-            cerr << "Stopped after " << GlobalTimeBound  << " seconds" << endl;
-            exit(1);
+            throw TimeBoundException("patching");
         }
-#endif
+
 
 #ifdef NMZ_DEVELOP
         struct timeval step_time_begin;
@@ -1662,7 +1664,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
             }*/
             if(GlobalPredictionTimeBound > 0 && expected_time > GlobalPredictionTimeBound){
                     verboseOutput() << "expected time exceeds bound of " << GlobalPredictionTimeBound << "sec" << endl;
-                    exit(1);
+                    throw TimeBoundException("patching");
             }
         }
 #endif
@@ -2388,12 +2390,11 @@ void ProjectAndLift<IntegerPL, IntegerRet>::lift_points_to_this_dim(list<vector<
 
     while (not_done) {
 
-#ifdef NMZ_DEVELOP
+
         if(GlobalTimeBound > 0 &&  TimeSinceStart() > GlobalTimeBound){
-            cerr << "Stopped after " << GlobalTimeBound  << " seconds" << endl;
-            exit(1);
+            throw TimeBoundException("project-and-lift");
         }
-#endif
+
 
         not_done = false;
         bool message_printed = false;
