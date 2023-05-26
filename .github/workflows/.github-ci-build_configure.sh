@@ -3,7 +3,7 @@ set -e # exit on errors
 set -x # print commands and their arguments as they are executed
 
 if [[ $BUILDSYSTEM != *static* ]]; then
-    if [[ $OSTYPE == darwin* ]]; then 
+    if [[ $OSTYPE == darwin* ]]; then
         export NMZ_COMPILER=clang++
     fi
 fi
@@ -44,7 +44,7 @@ fi
 
 if [[ $BUILDSYSTEM == *static* ]]; then
     CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --disable-shared"
-    export LDFLAGS="${LDFLAGS} -all-static"
+    export LDFLAGS="${LDFLAGS} static"
 
     if [[ $BUILDSYSTEM == *eantic* ]]; then
       sed -ie s/-leanticxx\ -leantic/-leanticxx\ -leantic\ -lantic\ -larb/g configure.ac
