@@ -217,11 +217,7 @@ jobs:
       - uses: actions/checkout@v3
       - name: "Setup compiler and build automake"
         run: |
-          # HACK: LLVM 16 does not support -all-static anymore
-          brew reinstall llvm@15 automake boost
-          # HACK: convince our tooling to use LLVM 15
-          LLVMDIR="$(brew --prefix)/opt/llvm"
-          ln -sf ${LLVMDIR}@15 ${LLVMDIR}
+          brew reinstall llvm automake boost
       - name: "Install prerequisites"
         run: |
           ./install_scripts_opt/install_nmz_nauty.sh
