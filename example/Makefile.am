@@ -126,7 +126,8 @@ EXTRA_DIST =					\
 	toric_ideal_grb.in			\
 	lin_bin.in				\
 	normal_toric_ideal.in			\
-	non_toric.in
+	non_toric.in				\
+	oily_eq.in
 
 EXTRA_DIST +=					\
 	600cell-dual.in				\
