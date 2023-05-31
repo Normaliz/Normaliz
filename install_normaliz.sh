@@ -34,11 +34,9 @@ if [ "x$NMZ_EXTENDED_TESTS" != x ]; then
     CPPFLAGS="${CPPFLAGS} -DNMZ_EXTENDED_TESTS"
 fi
 
-# No static build possible with Linux clang since libomp.a is missing
+# No static build possible with clang (linux or MacOS) since libomp.a is missing
 if [[ $CXX == *clang* ]]; then
-    if [[ $OSTYPE != darwin* ]]; then
         NMZ_SHARED="yes"
-    fi
 fi
 
 # for the future we leave the autotools varaiant of
@@ -63,24 +61,16 @@ if [ "x$NMZ_SHARED" == x ]; then
 #	if [ "$OSTYPE" != "msys" ]; then
 #		rm source/normaliz.exe
 #	else
-
-    if [[ $OSTYPE == darwin* ]]; then
-        otool source/normaliz
-    fi
+# replace shared binary by static one
 		rm source/normaliz
 #	fi
-    echo "*** Vor make with static"
     make -j4 LDFLAGS="${LDFLAGS} -static"
-    echo "+++ Nach make with static"
-   if [[ $OSTYPE == darwin* ]]; then
-        otool source/normaliz
-        echo "$$$ Nach otool"
     fi
 		rm source/normaliz
     make install
-    if [[ $OSTYPE != darwin* ]]; then
+	# if [[ $OSTYPE != darwin* ]]; then
         strip --strip-unneeded --remove-section=.comment --remove-section=.note ${PREFIX}/lib/libnormaliz.a
-    fi
+    # fi
 fi
 
 cd ..
