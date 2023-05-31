@@ -42,7 +42,7 @@ if [[ $CXX == *clang* ]]; then
 fi
 
 # for the future we leave the autotools varaiant of
-# an msysy build, but comment it out
+# an msys build, but comment it out
 
 # if [ "$OSTYPE" != "msys" ]; then
 	echo "building shared"
@@ -63,9 +63,20 @@ if [ "x$NMZ_SHARED" == x ]; then
 #	if [ "$OSTYPE" != "msys" ]; then
 #		rm source/normaliz.exe
 #	else
+
+    if [[ $OSTYPE == darwin* ]]; then
+        otool source/normaliz
+    fi
 		rm source/normaliz
 #	fi
+    echo "*** Vor make with static"
     make -j4 LDFLAGS="${LDFLAGS} -static"
+    echo "+++ Nach make with static"
+   if [[ $OSTYPE == darwin* ]]; then
+        otool source/normaliz
+        echo "$$$ Nach otool"
+    fi
+		rm source/normaliz
     make install
     if [[ $OSTYPE != darwin* ]]; then
         strip --strip-unneeded --remove-section=.comment --remove-section=.note ${PREFIX}/lib/libnormaliz.a
@@ -73,6 +84,7 @@ if [ "x$NMZ_SHARED" == x ]; then
 fi
 
 cd ..
+
 
 cp -f ${PREFIX}/bin/* .
 cp ${PREFIX}/lib/libnormaliz.a source/libnormaliz ## for compatibility with Makefile.classic

@@ -57,8 +57,8 @@ if [[ $OSTYPE != darwin* ]]; then
     # shared C library, so we set the rpath instead which appears to have the
     # same effect.
 	#
-	# --enable-new-dtags not allowed for MSYS, likewise -rpath noz allowed for gcc
-	if [ "$OSTYPE" != "msys" ]; then 
+	# --enable-new-dtags not allowed for MSYS, likewise -rpath not allowed for gcc
+	if [ "$OSTYPE" != "msys" ]; then
 		export LDFLAGS="${LDFLAGS} -Wl,--enable-new-dtags -Wl,-rpath=${PREFIX}/lib"
 	fi
 fi
