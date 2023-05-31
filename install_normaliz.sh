@@ -61,16 +61,13 @@ if [ "x$NMZ_SHARED" == x ]; then
 #	if [ "$OSTYPE" != "msys" ]; then
 #		rm source/normaliz.exe
 #	else
-# replace shared binary by static one
-		rm source/normaliz
+	# replace shared binary by static one
+	rm source/normaliz
 #	fi
     make -j4 LDFLAGS="${LDFLAGS} -static"
-    fi
 		rm source/normaliz
     make install
-	# if [[ $OSTYPE != darwin* ]]; then
-        strip --strip-unneeded --remove-section=.comment --remove-section=.note ${PREFIX}/lib/libnormaliz.a
-    # fi
+	strip --strip-unneeded --remove-section=.comment --remove-section=.note ${PREFIX}/lib/libnormaliz.a
 fi
 
 cd ..
