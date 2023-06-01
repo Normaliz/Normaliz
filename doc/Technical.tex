@@ -1,4 +1,4 @@
-
+% !TeX spellcheck = en_US
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%  DISTRIBUTION  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Distribution and installation}\label{Distr}
@@ -26,7 +26,7 @@ The command above downloads the image labeled ``latest''.  There are also images
 
 The Docker image contains a full installation including PyNormaliz.
 
-\subsection{Binary release}
+\subsection{Binary release}\label{binary}
 
 We provide binary releases for Windows, Linux and Mac. Follow the instructions in
 \begin{center}
@@ -49,7 +49,7 @@ Note:
 \begin{enumerate}
 	\item The Linux binary \verb|normaliz| and the MS Windows binary \verb|normaliz.exe| are fully static executables.
 	
-\item The Mac~OS and the MS Windows binaries cannot be statically linked in the absolute sense. The MS Windows binary depends only on system DLLs. The Mac OS  binary depends only on Mac~OS system libraries and \verb|libomp.dylib| (contained in the zip file) which makes parallelization possible. This dynamic library must be kept in the same directory as the binary.
+\item The Mac~OS and the MS Windows binaries cannot be statically linked in the absolute sense. The MS Windows binary depends only on system DLLs. The Mac OS  binary depends only on Mac~OS system libraries and \verb|libomp.dylib| (contained in the zip file) which makes parallelization possible. \emph{This dynamic library must be kept in the same directory as the binary.}
 
 \end{enumerate}
 
@@ -191,7 +191,7 @@ compiles Normaliz, using the optional packages that it can find.
 
 The library \verb|libnormaliz| is compiled statically and shared. It is installed in \verb|local| as well.
 
-The binary \verb|normaliz| is stored in \verb|local/bin|, but it is also copied to the Normaliz directory.It is statically linked by default.
+The binary \verb|normaliz| is stored in \verb|local/bin|, but it is also copied to the Normaliz directory.By default, it is statically linked on Linux. On MacOS the binary is compiled with shared libraries. 
 
 Remarks:
 \begin{arab}
@@ -210,12 +210,14 @@ export NMZ_PREFIX=<your choice>
 
 For the typical choice \verb|/usr/local| you need superuser rights (as in (1)). Note that \verb|NMZ_PREFIX| must be an absolute path name.
 
-\item The scripts compile a fully static binary under Linux and an ``almost'' static binary under Mac~OS. You can choose a dynamically linked binary by
+\item As already said, the scripts compile a fully static binary under Linux. You can choose a dynamically linked binary by
 \begin{Verbatim}
 export NMZ_SHARED=yes
 ./install_normaliz_...
 \end{Verbatim}
 \verb|NMZ_SHARED| is set automatically on Linux if a compiler from the clang family is used since a statically linked binary cannot be built by them (\verb|libomp.a| is missing).
+
+On MacOS there is no choice---the binary is dynamically linked. If you want a binary that is as static as possible, download the MacOS binary distribution from GitHub (see Section \ref{binary}). Its production is a bit tricky.
 
 \item The install scripts can be further customized. Have a look at them or at \verb|INSTALL|.
 
