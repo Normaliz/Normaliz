@@ -375,6 +375,15 @@ int process_data(OptionsHandler& options, const string& command_line) {
             long nr_splits_total = 1;
             for(long i = 0; i < nr_split_patches; ++i){
                     split_control >> split_patches[i] >> split_moduli[i];
+                    if(i == 0){
+                        if(split_patches[i] < 1)
+                            throw BadInputException("split patch must be > 0");
+                    }
+                    else{
+                        if(split_patches[i] <= split_patches[i-1])
+                            throw BadInputException("split patches must be increasing");
+                    }
+
                     nr_splits_total *= split_moduli[i];
             }
 

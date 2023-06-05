@@ -236,6 +236,9 @@ install via pacman -S.
 The next step will additionally install static libraries of MPFR and Flint. They are
 necessary for a normaliz.exe that depends only on system DLLs.
 
+IMPORTANT: Make sure that install_scripts/opt/header_files_for_Makefile.classic contains
+the right version of version.h.
+
 Then we navigate to the Normaliz directory and run ./install_normaliz_with_eantic.sh.
 This will install CoCoA, nauty, hash-library,  arb, antic and e-antic, as well as
 static versions of MPFR and Flint. During the installation of e-antic, the files
