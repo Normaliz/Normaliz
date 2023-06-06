@@ -149,11 +149,16 @@ Matrix<Integer> readMatrix(const string project) {
     in >> nrows;
     in >> ncols;
 
-    if (nrows == 0 || ncols == 0)
-        throw BadInputException("readMatrix finds matrix empty");
+    Matrix<Integer> result(nrows, ncols);
+
+    if (nrows == 0 || ncols == 0){
+        if(verbose){
+            verboseOutput() << "Matrix in file " << project << " empty" << endl;
+        }
+        return result;
+    }
 
     int i, j;
-    Matrix<Integer> result(nrows, ncols);
 
     for (i = 0; i < nrows; ++i)
         for (j = 0; j < ncols; ++j) {
