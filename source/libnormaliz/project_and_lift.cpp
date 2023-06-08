@@ -1010,12 +1010,12 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_latt_points_by_patching() {
         }
     }
 
-    if(split_patches.size() > 0){
+    /* if(split_patches.size() > 0){
         string name = global_project + "." + to_string(split_res);
         Matrix<IntegerRet> Result(Deg1Points);
         cout << Result.nr_of_rows() << endl;
         Result.print(name,"lat");
-    }
+    } */
 }
 
 //---------------------------------------------------------------------------

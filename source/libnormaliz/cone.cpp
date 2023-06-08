@@ -7223,6 +7223,13 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
         }
     }
 
+    if(split_patches.size() > 0){
+        string name = global_project + "." + to_string(split_res);
+        Matrix<Integer> Result(Deg1Elements);
+        cout << Result.nr_of_rows() << endl;
+        Result.print(name,"lat");
+    }
+
     if(ToCompute.test(ConeProperty::SingleLatticePoint)){
         if(inhomogeneous && ModuleGenerators.nr_of_rows() >0){
             SingleLatticePoint = ModuleGenerators[0];
