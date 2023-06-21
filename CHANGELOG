@@ -1,10 +1,12 @@
 # ChangeLog
 
 
-## [3.10.0]  2023-06-10
+## [3.10.0]  2023-06-25
 
 -- extensive improvements in the patching algorithm for lattice points
 -- weight vectors for Gröbner bases of lattice ideals
+-- time bound can be set (so far only in project-and-lift)
+-- option NoOutputOnInterrupt.
 
 ## [3.10.0]  2023-01-20
 
