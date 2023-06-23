@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -e  # exit script on errors
+
 PYTHON3=auto
 
 while true; do
