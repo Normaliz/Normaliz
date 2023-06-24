@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -e  # exit script on errors
+
 PYTHON3=auto
 
 while true; do
@@ -34,7 +36,7 @@ export NORMALIZ_LOCAL_DIR="${PREFIX}"
 
 if [ -x "$PYTHON3" ]; then
     rm -rf build
-    $SUDO $PYTHON3 setup.py install $PYTHON_USER
+    # Do not invoke setup.py directly. This is deprecated functionality
+    # of setuptools.
+    $SUDO $PYTHON3 -m pip install $PYTHON_USER .
 fi
-
-
