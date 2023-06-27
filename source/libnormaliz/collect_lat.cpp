@@ -38,18 +38,24 @@ using std::ifstream;
 void collect_lat() {
     string name = global_project + ".split.data";
     ifstream split_control(name.c_str());
+    if(!split_control.is_open())
+        throw BadInputException(name + " does not exist");
     long nr_split_patches;
     split_control >> nr_split_patches;
     split_patches.resize(nr_split_patches);
     split_moduli.resize(nr_split_patches);
     split_residues.resize(nr_split_patches);
-    long nr_splits_total = 1;
     for(long i = 0; i < nr_split_patches; ++i){
             split_control >> split_patches[i] >> split_moduli[i];
-            nr_splits_total *= split_moduli[i];
     }
+    size_t max_nr_splits, actual_nr_splits;
+    split_control >> max_nr_splits >> actual_nr_splits;
+    if(split_control.fail())
+        throw BadInputException(name + " corrupt");
+    split_control.close();
+
     if(verbose)
-        verboseOutput() << "Collecting lattice points from " << nr_splits_total << " lat files" << endl;
+        verboseOutput() << "Collecting lattice points from " << actual_nr_splits << " lat files" << endl;
 
     Matrix<long long> TotalLat;
     bool first = true;
@@ -66,7 +72,7 @@ void collect_lat() {
 
     vector<size_t> NotDone;
 
-    for(size_t i = 0; i < nr_splits_total; ++i){
+    for(size_t i = 0; i < actual_nr_splits; ++i){
         name = global_project + "." + to_string(i) + ".lat";
         if(verbose)
             verboseOutput()  << name << endl;
@@ -93,10 +99,10 @@ void collect_lat() {
     if(NotDone.size() > 0){
         if(verbose)
             verboseOutput() << "Computation NOT complete" << endl;
-        if(nr_splits_total < 2*NotDone.size()){
+        if(max_nr_splits >= 2*NotDone.size()){
             if(verbose)
                 verboseOutput() << "Scheduling refinement" << endl;
-            size_t nr_sub_splits = nr_splits_total/NotDone.size();
+            size_t nr_sub_splits = max_nr_splits/NotDone.size();
             if(verbose)
                 verboseOutput() << nr_sub_splits << " subplits" << endl;
 
@@ -113,9 +119,19 @@ void collect_lat() {
                 extended_res.resize(extended_res.size() +1);
                 for(long i = 0; i < nr_sub_splits; ++i){
                     extended_res.back() = i;
-                    dist_out >> extended_res;
+                    dist_out << extended_res;
                 }
             }
+            long new_actual_nr_splits = NotDone.size()*nr_sub_splits;
+            split_patches.push_back(split_patches.back()+1);
+            split_moduli.push_back(nr_sub_splits);
+            name = global_project + ".split.data";
+            ofstream new_split_control(name.c_str());
+            new_split_control << split_patches.size();
+            for(size_t i = 0; i < split_patches.size(); ++i)
+                new_split_control << " " << split_patches[i] << " " << split_moduli[i];
+            new_split_control << endl;
+            new_split_control << max_nr_splits << " " << new_actual_nr_splits << endl;
         }
         else{
             if(verbose)

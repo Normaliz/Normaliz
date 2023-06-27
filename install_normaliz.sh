@@ -57,6 +57,7 @@ cd build
 make clean
 make -j8
 make install
+ls ../local/bin
 if [ "x$NMZ_SHARED" == x ]; then
 #	if [ "$OSTYPE" != "msys" ]; then
 #		rm source/normaliz.exe
@@ -64,8 +65,7 @@ if [ "x$NMZ_SHARED" == x ]; then
 	# replace shared binary by static one
 	rm source/normaliz
 #	fi
-    make -j4 LDFLAGS="${LDFLAGS} -static"
-		rm source/normaliz
+    make -j4 LDFLAGS="${LDFLAGS} -all-static"
     make install
 	strip --strip-unneeded --remove-section=.comment --remove-section=.note ${PREFIX}/lib/libnormaliz.a
 fi

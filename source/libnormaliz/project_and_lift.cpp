@@ -41,6 +41,7 @@ void write_control_file(const size_t split_patch){
         string name = global_project +".split.data";
         ofstream out(name.c_str());
         out << "1 " << split_patch << " 1000" << endl;
+        out << "1000 " << "1000" << endl;
         assert(!out.fail());
         out.close();
 }

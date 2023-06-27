@@ -372,7 +372,6 @@ int process_data(OptionsHandler& options, const string& command_line) {
             split_control >> nr_split_patches;
             split_patches.resize(nr_split_patches);
             split_moduli.resize(nr_split_patches);
-            long nr_splits_total = 1;
             for(long i = 0; i < nr_split_patches; ++i){
                     split_control >> split_patches[i] >> split_moduli[i];
                     if(i == 0){
@@ -384,18 +383,33 @@ int process_data(OptionsHandler& options, const string& command_line) {
                             throw BadInputException("split patches must be increasing");
                     }
 
-                    nr_splits_total *= split_moduli[i];
             }
 
-            if(split_res >= nr_splits_total){
-                cerr << "Index of split too large, must be < " << nr_splits_total << endl;
+            long max_nr_splits, actual_nr_splits;
+            split_control >> max_nr_splits >> actual_nr_splits;
+
+            if(split_res >= actual_nr_splits){
+                cerr << "Index of split too large, must be < " << actual_nr_splits << endl;
                 exit(1);
             }
             long res = split_res;
             split_residues.resize(nr_split_patches);
-            for(long i = 0; i < nr_split_patches; ++i){
-                split_residues[i] = res % split_moduli[i];
-                res /=  split_moduli[i];
+            string dist_file_name = options.getProjectName() + ".split.dist";
+            ifstream dist_in(dist_file_name.c_str());
+            if(!dist_in.is_open()){
+                for(long i = 0; i < nr_split_patches; ++i){
+                    split_residues[i] = res % split_moduli[i];
+                    res /=  split_moduli[i];
+                }
+            }
+            else{
+                long dummy;
+                for(size_t i= 0; i < split_res; ++i){ // skip entries in dist file
+                    for(size_t j = 0; j < nr_split_patches; ++j)
+                        dist_in >> dummy;
+                }
+                for(size_t j = 0; j < nr_split_patches; ++j) // we have reached the relevant line
+                    dist_in >> split_residues[j];
             }
             if(verbose){
                 verboseOutput() << "split levels " << split_patches;
