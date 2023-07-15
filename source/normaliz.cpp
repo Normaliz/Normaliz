@@ -369,11 +369,13 @@ int process_data(OptionsHandler& options, const string& command_line) {
             string name = options.getProjectName() + ".split.data";
             ifstream split_control(name.c_str());
             long nr_split_patches;
+            long nr_splitPatches_all_rounds = 1;
             split_control >> nr_split_patches;
             split_patches.resize(nr_split_patches);
             split_moduli.resize(nr_split_patches);
             for(long i = 0; i < nr_split_patches; ++i){
                     split_control >> split_patches[i] >> split_moduli[i];
+                    nr_splitPatches_all_rounds *= split_moduli[i];
                     if(i == 0){
                         if(split_patches[i] < 1)
                             throw BadInputException("split patch must be > 0");
@@ -388,10 +390,25 @@ int process_data(OptionsHandler& options, const string& command_line) {
             long max_nr_splits, actual_nr_splits;
             split_control >> max_nr_splits >> actual_nr_splits;
 
+            long this_round = 0;
+            name = options.getProjectName() + ".rounds.data";
+            ifstream rounds_control(name.c_str());
+            if(rounds_control.is_open()){
+                long total_rounds;
+                rounds_control >> this_round >> total_rounds;
+                cout << this_round << " " << total_rounds << " " << max_nr_splits << " " << nr_splitPatches_all_rounds << endl;
+                if(this_round +1 > total_rounds)
+                    throw BadInputException("Too many rounds asked for");
+                if( max_nr_splits * total_rounds != nr_splitPatches_all_rounds)
+                    throw BadInputException("Numbers of splits for all rounds does not fit");
+            }
+
             if(split_res >= actual_nr_splits){
                 cerr << "Index of split too large, must be < " << actual_nr_splits << endl;
                 exit(1);
             }
+
+            split_res += this_round * max_nr_splits;
             long res = split_res;
             split_residues.resize(nr_split_patches);
             string dist_file_name = options.getProjectName() + ".split.dist";
