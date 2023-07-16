@@ -36,23 +36,43 @@ using std::endl;
 using std::ifstream;
 
 void collect_lat() {
+
+    bool no_refinement = false;
+
     string name = global_project + ".split.data";
     ifstream split_control(name.c_str());
     if(!split_control.is_open())
         throw BadInputException(name + " does not exist");
     long nr_split_patches;
+    long nr_splitPatches_all_rounds = 1;
     split_control >> nr_split_patches;
     split_patches.resize(nr_split_patches);
     split_moduli.resize(nr_split_patches);
     split_residues.resize(nr_split_patches);
     for(long i = 0; i < nr_split_patches; ++i){
             split_control >> split_patches[i] >> split_moduli[i];
+            nr_splitPatches_all_rounds *= split_moduli[i];
     }
     size_t max_nr_splits, actual_nr_splits;
     split_control >> max_nr_splits >> actual_nr_splits;
     if(split_control.fail())
         throw BadInputException(name + " corrupt");
     split_control.close();
+
+    name = global_project + ".rounds.data";
+    ifstream rounds_control(name.c_str());
+    if(rounds_control.is_open()){
+        no_refinement = true;
+        long total_rounds, this_round;
+        rounds_control >> this_round >> total_rounds;
+        if(total_rounds != this_round +1){
+            throw BadInputException("Not all rounds done");
+        }
+        // cout << this_round << " " << total_rounds << " " << max_nr_splits << " " << nr_splitPatches_all_rounds << endl;
+        actual_nr_splits = max_nr_splits * total_rounds;
+        if( actual_nr_splits != nr_splitPatches_all_rounds)
+            throw BadInputException("Numbers of splits for all rounds does not fit");
+    }
 
     if(verbose)
         verboseOutput() << "Collecting lattice points from " << actual_nr_splits << " lat files" << endl;
@@ -94,6 +114,10 @@ void collect_lat() {
             TotalLat.resize(0, this_lat.nr_of_columns());
         first = false;
         TotalLat.append(this_lat);
+    }
+
+    if(NotDone.size() >0 && no_refinement){
+        throw BadInputException("Incomplete computation after rounds");
     }
 
     if(NotDone.size() > 0){

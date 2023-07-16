@@ -396,7 +396,7 @@ int process_data(OptionsHandler& options, const string& command_line) {
             if(rounds_control.is_open()){
                 long total_rounds;
                 rounds_control >> this_round >> total_rounds;
-                cout << this_round << " " << total_rounds << " " << max_nr_splits << " " << nr_splitPatches_all_rounds << endl;
+                // cout << this_round << " " << total_rounds << " " << max_nr_splits << " " << nr_splitPatches_all_rounds << endl;
                 if(this_round +1 > total_rounds)
                     throw BadInputException("Too many rounds asked for");
                 if( max_nr_splits * total_rounds != nr_splitPatches_all_rounds)
