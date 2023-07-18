@@ -131,13 +131,36 @@ void collect_lat() {
                 verboseOutput() << nr_sub_splits << " subplits" << endl;
 
             name = global_project + ".split.dist";
+
+            vector<vector<long> > old_dist_residues;
+
+            ifstream dist_in(name.c_str());
+            if(dist_in.is_open()){
+                while(dist_in.good()){     // read split residues from previoious refinement
+                    dist_in >> std::ws;
+                    int c = dist_in.peek();
+                    if (c == EOF)
+                        break;
+                    vector<long> this_split(nr_split_patches);
+                    for(auto& p: this_split)
+                        dist_in >> p;
+                    old_dist_residues.push_back(this_split);
+                }
+                dist_in.close();
+            }
+
             ofstream dist_out(name.c_str());
 
             for(auto& split_res:NotDone){
-                long res = split_res;
-                for(long i = 0; i < nr_split_patches; ++i){
-                    split_residues[i] = res % split_moduli[i];
-                    res /=  split_moduli[i];
+                if(old_dist_residues.size() == 0){ // no previous refinement
+                    long res = split_res;
+                    for(long i = 0; i < nr_split_patches; ++i){
+                        split_residues[i] = res % split_moduli[i];
+                        res /=  split_moduli[i];
+                    }
+                }
+                else{
+                    split_residues = old_dist_residues[split_res];
                 }
                 vector<long> extended_res = split_residues;
                 extended_res.resize(extended_res.size() +1);
