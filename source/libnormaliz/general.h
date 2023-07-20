@@ -163,10 +163,12 @@ void PrintTime(const struct timeval var_TIME_begin, bool verbose, const std::str
 NORMALIZ_DLL_EXPORT extern double GlobalTimeBound;
 NORMALIZ_DLL_EXPORT extern double GlobalPredictionTimeBound;
 
+
 NORMALIZ_DLL_EXPORT extern std::vector<long> split_patches;
 NORMALIZ_DLL_EXPORT extern std::vector<long> split_moduli;
 NORMALIZ_DLL_EXPORT extern std::vector<long> split_residues;
 NORMALIZ_DLL_EXPORT extern long split_res;
+
 
 NORMALIZ_DLL_EXPORT extern std::string global_project;
 

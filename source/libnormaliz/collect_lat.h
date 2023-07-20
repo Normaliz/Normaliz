@@ -32,6 +32,8 @@ using std::string;
 
 class SplitData{
 
+public:
+
     vector<long> split_patches;
     size_t nr_split_patches;
     vector<long> split_moduli;
@@ -49,8 +51,6 @@ class SplitData{
     vector<vector<long> > refinement_residues;
 
     string project;
-
-public:
 
     SplitData();
 
