@@ -35,6 +35,106 @@ using std::cout;
 using std::endl;
 using std::ifstream;
 
+SplitData::SplitData(){
+}
+
+void SplitData::read_data(const string& this_project){
+
+    project = this_project;
+    string name = project + ".split.data";
+
+    ifstream split_control(name.c_str());
+    if(!split_control.is_open())
+        throw BadInputException(name + " does not exist");
+
+    long nr_splitPatches_all_rounds = 1;
+    split_control >> nr_split_patches;
+    split_patches.resize(nr_split_patches);
+    split_moduli.resize(nr_split_patches);
+    split_residues.resize(nr_split_patches);
+    for(long i = 0; i < nr_split_patches; ++i){
+            split_control >> split_patches[i] >> split_moduli[i];
+            nr_splitPatches_all_rounds *= split_moduli[i];
+    }
+    split_control >> max_nr_splits_per_round >> nr_splits_to_do;
+    split_control >> this_round >> this_refinement;
+
+    if(split_control.fail())
+        throw BadInputException(name + " corrupt");
+    split_control.close();
+
+    if(this_refinement == 0){
+        if( nr_splits_to_do != nr_splitPatches_all_rounds)
+            throw BadInputException("Numbers of splits for all rounds does not fit");
+    }
+    else{
+        refinement_residues.resize(nr_splits_to_do);
+        for(size_t i= 0; i < nr_splits_to_do; ++i){ // skip entries in dist file
+            refinement_residues[i].resize(nr_split_patches);
+            for(size_t j = 0; j < nr_split_patches; ++j)
+                split_control >> refinement_residues[i][j];
+        }
+    }
+}
+
+void SplitData::write_data(){
+
+    string name = project + ".split.data";
+    ofstream new_split_control(name.c_str());
+    new_split_control << split_patches.size();
+    for(size_t i = 0; i < split_patches.size(); ++i)
+    new_split_control << " " << split_patches[i] << " " << split_moduli[i];
+    new_split_control << endl;
+    new_split_control << max_nr_splits_per_round << " " << nr_splits_to_do << endl;
+    new_split_control << this_round << " " << this_refinement << endl;
+
+    if(this_refinement == 0){
+        new_split_control.close();
+        return;
+    }
+
+    Matrix<long>(refinement_residues).pretty_print(new_split_control);
+    new_split_control.close();
+}
+
+void SplitData::write_default(const string& this_project){
+
+    SplitData def_data;
+    def_data.project = this_project;
+    def_data.nr_split_patches = 1;
+    def_data.split_patches.resize(nr_split_patches);
+    def_data.split_patches[0] = 1;
+    def_data.split_moduli.resize(nr_split_patches);
+    def_data.split_moduli[0] = 1000;
+    def_data.max_nr_splits_per_round = 1000;
+    def_data.nr_splits_to_do = 1000;
+    def_data.this_round = 0;
+    def_data.this_refinement = 0;
+    def_data.write_data();
+}
+
+void SplitData::next_round(){
+
+    SplitData def_data = *this;
+    def_data.this_round++;
+    def_data.write_data();
+}
+
+void SplitData::set_this_split(const long& given_split){
+    this_split = given_split + this_round * max_nr_splits_per_round;
+
+    long res = given_split;
+    if(this_refinement == 0){
+        for(long i = 0; i < nr_split_patches; ++i){
+            this_split_residues[i] = res % split_moduli[i];
+            res /=  split_moduli[i];
+        }
+    }
+    else
+        this_split_residues = refinement_residues[given_split];
+}
+
+
 void collect_lat() {
 
     bool no_refinement = false;

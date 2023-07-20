@@ -24,8 +24,42 @@
 #ifndef NORMALIZ_COLLECTLAT_H
 #define NORMALIZ_COLLECTLAT_H
 
+#include "libnormaliz/general.h"
+
 namespace libnormaliz {
-using namespace std;
+using std::vector;
+using std::string;
+
+class SplitData{
+
+    vector<long> split_patches;
+    size_t nr_split_patches;
+    vector<long> split_moduli;
+
+    long max_nr_splits_per_round;
+    long nr_splits_to_do;
+
+    long this_split;
+    vector<long> this_split_residues;
+
+    long this_round;
+    long nr_rounds;
+    long this_refinement;
+
+    vector<vector<long> > refinement_residues;
+
+    string project;
+
+public:
+
+    SplitData();
+
+    void read_data(const string& this_project);
+    void set_this_split(const long& given_split);
+    void next_round();
+    void write_default(const string& this_project);
+    void write_data();
+};
 
 void collect_lat();
 
