@@ -33,6 +33,7 @@
 #include "libnormaliz/HilbertSeries.h"
 #include "libnormaliz/dynamic_bitset.h"
 #include "libnormaliz/nmz_polynomial.h"
+#include "libnormaliz/collect_lat.h"
 
 namespace libnormaliz {
 using std::vector;
@@ -144,6 +145,8 @@ class ProjectAndLift {
     vector<dynamic_bitset> CongIndicator; // stores supports of congruences
     Matrix<double> WeightOfCoord;
     Matrix<IntegerPL> DefiningSupps;
+
+    SplitData our_split;
 
     vector<size_t> NrRemainingLP;
     vector<size_t> NrDoneLP;

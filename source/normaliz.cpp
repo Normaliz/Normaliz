@@ -243,7 +243,7 @@ void compute_and_output(OptionsHandler& options,
         cout << "Writing only available data." << endl;
     }
 
-    if(split_patches.size() >0){
+    if(is_split_patching){
         cout << "No file <project>.out for split computation" << endl;
         MeasureGlobalTime(verbose);
         exit(0);
@@ -351,7 +351,7 @@ int process_data(OptionsHandler& options, const string& command_line) {
         global_project = options.getProjectName();
 
         if(options.isUseCollectLat()){
-            collect_lat();
+            collect_lat(global_project);
             exit(0);
         }
 
@@ -366,6 +366,8 @@ int process_data(OptionsHandler& options, const string& command_line) {
         }
 
         if(options.isUseSplit()){
+            is_split_patching = true;
+            /*
             string name = options.getProjectName() + ".split.data";
             ifstream split_control(name.c_str());
             long nr_split_patches;
@@ -432,7 +434,7 @@ int process_data(OptionsHandler& options, const string& command_line) {
                 verboseOutput() << "split levels " << split_patches;
                 verboseOutput() << "split moduli " << split_moduli;
                 verboseOutput() << "split residues " << split_residues;
-            }
+            }*/
         }
 
         GlobalTimeBound = -1.0;

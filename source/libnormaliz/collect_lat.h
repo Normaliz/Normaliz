@@ -61,7 +61,7 @@ public:
     void write_data();
 };
 
-void collect_lat();
+void collect_lat(const string& project);
 
 }  // namespace libnormaliz
 

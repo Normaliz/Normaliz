@@ -38,12 +38,8 @@ void write_control_file(const size_t split_patch){
         if(verbose)
             verboseOutput() << "split_patch " << split_patch << endl;
 
-        string name = global_project +".split.data";
-        ofstream out(name.c_str());
-        out << "1 " << split_patch << " 1000" << endl;
-        out << "1000 " << "1000" << endl;
-        assert(!out.fail());
-        out.close();
+        SplitData def_split;
+        def_split.write_default(global_project);
 }
 
 template <typename Integer>
@@ -1010,13 +1006,6 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_latt_points_by_patching() {
                 assert(n == 0);
         }
     }
-
-    /* if(split_patches.size() > 0){
-        string name = global_project + "." + to_string(split_res);
-        Matrix<IntegerRet> Result(Deg1Points);
-        cout << Result.nr_of_rows() << endl;
-        Result.print(name,"lat");
-    } */
 }
 
 //---------------------------------------------------------------------------
@@ -1052,19 +1041,19 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
     long split_modulus;
     key_t max_split_patch = 0;
     long this_split_res = -1;
-    bool do_split = false;
-    if(split_patches.size() > 0){
+    if(is_split_patching){
+        bool do_split = false;
         assert(!distributed_computation);
-        for(size_t i = 0; i < split_patches.size(); ++i){
-            if(this_patch == split_patches[i]){
-                split_modulus = split_moduli[i];
-                this_split_res = split_residues[i];
+        for(size_t i = 0; i < our_split.nr_split_patches; ++i){
+            if(this_patch == our_split.split_patches[i]){
+                split_modulus = our_split.split_moduli[i];
+                this_split_res = our_split.this_split_residues[i];
                 do_split = true;
                 break;
             }
         }
         if(do_split){
-            max_split_patch = split_patches.back();
+            max_split_patch = our_split.split_patches.back();
             if(verbose)
                 verboseOutput() << "Spilt level " << this_patch << " modulus " << split_modulus << " residue " << this_split_res << endl;
             LatticePoints.sort();
@@ -2841,8 +2830,12 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute(bool all_points, bool liftin
         throw ArithmeticException(0);
 #endif
 
-    if(split_patches.size() > 0)
+    if(is_split_patching){
         distributed_computation = false;
+        our_split.read_data(global_project);
+        our_split.set_this_split(split_res);
+        split_refinement = our_split.this_refinement; // needed in cone for output of lat file
+    }
 
     assert(all_points || !lifting_float);  // only all points allowed with float
 

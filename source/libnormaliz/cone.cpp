@@ -7223,8 +7223,8 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
         }
     }
 
-    if(split_patches.size() > 0){
-        string name = global_project + "." + to_string(split_res);
+    if(is_split_patching){
+        string name = global_project + "." + to_string(split_refinement) + "." + to_string(split_res);
         if (inhomogeneous) {
             ModuleGenerators.print(name,"lat");
         }
@@ -7346,7 +7346,7 @@ void Cone<renf_elem_class>::project_and_lift(const ConeProperties& ToCompute,
         PL.set_patching_allowed(!ToCompute.test(ConeProperty::NoPatching));
         PL.set_cong_order_patches(ToCompute.test(ConeProperty::CongOrderPatches));
         PL.set_linear_order_patches(ToCompute.test(ConeProperty::LinearOrderPatches));
-        if(split_patches.size() == 0) // must exclude Split and DistributedComp simultaneously
+        if(!is_split_patching) // must exclude Split and DistributedComp simultaneously
             PL.set_distributed_computation(ToCompute.test(ConeProperty::DistributedComp));
     }
 
@@ -7468,7 +7468,7 @@ void Cone<Integer>::project_and_lift(const ConeProperties& ToCompute,
                     PL.set_patching_allowed(!ToCompute.test(ConeProperty::NoPatching));
                     PL.set_cong_order_patches(ToCompute.test(ConeProperty::CongOrderPatches));
                     PL.set_linear_order_patches(ToCompute.test(ConeProperty::LinearOrderPatches));
-                    if(split_patches.size() == 0) // must exclude Split and DistributedComp simultaneously
+                    if(!is_split_patching) // must exclude Split and DistributedComp simultaneously
                         PL.set_distributed_computation(ToCompute.test(ConeProperty::DistributedComp));
                 }
                 PL.set_grading_denom(GDMI);
@@ -7530,7 +7530,7 @@ void Cone<Integer>::project_and_lift(const ConeProperties& ToCompute,
                 PL.set_patching_allowed(!ToCompute.test(ConeProperty::NoPatching));
                 PL.set_cong_order_patches(ToCompute.test(ConeProperty::CongOrderPatches));
                 PL.set_linear_order_patches(ToCompute.test(ConeProperty::LinearOrderPatches));
-                if(split_patches.size() == 0) // must exclude Split and DistributedComp simultaneously
+                if(!is_split_patching) // must exclude Split and DistributedComp simultaneously
                     PL.set_distributed_computation(ToCompute.test(ConeProperty::DistributedComp));
             }
             PL.set_grading_denom(GradingDenom);

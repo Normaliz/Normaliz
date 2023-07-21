@@ -51,7 +51,7 @@ void SplitData::read_data(const string& this_project){
     split_control >> nr_split_patches;
     split_patches.resize(nr_split_patches);
     split_moduli.resize(nr_split_patches);
-    split_residues.resize(nr_split_patches);
+    this_split_residues.resize(nr_split_patches);
     for(long i = 0; i < nr_split_patches; ++i){
             split_control >> split_patches[i] >> split_moduli[i];
             nr_splitPatches_all_rounds *= split_moduli[i];
@@ -123,7 +123,7 @@ void SplitData::next_round(){
 void SplitData::set_this_split(const long& given_split){
     this_split = given_split + this_round * max_nr_splits_per_round;
 
-    long res = given_split;
+    long res = this_split;
     if(this_refinement == 0){
         for(long i = 0; i < nr_split_patches; ++i){
             this_split_residues[i] = res % split_moduli[i];
@@ -139,11 +139,11 @@ void collect_lat(const string& project) {
 
     string name;
 
-    SplitData this_split;
-    this_split.read_data(project);
+    SplitData our_split;
+    our_split.read_data(project);
 
     if(verbose)
-        verboseOutput() << "Collecting lattice points from " << this_split.nr_splits_to_do << " lat files" << endl;
+        verboseOutput() << "Collecting lattice points from " << our_split.nr_splits_to_do << " lat files" << endl;
 
     Matrix<long long> TotalLat;
     bool first = true;
@@ -164,8 +164,8 @@ void collect_lat(const string& project) {
 
     // Now we read what has been compouted in the last refinement
     // and register the parts that have not been complete in NotDone
-    for(size_t i = 0; i < this_split.nr_splits_to_do; ++i){
-        name = project + "." + to_string(this_split.this_refinement) + "." +  to_string(i) + ".lat";
+    for(size_t i = 0; i < our_split.nr_splits_to_do; ++i){
+        name = project + "." + to_string(our_split.this_refinement) + "." +  to_string(i) + ".lat";
         if(verbose)
             verboseOutput()  << name << endl;
 
@@ -200,12 +200,12 @@ void collect_lat(const string& project) {
 
     if(verbose)
         verboseOutput() << "Computation NOT complete" << endl;
-    SplitData new_split_data = this_split;
+    SplitData new_split_data = our_split;
     size_t nr_sub_splits = 2;
-    if(this_split.max_nr_splits_per_round/NotDone.size() > 2)
-        nr_sub_splits = this_split.max_nr_splits_per_round/NotDone.size();
+    if(our_split.max_nr_splits_per_round/NotDone.size() > 2)
+        nr_sub_splits = our_split.max_nr_splits_per_round/NotDone.size();
     new_split_data.nr_splits_to_do = NotDone.size() * nr_sub_splits;
-    new_split_data.split_patches.push_back(this_split.split_patches.back() + 1);
+    new_split_data.split_patches.push_back(our_split.split_patches.back() + 1);
     new_split_data.nr_split_patches++;
     new_split_data.split_moduli.push_back(nr_sub_splits);
     new_split_data.this_refinement++;
@@ -216,18 +216,18 @@ void collect_lat(const string& project) {
     if(verbose)
         verboseOutput() << nr_sub_splits << " subplits" << endl;
 
-    vector<long> split_residues(this_split.nr_split_patches);
+    vector<long> split_residues(our_split.nr_split_patches);
     new_split_data.refinement_residues.clear();
     for(auto& split_res:NotDone){
-        if(this_split.this_refinement == 0){ // no previous refinement
+        if(our_split.this_refinement == 0){ // no previous refinement
             long res = split_res;
-            for(long i = 0; i < this_split.nr_split_patches; ++i){
-                split_residues[i] = res % split_moduli[i];
-                res /=  split_moduli[i];
+            for(long i = 0; i < our_split.nr_split_patches; ++i){
+                split_residues[i] = res % our_split.split_moduli[i];
+                res /=  our_split.split_moduli[i];
             }
         }
         else{
-            split_residues = this_split.refinement_residues[split_res];
+            split_residues = our_split.refinement_residues[split_res];
         }
         vector<long> extended_res = split_residues;
         extended_res.resize(extended_res.size() +1);
