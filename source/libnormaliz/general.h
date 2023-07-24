@@ -94,6 +94,7 @@ typedef unsigned int key_t;
 NORMALIZ_DLL_EXPORT extern bool verbose;
 NORMALIZ_DLL_EXPORT extern bool constructor_verbose;
 NORMALIZ_DLL_EXPORT extern bool polynomial_verbose;
+NORMALIZ_DLL_EXPORT extern bool talkative;
 NORMALIZ_DLL_EXPORT extern size_t GMP_mat, GMP_hyp, GMP_scal_prod;
 NORMALIZ_DLL_EXPORT extern size_t TotDet;
 
@@ -141,6 +142,7 @@ NORMALIZ_DLL_EXPORT extern long full_cone_recursion_level;
 bool setVerboseDefault(bool v);
 void suppressNextConstructorVerbose();
 bool setPolynomialVerbose(bool onoff);
+bool setTalkativeDefault(bool v);
 /* methods to set and use the output streams */
 void setVerboseOutput(std::ostream&);
 void setErrorOutput(std::ostream&);
@@ -169,6 +171,7 @@ NORMALIZ_DLL_EXPORT extern std::vector<long> split_moduli;
 NORMALIZ_DLL_EXPORT extern std::vector<long> split_residues;
 */
 NORMALIZ_DLL_EXPORT extern long split_res; // transports <n> of -X=<n>
+NORMALIZ_DLL_EXPORT extern long split_res_rounds; // transports <n> of -X=<n>
 NORMALIZ_DLL_EXPORT extern long split_refinement;
 NORMALIZ_DLL_EXPORT extern bool is_split_patching; // transports the refinement of the split
 

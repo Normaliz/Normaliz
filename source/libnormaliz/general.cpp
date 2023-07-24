@@ -65,6 +65,7 @@ namespace libnormaliz {
 bool verbose = false;
 bool constructor_verbose = true;
 bool polynomial_verbose = false;
+bool talkative = false;
 
 volatile sig_atomic_t nmz_interrupted = 0;
 const int default_thread_limit = 8;
@@ -90,12 +91,8 @@ bool int_max_value_primary_long_long_computed = false;
 
 vector<vector<vector<long> > > CollectedAutoms(default_thread_limit);  // for use in nmz_nauty.cpp
 
-/*
-vector<long> split_patches;
-vector<long> split_moduli;
-vector<long> split_residues;
-*/
 long split_res = -1;
+long split_res_rounds = -1;
 long split_refinement = -1;
 bool is_split_patching = false;
 
@@ -133,6 +130,13 @@ bool setVerboseDefault(bool v) {
     bool old = verbose;
     verbose = v;
     return old;
+}
+
+bool setTalkativeDefault(bool v) {
+    // we want to return the old value
+    bool old_talk = talkative;
+    talkative = v;
+    return old_talk;
 }
 
 bool setPolynomialVerbose(bool onoff){

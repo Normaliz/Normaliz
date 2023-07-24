@@ -378,12 +378,12 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
         AllIntersections_key[coord] = intersection_key;
         AllNew_coords_key[coord] = new_coords_key;
 
-#ifdef NMZ_DEVELOP
-        if(verbose){
-            verboseOutput() << "level " << LevelPatches[coord] << endl;
-            verboseOutput() << "new coords " << new_coords_key;
+        if(talkative){
+            if(verbose){
+                verboseOutput() << "level " << LevelPatches[coord] << endl;
+                verboseOutput() << "new coords " << new_coords_key;
+            }
         }
-#endif
         // for the "local" project-and-lift we need their suport hyperplanes
         vector<key_t> LocalKey = bitset_to_key(AllPatches[coord]);
         Matrix<IntegerPL> LocalSuppsRaw; // could be avoided, only for convenience
@@ -441,14 +441,14 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
         // cout << "In local PLs" << endl;
         PL.add_congruences_from_equations();
         PL.restrict_congruences();
-#ifdef NMZ_DEVELOP
-        if(false){ // verbose){
-            if(PL.Congs.nr_of_rows() >0 ){
-                cout << "coord " << coord << endl;
-                PL.Congs.debug_print();
+        if(talkative){
+            if(false){ // verbose){
+                if(PL.Congs.nr_of_rows() >0 ){
+                    cout << "coord " << coord << endl;
+                    PL.Congs.debug_print();
+                }
             }
         }
-#endif
         AllLocalPL[coord] = PL;
 
         dynamic_bitset new_covered = covered | AllPatches[coord];
@@ -556,24 +556,24 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
             T = AllPolyInequs[coord];
         }
 
-#ifdef NMZ_DEVELOP
-        if(verbose)
-            verboseOutput() << "index coord " << coord << " nr covered coordinates " << new_covered.count() << endl;
-        if(verbose && PolyEqusKey.size() > 0)
-            verboseOutput() << "nr poly equations " << PolyEqusKey.size() << endl;
-        if(verbose && PolyInequsKey.size() > 0)
-            verboseOutput() << " nr poly inequalities " << PolyInequsKey.size() << endl;
-        if(verbose && RestrictablePolyInequsKey.size() > 0)
-            verboseOutput() <<  "nr restrictable poly inequalities " << RestrictablePolyInequsKey.size() << endl;
-        if(verbose && AllCongsRestricted[coord].size() > 0){
-            verboseOutput() <<  "nr congruences " << AllCongsRestricted[coord].size() << endl;
-            verboseOutput() << "supports" << endl;
-            for(auto c: AllCongsRestricted[coord])
-                verboseOutput() << bitset_to_key(c.poly.support);
+        if(talkative){
+            if(verbose)
+                verboseOutput() << "index coord " << coord << " nr covered coordinates " << new_covered.count() << endl;
+            if(verbose && PolyEqusKey.size() > 0)
+                verboseOutput() << "nr poly equations " << PolyEqusKey.size() << endl;
+            if(verbose && PolyInequsKey.size() > 0)
+                verboseOutput() << " nr poly inequalities " << PolyInequsKey.size() << endl;
+            if(verbose && RestrictablePolyInequsKey.size() > 0)
+                verboseOutput() <<  "nr restrictable poly inequalities " << RestrictablePolyInequsKey.size() << endl;
+            if(verbose && AllCongsRestricted[coord].size() > 0){
+                verboseOutput() <<  "nr congruences " << AllCongsRestricted[coord].size() << endl;
+                /*verboseOutput() << "supports" << endl;
+                for(auto c: AllCongsRestricted[coord])
+                    verboseOutput() << bitset_to_key(c.poly.support);*/
+            }
+            if(verbose)
+                verboseOutput() << "---------------------------------------------------------------" << endl;
         }
-        if(verbose)
-            verboseOutput() << "---------------------------------------------------------------" << endl;
-#endif
 
         covered = new_covered;
 
@@ -835,13 +835,13 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_covers() {
     LevelPatches.resize(EmbDim);
 
 
-#ifdef NMZ_DEVELOP
-    if(verbose){
-        for(size_t i = 0; i < EmbDim; ++i){
-            verboseOutput() << i << " ----- " << bitset_to_key(AllPatches[i]);
+    if(talkative){
+        if(verbose){
+            for(size_t i = 0; i < EmbDim; ++i){
+                verboseOutput() << i << " ----- " << bitset_to_key(AllPatches[i]);
+            }
         }
     }
-#endif
 
 
     if(order_patches_user_defined()){
@@ -1084,14 +1084,10 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
 
     size_t min_fall_back = 0;
     bool min_found = false;
-#ifdef NMZ_DEVELOP
     size_t max_fall_back = 0;
-#endif
     for(size_t i = 0; i < this_patch; ++i){
         if(NrRemainingLP[i] > 0){
-#ifdef NMZ_DEVELOP
             max_fall_back = i;
-#endif
             if(!min_found){
                 min_found = true;
                 min_fall_back = i;
@@ -1187,20 +1183,18 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
     Matrix<IntegerRet> LocalSolutionsNow(0, intersection_key.size() + new_coords_key.size());
     LocalPL.put_eg1Points_into(LocalSolutionsNow);
     size_t nr_old_solutions = LocalSolutions.nr_of_rows();
-#ifdef NMZ_DEVELOP
     size_t nr_new_solutions = LocalSolutionsNow.nr_of_rows();
-#endif
     if(nr_old_solutions == 0)
         swap(LocalSolutions,LocalSolutionsNow);
     else
         LocalSolutions.swap_append(LocalSolutionsNow);
 
-#ifdef NMZ_DEVELOP
-    if(verbose){
-        // verboseOutput() << "****************" << endl;
-        verboseOutput() << "Local solutions total " << LocalSolutions.nr_of_rows() << " new " << nr_new_solutions << endl;
+    if(talkative){
+        if(verbose){
+            verboseOutput() << "-----" << endl;
+            verboseOutput() << "Local solutions total " << LocalSolutions.nr_of_rows() << " new " << nr_new_solutions << endl;
+        }
     }
-#endif
 
     // Next the newly computed extensions are registered
     // based on overlap,
@@ -1264,35 +1258,34 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
     // One could think about exchanging the order of the loops to get better
     // parallelization. But it is unclear whether this can be achieved.
 
-#ifdef NMZ_DEVELOP
         struct timeval time_begin;
         StartTime(time_begin);
-#endif
 
         size_t nr_rounds = 0;
 
 
     while (true) {
 
+        if(talkative){
+            if(nr_rounds > 0 && verbose){
+                verboseOutput() << "----" << endl;
+            }
+        }
 
         nr_rounds++;
         if(GlobalTimeBound > 0 &&  TimeSinceStart() > GlobalTimeBound){
             throw TimeBoundException("patching");
         }
 
-
-#ifdef NMZ_DEVELOP
         struct timeval step_time_begin;
         StartTime(step_time_begin);
 
-#endif
-
         if(verbose){
             verboseOutput() <<  LevelPatches[coord] << " / " << coord << " left " << nr_to_match - nr_points_matched;
-#ifdef NMZ_DEVELOP
-            if(min_fall_back > 0)
-                verboseOutput() << " min " << min_fall_back << " max " << max_fall_back;
-#endif
+            if(talkative){
+                if(min_fall_back > 0)
+                    verboseOutput() << " min " << min_fall_back << " max " << max_fall_back;
+            }
             verboseOutput()    << endl;
         }
 
@@ -1303,18 +1296,10 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         int omp_start_level = omp_get_level();
 
         size_t nr_latt_points_total = 0;  //statistics for this run of the while loop
-#ifdef NMZ_DEVELOP
         size_t nr_caught_by_restricted = 0;  //restricted inequalities
         size_t nr_caught_by_equations = 0;  //statistics for this run of the while loop
         // size_t nr_caught_by_congs = 0;  //statistics for this run of the while loop
-#endif
         size_t nr_points_done_in_this_round = 0;
-
-/* #ifdef NMZ_DEVELOP
-        struct timeval time_begin;
-        StartTime(time_begin);
-#endif
-*/
 
         vector<vector<size_t> > poly_equs_stat; // TODO make macro
         vector<size_t> poly_equs_stat_total;
@@ -1424,19 +1409,15 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                     NewLattPoint[new_coords_key[j]] = LocalSolutions[i][j + intersection_key.size()];
 
                 bool can_be_inserted = true;
-#ifdef NMZ_DEVELOP
 #pragma omp atomic
                 nr_latt_points_total++;
-#endif
 
                 if(can_be_inserted){
                     for(auto pp = order_poly_equs.begin(); pp!= order_poly_equs.end(); ++pp){
                         if(PolyEqusThread[tn][*pp].evaluate(NewLattPoint) != 0){
                             can_be_inserted = false;
-#ifdef NMZ_DEVELOP
 #pragma omp atomic
                             nr_caught_by_equations++;
-#endif
                             if(!poly_equs_minimized[coord])
                                 poly_equs_stat[tn][*pp]++;
                             else
@@ -1445,30 +1426,12 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                         }
                     }
                 }
-                /* if(can_be_inserted){
-                    for(auto pp = order_poly_congs.begin(); pp!= order_poly_congs.end(); ++pp){
-                        if(!CongsRestricted[*pp].check(NewLattPoint)){
-#ifdef NMZ_DEVELOP
-#pragma omp atomic
-                            nr_caught_by_congs++;
-#endif
-                            can_be_inserted = false;
-                            if(!poly_congs_minimized[coord])
-                                poly_congs_stat[tn][*pp]++;
-                            else
-                                order_poly_congs.splice(order_poly_congs.begin(), order_poly_congs, pp);
-                            break;
-                        }
-                    }
-                }*/
                 if(can_be_inserted){
                     for(auto pp = order_poly_inequs.begin(); pp!= order_poly_inequs.end(); ++pp){
                         if(PolyInequsThread[tn][*pp].evaluate(NewLattPoint) < 0){
                             can_be_inserted = false;
-#ifdef NMZ_DEVELOP
 #pragma omp atomic
                             nr_caught_by_restricted++;
-#endif
                             if(!poly_inequs_minimized[coord])
                                 poly_inequs_stat[tn][*pp]++;
                             else
@@ -1607,22 +1570,22 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
             expected_number_of_rounds/= nr_points_done_in_this_round;
         }
 
-#ifdef NMZ_DEVELOP
-        if(verbose){
-            verboseOutput() << "done " << nr_points_done_in_this_round;
-            verboseOutput() << " ext " << nr_latt_points_total;
-            if(PolyEqusThread[0].size() > 0)
-                verboseOutput() << " equ " << nr_caught_by_equations;
-            if(PolyInequsThread[0].size() > 0)
-                verboseOutput() << " ine " << nr_caught_by_restricted;
-            /* assert(nr_caught_by_congs == 0);
-            if(CongsRestricted.size() > 0)
-                verboseOutput() << " cgr " << nr_caught_by_congs;*/
-            if(nr_points_done_in_this_round > 0)
-                verboseOutput() << " exp rnd " << expected_number_of_rounds;
-            verboseOutput() << endl;
+        if(talkative){
+            if(verbose){
+                verboseOutput() << "done " << nr_points_done_in_this_round;
+                verboseOutput() << " ext " << nr_latt_points_total;
+                if(PolyEqusThread[0].size() > 0)
+                    verboseOutput() << " equ " << nr_caught_by_equations;
+                if(PolyInequsThread[0].size() > 0)
+                    verboseOutput() << " ine " << nr_caught_by_restricted;
+                /* assert(nr_caught_by_congs == 0);
+                if(CongsRestricted.size() > 0)
+                    verboseOutput() << " cgr " << nr_caught_by_congs;*/
+                if(nr_points_done_in_this_round > 0)
+                    verboseOutput() << " exp rnd " << expected_number_of_rounds;
+                verboseOutput() << endl;
+            }
         }
-#endif
 
         // MeasureTime(false, "Elapsed ");
 
@@ -1636,28 +1599,28 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
             extend_points_to_next_coord(NewLatticePoints, this_patch + 1);
         NewLatticePoints.clear();
 
-#ifdef NMZ_DEVELOP
-        if(nr_points_done_in_this_round > 0 && NrRemainingLP[this_patch] > 0){
-            // cout << "nr_rounds " << nr_rounds << " expected rounds " << expected_number_of_rounds << endl;
-            double time_spent = MeasureTime(time_begin);
-            double step_time_spent = MeasureTime(step_time_begin);
-            double time_per_round = time_spent/nr_rounds;
-            // cout << "spent " << time_spent << " time_per_round " << time_per_round << endl;
-            double expected_time = time_per_round*expected_number_of_rounds;
-            double step_expected_time = step_time_spent*expected_number_of_rounds;
-            if(verbose){
-                verboseOutput() << "expected future time on level  " << LevelPatches[coord] << "  " << expected_time;
-                verboseOutput() << " / "  << step_expected_time << " sec " << endl;
-            }
-            /*if(verbose) {
-                verboseOutput() << "==============================" << endl;
-            }*/
-            if(GlobalPredictionTimeBound > 0 && expected_time > GlobalPredictionTimeBound){
-                    verboseOutput() << "expected time exceeds bound of " << GlobalPredictionTimeBound << "sec" << endl;
-                    throw TimeBoundException("patching");
+        if(talkative){
+            if(nr_points_done_in_this_round > 0 && NrRemainingLP[this_patch] > 0){
+                // cout << "nr_rounds " << nr_rounds << " expected rounds " << expected_number_of_rounds << endl;
+                double time_spent = MeasureTime(time_begin);
+                double step_time_spent = MeasureTime(step_time_begin);
+                double time_per_round = time_spent/nr_rounds;
+                // cout << "spent " << time_spent << " time_per_round " << time_per_round << endl;
+                double expected_time = time_per_round*expected_number_of_rounds;
+                double step_expected_time = step_time_spent*expected_number_of_rounds;
+                if(verbose){
+                    verboseOutput() << "expected future time on level  " << LevelPatches[coord] << "  " << expected_time;
+                    verboseOutput() << " / "  << step_expected_time << " sec " << endl;
+                }
+                /*if(verbose) {
+                    verboseOutput() << "==============================" << endl;
+                }*/
+                if(GlobalPredictionTimeBound > 0 && expected_time > GlobalPredictionTimeBound){
+                        verboseOutput() << "expected time exceeds bound of " << GlobalPredictionTimeBound << "sec" << endl;
+                        throw TimeBoundException("patching");
+                }
             }
         }
-#endif
 
         if(nr_points_matched == nr_to_match || single_point_found)
             break;

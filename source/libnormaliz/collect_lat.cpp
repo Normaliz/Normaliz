@@ -61,7 +61,6 @@ void SplitData::read_data(const string& this_project){
 
     if(split_control.fail())
         throw BadInputException(name + " corrupt");
-    split_control.close();
 
     if(this_refinement == 0){
         if( nr_splits_to_do != nr_splitPatches_all_rounds)
@@ -74,7 +73,12 @@ void SplitData::read_data(const string& this_project){
             for(size_t j = 0; j < nr_split_patches; ++j)
                 split_control >> refinement_residues[i][j];
         }
+        // Matrix<long>(refinement_residues).debug_print();
     }
+
+    assert(split_control.good());
+
+    split_control.close();
 }
 
 void SplitData::write_data(){
@@ -121,7 +125,12 @@ void SplitData::next_round(){
 }
 
 void SplitData::set_this_split(const long& given_split){
+    if(given_split >= max_nr_splits_per_round)
+        throw NoComputationException("Split index given by -X too large");
     this_split = given_split + this_round * max_nr_splits_per_round;
+    split_res_rounds= this_split; // neede in cone for output
+    if(this_split >= nr_splits_to_do)
+        throw NoComputationException("Total split index too large");
 
     long res = this_split;
     if(this_refinement == 0){
@@ -131,9 +140,16 @@ void SplitData::set_this_split(const long& given_split){
         }
     }
     else
-        this_split_residues = refinement_residues[given_split];
+        this_split_residues = refinement_residues[this_split];
 }
 
+void next_round(const string& project) {
+
+    SplitData our_split;
+    our_split.read_data(project);
+    our_split.this_round++;
+    our_split.write_data();
+}
 
 void collect_lat(const string& project) {
 
@@ -236,6 +252,7 @@ void collect_lat(const string& project) {
             new_split_data.refinement_residues.push_back(extended_res);
         }
     }
+    new_split_data.write_data();
 }
 
 }  // namespace libnormaliz

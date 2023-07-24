@@ -1903,7 +1903,7 @@ The function returns the previous value.
 
 The libnormaliz functions can be called by programs that are parallelized via OpenMP themselves. The functions in libnormaliz switch off nested parallelization.
 
-As a test program you can compile and run \verb|outerpar| in \verb|source/outerpar|. Compile it by For the compilation of \verb|maxsimplex.cpp| use
+As a test program you can compile and run \verb|outerpar| in \verb|source/outerpar|. Compile it by
 \begin{Verbatim}
 make -f Makefile.classic outerpar
 \end{Verbatim}
@@ -1918,7 +1918,7 @@ one can control the verbose output of \verb|libnormaliz|. The default value is \
 \begin{Verbatim}
 bool Cone<Integer>::setVerbose(bool v)
 \end{Verbatim}
-Both functions return the previous value.In order to \verb|setVerbose| for a cone, it must have already beren constructed, and during construction the global verbose determines terminalk output. The construction phase does some precomputations, and they may issue some inwanted terminal output. In order to suppress it, one can use
+Both functions return the previous value.In order to \verb|setVerbose| for a cone, it must have already beren constructed, and during construction the global verbose determines terminal output. The construction phase does some precomputations, and they may issue some unwanted terminal output. In order to suppress it, one can use
 \begin{Verbatim}
 void suppressNextConstructorVerbose()
 \end{Verbatim}

@@ -63,6 +63,8 @@ public:
 
 void collect_lat(const string& project);
 
+void next_round(const string& project);
+
 }  // namespace libnormaliz
 
 #endif  // NMZ_CHUNK_H

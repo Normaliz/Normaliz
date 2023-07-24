@@ -355,6 +355,11 @@ int process_data(OptionsHandler& options, const string& command_line) {
             exit(0);
         }
 
+        if(options.isUseNextRound()){
+            next_round(global_project);
+            exit(0);
+        }
+
         if (options.isUseChunk()) {
             chunk();
             exit(0);

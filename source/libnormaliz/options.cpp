@@ -170,6 +170,9 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
                 break;
             case 'c':
                 verbose = true;
+#ifdef NMZ_DEVELOP
+                talkative = true;
+#endif
                 break;
             case 'f':
                 write_extra_files = true;
@@ -334,6 +337,14 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
         }
         if (LongOption == "verbose") {
             verbose = true;  // global verbose
+#ifdef NMZ_DEVELOP
+            talkative = true;
+#endif
+            continue;
+        }
+        if (LongOption == "talkative") {
+            talkative = true;  // global talkative
+            verbose = true;    // global verbose
             continue;
         }
         if (LongOption == "list_polynomials") {
@@ -358,6 +369,10 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
         }
         if (LongOption == "CollectLat") {
             use_collect_lat = true;
+            continue;
+        }
+        if (LongOption == "NextRound") {
+            use_next_round = true;
             continue;
         }
         if (LongOption == "Split") {

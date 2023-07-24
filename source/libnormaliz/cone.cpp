@@ -7224,7 +7224,7 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
     }
 
     if(is_split_patching){
-        string name = global_project + "." + to_string(split_refinement) + "." + to_string(split_res);
+        string name = global_project + "." + to_string(split_refinement) + "." + to_string(split_res_rounds);
         if (inhomogeneous) {
             ModuleGenerators.print(name,"lat");
         }
