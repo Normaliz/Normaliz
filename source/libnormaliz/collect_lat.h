@@ -53,11 +53,12 @@ public:
     string project;
 
     SplitData();
+    SplitData(const string& this_project);
 
     void read_data(const string& this_project);
     void set_this_split(const long& given_split);
     void next_round();
-    void write_default(const string& this_project);
+    void set_default(const string& this_project);
     void write_data();
 };
 

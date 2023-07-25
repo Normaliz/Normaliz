@@ -38,6 +38,21 @@ using std::ifstream;
 SplitData::SplitData(){
 }
 
+// c instructor with default values
+SplitData::SplitData(const string& this_project){
+
+    project = this_project;
+    nr_split_patches = 1;
+    split_patches.resize(nr_split_patches);
+    split_patches[0] = 1;
+    split_moduli.resize(nr_split_patches);
+    split_moduli[0] = 1000;
+    max_nr_splits_per_round = 1000;
+    nr_splits_to_do = 1000;
+    this_round = 0;
+    this_refinement = 0;
+}
+
 void SplitData::read_data(const string& this_project){
 
     project = this_project;
@@ -99,22 +114,6 @@ void SplitData::write_data(){
 
     Matrix<long>(refinement_residues).pretty_print(new_split_control);
     new_split_control.close();
-}
-
-void SplitData::write_default(const string& this_project){
-
-    SplitData def_data;
-    def_data.project = this_project;
-    def_data.nr_split_patches = 1;
-    def_data.split_patches.resize(nr_split_patches);
-    def_data.split_patches[0] = 1;
-    def_data.split_moduli.resize(nr_split_patches);
-    def_data.split_moduli[0] = 1000;
-    def_data.max_nr_splits_per_round = 1000;
-    def_data.nr_splits_to_do = 1000;
-    def_data.this_round = 0;
-    def_data.this_refinement = 0;
-    def_data.write_data();
 }
 
 void SplitData::next_round(){

@@ -38,8 +38,8 @@ void write_control_file(const size_t split_patch){
         if(verbose)
             verboseOutput() << "split_patch " << split_patch << endl;
 
-        SplitData def_split;
-        def_split.write_default(global_project);
+        SplitData def_split(global_project);
+        def_split.write_data();
 }
 
 template <typename Integer>
