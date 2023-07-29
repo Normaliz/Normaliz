@@ -146,6 +146,12 @@ void next_round(const string& project) {
 
     SplitData our_split;
     our_split.read_data(project);
+    // archive <project>.spli.data that was jiust read
+    string command = "cp " + project + ".split.data " + project + "." + to_string(our_split.this_refinement) + "." + to_string(our_split.this_round) + ".split.data";
+    int dummy = system(command.c_str());
+    if(dummy > 0)
+        throw NoComputationException("Problem in archiving <project.split.data");
+    // now mwrite updated split data
     our_split.this_round++;
     our_split.write_data();
 }
@@ -156,6 +162,11 @@ void collect_lat(const string& project) {
 
     SplitData our_split;
     our_split.read_data(project);
+    // archive <project>.spli.data that was jiust read
+    string command = "cp " + project + ".split.data " + project + "." + to_string(our_split.this_refinement) + "." + to_string(our_split.this_round) + ".split.data";
+    int dummy = system(command.c_str());
+    if(dummy > 0)
+        throw NoComputationException("Problem in archiving <project.split.data");
 
     if(verbose)
         verboseOutput() << "Collecting lattice points from " << our_split.nr_splits_to_do << " lat files" << endl;

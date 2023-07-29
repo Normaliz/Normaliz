@@ -204,7 +204,7 @@ For positive systems it is a priori clear that the polyhedron defined by the lin
 \end{itemize}
 The computation times are $< 1$ sec and (most likely) $\sim\infty$.
 
-Under certain conditions coarse project-and-lift is modified. Instead of proceeding from one coordinate to the next, ``local systems'' are used to extend the range of coordinates by `patching''. It is a particularly fast method if it applies. Our standard example \verb|pet.in| is automatically run in this mode, unless you forbid it by
+Under certain conditions coarse project-and-lift is modified. Instead of proceeding from one coordinate to the next, ``local systems'' are used to extend the range of coordinates by ``patching''. It is a particularly fast method if it applies. Our standard example \verb|pet.in| is automatically run in this mode, unless you forbid it by
 \begin{itemize}
 	\itemtt[NoPatching]
 \end{itemize}
@@ -216,7 +216,7 @@ Note that the patching algorithm allows distributed computation (se Section \ref
 
 \subsubsection{Polynomial constraints for lattice points}\label{poly_const}
 
-The lattice points in polytopes computed by Normaliz can be further constrained by polynomial equations an d inequalities (see Section \ref{poly_const_input}). For all algorithms different from project-and-lift the lattice point must be computed completely before the polynomial constraints can be used. It is a significant advantage of project-and-lift and its variants that every polynomial constraint can be applied as soon as all coordinates appearing  in it with a nonzero coefficient have been collected. This helps enormously to stop the extension of coordinates. 
+The lattice points in polytopes computed by Normaliz can be further constrained by polynomial equations an d inequalities (see Section \ref{poly_const_input}). For all algorithms different from project-and-lift the lattice points must be computed completely before the polynomial constraints can be used. It is a significant advantage of project-and-lift and its variants that every polynomial constraint can be applied as soon as all coordinates appearing  in it with a nonzero coefficient have been collected. This helps enormously to stop the extension of coordinates. 
 
 To avoid ambiguities, only computation goals for lattice points in polytopes and convex hull data can be computed in the presence of polynomial constraints. 
 
@@ -224,7 +224,7 @@ To avoid ambiguities, only computation goals for lattice points in polytopes and
 
 \subsubsection{The patching order}\label{patch_order}
 
-If polynmomial equations are present, then Normaliz tries to use them with as few coordinates as possible and schedules the patching algorithm accordingly. However, this can have a negative effect if it makes `bad'' patches used too early. Also congruences, whether explicitly given in the input or derived by Normaliz from linear equations, can influence the insertion order of the patches. 
+If polynmomial equations are present, then Normaliz tries to use them with as few coordinates as possible and schedules the patching algorithm accordingly. However, this can have a negative effect if it makes ``bad'' patches used too early. Also congruences, whether explicitly given in the input or derived by Normaliz from linear equations, can influence the insertion order of the patches. 
 
 There are some options that can modify the default behavior:
 \begin{itemize}
