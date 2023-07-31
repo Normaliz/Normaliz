@@ -49,6 +49,7 @@ public:
     long this_refinement;
 
     vector<vector<long> > refinement_residues;
+    vector<vector<long> > refinement_predecessors;
 
     string project;
 

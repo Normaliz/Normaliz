@@ -171,9 +171,9 @@ NORMALIZ_DLL_EXPORT extern std::vector<long> split_moduli;
 NORMALIZ_DLL_EXPORT extern std::vector<long> split_residues;
 */
 NORMALIZ_DLL_EXPORT extern long split_res; // transports <n> of -X=<n>
-NORMALIZ_DLL_EXPORT extern long split_res_rounds; // transports <n> of -X=<n>
-NORMALIZ_DLL_EXPORT extern long split_refinement;
-NORMALIZ_DLL_EXPORT extern bool is_split_patching; // transports the refinement of the split
+NORMALIZ_DLL_EXPORT extern long split_res_rounds; // transports the split residue after adding the rounds
+NORMALIZ_DLL_EXPORT extern long split_refinement; // transports the refinement of the split
+NORMALIZ_DLL_EXPORT extern bool is_split_patching; // indicates that we are computing a split
 
 
 NORMALIZ_DLL_EXPORT extern std::string global_project;

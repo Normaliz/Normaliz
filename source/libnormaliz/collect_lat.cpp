@@ -83,12 +83,17 @@ void SplitData::read_data(const string& this_project){
     }
     else{
         refinement_residues.resize(nr_splits_to_do);
-        for(size_t i= 0; i < nr_splits_to_do; ++i){ // skip entries in dist file
+        for(size_t i= 0; i < nr_splits_to_do; ++i){
             refinement_residues[i].resize(nr_split_patches);
             for(size_t j = 0; j < nr_split_patches; ++j)
                 split_control >> refinement_residues[i][j];
         }
         // Matrix<long>(refinement_residues).debug_print();
+        for(size_t i= 0; i < nr_splits_to_do; ++i){
+            refinement_predecessors[i].resize(this_refinement+1);
+            for(size_t j = 0; j < nr_split_patches; ++j)
+                split_control >> refinement_predecessors[i][j];
+        }
     }
 
     assert(split_control.good());
@@ -113,6 +118,7 @@ void SplitData::write_data(){
     }
 
     Matrix<long>(refinement_residues).pretty_print(new_split_control);
+    Matrix<long>(refinement_predecessors).pretty_print(new_split_control);
     new_split_control.close();
 }
 
@@ -243,6 +249,7 @@ void collect_lat(const string& project) {
         verboseOutput() << nr_sub_splits << " subplits" << endl;
 
     vector<long> split_residues(our_split.nr_split_patches);
+    vector<long> split_predecessors;
     new_split_data.refinement_residues.clear();
     for(auto& split_res:NotDone){
         if(our_split.this_refinement == 0){ // no previous refinement
@@ -254,12 +261,18 @@ void collect_lat(const string& project) {
         }
         else{
             split_residues = our_split.refinement_residues[split_res];
+            split_predecessors = our_split.refinement_predecessors[split_res];
+
         }
         vector<long> extended_res = split_residues;
+        vector<long> extended_prec = split_predecessors;
         extended_res.resize(extended_res.size() +1);
+        extended_prec.resize(extended_prec.size()+1);
+        extended_prec.back() = split_res;
         for(long i = 0; i < nr_sub_splits; ++i){
             extended_res.back() = i;
             new_split_data.refinement_residues.push_back(extended_res);
+            new_split_data.refinement_predecessors.push_back(extended_prec);
         }
     }
     new_split_data.write_data();

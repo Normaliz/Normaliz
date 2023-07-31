@@ -1561,8 +1561,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
        }
 
        if(min_fall_back == 0 && NrRemainingLP[this_patch] == 0){
-            LocalSolutions_by_intersection_and_cong.clear();
-            LocalSolutions.resize(0);
+            LocalSolutions_by_intersection_and_cong.clear();  // save memory
+            LocalSolutions.resize(0); // ditto
        }
 
         double expected_number_of_rounds = NrRemainingLP[this_patch];
@@ -1624,6 +1624,28 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
 
         if(nr_points_matched == nr_to_match || single_point_found)
             break;
+
+        // we write a file that preserves what has been done
+        // makes only sense under the conditions in the next line
+        if(is_split_patching && this_patch == min_fall_back && this_patch == our_split.split_patches.back()){
+            string done_file_name = global_project + "." + to_string(our_split.this_refinement) + "." + to_string(our_split.this_split) + ".done";
+            ofstream done_file(done_file_name.c_str());
+            done_file << nr_points_matched << endl;
+            size_t counter = 0;
+            for(auto& p: LatticePoints){
+                if(p[0] == 0){
+                    done_file << counter << endl;
+                    counter++;
+                }
+            }
+            list<vector<IntegerRet> > Collector;
+            for(auto& T: Deg1Thread)
+                Collector.insert(Collector.end(), T.begin(), T.end());
+            done_file << Collector.size() << endl;
+            for(auto& v: Collector)
+                done_file << v;
+            done_file.close();
+        }
 
     }  // while not done
 
