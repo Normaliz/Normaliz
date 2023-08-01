@@ -89,11 +89,6 @@ void SplitData::read_data(const string& this_project){
                 split_control >> refinement_residues[i][j];
         }
         // Matrix<long>(refinement_residues).debug_print();
-        for(size_t i= 0; i < nr_splits_to_do; ++i){
-            refinement_predecessors[i].resize(this_refinement+1);
-            for(size_t j = 0; j < nr_split_patches; ++j)
-                split_control >> refinement_predecessors[i][j];
-        }
     }
 
     assert(split_control.good());
@@ -118,7 +113,6 @@ void SplitData::write_data(){
     }
 
     Matrix<long>(refinement_residues).pretty_print(new_split_control);
-    Matrix<long>(refinement_predecessors).pretty_print(new_split_control);
     new_split_control.close();
 }
 
@@ -129,15 +123,15 @@ void SplitData::next_round(){
     def_data.write_data();
 }
 
-void SplitData::set_this_split(const long& given_split){
-    if(given_split >= max_nr_splits_per_round)
+void SplitData::set_this_split(const long& given_index){
+    if(given_index >= max_nr_splits_per_round)
         throw NoComputationException("Split index given by -X too large");
-    this_split = given_split + this_round * max_nr_splits_per_round;
-    split_res_rounds= this_split; // neede in cone for output
-    if(this_split >= nr_splits_to_do)
+    this_split_index = given_index + this_round * max_nr_splits_per_round;
+    split_index_rounds= this_split_index; // needed in cone for output
+    if(this_split_index >= nr_splits_to_do)
         throw NoComputationException("Total split index too large");
 
-    long res = this_split;
+    long res = this_split_index;
     if(this_refinement == 0){
         for(long i = 0; i < nr_split_patches; ++i){
             this_split_residues[i] = res % split_moduli[i];
@@ -145,7 +139,7 @@ void SplitData::set_this_split(const long& given_split){
         }
     }
     else
-        this_split_residues = refinement_residues[this_split];
+        this_split_residues = refinement_residues[this_split_index];
 }
 
 void next_round(const string& project) {
@@ -211,6 +205,24 @@ void collect_lat(const string& project) {
             continue;
         }
 
+        // delete done file if lat exists
+        name = project + "." + to_string(our_split.this_refinement) + "." +  to_string(i) + ".done";
+        file_in = name.c_str();
+        test_in.open(file_in, ifstream::in);
+        if (test_in.is_open()){
+            test_in.close();
+            string command = "rm "+ name;
+            int dummy = system(command.c_str());
+            if(dummy == 0){
+                if(verbose)
+                    verboseOutput() << name << " removed" << endl;
+            }
+            else{
+                if(verbose)
+                    verboseOutput() << name << " NOT removed" << endl;
+            }
+        }
+
         Matrix<long long> this_lat = readMatrix<long long>(name);
         if(this_lat.nr_of_rows() == 0)
             continue;
@@ -249,30 +261,24 @@ void collect_lat(const string& project) {
         verboseOutput() << nr_sub_splits << " subplits" << endl;
 
     vector<long> split_residues(our_split.nr_split_patches);
-    vector<long> split_predecessors;
     new_split_data.refinement_residues.clear();
-    for(auto& split_res:NotDone){
+    for(auto& split_index:NotDone){
         if(our_split.this_refinement == 0){ // no previous refinement
-            long res = split_res;
+            long res = split_index;
             for(long i = 0; i < our_split.nr_split_patches; ++i){
                 split_residues[i] = res % our_split.split_moduli[i];
                 res /=  our_split.split_moduli[i];
             }
         }
         else{
-            split_residues = our_split.refinement_residues[split_res];
-            split_predecessors = our_split.refinement_predecessors[split_res];
+            split_residues = our_split.refinement_residues[split_index];
 
         }
         vector<long> extended_res = split_residues;
-        vector<long> extended_prec = split_predecessors;
         extended_res.resize(extended_res.size() +1);
-        extended_prec.resize(extended_prec.size()+1);
-        extended_prec.back() = split_res;
         for(long i = 0; i < nr_sub_splits; ++i){
             extended_res.back() = i;
             new_split_data.refinement_residues.push_back(extended_res);
-            new_split_data.refinement_predecessors.push_back(extended_prec);
         }
     }
     new_split_data.write_data();

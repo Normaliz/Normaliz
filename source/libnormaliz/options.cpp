@@ -138,7 +138,7 @@ bool OptionsHandler::handle_commandline(int argc, char* argv[]) {
         if(argv[i][1] == 'X'){ // used for split processing
             string Split = argv[i];
             Split.erase(0, 3);
-            if ((!(istringstream(Split) >> split_res) && split_res >= 0)) {
+            if ((!(istringstream(Split) >> split_index_option) && split_index_option >= 0)) {
                 cerr << "Error: Invalid option string " << argv[i] << endl;
                 exit(1);
             }

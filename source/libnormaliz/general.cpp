@@ -91,8 +91,8 @@ bool int_max_value_primary_long_long_computed = false;
 
 vector<vector<vector<long> > > CollectedAutoms(default_thread_limit);  // for use in nmz_nauty.cpp
 
-long split_res = -1;
-long split_res_rounds = -1;
+long split_index_option = -1;
+long split_index_rounds = -1;
 long split_refinement = -1;
 bool is_split_patching = false;
 

@@ -41,16 +41,15 @@ public:
     long max_nr_splits_per_round;
     long nr_splits_to_do;
 
-    long this_split;
-    vector<long> this_split_residues;
+    long this_split_index; // for the index coming from -X=<...>
+    vector<long> this_split_residues; // ditto
 
     long this_round;
     long nr_rounds;
+
     long this_refinement;
-
-    vector<vector<long> > refinement_residues;
-    vector<vector<long> > refinement_predecessors;
-
+    vector<vector<long> > refinement_residues;  // the liast of residues not completed
+                                                // by this refinement ==> will be further refined
     string project;
 
     SplitData();

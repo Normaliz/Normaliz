@@ -1628,7 +1628,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         // we write a file that preserves what has been done
         // makes only sense under the conditions in the next line
         if(is_split_patching && this_patch == min_fall_back && this_patch == our_split.split_patches.back()){
-            string done_file_name = global_project + "." + to_string(our_split.this_refinement) + "." + to_string(our_split.this_split) + ".done";
+            string done_file_name = global_project + "." + to_string(our_split.this_refinement) + "." + to_string(our_split.this_split_index) + ".done";
             ofstream done_file(done_file_name.c_str());
             done_file << nr_points_matched << endl;
             size_t counter = 0;
@@ -2818,8 +2818,13 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute(bool all_points, bool liftin
     if(is_split_patching){
         distributed_computation = false;
         our_split.read_data(global_project);
-        our_split.set_this_split(split_res);
+        our_split.set_this_split(split_index_option);
         split_refinement = our_split.this_refinement; // needed in cone for output of lat file
+        if(verbose){
+            verboseOutput() << "split levels " << our_split.split_patches;
+            verboseOutput() << "split moduli " << our_split.split_moduli;
+            verboseOutput() << "split residues " << our_split.this_split_residues;
+        }
     }
 
     assert(all_points || !lifting_float);  // only all points allowed with float
