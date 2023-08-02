@@ -28,6 +28,7 @@
 #include <vector>
 #include <ostream>
 #include <list>
+#include <string>
 
 #include "libnormaliz/general.h"
 #include "libnormaliz/integer.h"
@@ -42,6 +43,7 @@
 
 namespace libnormaliz {
 using std::vector;
+using std::string;
 
 //---------------------------------------------------------------------------
 //				Output
@@ -1406,6 +1408,14 @@ T v_inverse_permute_coordinates(const T& vec, const vector<key_t>& perm){
     for(size_t i = 0; i< vec.size(); ++i)
         new_vec[perm[i]] = vec[i];
     return new_vec;
+}
+
+template <typename T>
+string v_to_point_list(const T& v){
+    string pl;
+    for(auto& c: v)
+        pl += std::to_string(c) + ".";
+    return pl;
 }
 
 

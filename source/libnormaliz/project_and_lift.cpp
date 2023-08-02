@@ -1044,11 +1044,13 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
     if(is_split_patching){
         bool do_split = false;
         assert(!distributed_computation);
+        size_t split_reached = 0;
         for(size_t i = 0; i < our_split.nr_split_patches; ++i){
             if(this_patch == our_split.split_patches[i]){
                 split_modulus = our_split.split_moduli[i];
                 this_split_res = our_split.this_split_residues[i];
                 do_split = true;
+                split_reached = i;
                 break;
             }
         }
@@ -1058,6 +1060,37 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                 verboseOutput() << "Spilt level " << this_patch << " modulus " << split_modulus << " residue " << this_split_res << endl;
             LatticePoints.sort();
             list<vector<IntegerRet> > Selection;
+
+            // we read the indices of the lattice points done in previous refinement if it exists
+            if(our_split.this_refinement > 0){
+                vector<long> pre_residues = our_split.this_split_residues;
+                pre_residues.resize(split_reached + 1);
+                string name = our_split.project + "." + v_to_point_list(pre_residues) + "done";
+                ifstream done_file(name.c_str());
+                if(done_file.is_open()){
+                    set<long> done_indices;
+                    size_t nr_done;
+                    done_file >> nr_done;
+                    for(size_t i = 0; i < nr_done; ++i){
+                        long index;
+                        done_file >> index;
+                        done_indices.insert(index);
+                    }
+                    list<vector<IntegerRet> > PreSelection;
+                    long k = 0;
+                    for(auto& v: LatticePoints){
+                        if(done_indices.find(k) != done_indices.end()){
+                            k++;
+                            continue;
+                        }
+                        PreSelection.push_back(v);
+                        k++;
+                    }
+                    swap(LatticePoints, PreSelection);
+                    PreSelection.clear();
+
+                }
+            }
             long i = 0;
             for(auto& p: LatticePoints){
                 if(i% split_modulus == this_split_res)
@@ -1628,15 +1661,15 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         // we write a file that preserves what has been done
         // makes only sense under the conditions in the next line
         if(is_split_patching && this_patch == min_fall_back && this_patch == our_split.split_patches.back()){
-            string done_file_name = global_project + "." + to_string(our_split.this_refinement) + "." + to_string(our_split.this_split_index) + ".done";
+            string done_file_name = global_project + "."  + v_to_point_list(our_split.this_split_residues) + "done";
             ofstream done_file(done_file_name.c_str());
             done_file << nr_points_matched << endl;
             size_t counter = 0;
             for(auto& p: LatticePoints){
                 if(p[0] == 0){
                     done_file << counter << endl;
-                    counter++;
                 }
+                counter++;
             }
             list<vector<IntegerRet> > Collector;
             for(auto& T: Deg1Thread)
