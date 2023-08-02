@@ -165,7 +165,7 @@ int main(int argc, char* argv[]){
     size_t nr_negative = 0;
     if(number_normaliz_instances <0)
         nr_negative++;
-    if(split_res < 0)
+    if(split_index_option < 0)
         nr_negative++;
 
     if(list_of_input_files){
@@ -173,7 +173,7 @@ int main(int argc, char* argv[]){
             throw BadInputException("Insdufficient parameters for list of input files");
         if(nr_negative == 2){
             number_normaliz_instances = 1;
-            split_res = 0;
+            split_index_option = 0;
         }
     }
 
@@ -204,7 +204,7 @@ int main(int argc, char* argv[]){
             options = global_options;
         }
         else{
-            if(intput_file_index % number_normaliz_instances != split_res)
+            if(intput_file_index % number_normaliz_instances != split_index_option)
                 continue;
             else
                 options.setProjectName_from_list(input_file_names[intput_file_index]);
