@@ -170,6 +170,11 @@ class OptionsHandler {
         return project_name;
     }
 
+    inline void setProjectName_from_list(const string& name){
+        project_name = name;
+        project_name_set = true;
+    }
+
     inline const string& getOutputDir() const {
         return output_dir;
     }

@@ -133,31 +133,22 @@ int process_data(OptionsHandler& options, const string& command_line);
 
 //---------------------------------------------------------------------------
 
-int main(int argc, char* argv[]) {
+int main(int argc, char* argv[]){
 #ifdef NMZ_GPERF
     ProfilerStart("normaliz.prof");
 #endif
 
-    StartGlobalTime();
-
-    /*cout << "Before AAA" << endl;
-    renf_class K("a^2 - 5", "a", "2.0 +/- 1.0");
-    cout << "Constructed" << endl;
-   renf_elem_class b(K, "a+1");
-   // cout << "number " << b << std::endl;
-   cout << "Survived " << endl;*/
-
     // signal handler for interrupt
     signal(SIGINT, &interrupt_signal_handler);
-
-    // read command line options
-    OptionsHandler options;
 
     string command_line;
     for (int i = 1; i < argc; ++i)
         command_line = command_line + string(argv[i]) + " ";
 
-    bool print_help = options.handle_commandline(argc, argv);
+    // read command line options
+    OptionsHandler global_options;
+
+    bool print_help = global_options.handle_commandline(argc, argv);
 
     if (print_help) {
         // printHeader();
@@ -167,16 +158,74 @@ int main(int argc, char* argv[]) {
 
     if (verbose) {
         printHeader();
+        verboseOutput() << "-------------------------------------------------------------" << endl;
+        verboseOutput() << "Command line: " << command_line << endl;
     }
 
-    process_data(options, command_line);
+    size_t nr_negative = 0;
+    if(number_normaliz_instances <0)
+        nr_negative++;
+    if(split_res < 0)
+        nr_negative++;
 
-    if (verbose && GMP_hyp + GMP_scal_prod + GMP_mat > 0)
-        verboseOutput() << "GMP transitions: matrices " << GMP_mat << " hyperplanes " << GMP_hyp << " vector operations "
-                        << GMP_scal_prod << endl;
+    if(list_of_input_files){
+        if(nr_negative == 1)
+            throw BadInputException("Insdufficient parameters for list of input files");
+        if(nr_negative == 2){
+            number_normaliz_instances = 1;
+            split_res = 0;
+        }
+    }
 
-    if (nmz_interrupted)
+    vector<string> input_file_names;
+
+    if(list_of_input_files){
+        string name_of_file_with_input_file_names = global_options.getProjectName();
+        ifstream list_file(name_of_file_with_input_file_names.c_str());
+        if(!list_file.is_open())
+            throw BadInputException("File with list of input files does not exist");
+        while(true){
+            string name_of_input_file;
+            list_file >> name_of_input_file;
+            if(!list_file.good()){
+                break;
+            }
+            input_file_names.push_back(name_of_input_file);
+        }
+    }
+
+    size_t nr_input_files = input_file_names.size();
+    if(!list_of_input_files)
+        nr_input_files = 1;
+
+    for(size_t intput_file_index = 0; intput_file_index < nr_input_files; ++intput_file_index){
+        OptionsHandler options;
+        if(!list_of_input_files){
+            options = global_options;
+        }
+        else{
+            if(intput_file_index % number_normaliz_instances != split_res)
+                continue;
+            else
+                options.setProjectName_from_list(input_file_names[intput_file_index]);
+        }
+
+        StartGlobalTime();
+
+        /* if (verbose) {
+            printHeader();
+        }*/
+
+        process_data(options, command_line);
+
+        if (verbose && GMP_hyp + GMP_scal_prod + GMP_mat > 0)
+            verboseOutput() << "GMP transitions: matrices " << GMP_mat << " hyperplanes " << GMP_hyp << " vector operations "
+                            << GMP_scal_prod << endl;
+
+        if (nmz_interrupted)
         exit(10);
+
+    } // nr_input_files
 
 #ifdef NMZ_GPERF
     ProfilerStop();
@@ -528,7 +577,8 @@ int process_data(OptionsHandler& options, const string& command_line) {
 
         if (verbose) {
             verboseOutput() << "-------------------------------------------------------------" << endl;
-            verboseOutput() << "Command line: " << command_line << endl;
+            if(list_of_input_files)
+                verboseOutput() << "************** Input file: " << options.getProjectName() << endl;
             verboseOutput() << "Compute: ";
             if (options.getToCompute().none())
                 verboseOutput() << "No computation goal set, using defaults given input" << endl;
@@ -562,26 +612,37 @@ int process_data(OptionsHandler& options, const string& command_line) {
     } catch (const BadInputException& e) {
         cerr << e.what() << endl;
         cerr << "BadInputException caught... exiting." << endl;
-        exit(1);
+        if(!list_of_input_files)
+            exit(1);
     } catch (const FatalException& e) {
         cerr << e.what() << endl;
         cerr << "FatalException caught... exiting." << endl;
-        exit(2);
+        if(!list_of_input_files)
+            exit(2);
+    } catch (const NoComputationException& e) {
+        cerr << e.what() << endl;
+        cerr << "NoComputationException caught... exiting." << endl;
+        if(!list_of_input_files)
+            exit(7);
     } catch (const TimeBoundException& e) {
         cerr << e.what() << endl;
         cerr << "Time bound exceeded ... exiting." << endl;
-        exit(6);
+        if(!list_of_input_files)
+            exit(6);
     } catch (const NmzCoCoAException& e) {
         cerr << e.what() << endl;
         cerr << "NmzCoCoAException caught... exiting." << endl;
-        exit(3);
+        if(!list_of_input_files)
+            exit(3);
     } catch (const NormalizException& e) {
         cerr << e.what() << endl;
         cerr << "NormalizException caught... exiting." << endl;
-        exit(4);
+        if(!list_of_input_files)
+            exit(4);
     } catch (const std::exception& e) {
         cerr << "std::exception caught... \"" << e.what() << "\" ...  exiting." << endl;
-        exit(5);
+        if(!list_of_input_files)
+            exit(5);
     }
 
     return 0;

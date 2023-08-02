@@ -96,6 +96,9 @@ long split_index_rounds = -1;
 long split_refinement = -1;
 bool is_split_patching = false;
 
+bool list_of_input_files = false;
+long number_normaliz_instances= -1;
+
 std::string global_project;
 
 #ifdef NMZ_EXTENDED_TESTS

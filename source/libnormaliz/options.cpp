@@ -102,7 +102,7 @@ bool OptionsHandler::handle_commandline(int argc, char* argv[]) {
         if (argv[i][1] == '\0') // only -, disregard
             continue;
 
-        if (argv[i][1] != 'x' && argv[i][1] != 'X') {
+        if (argv[i][1] != 'x' && argv[i][1] != 'X' && argv[i][1] != 'Z') {
             if (argv[i][1] == '-') { // test for long option
                 string LO = argv[i];
                 LO.erase(0, 2);
@@ -135,10 +135,20 @@ bool OptionsHandler::handle_commandline(int argc, char* argv[]) {
             continue;
         }
 
-        if(argv[i][1] == 'X'){ // used for split processing
+        if(argv[i][1] == 'X'){ // used for split processing and list provcessing
             string Split = argv[i];
             Split.erase(0, 3);
             if ((!(istringstream(Split) >> split_index_option) && split_index_option >= 0)) {
+                cerr << "Error: Invalid option string " << argv[i] << endl;
+                exit(1);
+            }
+            continue;
+        }
+
+        if(argv[i][1] == 'Z'){ // used for split list provcessing
+            string Instances = argv[i];
+            Instances.erase(0, 3);
+            if ((!(istringstream(Instances) >> number_normaliz_instances) && number_normaliz_instances > 0)) {
                 cerr << "Error: Invalid option string " << argv[i] << endl;
                 exit(1);
             }
@@ -377,6 +387,10 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
         }
         if (LongOption == "Split") {
             use_split = true;
+            continue;
+        }
+        if (LongOption == "List") {
+            list_of_input_files = true;
             continue;
         }
         if (LongOption == "AddChunks") {
