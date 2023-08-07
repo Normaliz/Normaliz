@@ -46,7 +46,8 @@ class OptionsHandler {
     OptionsHandler();
 
     // returns true if a help should be printed, false otherwise
-    bool handle_commandline(int argc, char* argv[]);
+    // bool handle_commandline(int argc, char* argv[]);
+    bool handle_commandline(vector<string> argv);
 
     // returns true if default mode was activated, false otherwise
     bool activateDefaultMode();

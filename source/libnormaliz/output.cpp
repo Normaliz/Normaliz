@@ -1594,7 +1594,7 @@ void Output<Integer>::write_files() {
 
        if (Result->isComputed(ConeProperty::SingleLatticePoint)) {
             if (Result->getSingleLatticePoint().size() > 0) {
-                out << "Lattice_point:" << endl;
+                out << "Lattice point:" << endl;
                 out <<  Result->getSingleLatticePoint();
             }
             else

@@ -4256,13 +4256,10 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     set_extended_tests(ToCompute);
 #endif
 
-    if(ToCompute.test(ConeProperty::LatticePoints) && ToCompute.test(ConeProperty::SingleLatticePoint)){
-            throw BadInputException("Only one of SingleLatticePoint and LatticePoints allowd");
-    }
-
     if(ToCompute.test(ConeProperty::SingleLatticePoint)){ // we single out SingleLatticePoint
         ConeProperties SingleComp;
         SingleComp.set(ConeProperty::SingleLatticePointInternal);
+        SingleComp.set(ConeProperty::Projection);
         SingleComp.set(ConeProperty::NoCoarseProjection,ToCompute.test(ConeProperty::NoCoarseProjection));
         SingleComp.set(ConeProperty::NoPatching,ToCompute.test(ConeProperty::NoPatching));
         compute(SingleComp);
@@ -7242,6 +7239,11 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
             SingleLatticePoint = Deg1Elements[0];
             Deg1Elements.resize(0,dim);
         }
+        if(SingleLatticePoint.size() == 0){
+            setComputed(ConeProperty::LatticePoints);
+            number_lattice_points = 0;
+            setComputed(ConeProperty::NumberLatticePoints);
+        }
         setComputed(ConeProperty::SingleLatticePoint);
         return;
     }
@@ -7370,8 +7372,11 @@ void Cone<renf_elem_class>::project_and_lift(const ConeProperties& ToCompute,
             number_lattice_points = PL.getNumberLatticePoints();
         }
     else{
-        Deg1_mpz.resize(1);
-        PL.put_single_point_into(Deg1_mpz[0]);
+        vector<mpz_class> SLP;
+        PL.put_single_point_into(SLP);
+        if(SLP.size() > 0){
+            Deg1_mpz.append(SLP);
+        }
     }
 
     convert(Deg1, Deg1_mpz);
@@ -7499,8 +7504,11 @@ void Cone<Integer>::project_and_lift(const ConeProperties& ToCompute,
                     number_lattice_points = PL.getNumberLatticePoints();
                 }
                 else{
-                    Deg1MI.resize(1);
-                    PL.put_single_point_into(Deg1MI[0]);
+                    vector<MachineInteger> SLP_MI;
+                    PL.put_single_point_into(SLP_MI);
+                    if(SLP_MI.size() > 0){
+                        Deg1MI.append(SLP_MI);
+                    }
                 }
 
                 PL.get_h_vectors(h_vec_pos, h_vec_neg);
@@ -7552,8 +7560,11 @@ void Cone<Integer>::project_and_lift(const ConeProperties& ToCompute,
                     number_lattice_points = PL.getNumberLatticePoints();
                 }
             else{
-                Deg1.resize(1);
-                PL.put_single_point_into(Deg1[0]);
+                vector<Integer> SLP;
+                PL.put_single_point_into(SLP);
+                if(SLP.size() > 0){
+                    Deg1.append(SLP);
+                }
             }
 
             PL.get_h_vectors(h_vec_pos, h_vec_neg);

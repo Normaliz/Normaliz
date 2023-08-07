@@ -1418,6 +1418,13 @@ string v_to_point_list(const T& v){
     return pl;
 }
 
+inline vector<string> to_string_vector(int argc, char* argv[]){
+    vector<string> ret;
+    for(int i = 0; i < argc; ++i)
+        ret.push_back(string(argv[i]));
+     return ret;
+}
+
 
 }  // namespace libnormaliz
 

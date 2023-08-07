@@ -1632,6 +1632,9 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
             extend_points_to_next_coord(NewLatticePoints, this_patch + 1);
         NewLatticePoints.clear();
 
+        if(single_point_found)
+            break;
+
         if(talkative){
             if(nr_points_done_in_this_round > 0 && NrRemainingLP[this_patch] > 0){
                 // cout << "nr_rounds " << nr_rounds << " expected rounds " << expected_number_of_rounds << endl;
@@ -1655,7 +1658,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
             }
         }
 
-        if(nr_points_matched == nr_to_match || single_point_found)
+        if(nr_points_matched == nr_to_match)
             break;
 
         // we write a file that preserves what has been done
@@ -2978,7 +2981,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::put_eg1Points_into(Matrix<IntegerRet
 //---------------------------------------------------------------------------
 template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL, IntegerRet>::put_single_point_into(vector<IntegerRet>& LattPoint) {
-    if (use_LLL)
+    if (use_LLL && SingleDeg1Point.size() > 0)
         LattPoint = LLL_Coordinates.from_sublattice(SingleDeg1Point);
     else
         LattPoint = SingleDeg1Point;

@@ -98,6 +98,7 @@ bool is_split_patching = false;
 
 bool list_of_input_files = false;
 long number_normaliz_instances= -1;
+long input_file_option = -1;
 
 std::string global_project;
 

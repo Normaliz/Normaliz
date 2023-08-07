@@ -90,11 +90,11 @@ void OptionsHandler::setProjectName(const string& s) {
     project_name_set = true;
 }
 
-bool OptionsHandler::handle_commandline(int argc, char* argv[]) {
+bool OptionsHandler::handle_commandline(vector<string> argv) {
     vector<string> LongOptions;
     string ShortOptions;  // all options concatenated (including -)
     // read command line options
-    for (int i = 1; i < argc; i++) {
+    for (int i = 1; i < argv.size(); i++) {
         if(argv[i][0] != '-') { // our project
             setProjectName(argv[i]);
             continue;
@@ -102,7 +102,7 @@ bool OptionsHandler::handle_commandline(int argc, char* argv[]) {
         if (argv[i][1] == '\0') // only -, disregard
             continue;
 
-        if (argv[i][1] != 'x' && argv[i][1] != 'X' && argv[i][1] != 'Z') {
+        if (argv[i][1] != 'x' && argv[i][1] != 'X' && argv[i][1] != 'Z'&& argv[i][1] != 'A') {
             if (argv[i][1] == '-') { // test for long option
                 string LO = argv[i];
                 LO.erase(0, 2);
@@ -135,7 +135,7 @@ bool OptionsHandler::handle_commandline(int argc, char* argv[]) {
             continue;
         }
 
-        if(argv[i][1] == 'X'){ // used for split processing and list provcessing
+        if(argv[i][1] == 'X'){ // used for split processing
             string Split = argv[i];
             Split.erase(0, 3);
             if ((!(istringstream(Split) >> split_index_option) && split_index_option >= 0)) {
@@ -145,10 +145,20 @@ bool OptionsHandler::handle_commandline(int argc, char* argv[]) {
             continue;
         }
 
-        if(argv[i][1] == 'Z'){ // used for split list provcessing
+        if(argv[i][1] == 'Z'){ // used for  list processing
             string Instances = argv[i];
             Instances.erase(0, 3);
             if ((!(istringstream(Instances) >> number_normaliz_instances) && number_normaliz_instances > 0)) {
+                cerr << "Error: Invalid option string " << argv[i] << endl;
+                exit(1);
+            }
+            continue;
+        }
+
+        if(argv[i][1] == 'A'){ // used for  list processing
+            string File = argv[i];
+            File.erase(0, 3);
+            if ((!(istringstream(File) >> input_file_option) && input_file_option >= 0)) {
                 cerr << "Error: Invalid option string " << argv[i] << endl;
                 exit(1);
             }

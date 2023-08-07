@@ -43,6 +43,7 @@ using namespace std;
 #include "libnormaliz/options.h"
 #include "libnormaliz/chunk.h"
 #include "libnormaliz/collect_lat.h"
+#include "libnormaliz/vector_operations.h"
 
 using namespace libnormaliz;
 
@@ -145,10 +146,13 @@ int main(int argc, char* argv[]){
     for (int i = 1; i < argc; ++i)
         command_line = command_line + string(argv[i]) + " ";
 
+    string global_command_line = command_line;
+
     // read command line options
     OptionsHandler global_options;
 
-    bool print_help = global_options.handle_commandline(argc, argv);
+    vector<string> arg_string_vector = to_string_vector(argc, argv);
+    bool print_help = global_options.handle_commandline(arg_string_vector);
 
     if (print_help) {
         // printHeader();
@@ -165,7 +169,7 @@ int main(int argc, char* argv[]){
     size_t nr_negative = 0;
     if(number_normaliz_instances <0)
         nr_negative++;
-    if(split_index_option < 0)
+    if(input_file_option < 0)
         nr_negative++;
 
     if(list_of_input_files){
@@ -173,7 +177,7 @@ int main(int argc, char* argv[]){
             throw BadInputException("Insdufficient parameters for list of input files");
         if(nr_negative == 2){
             number_normaliz_instances = 1;
-            split_index_option = 0;
+            input_file_option = 0;
         }
     }
 
@@ -204,10 +208,26 @@ int main(int argc, char* argv[]){
             options = global_options;
         }
         else{
-            if(intput_file_index % number_normaliz_instances != split_index_option)
+            if(intput_file_index % number_normaliz_instances != input_file_option)
                 continue;
-            else
-                options.setProjectName_from_list(input_file_names[intput_file_index]);
+
+            vector<string> local_arg_string_vector;
+            for (auto& arg_string: arg_string_vector){
+                if(arg_string[0] != '-'){
+                    arg_string = input_file_names[intput_file_index];
+                    local_arg_string_vector.push_back(arg_string);
+                    continue;
+                }
+
+                if(arg_string.size() >= 2){
+                    string test = arg_string.substr(0,2);
+                    if(test == "-A" || test == "-Z" || arg_string == "--List")
+                        continue;
+                }
+                local_arg_string_vector.push_back(arg_string);
+            }
+            print_help = options.handle_commandline(local_arg_string_vector);
+            list_of_input_files = true; // must be restored !!
         }
 
         StartGlobalTime();
@@ -222,6 +242,9 @@ int main(int argc, char* argv[]){
             verboseOutput() << "GMP transitions: matrices " << GMP_mat << " hyperplanes " << GMP_hyp << " vector operations "
                             << GMP_scal_prod << endl;
 
+
+        MeasureGlobalTime(verbose);
+
         if (nmz_interrupted)
         exit(10);
 
@@ -230,8 +253,6 @@ int main(int argc, char* argv[]){
 #ifdef NMZ_GPERF
     ProfilerStop();
 #endif
-
-    MeasureGlobalTime(verbose);
 
     exit(0);
 }
