@@ -3447,8 +3447,8 @@ void Full_Cone<Integer>::build_cone_dynamic() {
     // if they aren't in a hyperplane anyway
     if(IntHullNorm.size() > 0){
 #pragma omp parallel for
-        for(size_t i = 0; i< OriGens.nr_of_rows(); ++i){
-             cout << "i " << i << " -- " <<   OriGensFloat[i];
+        for (size_t i = 0; i< OriGens.nr_of_rows(); ++i){
+            // cout << "i " << i << " -- " <<   OriGensFloat[i];
             nmz_float norm = v_scalar_product(OriGensFloat[i], IntHullNormFloat);
             v_scalar_division(OriGensFloat[i], norm);
         }
