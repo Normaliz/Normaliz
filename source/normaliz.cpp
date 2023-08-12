@@ -230,6 +230,9 @@ int main(int argc, char* argv[]){
             list_of_input_files = true; // must be restored !!
         }
 
+        if(list_of_input_files && verbose)
+            verboseOutput() << "*************************************************************" << endl;
+
         StartGlobalTime();
 
         /* if (verbose) {
@@ -597,9 +600,9 @@ int process_data(OptionsHandler& options, const string& command_line) {
         in.close();
 
         if (verbose) {
-            verboseOutput() << "-------------------------------------------------------------" << endl;
+            // verboseOutput() << "-------------------------------------------------------------" << endl;
             if(list_of_input_files)
-                verboseOutput() << "************** Input file: " << options.getProjectName() << endl;
+                verboseOutput() << "Input file: " << options.getProjectName() << endl;
             verboseOutput() << "Compute: ";
             if (options.getToCompute().none())
                 verboseOutput() << "No computation goal set, using defaults given input" << endl;

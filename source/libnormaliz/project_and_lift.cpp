@@ -1307,7 +1307,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
 
         nr_rounds++;
         if(GlobalTimeBound > 0 &&  TimeSinceStart() > GlobalTimeBound){
-            throw TimeBoundException("patching");
+            throw TimeBoundException("while patching");
         }
 
         struct timeval step_time_begin;
@@ -1431,6 +1431,11 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         }
 
         try{  // now the given lattice points are extended along their overlaps and congruence values
+
+            if(ppp % 10000 == 0 && GlobalTimeBound > 0 &&  TimeSinceStart() > GlobalTimeBound){
+                throw TimeBoundException("extending");
+            }
+
 
             // now the extensions of the overlap
             for(auto& i: LocalSolutions_by_intersection_and_cong[overlap][old_cong]){
