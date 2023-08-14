@@ -206,7 +206,7 @@ void collect_lat(const string& project) {
         }
 
         // delete done file if lat exists
-        name = project + "." + to_string(our_split.this_refinement) + "." +  to_string(i) + ".done";
+        name = global_project + "."  + v_to_point_list(our_split.this_split_residues) + "done";
         file_in = name.c_str();
         test_in.open(file_in, ifstream::in);
         if (test_in.is_open()){
@@ -223,6 +223,7 @@ void collect_lat(const string& project) {
             }
         }
 
+        name = project + "." + to_string(our_split.this_refinement) + "." +  to_string(i) + ".lat";
         Matrix<long long> this_lat = readMatrix<long long>(name);
         if(this_lat.nr_of_rows() == 0)
             continue;

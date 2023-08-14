@@ -144,7 +144,7 @@ Matrix<Integer> readMatrix(const string project) {
     ifstream in;
     in.open(file_in, ifstream::in);
     if (in.is_open() == false)
-        throw BadInputException("readMatrix cannot find file");
+        throw BadInputException("readMatrix cannot find file " + project);
     int nrows, ncols;
     in >> nrows;
     in >> ncols;

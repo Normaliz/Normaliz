@@ -40,6 +40,7 @@ void write_control_file(const size_t split_patch){
 
         SplitData def_split(global_project);
         def_split.write_data();
+        throw NoComputationException("No output with DistribitedComp for patching");
 }
 
 template <typename Integer>

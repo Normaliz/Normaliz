@@ -319,7 +319,7 @@ void compute_and_output(OptionsHandler& options,
     if(is_split_patching){
         cout << "No file <project>.out for split computation" << endl;
         MeasureGlobalTime(verbose);
-        exit(0);
+        return;
     }
 
     Out.setCone(MyCone);
@@ -651,6 +651,9 @@ int process_data(OptionsHandler& options, const string& command_line) {
     } catch (const TimeBoundException& e) {
         cerr << e.what() << endl;
         cerr << "Time bound exceeded ... exiting." << endl;
+        cerr << "Creating signal file with suffix exc" << endl;
+        string exc_name = options.getProjectName() + ".exc";
+        ofstream exc_file(exc_name.c_str());
         if(!list_of_input_files)
             exit(6);
     } catch (const NmzCoCoAException& e) {
