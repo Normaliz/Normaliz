@@ -38,7 +38,7 @@ void write_control_file(const size_t split_patch){
         if(verbose)
             verboseOutput() << "split_patch " << split_patch << endl;
 
-        SplitData def_split(global_project);
+        SplitData def_split(global_project, split_patch);
         def_split.write_data();
         throw NoComputationException("No output with DistribitedComp for patching");
 }
@@ -1225,7 +1225,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
 
     if(talkative){
         if(verbose){
-            verboseOutput() << "-----" << endl;
+            verboseOutput() << "--" << endl;
             verboseOutput() << "Local solutions total " << LocalSolutions.nr_of_rows() << " new " << nr_new_solutions << endl;
         }
     }
@@ -1651,6 +1651,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                 double expected_time = time_per_round*expected_number_of_rounds;
                 double step_expected_time = step_time_spent*expected_number_of_rounds;
                 if(verbose){
+                    verboseOutput() << "---------" << endl;
                     verboseOutput() << "expected future time on level  " << LevelPatches[coord] << "  " << expected_time;
                     verboseOutput() << " / "  << step_expected_time << " sec " << endl;
                 }
@@ -1658,7 +1659,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                     verboseOutput() << "==============================" << endl;
                 }*/
                 if(GlobalPredictionTimeBound > 0 && expected_time > GlobalPredictionTimeBound){
-                        verboseOutput() << "expected time exceeds bound of " << GlobalPredictionTimeBound << "sec" << endl;
+                        verboseOutput() << "expected time exceeds bound of " << GlobalPredictionTimeBound << " sec" << endl;
                         throw TimeBoundException("patching");
                 }
             }

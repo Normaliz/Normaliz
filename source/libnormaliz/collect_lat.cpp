@@ -39,12 +39,12 @@ SplitData::SplitData(){
 }
 
 // c instructor with default values
-SplitData::SplitData(const string& this_project){
+SplitData::SplitData(const string& this_project, const long& level){
 
     project = this_project;
     nr_split_patches = 1;
     split_patches.resize(nr_split_patches);
-    split_patches[0] = 1;
+    split_patches[0] = level;
     split_moduli.resize(nr_split_patches);
     split_moduli[0] = 1000;
     max_nr_splits_per_round = 1000;
@@ -96,7 +96,7 @@ void SplitData::read_data(const string& this_project){
     split_control.close();
 }
 
-void SplitData::write_data(){
+void SplitData::write_data() const{
 
     string name = project + ".split.data";
     ofstream new_split_control(name.c_str());
@@ -116,12 +116,26 @@ void SplitData::write_data(){
     new_split_control.close();
 }
 
-void SplitData::next_round(){
+long SplitData::necessary_rounds() const{
+
+    long requird_rounds = nr_splits_to_do / max_nr_splits_per_round;
+    if(nr_splits_to_do % max_nr_splits_per_round != 0)
+        requird_rounds++;
+    long rounds_done = this_round +1;
+    return requird_rounds - rounds_done;
+}
+
+/*
+void SplitData::next_round() const{
+
+    if(necessary_rounds() <= 0)
+        throw BadInputException("All rounds done. No next round!");
 
     SplitData def_data = *this;
     def_data.this_round++;
     def_data.write_data();
 }
+*/
 
 void SplitData::set_this_split(const long& given_index){
     if(given_index >= max_nr_splits_per_round)
@@ -146,6 +160,8 @@ void next_round(const string& project) {
 
     SplitData our_split;
     our_split.read_data(project);
+    if(our_split.necessary_rounds() <= 0)
+        throw BadInputException("All rounds done. No next round!");
     // archive <project>.spli.data that was jiust read
     string command = "cp " + project + ".split.data " + project + "." + to_string(our_split.this_refinement) + "." + to_string(our_split.this_round) + ".split.data";
     int dummy = system(command.c_str());
@@ -154,6 +170,8 @@ void next_round(const string& project) {
     // now mwrite updated split data
     our_split.this_round++;
     our_split.write_data();
+    if(verbose)
+        verboseOutput() << "New round " << our_split.this_round << endl;
 }
 
 void collect_lat(const string& project) {
@@ -162,11 +180,13 @@ void collect_lat(const string& project) {
 
     SplitData our_split;
     our_split.read_data(project);
-    // archive <project>.spli.data that was jiust read
+    if(our_split.necessary_rounds() > 0)
+        throw BadInputException("Last round not complete. Use --NextRound??");
+    // archive <project>.split.data that was jiust read
     string command = "cp " + project + ".split.data " + project + "." + to_string(our_split.this_refinement) + "." + to_string(our_split.this_round) + ".split.data";
     int dummy = system(command.c_str());
     if(dummy > 0)
-        throw NoComputationException("Problem in archiving <project.split.data");
+        throw NoComputationException("Problem in archiving project.split.data");
 
     if(verbose)
         verboseOutput() << "Collecting lattice points from " << our_split.nr_splits_to_do << " lat files" << endl;
@@ -175,7 +195,7 @@ void collect_lat(const string& project) {
     bool first = true;
 
     // First we must vread what has been compouted in previous refinements
-    name = project + ".total.lat";
+    name = project + ".so_far.lat";
     ifstream lat_in(name.c_str());
     if(lat_in.is_open()){
         TotalLat = readMatrix<long long>(name);
@@ -233,18 +253,21 @@ void collect_lat(const string& project) {
         TotalLat.append(this_lat);
     }
 
-    name = global_project + ".total.lat";
+    name = global_project + ".so_far.lat";
     ofstream lat_out(name.c_str());
     TotalLat.print(lat_out);
 
     if(NotDone.size() == 0){
+        string comp_name = global_project + ".final.lat";
+        ofstream comp_out(comp_name.c_str());
+        TotalLat.print(comp_out);
         if(verbose)
-            verboseOutput() << "Computation complete" << endl;
+            verboseOutput() << "Computation of " + global_project + " complete " << endl;
         return;
     }
 
     if(verbose)
-        verboseOutput() << "Computation NOT complete" << endl;
+        verboseOutput() << "Computation of " + global_project + " NOT complete" << endl;
     SplitData new_split_data = our_split;
     size_t nr_sub_splits = 2;
     if(our_split.max_nr_splits_per_round/NotDone.size() > 2)

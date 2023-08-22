@@ -53,13 +53,14 @@ public:
     string project;
 
     SplitData();
-    SplitData(const string& this_project);
+    SplitData(const string& this_project, const long& level);
 
     void read_data(const string& this_project);
     void set_this_split(const long& given_split);
-    void next_round();
+    // void next_round() const;
     void set_default(const string& this_project);
-    void write_data();
+    void write_data() const;
+    long necessary_rounds() const;
 };
 
 void collect_lat(const string& project);

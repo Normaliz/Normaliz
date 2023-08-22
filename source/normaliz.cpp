@@ -60,7 +60,7 @@ void printHeader() {
 #endif
     cout << "                                                       \\...|" << endl;
     cout << "     (C) The Normaliz Team, University of Osnabrueck    \\..|" << endl;
-    cout << "                      June  2023                         \\.|" << endl;
+    cout << "                     August  2023                        \\.|" << endl;
     cout << "                                                          \\|" << endl;
     string optional_packages = package_string();
     if (optional_packages.size() > 0) {
@@ -166,21 +166,6 @@ int main(int argc, char* argv[]){
         verboseOutput() << "Command line: " << command_line << endl;
     }
 
-    size_t nr_negative = 0;
-    if(number_normaliz_instances <0)
-        nr_negative++;
-    if(input_file_option < 0)
-        nr_negative++;
-
-    if(list_of_input_files){
-        if(nr_negative == 1)
-            throw BadInputException("Insdufficient parameters for list of input files");
-        if(nr_negative == 2){
-            number_normaliz_instances = 1;
-            input_file_option = 0;
-        }
-    }
-
     vector<string> input_file_names;
 
     if(list_of_input_files){
@@ -201,6 +186,20 @@ int main(int argc, char* argv[]){
     size_t nr_input_files = input_file_names.size();
     if(!list_of_input_files)
         nr_input_files = 1;
+
+    if(number_normaliz_instances > 0){ // -Z set
+        if(input_file_option < 0) // -A not set
+            throw BadInputException("-Z set, but no -A.");
+    }
+    else{   // -Z not set
+        if(input_file_option < 0){ // -A not set, we do the full list
+            number_normaliz_instances = 1;
+            input_file_option = 0;
+        }
+        else{  // -A set, we do a single file
+            number_normaliz_instances = nr_input_files;
+        }
+    }
 
     for(size_t intput_file_index = 0; intput_file_index < nr_input_files; ++intput_file_index){
         OptionsHandler options;
@@ -234,10 +233,6 @@ int main(int argc, char* argv[]){
             verboseOutput() << "*************************************************************" << endl;
 
         StartGlobalTime();
-
-        /* if (verbose) {
-            printHeader();
-        }*/
 
         process_data(options, command_line);
 
@@ -318,7 +313,7 @@ void compute_and_output(OptionsHandler& options,
 
     if(is_split_patching){
         cout << "No file <project>.out for split computation" << endl;
-        MeasureGlobalTime(verbose);
+        // MeasureGlobalTime(verbose);
         return;
     }
 
@@ -445,74 +440,6 @@ int process_data(OptionsHandler& options, const string& command_line) {
 
         if(options.isUseSplit()){
             is_split_patching = true;
-            /*
-            string name = options.getProjectName() + ".split.data";
-            ifstream split_control(name.c_str());
-            long nr_split_patches;
-            long nr_splitPatches_all_rounds = 1;
-            split_control >> nr_split_patches;
-            split_patches.resize(nr_split_patches);
-            split_moduli.resize(nr_split_patches);
-            for(long i = 0; i < nr_split_patches; ++i){
-                    split_control >> split_patches[i] >> split_moduli[i];
-                    nr_splitPatches_all_rounds *= split_moduli[i];
-                    if(i == 0){
-                        if(split_patches[i] < 1)
-                            throw BadInputException("split patch must be > 0");
-                    }
-                    else{
-                        if(split_patches[i] <= split_patches[i-1])
-                            throw BadInputException("split patches must be increasing");
-                    }
-
-            }
-
-            long max_nr_splits, actual_nr_splits;
-            split_control >> max_nr_splits >> actual_nr_splits;
-
-            long this_round = 0;
-            name = options.getProjectName() + ".rounds.data";
-            ifstream rounds_control(name.c_str());
-            if(rounds_control.is_open()){
-                long total_rounds;
-                rounds_control >> this_round >> total_rounds;
-                // cout << this_round << " " << total_rounds << " " << max_nr_splits << " " << nr_splitPatches_all_rounds << endl;
-                if(this_round +1 > total_rounds)
-                    throw BadInputException("Too many rounds asked for");
-                if( max_nr_splits * total_rounds != nr_splitPatches_all_rounds)
-                    throw BadInputException("Numbers of splits for all rounds does not fit");
-            }
-
-            if(split_res >= actual_nr_splits){
-                cerr << "Index of split too large, must be < " << actual_nr_splits << endl;
-                exit(1);
-            }
-
-            split_res += this_round * max_nr_splits;
-            long res = split_res;
-            split_residues.resize(nr_split_patches);
-            string dist_file_name = options.getProjectName() + ".split.dist";
-            ifstream dist_in(dist_file_name.c_str());
-            if(!dist_in.is_open()){
-                for(long i = 0; i < nr_split_patches; ++i){
-                    split_residues[i] = res % split_moduli[i];
-                    res /=  split_moduli[i];
-                }
-            }
-            else{
-                long dummy;
-                for(size_t i= 0; i < split_res; ++i){ // skip entries in dist file
-                    for(size_t j = 0; j < nr_split_patches; ++j)
-                        dist_in >> dummy;
-                }
-                for(size_t j = 0; j < nr_split_patches; ++j) // we have reached the relevant line
-                    dist_in >> split_residues[j];
-            }
-            if(verbose){
-                verboseOutput() << "split levels " << split_patches;
-                verboseOutput() << "split moduli " << split_moduli;
-                verboseOutput() << "split residues " << split_residues;
-            }*/
         }
 
         GlobalTimeBound = -1.0;
@@ -539,19 +466,6 @@ int process_data(OptionsHandler& options, const string& command_line) {
             in_time.close();
         }
 
-        /* string name_split = "normaliz.split";
-        const char* file_split = name_split.c_str();
-        ifstream in_split;
-        in_split.open(file_split, ifstream::in);
-        if (in_split.is_open()) {
-            in_split >> split_patch >> split_modulus >> split_res;
-            if(in_split.fail()){
-                verboseOutput() << "Split data incomplete" << endl;
-                exit(1);
-            }
-            in_split.close();
-        }*/
-
         string name_in = options.getProjectName() + ".in";
         const char* file_in = name_in.c_str();
         ifstream in;
@@ -563,9 +477,6 @@ int process_data(OptionsHandler& options, const string& command_line) {
 
         string polynomial;
         vector<string> polynomial_equations;
-        /*long nr_coeff_quasipol=-1;
-        long expansion_degree=-1;
-        long face_codim_bound=-1;*/
 
         InputMap<mpq_class> input, add_input;
         InputMap<renf_elem_class> renf_input, renf_add_input;
