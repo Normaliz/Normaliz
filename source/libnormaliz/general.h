@@ -161,6 +161,8 @@ double TimeSinceStart();
 void MeasureGlobalTime(bool verbose);
 void PrintTime(const struct timeval var_TIME_begin, bool verbose, const std::string& step);
 
+void Check_Stop();
+
 
 NORMALIZ_DLL_EXPORT extern double GlobalTimeBound;
 NORMALIZ_DLL_EXPORT extern double GlobalPredictionTimeBound;

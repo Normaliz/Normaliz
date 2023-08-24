@@ -24,6 +24,7 @@
 #include <cstdlib>
 #include <csignal>
 #include "libnormaliz/general.h"
+#include <fstream>
 
 #ifndef _MSC_VER
 #include <sys/time.h>
@@ -222,6 +223,17 @@ void PrintTime(const struct timeval var_TIME_begin, bool verbose, const std::str
 
 void MeasureTime(bool verbose, const std::string& step){
     PrintTime(TIME_step_begin,verbose,step);
+}
+
+void Check_Stop(){
+    string name = global_project + ".stop";
+    std::ifstream stop(name.c_str());
+    if(stop.is_open())
+        throw NoComputationException("Stop of " + global_project + " requested");
+    name = "normaliz.stop";
+    std::ifstream total_stop(name.c_str());
+    if(total_stop.is_open())
+        throw NoComputationException("normaliz stop requested");
 }
 
 unsigned int getVersion()
