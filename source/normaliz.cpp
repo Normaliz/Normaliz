@@ -418,6 +418,9 @@ int process_data(OptionsHandler& options, const string& command_line) {
 
         global_project = options.getProjectName();
 
+
+        Check_Stop(); // check whether stop file has been set
+
         if(options.isUseCollectLat()){
             collect_lat(global_project);
             exit(0);

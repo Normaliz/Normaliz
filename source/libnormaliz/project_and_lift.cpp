@@ -798,6 +798,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::finalize_order(const dynamic_bitset& 
     for(size_t k = 0; k < InsertionOrderPatches.size(); ++k)
         LevelPatches[InsertionOrderPatches[k]] = k;
 
+    ExpectedNrRounds.resize(InsertionOrderPatches.size());
+
 }
 
 template <typename IntegerPL, typename IntegerRet>
@@ -1311,6 +1313,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
             throw TimeBoundException("while patching");
         }
 
+        Check_Stop();
+
         struct timeval step_time_begin;
         StartTime(step_time_begin);
 
@@ -1622,6 +1626,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                     verboseOutput() << " cgr " << nr_caught_by_congs;*/
                 if(nr_points_done_in_this_round > 0)
                     verboseOutput() << " exp rnd " << expected_number_of_rounds;
+                ExpectedNrRounds[this_patch] = expected_number_of_rounds;
                 verboseOutput() << endl;
             }
         }
@@ -1641,23 +1646,40 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         if(single_point_found)
             break;
 
-        if(talkative){
+        if(talkative && verbose && nr_rounds ==1){
             if(nr_points_done_in_this_round > 0 && NrRemainingLP[this_patch] > 0){
                 // cout << "nr_rounds " << nr_rounds << " expected rounds " << expected_number_of_rounds << endl;
                 double time_spent = MeasureTime(time_begin);
-                double step_time_spent = MeasureTime(step_time_begin);
-                double time_per_round = time_spent/nr_rounds;
                 // cout << "spent " << time_spent << " time_per_round " << time_per_round << endl;
-                double expected_time = time_per_round*expected_number_of_rounds;
-                double step_expected_time = step_time_spent*expected_number_of_rounds;
+                double expected_time = time_spent*expected_number_of_rounds;
                 if(verbose){
                     verboseOutput() << "---------" << endl;
                     verboseOutput() << "expected future time on level  " << LevelPatches[coord] << "  " << expected_time;
-                    verboseOutput() << " / "  << step_expected_time << " sec " << endl;
+                    // verboseOutput() << " / "  << step_expected_time << " sec " << endl;
                 }
                 /*if(verbose) {
                     verboseOutput() << "==============================" << endl;
                 }*/
+                double total_expected_time = time_spent;
+                double factor =1.0;
+                bool found = false;
+                for(size_t i = 0; i <= this_patch; ++i){
+                    if(!found && ExpectedNrRounds[i] == 0)
+                        continue;
+                    if(!found && ExpectedNrRounds[i] != 0){
+                        found = true;
+                        factor *= ExpectedNrRounds[i];
+                        // cout << i << " --- " << ExpectedNrRounds[i] << " --- " << factor << endl;
+                        continue;
+                    }
+                    factor *= (ExpectedNrRounds[i] +1);
+                    // cout << i << " --- " << ExpectedNrRounds[i] + 1 << " --- " << factor << endl;
+                }
+                total_expected_time *= factor;
+                // total_expected_time += expected_time;
+                total_expected_time += TimeSinceStart() - time_spent;
+                verboseOutput() << " / total " << total_expected_time << endl;
+
                 if(GlobalPredictionTimeBound > 0 && expected_time > GlobalPredictionTimeBound){
                         verboseOutput() << "expected time exceeds bound of " << GlobalPredictionTimeBound << " sec" << endl;
                         throw TimeBoundException("patching");

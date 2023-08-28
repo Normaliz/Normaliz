@@ -146,6 +146,8 @@ class ProjectAndLift {
     Matrix<double> WeightOfCoord;
     Matrix<IntegerPL> DefiningSupps;
 
+    vector<double> ExpectedNrRounds;
+
     SplitData our_split;
 
     vector<size_t> NrRemainingLP;
