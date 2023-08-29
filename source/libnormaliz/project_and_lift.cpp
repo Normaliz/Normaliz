@@ -502,12 +502,18 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
         vector<key_t> PolyEqusKey, PolyInequsKey, RestrictablePolyInequsKey;
 
         // first the equations
+        bool first_rest = true;
         for(size_t i = 0; i < PolyEquations.size(); ++i){
             if(!PolyEquations[i].support.is_subset_of(new_covered)) // not yet usable
                 continue;
             if(PolyEquations[i].support.is_subset_of(covered)) // already used
                 continue;
             AllPolyEqus[coord].push_back(PolyEquations[i]);
+            OurPolynomial<IntegerRet> Restrict = PolyEquations[i].restrict_to(covered);
+            if(first_rest){
+                cout << "Rest " << i << " --- " <<  Restrict.size() << " of " << PolyEquations[i].size() << endl;
+                first_rest = false;
+            }
             PolyEqusKey.push_back(i);
         }
         for(auto& T: AllPolyEqusThread[coord]){ // vcopy for each thread
@@ -1389,9 +1395,9 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         size_t ppos = 0;
         auto P = LatticePoints.begin();
 
-        list<key_t> order_poly_equs; // suddessful constraints to the front !!
-        for(key_t k = 0; k < PolyEqusThread[tn].size(); ++k)
-            order_poly_equs.push_back(k);
+        list<pai<key_t, InteherRet> > order_poly_equs; // suddessful constraints to the front !!
+        for(key_t k = 0; k < PolyEqusThread[tn].size(); ++k) // the nsecond component will contain values
+            order_poly_equs.push_back(makepair(k,0));       // of the restrictions of the polynomials
         list<key_t> order_poly_inequs;
         for(key_t k = 0; k < PolyInequsThread[tn].size(); ++k)
             order_poly_inequs.push_back(k);
@@ -1425,6 +1431,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
             }*/
 
         NewLattPoint = *P;
+
         overlap = v_select_coordinates(NewLattPoint, intersection_key);
         for(size_t k = 0; k < CongsRestricted.size(); ++k)
             old_cong[k]  = eval_cong_partially(CongsRestricted[k],NewLattPoint, full_coords_ind, false);
@@ -1441,6 +1448,11 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                 throw TimeBoundException("extending");
             }
 
+            vector<IntegerRet> values_restrictions(PolyEqusThread[tn].size());
+            for(size_t kk = 0; kk < values_restrictions.size(); ++kk){
+                values_restrictions[kk] =
+
+            }
 
             // now the extensions of the overlap
             for(auto& i: LocalSolutions_by_intersection_and_cong[overlap][old_cong]){

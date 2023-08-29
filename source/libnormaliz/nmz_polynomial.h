@@ -100,6 +100,8 @@ public:
     // bool check_restriction(const dynamic_bitset& set_of_var) const;
     bool is_restrictable_inequ(const dynamic_bitset& set_of_var)  const;
     void permute_variables(const vector<key_t>& perm);
+    OurPolynomial<Number> restrict_to(const dynamic_bitset& variables) const;
+    pair<OurPolynomial<Number>, OurPolynomial<Number> > split(const dynamic_bitset& support_variables) const;
 
 #ifdef NMZ_COCOA
     CoCoA::RingElem ToCoCoA(CoCoA::SparsePolyRing R) const;

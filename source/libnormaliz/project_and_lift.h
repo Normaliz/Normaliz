@@ -132,7 +132,7 @@ class ProjectAndLift {
     // vector<vector<key_z> > AllPolyEqusKey;
     // vector<vector<key_t> > AllPolyInequsKey;
     vector<vector<OurPolynomialCong<IntegerRet> > > AllCongsRestricted; // the congruences that can be restrictd to the unions of patches built successively
-    vector<OurPolynomialSystem<IntegerRet> > AllPolyEqus; // indexed by coord, poly equs applied with this coord
+    vector< vector < pair<OurPolynomial<IntegerRet>, OurPolynomial<IntegerRet> > > > AllPolyEqus; // indexed by coord, poly equs (split into two components) applied with this coord
     vector<OurPolynomialSystem<IntegerRet> > AllPolyInequs; // ditto for inequalities
     // vector<OurPolynomialSystem<IntegerRet> > AllRestrictablePolyInequs; // resstricted inequalities derived from equations
     vector<vector<OurPolynomialSystem<IntegerRet> > > AllPolyEqusThread; // a copy for each thread

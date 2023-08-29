@@ -234,6 +234,31 @@ Number OurPolynomial<Number>::evaluate(const vector<Number>& argument) const{
     return value;
 }
 
+
+template<typename Number>
+OurPolynomial<Number> OurPolynomial<Number>::restrict_to(const dynamic_bitset& variables) const{
+    OurPolynomial<Number> Rest;
+    for(auto& T: *this){
+     if(T.support.is_subset_of(variables))
+         Rest.push_back(T);
+    }
+    return Rest;
+}
+
+template<typename Number>
+pair<OurPolynomial<Number>, OurPolynomial<Number> > OurPolynomial<Number>::split(const dynamic_bitset& support_variables) const{
+    OurPolynomial<Number> Rest;
+    OurPolynomial<Number> LeftOver;
+    for(auto& T: *this){
+     if(T.support.is_subset_of(support_variables))
+         Rest.push_back(T);
+    else
+        LeftOver.push_back(T);
+    }
+    return make_pair(Rest, LeftOver);
+}
+
+
 template<typename Number>
 Number OurPolynomial<Number>::evaluate_restricted(const vector<Number>& argument, const dynamic_bitset& set_of_var) const{
     Number value = 0;
