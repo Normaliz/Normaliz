@@ -508,12 +508,12 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
                 continue;
             if(PolyEquations[i].support.is_subset_of(covered)) // already used
                 continue;
-            AllPolyEqus[coord].push_back(PolyEquations[i]);
             OurPolynomial<IntegerRet> Restrict = PolyEquations[i].restrict_to(covered);
             if(first_rest){
                 cout << "Rest " << i << " --- " <<  Restrict.size() << " of " << PolyEquations[i].size() << endl;
                 first_rest = false;
             }
+            AllPolyEqus[coord].push_back(PolyEquations[i].split(covered));
             PolyEqusKey.push_back(i);
         }
         for(auto& T: AllPolyEqusThread[coord]){ // vcopy for each thread
@@ -1154,7 +1154,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
     auto& intersection_key = AllIntersections_key[coord];
     auto& new_coords_key = AllNew_coords_key[coord];
 
-    vector<OurPolynomialSystem<IntegerRet>>& PolyEqusThread = AllPolyEqusThread[coord];
+    vector< vector < pair<OurPolynomial<IntegerRet>, OurPolynomial<IntegerRet> > >>& PolyEqusThread = AllPolyEqusThread[coord];
     vector<OurPolynomialSystem<IntegerRet>>& PolyInequsThread = AllPolyInequsThread[coord];
 
     ProjectAndLift<IntegerPL, IntegerRet>& LocalPL = AllLocalPL[coord];
@@ -1395,9 +1395,9 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         size_t ppos = 0;
         auto P = LatticePoints.begin();
 
-        list<pai<key_t, InteherRet> > order_poly_equs; // suddessful constraints to the front !!
+        list<pair<key_t, IntegerRet> > order_poly_equs; // suddessful constraints to the front !!
         for(key_t k = 0; k < PolyEqusThread[tn].size(); ++k) // the nsecond component will contain values
-            order_poly_equs.push_back(makepair(k,0));       // of the restrictions of the polynomials
+            order_poly_equs.push_back(make_pair(k,0));       // of the restrictions of the polynomials
         list<key_t> order_poly_inequs;
         for(key_t k = 0; k < PolyInequsThread[tn].size(); ++k)
             order_poly_inequs.push_back(k);
@@ -1448,10 +1448,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                 throw TimeBoundException("extending");
             }
 
-            vector<IntegerRet> values_restrictions(PolyEqusThread[tn].size());
-            for(size_t kk = 0; kk < values_restrictions.size(); ++kk){
-                values_restrictions[kk] =
-
+            for(auto pp = order_poly_equs.begin(); pp!= order_poly_equs.end(); ++pp){
+                pp-> second = - PolyEqusThread[tn][pp->first].first.evaluate(NewLattPoint);
             }
 
             // now the extensions of the overlap
@@ -1469,12 +1467,12 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
 
                 if(can_be_inserted){
                     for(auto pp = order_poly_equs.begin(); pp!= order_poly_equs.end(); ++pp){
-                        if(PolyEqusThread[tn][*pp].evaluate(NewLattPoint) != 0){
+                        if(pp->second != PolyEqusThread[tn][pp->first].second.evaluate(NewLattPoint)){
                             can_be_inserted = false;
 #pragma omp atomic
                             nr_caught_by_equations++;
                             if(!poly_equs_minimized[coord])
-                                poly_equs_stat[tn][*pp]++;
+                                poly_equs_stat[tn][pp->first]++;
                             else
                                 order_poly_equs.splice(order_poly_equs.begin(), order_poly_equs, pp);
                             break;
@@ -1561,7 +1559,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         // Discard ineffective polynomial equations
         if(!poly_equs_minimized[coord] &&  nr_latt_points_total > nr_new_latt_points_for_elimination_equs){
             poly_equs_minimized[coord] = true;
-            OurPolynomialSystem<IntegerRet> EffectivePolys;
+             vector < pair<OurPolynomial<IntegerRet>, OurPolynomial<IntegerRet> > > EffectivePolys;
             for(size_t i = 0; i < PolyEqusThread[0].size(); ++i){
                 if(poly_equs_stat_total[i] > 0)
                     EffectivePolys.push_back(PolyEqusThread[0][i]);
