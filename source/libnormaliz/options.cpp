@@ -445,15 +445,16 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
         }
         if(LongOption == "UWP"){
             to_compute.set(ConeProperty::UseWeightsPatching);
+            continue;
 
         }
         if(LongOption == "COP"){
             to_compute.set(ConeProperty::CongOrderPatches);
-
+            continue;
         }
         if(LongOption == "LOP"){
             to_compute.set(ConeProperty::LinearOrderPatches);
-
+            continue;
         }
         if (find(AdmissibleOut.begin(), AdmissibleOut.end(), LongOption) != AdmissibleOut.end()) {
             OutFiles.push_back(LongOption);

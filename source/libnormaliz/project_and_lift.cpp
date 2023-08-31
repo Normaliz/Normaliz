@@ -501,6 +501,26 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
         // The keys are used for terminal output
         vector<key_t> PolyEqusKey, PolyInequsKey, RestrictablePolyInequsKey;
 
+        /*
+         * The following is the first stpe towards exploiting polynomial equations as
+         * congruiences.
+         * Not yet implemented further since it is unclear whether it makes sense.
+
+        size_t linear_in_new_covered = 0;
+        for(size_t i = 0; i < PolyEquations.size(); ++i){
+            if(PolyEquations[i].support.is_subset_of(new_covered)) // not yet usable
+                continue;
+            OurPolynomial<IntegerRet> new_part = PolyEquations[i].split(new_covered).second;
+            dynamic_bitset support_linear(EmbDim);
+            bool is_linear_in_new_part = new_part.check_linearity(new_covered, support_linear);
+            if(is_linear_in_new_part && support_linear.count() <= 3){
+                linear_in_new_covered++;
+                cout << support_linear.count() << " ";
+            }
+        }
+        cout << " Linears " << linear_in_new_covered << endl;
+        */
+
         // first the equations
         bool first_rest = true;
         for(size_t i = 0; i < PolyEquations.size(); ++i){

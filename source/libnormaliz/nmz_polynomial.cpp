@@ -260,6 +260,18 @@ pair<OurPolynomial<Number>, OurPolynomial<Number> > OurPolynomial<Number>::split
 
 
 template<typename Number>
+bool OurPolynomial<Number>::check_linearity(const dynamic_bitset& critical_variables, dynamic_bitset& support_linear) const{
+    for(auto& T: *this){
+        dynamic_bitset common = T.support & critical_variables;
+        if(common.count() == 0)
+            return false;
+        support_linear |= common;
+    }
+    return true;
+}
+
+
+template<typename Number>
 Number OurPolynomial<Number>::evaluate_restricted(const vector<Number>& argument, const dynamic_bitset& set_of_var) const{
     Number value = 0;
     for(auto& T: *this){

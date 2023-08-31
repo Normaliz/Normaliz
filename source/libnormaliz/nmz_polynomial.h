@@ -102,6 +102,7 @@ public:
     void permute_variables(const vector<key_t>& perm);
     OurPolynomial<Number> restrict_to(const dynamic_bitset& variables) const;
     pair<OurPolynomial<Number>, OurPolynomial<Number> > split(const dynamic_bitset& support_variables) const;
+    bool check_linearity(const dynamic_bitset& critical_variables, dynamic_bitset& support_linear) const;
 
 #ifdef NMZ_COCOA
     CoCoA::RingElem ToCoCoA(CoCoA::SparsePolyRing R) const;

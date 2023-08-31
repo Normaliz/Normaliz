@@ -231,7 +231,7 @@ void collect_lat(const string& project) {
         test_in.open(file_in, ifstream::in);
         if (test_in.is_open()){
             test_in.close();
-            string command = "rm "+ name + "> /dev/null";
+            string command = "rm "+ name + " &> /dev/null";
             int dummy = system(command.c_str());
             if(dummy == 0){
                 if(verbose)
