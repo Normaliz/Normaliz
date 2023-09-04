@@ -39,7 +39,7 @@ SplitData::SplitData(){
 }
 
 // c instructor with default values
-SplitData::SplitData(const string& this_project, const long& level){
+SplitData::SplitData(const string& this_project, const long& level, const size_t& nr_vectors){
 
     project = this_project;
     nr_split_levels = 1;
@@ -47,8 +47,10 @@ SplitData::SplitData(const string& this_project, const long& level){
     split_levels[0] = level;
     split_moduli.resize(nr_split_levels);
     split_moduli[0] = 1000;
+    if(nr_vectors< 1000)
+        split_moduli[0] = nr_vectors;
     max_nr_splits_per_round = 1000;
-    nr_splits_to_do = 1000;
+    nr_splits_to_do = split_moduli[0];
     this_round = 0;
     this_refinement = 0;
 }

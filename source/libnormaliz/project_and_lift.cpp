@@ -33,12 +33,12 @@ using std::list;
 using std::pair;
 //---------------------------------------------------------------------------
 
-void write_control_file(const size_t split_level){
+void write_control_file(const size_t split_level, const size_t nr_vectors){
 
         if(verbose)
             verboseOutput() << "split_level " << split_level << endl;
 
-        SplitData def_split(global_project, split_level);
+        SplitData def_split(global_project, split_level, nr_vectors);
         def_split.write_data();
         throw NoComputationException("No output with DistribitedComp for patching");
 }
@@ -1629,7 +1629,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
        NrRemainingLP[this_patch] = nr_to_match - nr_points_matched;
 
        if(NrRemainingLP[this_patch] > 0 && distributed_computation){
-           write_control_file(this_patch);
+           write_control_file(this_patch, LatticePoints.size());
            return;
        }
 

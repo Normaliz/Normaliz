@@ -53,7 +53,7 @@ public:
     string project;
 
     SplitData();
-    SplitData(const string& this_project, const long& level);
+    SplitData(const string& this_project, const long& level, const size_t& nr_vectors);
 
     void read_data(const string& this_project);
     void set_this_split(const long& given_split);
