@@ -42,10 +42,10 @@ SplitData::SplitData(){
 SplitData::SplitData(const string& this_project, const long& level){
 
     project = this_project;
-    nr_split_patches = 1;
-    split_patches.resize(nr_split_patches);
-    split_patches[0] = level;
-    split_moduli.resize(nr_split_patches);
+    nr_split_levels = 1;
+    split_levels.resize(nr_split_levels);
+    split_levels[0] = level;
+    split_moduli.resize(nr_split_levels);
     split_moduli[0] = 1000;
     max_nr_splits_per_round = 1000;
     nr_splits_to_do = 1000;
@@ -63,12 +63,12 @@ void SplitData::read_data(const string& this_project){
         throw BadInputException(name + " does not exist");
 
     long nr_splitPatches_all_rounds = 1;
-    split_control >> nr_split_patches;
-    split_patches.resize(nr_split_patches);
-    split_moduli.resize(nr_split_patches);
-    this_split_residues.resize(nr_split_patches);
-    for(long i = 0; i < nr_split_patches; ++i){
-            split_control >> split_patches[i] >> split_moduli[i];
+    split_control >> nr_split_levels;
+    split_levels.resize(nr_split_levels);
+    split_moduli.resize(nr_split_levels);
+    this_split_residues.resize(nr_split_levels);
+    for(long i = 0; i < nr_split_levels; ++i){
+            split_control >> split_levels[i] >> split_moduli[i];
             nr_splitPatches_all_rounds *= split_moduli[i];
     }
     split_control >> max_nr_splits_per_round >> nr_splits_to_do;
@@ -84,8 +84,8 @@ void SplitData::read_data(const string& this_project){
     else{
         refinement_residues.resize(nr_splits_to_do);
         for(size_t i= 0; i < nr_splits_to_do; ++i){
-            refinement_residues[i].resize(nr_split_patches);
-            for(size_t j = 0; j < nr_split_patches; ++j)
+            refinement_residues[i].resize(nr_split_levels);
+            for(size_t j = 0; j < nr_split_levels; ++j)
                 split_control >> refinement_residues[i][j];
         }
         // Matrix<long>(refinement_residues).debug_print();
@@ -100,9 +100,9 @@ void SplitData::write_data() const{
 
     string name = project + ".split.data";
     ofstream new_split_control(name.c_str());
-    new_split_control << split_patches.size();
-    for(size_t i = 0; i < split_patches.size(); ++i)
-    new_split_control << " " << split_patches[i] << " " << split_moduli[i];
+    new_split_control << split_levels.size();
+    for(size_t i = 0; i < split_levels.size(); ++i)
+    new_split_control << " " << split_levels[i] << " " << split_moduli[i];
     new_split_control << endl;
     new_split_control << max_nr_splits_per_round << " " << nr_splits_to_do << endl;
     new_split_control << this_round << " " << this_refinement << endl;
@@ -147,7 +147,7 @@ void SplitData::set_this_split(const long& given_index){
 
     long res = this_split_index;
     if(this_refinement == 0){
-        for(long i = 0; i < nr_split_patches; ++i){
+        for(long i = 0; i < nr_split_levels; ++i){
             this_split_residues[i] = res % split_moduli[i];
             res /=  split_moduli[i];
         }
@@ -273,8 +273,8 @@ void collect_lat(const string& project) {
     if(our_split.max_nr_splits_per_round/NotDone.size() > 2)
         nr_sub_splits = our_split.max_nr_splits_per_round/NotDone.size();
     new_split_data.nr_splits_to_do = NotDone.size() * nr_sub_splits;
-    new_split_data.split_patches.push_back(our_split.split_patches.back() + 1);
-    new_split_data.nr_split_patches++;
+    new_split_data.split_levels.push_back(our_split.split_levels.back() + 1);
+    new_split_data.nr_split_levels++;
     new_split_data.split_moduli.push_back(nr_sub_splits);
     new_split_data.this_refinement++;
     new_split_data.this_round = 0;
@@ -284,12 +284,12 @@ void collect_lat(const string& project) {
     if(verbose)
         verboseOutput() << nr_sub_splits << " subplits" << endl;
 
-    vector<long> split_residues(our_split.nr_split_patches);
+    vector<long> split_residues(our_split.nr_split_levels);
     new_split_data.refinement_residues.clear();
     for(auto& split_index:NotDone){
         if(our_split.this_refinement == 0){ // no previous refinement
             long res = split_index;
-            for(long i = 0; i < our_split.nr_split_patches; ++i){
+            for(long i = 0; i < our_split.nr_split_levels; ++i){
                 split_residues[i] = res % our_split.split_moduli[i];
                 res /=  our_split.split_moduli[i];
             }

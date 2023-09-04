@@ -33,12 +33,12 @@ using std::list;
 using std::pair;
 //---------------------------------------------------------------------------
 
-void write_control_file(const size_t split_patch){
+void write_control_file(const size_t split_level){
 
         if(verbose)
-            verboseOutput() << "split_patch " << split_patch << endl;
+            verboseOutput() << "split_level " << split_level << endl;
 
-        SplitData def_split(global_project, split_patch);
+        SplitData def_split(global_project, split_level);
         def_split.write_data();
         throw NoComputationException("No output with DistribitedComp for patching");
 }
@@ -1068,14 +1068,14 @@ template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vector<IntegerRet> >& LatticePoints, const key_t this_patch) {
 
     long split_modulus;
-    key_t max_split_patch = 0;
+    key_t max_split_level = 0;
     long this_split_res = -1;
     if(is_split_patching){
         bool do_split = false;
         assert(!distributed_computation);
         size_t split_reached = 0;
-        for(size_t i = 0; i < our_split.nr_split_patches; ++i){
-            if(this_patch == our_split.split_patches[i]){
+        for(size_t i = 0; i < our_split.nr_split_levels; ++i){
+            if(this_patch == our_split.split_levels[i]){
                 split_modulus = our_split.split_moduli[i];
                 this_split_res = our_split.this_split_residues[i];
                 do_split = true;
@@ -1084,7 +1084,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
             }
         }
         if(do_split){
-            max_split_patch = our_split.split_patches.back();
+            max_split_level = our_split.split_levels.back();
             if(verbose)
                 verboseOutput() << "Spilt level " << this_patch << " modulus " << split_modulus << " residue " << this_split_res << endl;
             LatticePoints.sort();
@@ -1523,7 +1523,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
             } // for i (inner for loop)
 
             (*P)[0] = 0;  // mark point as done
-            if(this_patch >= max_split_patch &&  nr_points_in_thread > max_nr_per_thread && !last_coord) {  // thread is full and we are allowed to break
+            if(this_patch >= max_split_level &&  nr_points_in_thread > max_nr_per_thread && !last_coord) {  // thread is full and we are allowed to break
                 skip_remaining = true;
 
 #pragma omp flush(skip_remaining)
@@ -1722,7 +1722,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
 
         // we write a file that preserves what has been done
         // makes only sense under the conditions in the next line
-        if(is_split_patching && this_patch == min_fall_back && this_patch == our_split.split_patches.back()){
+        if(is_split_patching && this_patch == min_fall_back && this_patch == our_split.split_levels.back()){
             string done_file_name = global_project + "."  + v_to_point_list(our_split.this_split_residues) + "done";
             ofstream done_file(done_file_name.c_str());
             done_file << nr_points_matched << endl;
@@ -2916,9 +2916,10 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute(bool all_points, bool liftin
         our_split.set_this_split(split_index_option);
         split_refinement = our_split.this_refinement; // needed in cone for output of lat file
         if(verbose){
-            verboseOutput() << "split levels " << our_split.split_patches;
+            verboseOutput() << "split levels " << our_split.split_levels;
             verboseOutput() << "split moduli " << our_split.split_moduli;
             verboseOutput() << "split residues " << our_split.this_split_residues;
+            verboseOutput() << "refinement " << our_split.this_refinement << " group " << our_split.this_round << endl;
         }
     }
 

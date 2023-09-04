@@ -34,8 +34,8 @@ class SplitData{
 
 public:
 
-    vector<long> split_patches;
-    size_t nr_split_patches;
+    vector<long> split_levels;
+    size_t nr_split_levels;
     vector<long> split_moduli;
 
     long max_nr_splits_per_round;
