@@ -103,6 +103,8 @@ long input_file_option = -1;
 
 std::string global_project;
 
+std::string lat_file_name;
+
 #ifdef NMZ_EXTENDED_TESTS
 bool test_arith_overflow_full_cone = false;
 bool test_arith_overflow_dual_mode = false;

@@ -1676,6 +1676,16 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         if(single_point_found)
             break;
 
+        // we write a file that preserves what has been done. First we tecord the kiwest patch
+        // to which we must return
+        if(is_split_patching && min_fall_back == 0 && min_return_patch == 0){  // all previous patches were fully done
+            min_return_patch = this_patch;
+            ofstream prel_data;
+            prel_data.open(lat_file_name, ofstream::app);
+            prel_data << endl << "min_return " << min_return_patch << endl;
+            prel_data.close();
+        }
+
         if(talkative && verbose && nr_rounds ==1){
             if(nr_points_done_in_this_round > 0 && NrRemainingLP[this_patch] > 0){
                 // cout << "nr_rounds " << nr_rounds << " expected rounds " << expected_number_of_rounds << endl;
@@ -1720,26 +1730,28 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         if(nr_points_matched == nr_to_match)
             break;
 
-        // we write a file that preserves what has been done
-        // makes only sense under the conditions in the next line
-        if(is_split_patching && this_patch == min_fall_back && this_patch == our_split.split_levels.back()){
-            string done_file_name = global_project + "."  + v_to_point_list(our_split.this_split_residues) + "done";
-            ofstream done_file(done_file_name.c_str());
-            done_file << nr_points_matched << endl;
+        // Here we record what has been done on the lowest level to which we reurn for further work
+        // this information is compeletely written whenever qwe return here.
+        if(is_split_patching && this_patch == min_return_patch){
+
+            ofstream prel_data;
+            prel_data.open(lat_file_name, ofstream::app);
+
+            prel_data << "done vectors " << nr_points_matched << endl;
             size_t counter = 0;
             for(auto& p: LatticePoints){
                 if(p[0] == 0){
-                    done_file << counter << endl;
+                    prel_data << counter << endl;
                 }
                 counter++;
             }
             list<vector<IntegerRet> > Collector;
             for(auto& T: Deg1Thread)
                 Collector.insert(Collector.end(), T.begin(), T.end());
-            done_file << Collector.size() << endl;
+            prel_data << "found solutions " << Collector.size() << endl;
             for(auto& v: Collector)
-                done_file << v;
-            done_file.close();
+                prel_data << v;
+            prel_data.close();
         }
 
     }  // while not done
@@ -2734,6 +2746,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::initialize(const Matrix<IntegerPL>& 
     cong_order_patches = false;
     distributed_computation = false;
     TotalNrLP = 0;
+    min_return_patch = 0;
     NrLP.resize(EmbDim + 1);
 
     Congs = Matrix<IntegerRet>(0, EmbDim + 1);
@@ -2921,6 +2934,10 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute(bool all_points, bool liftin
             verboseOutput() << "split residues " << our_split.this_split_residues;
             verboseOutput() << "refinement " << our_split.this_refinement << " group " << our_split.this_round << endl;
         }
+        lat_file_name = global_project + "." + to_string(split_refinement) + "." + to_string(split_index_rounds) + ".lat";
+        ofstream prel_data(lat_file_name);
+        prel_data << "preliminary" << endl << endl;
+        prel_data.close();
     }
 
     assert(all_points || !lifting_float);  // only all points allowed with float

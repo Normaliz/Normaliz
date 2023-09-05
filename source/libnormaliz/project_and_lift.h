@@ -102,6 +102,8 @@ class ProjectAndLift {
 
     bool system_unsolvable;
 
+    long min_return_patch;  // saet to the lowest patch that is not completely done before going up
+
     bool primitive; // true = using positive_bounded (a priori x >= 0 and upper bounds)
     bool sparse; // true = using the patching method
     bool patching_allowed; // if true blocks patching

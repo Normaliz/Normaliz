@@ -182,6 +182,7 @@ NORMALIZ_DLL_EXPORT extern long number_normaliz_instances; // for distribution o
 NORMALIZ_DLL_EXPORT extern long input_file_option; // index modulo number_normaliz_instances  of input fileas to be run by this instance
 
 NORMALIZ_DLL_EXPORT extern std::string global_project;
+NORMALIZ_DLL_EXPORT extern std::string lat_file_name;
 
 } /* end namespace libnormaliz */
 
