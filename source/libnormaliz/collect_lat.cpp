@@ -190,8 +190,9 @@ void collect_lat(const string& project) {
     if(dummy > 0)
         throw NoComputationException("Problem in archiving project.split.data");
 
-    if(verbose)
-        verboseOutput() << "Collecting lattice points from " << our_split.nr_splits_to_do << " lat files" << endl;
+    if(verbose){
+        verboseOutput() << "Collecting lattice points and preliminary data from " << our_split.nr_splits_to_do << " lat files" << endl;
+    }
 
     Matrix<long long> TotalLat;
     bool first = true;
@@ -213,40 +214,29 @@ void collect_lat(const string& project) {
     // Now we read what has been compouted in the last refinement
     // and register the parts that have not been complete in NotDone
     for(size_t i = 0; i < our_split.nr_splits_to_do; ++i){
-        name = project + "." + to_string(our_split.this_refinement) + "." +  to_string(i) + ".lat";
+        string lat_name = project + "." + to_string(our_split.this_refinement) + "." +  to_string(i) + ".lat";
         if(verbose)
-            verboseOutput()  << name << endl;
+            verboseOutput()  << lat_name << endl;
 
-        const char* file_in = name.c_str();
-        ifstream test_in;
-        test_in.open(file_in, ifstream::in);
-        if (!test_in.is_open()){
+        ifstream lat_in(lat_name);
+        if (!lat_in.is_open()){
             if(verbose)
-                verboseOutput() << name << "does not exist" << endl;
+                verboseOutput() << lat_name << " does not exist" << endl;
+            throw BadInputException("Not all lat files computed. CollectLat not yet possible!");
+        }
+
+        char c;
+        lat_in >> ws;
+        c = lat_in.peek();
+        if (c == 'p'){
+            if(verbose)
+                verboseOutput() << lat_name << " in preliminary stage" << endl;
             NotDone.push_back(i);
             continue;
         }
 
-        // delete done file if lat exists
-        name = global_project + "."  + v_to_point_list(our_split.this_split_residues) + "done";
-        file_in = name.c_str();
-        test_in.open(file_in, ifstream::in);
-        if (test_in.is_open()){
-            test_in.close();
-            string command = "rm "+ name + " &> /dev/null";
-            int dummy = system(command.c_str());
-            if(dummy == 0){
-                if(verbose)
-                    verboseOutput() << name << " removed" << endl;
-            }
-            else{
-                if(verbose)
-                    verboseOutput() << name << " NOT removed" << endl;
-            }
-        }
-
-        name = project + "." + to_string(our_split.this_refinement) + "." +  to_string(i) + ".lat";
-        Matrix<long long> this_lat = readMatrix<long long>(name);
+        lat_in.close();
+        Matrix<long long> this_lat = readMatrix<long long>(lat_name);
         if(this_lat.nr_of_rows() == 0)
             continue;
         if(first)

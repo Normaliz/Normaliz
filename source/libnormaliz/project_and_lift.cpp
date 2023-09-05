@@ -2936,7 +2936,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute(bool all_points, bool liftin
         }
         lat_file_name = global_project + "." + to_string(split_refinement) + "." + to_string(split_index_rounds) + ".lat";
         ofstream prel_data(lat_file_name);
-        prel_data << "preliminary" << endl << endl;
+        prel_data << "preliminary" << endl;
         prel_data.close();
     }
 
