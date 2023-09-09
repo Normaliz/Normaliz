@@ -235,10 +235,6 @@ NMZTESTS = test-/23.in					\
 	test-/n8_feas_all.ref				\
 	test-/n8_feas_all_nop.in			\
 	test-/n8_feas_all_nop.ref			\
-	test-/n8_feas_single.in				\
-	test-/n8_feas_single.ref			\
-	test-/n8_feas_single_nop.in			\
-	test-/n8_feas_single_nop.ref			\
 	test-/notpointed.in				\
 	test-/notpointed.ref				\
 	test-/NumSemi.in				\
@@ -1782,6 +1778,10 @@ NMZTESTS +=						\
 	test-patch/M11.in				\
 	test-patch/M11.ref				\
 	test-patch/pet.in				\
-	test-patch/pet.ref
+	test-patch/pet.ref				\
+	test-patch/n8_feas_single.in			\
+	test-patch/n8_feas_single.ref			\
+	test-patch/n8_feas_single_nop.in		\
+	test-patch/n8_feas_single_nop.ref		\
 
 EXTRA_DIST += $(NMZTESTS)

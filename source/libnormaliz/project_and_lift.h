@@ -197,6 +197,9 @@ class ProjectAndLift {
     bool order_patches_user_defined();
     void finalize_order(const dynamic_bitset& used_patches);
 
+    void prepare_split(list<vector<IntegerRet> >& LatticePoints, const key_t this_patch);
+    void read_split_data();
+
     // void make_LLL_coordinates();
 
    public:
@@ -250,6 +253,7 @@ ProjectAndLift<IntegerPL, IntegerRet>::ProjectAndLift(const ProjectAndLift<Integ
     AllOrders = Original.AllOrders;
     verbose = Original.verbose;
     no_relax = Original.no_relax;
+    only_single_point = false;
     convert(GD, Original.GD);
     AllSupps.resize(EmbDim + 1);
     AllCongs.resize(EmbDim + 1);

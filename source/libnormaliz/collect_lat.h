@@ -30,6 +30,10 @@ namespace libnormaliz {
 using std::vector;
 using std::string;
 
+
+// This class contains two types of data:
+// (i) data common to all split_levels
+// (ii) data for "this" split determined this_split_index
 class SplitData{
 
 public:
@@ -44,12 +48,20 @@ public:
     long this_split_index; // for the index coming from -X=<...>
     vector<long> this_split_residues; // ditto
 
+    long this_split_predecessor; // this_split_index of the "mother" solit, needed to identify the
+                      // the lat fdile produced by the mother
+    long this_pred_min_return; // the min return level of the predecessor;
+    vector<long> this_pred_done_indices; // indices of done elelemts of LatPopints
+
+
     long this_round;
     long nr_rounds;
 
     long this_refinement;
     vector<vector<long> > refinement_residues;  // the liast of residues not completed
                                                 // by this refinement ==> will be further refined
+    vector<long> refinement_predecessors; // analog for the predecessors
+
     string project;
 
     SplitData();

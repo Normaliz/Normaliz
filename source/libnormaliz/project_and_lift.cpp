@@ -1065,75 +1065,67 @@ const size_t nr_new_latt_points_for_elimination_equs = 10000;
 //---------------------------------------------------------------------------
 
 template <typename IntegerPL, typename IntegerRet>
-void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vector<IntegerRet> >& LatticePoints, const key_t this_patch) {
+void ProjectAndLift<IntegerPL,IntegerRet>::prepare_split(list<vector<IntegerRet> >& LatticePoints, const key_t this_patch){
 
     long split_modulus;
-    key_t max_split_level = 0;
     long this_split_res = -1;
-    if(is_split_patching){
-        bool do_split = false;
-        assert(!distributed_computation);
-        size_t split_reached = 0;
-        for(size_t i = 0; i < our_split.nr_split_levels; ++i){
-            if(this_patch == our_split.split_levels[i]){
-                split_modulus = our_split.split_moduli[i];
-                this_split_res = our_split.this_split_residues[i];
-                do_split = true;
-                split_reached = i;
-                break;
-            }
-        }
-        if(do_split){
-            max_split_level = our_split.split_levels.back();
-            if(verbose)
-                verboseOutput() << "Spilt level " << this_patch << " modulus " << split_modulus << " residue " << this_split_res << endl;
-            LatticePoints.sort();
-            list<vector<IntegerRet> > Selection;
 
-            // we read the indices of the lattice points done in previous refinement if it exists
-            if(our_split.this_refinement > 0){
-                vector<long> pre_residues = our_split.this_split_residues;
-                pre_residues.resize(split_reached + 1);
-                string name = our_split.project + "." + v_to_point_list(pre_residues) + "done";
-                ifstream done_file(name.c_str());
-                if(done_file.is_open()){
-                    set<long> done_indices;
-                    size_t nr_done;
-                    done_file >> nr_done;
-                    for(size_t i = 0; i < nr_done; ++i){
-                        long index;
-                        done_file >> index;
-                        done_indices.insert(index);
-                    }
-                    list<vector<IntegerRet> > PreSelection;
-                    long k = 0;
-                    for(auto& v: LatticePoints){
-                        if(done_indices.find(k) != done_indices.end()){
-                            k++;
-                            continue;
-                        }
-                        PreSelection.push_back(v);
-                        k++;
-                    }
-                    swap(LatticePoints, PreSelection);
-                    PreSelection.clear();
-
-                }
-            }
-            long i = 0;
-            for(auto& p: LatticePoints){
-                if(i% split_modulus == this_split_res)
-                    Selection.push_back(p);
-                i++;
-            }
-
-            swap(LatticePoints, Selection);
-            Selection.clear();
+    bool do_split = false;
+    bool ignore_done_indices = false;
+    for(size_t i = 0; i < our_split.nr_split_levels; ++i){
+        if(this_patch == our_split.split_levels[i]){
+            split_modulus = our_split.split_moduli[i];
+            this_split_res = our_split.this_split_residues[i];
+            do_split = true;
+            if(our_split.this_refinement > 0 && i == our_split.this_pred_min_return)
+                ignore_done_indices = true;
+            break;
         }
     }
-
-    if(distributed_computation){ // really necessary ??
+    if(do_split){
+        if(verbose)
+            verboseOutput() << "Spilt level " << this_patch << " modulus " << split_modulus << " residue " << this_split_res << endl;
         LatticePoints.sort();
+        list<vector<IntegerRet> > Selection;
+
+        if(ignore_done_indices){
+            set<long> done_indices;
+            done_indices.insert(our_split. this_pred_done_indices.begin(), our_split. this_pred_done_indices.end());
+            list<vector<IntegerRet> > PreSelection;
+            long k = 0;
+            for(auto& v: LatticePoints){
+                if(done_indices.find(k) != done_indices.end()){
+                    k++;
+                    continue;
+                }
+                PreSelection.push_back(v);
+                k++;
+            }
+            swap(LatticePoints, PreSelection);
+            PreSelection.clear();
+        }
+
+        long i = 0;
+        for(auto& p: LatticePoints){
+            if(i% split_modulus == this_split_res)
+                Selection.push_back(p);
+            i++;
+        }
+
+        swap(LatticePoints, Selection);
+        Selection.clear();
+    }
+}
+
+//---------------------------------------------------------------------------
+
+template <typename IntegerPL, typename IntegerRet>
+void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vector<IntegerRet> >& LatticePoints, const key_t this_patch) {
+
+    key_t max_split_level = 0;
+    if(is_split_patching){
+        max_split_level = our_split.split_levels.back();
+        prepare_split(LatticePoints, this_patch);
     }
 
     size_t max_nr_per_thread =  max_nr_new_latt_points_total/ omp_get_max_threads();
@@ -1156,6 +1148,10 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
             }
         }
     }
+
+    if(min_fall_back == 0)
+        LatticePoints.sort(); // this patch could become min_return and then we depend on sorting in the next
+                              // refinement, should it become necessary
 
     /* if(verbose){
         verboseOutput() << "coord " << coord;
@@ -1682,7 +1678,12 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
             min_return_patch = this_patch;
             ofstream prel_data;
             prel_data.open(lat_file_name, ofstream::app);
-            prel_data << endl << "min_return " << min_return_patch << endl;
+            prel_data << endl << "min_return " << min_return_patch << endl << endl;
+
+            prel_data << "done_indices" << endl;
+            prel_data << "0" << endl;
+            prel_data << "found_solutions" << endl;
+            prel_data << "0" << endl;
             prel_data.close();
         }
 
@@ -1737,7 +1738,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
             ofstream prel_data;
             prel_data.open(lat_file_name, ofstream::app);
 
-            prel_data << "done vectors " << nr_points_matched << endl;
+            prel_data << "done_indices " << nr_points_matched << endl;
             size_t counter = 0;
             for(auto& p: LatticePoints){
                 if(p[0] == 0){
@@ -1748,7 +1749,9 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
             list<vector<IntegerRet> > Collector;
             for(auto& T: Deg1Thread)
                 Collector.insert(Collector.end(), T.begin(), T.end());
-            prel_data << "found solutions " << Collector.size() << endl;
+            prel_data << "found_solutions" << endl;
+            prel_data << Collector.size() << endl;
+            prel_data << EmbDim << endl;
             for(auto& v: Collector)
                 prel_data << v;
             prel_data.close();
@@ -2910,6 +2913,69 @@ void ProjectAndLift<IntegerPL, IntegerRet>::set_vertices(const Matrix<IntegerPL>
 }
 
 //---------------------------------------------------------------------------
+
+template <typename IntegerPL, typename IntegerRet>
+void ProjectAndLift<IntegerPL, IntegerRet>::read_split_data() {
+
+    distributed_computation = false;
+    our_split.read_data(global_project);
+    our_split.set_this_split(split_index_option);
+    split_refinement = our_split.this_refinement; // needed in cone for output of lat file
+    if(verbose){
+        verboseOutput() << "split levels " << our_split.split_levels;
+        verboseOutput() << "split moduli " << our_split.split_moduli;
+        verboseOutput() << "split residues " << our_split.this_split_residues;
+        verboseOutput() << "refinement " << our_split.this_refinement << " round " << our_split.this_round << endl;
+    }
+    // starting the new lat file
+    lat_file_name = global_project + "." + to_string(split_refinement) + "." + to_string(split_index_rounds) + ".lat";
+    ofstream prel_data(lat_file_name);
+    prel_data << "preliminary_stage" << endl;
+    prel_data.close();
+
+    if(split_refinement == 0)
+        return;
+    // reading the lat file of the predecessor
+    string pred_file_name = global_project + "." + to_string(split_refinement - 1) + "." +
+                    to_string(our_split.this_split_predecessor) + ".lat";
+
+    ifstream predecessor_data(pred_file_name);
+    string s1;
+    predecessor_data >> s1;
+    if(s1 != "preliminary_stage")
+        throw BadInputException("Corrupt predessor file " + pred_file_name+ ".");
+
+    predecessor_data >> s1;
+    if(s1 != "min_return")
+        throw BadInputException("Corrupt predecessor file " + pred_file_name+ ".");
+    predecessor_data >> our_split.this_pred_min_return;
+
+    predecessor_data >> s1;
+    if(s1 != "done_indices")
+        throw BadInputException("Corrupt predecessor file " + pred_file_name+ ".");
+    size_t nr_done_indices;
+    predecessor_data >> nr_done_indices;
+    our_split.this_pred_done_indices.resize(nr_done_indices);
+    for(auto& d: our_split.this_pred_done_indices)
+        predecessor_data >> d;
+
+    predecessor_data >> s1;
+    if(s1 != "found_solutions")
+        throw BadInputException("Corrupt predecessor file " + pred_file_name+ ".");
+    size_t nr_found_solutions;
+    predecessor_data >> nr_found_solutions;
+    vector<IntegerRet> sol(EmbDim);
+    for(size_t i = 0; i < nr_found_solutions; ++i){
+        for(size_t j = 0; j < EmbDim; ++j){
+            predecessor_data >> sol[j];
+        }
+        Deg1Points.push_back(sol);
+    }
+    predecessor_data.close();
+}
+
+
+//---------------------------------------------------------------------------
 template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL, IntegerRet>::compute(bool all_points, bool lifting_float, bool do_only_count) {
     // Project-and-lift for lattice points in a polytope.
@@ -2924,20 +2990,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute(bool all_points, bool liftin
 #endif
 
     if(is_split_patching){
-        distributed_computation = false;
-        our_split.read_data(global_project);
-        our_split.set_this_split(split_index_option);
-        split_refinement = our_split.this_refinement; // needed in cone for output of lat file
-        if(verbose){
-            verboseOutput() << "split levels " << our_split.split_levels;
-            verboseOutput() << "split moduli " << our_split.split_moduli;
-            verboseOutput() << "split residues " << our_split.this_split_residues;
-            verboseOutput() << "refinement " << our_split.this_refinement << " group " << our_split.this_round << endl;
-        }
-        lat_file_name = global_project + "." + to_string(split_refinement) + "." + to_string(split_index_rounds) + ".lat";
-        ofstream prel_data(lat_file_name);
-        prel_data << "preliminary" << endl;
-        prel_data.close();
+        read_split_data();
     }
 
     assert(all_points || !lifting_float);  // only all points allowed with float
