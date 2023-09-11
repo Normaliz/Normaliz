@@ -1684,6 +1684,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
             prel_data << "0" << endl;
             prel_data << "found_solutions" << endl;
             prel_data << "0" << endl;
+            prel_data << "0" << endl;
             prel_data.close();
         }
 
@@ -1735,6 +1736,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         // this information is compeletely written whenever qwe return here.
         if(is_split_patching && this_patch == min_return_patch){
 
+            cout << "Writing " << this_patch << " " << min_return_patch << endl;
+
             ofstream prel_data;
             prel_data.open(lat_file_name, ofstream::app);
 
@@ -1746,13 +1749,13 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                 }
                 counter++;
             }
-            list<vector<IntegerRet> > Collector;
+            /* list<vector<IntegerRet> > Collector;
             for(auto& T: Deg1Thread)
-                Collector.insert(Collector.end(), T.begin(), T.end());
+                Collector.insert(Collector.end(), T.begin(), T.end());*/
             prel_data << "found_solutions" << endl;
-            prel_data << Collector.size() << endl;
+            prel_data << Deg1Points.size() << endl;
             prel_data << EmbDim << endl;
-            for(auto& v: Collector)
+            for(auto& v: Deg1Points)
                 prel_data << v;
             prel_data.close();
         }
@@ -2960,17 +2963,9 @@ void ProjectAndLift<IntegerPL, IntegerRet>::read_split_data() {
         predecessor_data >> d;
 
     predecessor_data >> s1;
-    if(s1 != "found_solutions")
+    if(s1 != "solutions_transferred")
         throw BadInputException("Corrupt predecessor file " + pred_file_name+ ".");
-    size_t nr_found_solutions;
-    predecessor_data >> nr_found_solutions;
-    vector<IntegerRet> sol(EmbDim);
-    for(size_t i = 0; i < nr_found_solutions; ++i){
-        for(size_t j = 0; j < EmbDim; ++j){
-            predecessor_data >> sol[j];
-        }
-        Deg1Points.push_back(sol);
-    }
+
     predecessor_data.close();
 }
 

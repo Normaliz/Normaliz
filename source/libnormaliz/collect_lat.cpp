@@ -185,7 +185,7 @@ void next_round(const string& project) {
         verboseOutput() << "New round " << our_split.this_round << endl;
 }
 
-void rewrite_lat_file(ifstream& lat_in, const string& lat_name, long& min_return_total){
+void rewrite_lat_file(ifstream& lat_in, const string& lat_name, long& min_return_total, Matrix<long long>& TotalLat){
 
     string s1, s2;
     lat_in >> s1 >> s2;
@@ -220,6 +220,7 @@ void rewrite_lat_file(ifstream& lat_in, const string& lat_name, long& min_return
             break;
         size_t nr_rows, nr_cols;
         lat_in >> nr_rows >>  nr_cols;
+        cout << "+++++++++++++++++++++ " << nr_rows << "  " << nr_cols <<endl;
         Matrix<long long> prel_solutions(nr_rows, nr_cols);
         for(size_t i = 0; i < nr_rows; ++i){
             for(size_t j = 0; j < nr_cols; ++j){
@@ -244,13 +245,16 @@ void rewrite_lat_file(ifstream& lat_in, const string& lat_name, long& min_return
         lat_out << d << endl;
     }
     lat_out << endl;
-    lat_out << "found_solutions" << endl;
-    lat_out << solutions_so_far.nr_of_rows() << endl;
-    for(size_t i = 0; i < solutions_so_far.nr_of_rows(); ++i){
-        for(size_t j = 0; j < solutions_so_far.nr_of_columns(); ++j){
-            lat_out << solutions_so_far[i][j];
+
+    if(solutions_so_far.nr_of_rows() > 0){
+        if(TotalLat.nr_of_rows() == 0){
+            TotalLat.resize(0, solutions_so_far.nr_of_columns());
         }
+        TotalLat.append(solutions_so_far);
     }
+
+    lat_out << "solutions_transferred" << endl;
+    lat_out.close();
 }
 
 void collect_lat(const string& project) {
@@ -311,7 +315,7 @@ void collect_lat(const string& project) {
             if(verbose)
                 verboseOutput() << lat_name << " in preliminary stage" << endl;
             NotDone.push_back(i);
-            rewrite_lat_file(lat_in, lat_name, min_return_total);
+            rewrite_lat_file(lat_in, lat_name, min_return_total, TotalLat);
             continue; // next lat file
         } // done with preliminray stage
 
