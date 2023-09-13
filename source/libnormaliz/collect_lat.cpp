@@ -117,10 +117,6 @@ void SplitData::write_data() const{
         return;
     }
 
-    cout << "****" << endl;
-    cout << refinement_residues;
-    cout << "****" << endl;
-
     Matrix<long>(refinement_residues).pretty_print(new_split_control);
     new_split_control.close();
 }
@@ -220,7 +216,6 @@ void rewrite_lat_file(ifstream& lat_in, const string& lat_name, long& min_return
             break;
         size_t nr_rows, nr_cols;
         lat_in >> nr_rows >>  nr_cols;
-        cout << "+++++++++++++++++++++ " << nr_rows << "  " << nr_cols <<endl;
         Matrix<long long> prel_solutions(nr_rows, nr_cols);
         for(size_t i = 0; i < nr_rows; ++i){
             for(size_t j = 0; j < nr_cols; ++j){
@@ -253,7 +248,11 @@ void rewrite_lat_file(ifstream& lat_in, const string& lat_name, long& min_return
         TotalLat.append(solutions_so_far);
     }
 
-    lat_out << "solutions_transferred" << endl;
+    if(verbose)
+        verboseOutput() << solutions_so_far.nr_of_rows() << " solutions_transferred" << endl;
+
+    lat_out << "found_solutions" << endl;
+    solutions_so_far.print(lat_out);
     lat_out.close();
 }
 
@@ -276,17 +275,15 @@ void collect_lat(const string& project) {
     }
 
     Matrix<long long> TotalLat;
-    bool first = true;
 
-    // First we must vread what has been compouted in previous refinements
-    name = project + ".so_far.lat";
-    ifstream lat_in(name.c_str());
-    if(lat_in.is_open()){
-        TotalLat = readMatrix<long long>(name);
-        if(TotalLat.nr_of_rows() > 0){
-                first = false;
+    // First we must read what has been compouted in previous refinements
+    if(our_split.this_refinement >0 ){
+        name = project + "." + to_string(our_split.this_refinement - 1) + ".so_far.lat";
+        ifstream lat_in(name.c_str());
+        if(lat_in.is_open()){
+            TotalLat = readMatrix<long long>(name);
+            lat_in.close();
         }
-        lat_in.close();
     }
 
     vector<size_t> NotDone;
@@ -324,14 +321,13 @@ void collect_lat(const string& project) {
         Matrix<long long> this_lat = readMatrix<long long>(lat_name);
         if(this_lat.nr_of_rows() == 0)
             continue;
-        if(first)
+        if(TotalLat.nr_of_rows() == 0)
             TotalLat.resize(0, this_lat.nr_of_columns());
-        first = false;
         TotalLat.append(this_lat);
 
     } // loop over all lat files
 
-    name = global_project + ".so_far.lat";
+    name = global_project + "." + to_string(our_split.this_refinement) + ".so_far.lat";
     ofstream lat_out(name.c_str());
     TotalLat.print(lat_out);
 

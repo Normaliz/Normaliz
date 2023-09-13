@@ -502,9 +502,10 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
         vector<key_t> PolyEqusKey, PolyInequsKey, RestrictablePolyInequsKey;
 
         /*
-         * The following is the first stpe towards exploiting polynomial equations as
+         * The following is the first step towards exploiting polynomial equations as
          * congruiences.
          * Not yet implemented further since it is unclear whether it makes sense.
+         *  TODO don't delete
 
         size_t linear_in_new_covered = 0;
         for(size_t i = 0; i < PolyEquations.size(); ++i){
@@ -522,17 +523,17 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
         */
 
         // first the equations
-        bool first_rest = true;
+        // bool first_rest = true;
         for(size_t i = 0; i < PolyEquations.size(); ++i){
             if(!PolyEquations[i].support.is_subset_of(new_covered)) // not yet usable
                 continue;
             if(PolyEquations[i].support.is_subset_of(covered)) // already used
                 continue;
             OurPolynomial<IntegerRet> Restrict = PolyEquations[i].restrict_to(covered);
-            if(first_rest){
+            /* if(first_rest){
                 cout << "Rest " << i << " --- " <<  Restrict.size() << " of " << PolyEquations[i].size() << endl;
                 first_rest = false;
-            }
+            }*/
             AllPolyEqus[coord].push_back(PolyEquations[i].split(covered));
             PolyEqusKey.push_back(i);
         }
@@ -1071,14 +1072,14 @@ void ProjectAndLift<IntegerPL,IntegerRet>::prepare_split(list<vector<IntegerRet>
     long this_split_res = -1;
 
     bool do_split = false;
-    bool ignore_done_indices = false;
+    bool skip_done_indices = false;
     for(size_t i = 0; i < our_split.nr_split_levels; ++i){
         if(this_patch == our_split.split_levels[i]){
             split_modulus = our_split.split_moduli[i];
             this_split_res = our_split.this_split_residues[i];
             do_split = true;
-            if(our_split.this_refinement > 0 && i == our_split.this_pred_min_return)
-                ignore_done_indices = true;
+            if(our_split.this_refinement > 0 && our_split.split_levels[i] == our_split.this_pred_min_return)
+                skip_done_indices = true;  // done indices will be skipped in the computation
             break;
         }
     }
@@ -1088,7 +1089,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::prepare_split(list<vector<IntegerRet>
         LatticePoints.sort();
         list<vector<IntegerRet> > Selection;
 
-        if(ignore_done_indices){
+        if(skip_done_indices){
             set<long> done_indices;
             done_indices.insert(our_split. this_pred_done_indices.begin(), our_split. this_pred_done_indices.end());
             list<vector<IntegerRet> > PreSelection;
@@ -1752,6 +1753,11 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
             /* list<vector<IntegerRet> > Collector;
             for(auto& T: Deg1Thread)
                 Collector.insert(Collector.end(), T.begin(), T.end());*/
+            auto check = Deg1Points;
+            check.sort();
+            check.unique();
+            cout << "$$$$$$$$$$$$$ " << check.size() << " " << Deg1Points.size() << endl;
+
             prel_data << "found_solutions" << endl;
             prel_data << Deg1Points.size() << endl;
             prel_data << EmbDim << endl;
@@ -2962,8 +2968,10 @@ void ProjectAndLift<IntegerPL, IntegerRet>::read_split_data() {
     for(auto& d: our_split.this_pred_done_indices)
         predecessor_data >> d;
 
+    cout << "****************** Read done indices " << nr_done_indices << endl;
+
     predecessor_data >> s1;
-    if(s1 != "solutions_transferred")
+    if(s1 != "found_solutions")
         throw BadInputException("Corrupt predecessor file " + pred_file_name+ ".");
 
     predecessor_data.close();
