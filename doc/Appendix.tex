@@ -3102,7 +3102,10 @@ to sum the partial multiplicities in the files \verb|<project>.mult.<n>| The res
 
 \subsection{Lattice points via patching}\label{DistPatch}
 
-The patching algorithm (Section \ref{positive_systems}) allows distributed computation. However, the implementation is still rudimentary since it uses only a static splitting which (in contrast to the volume computation) often does not efficiently use the number of parallel instances that are allowed by the high performance cluster. 
+The patching algorithm (Section \ref{positive_systems}) allows distributed computation, designed for computation on a high performance cluster (HPC). The parts into which the computation is distributed are called \emph{splits} in the following. 
+
+The scheme that Normaliz uses is again a batch array. As above we assume it is controlled by SLURM. There are two potential constraints set by the system: an upper limit on the wall clock time of a batch job and, sometimes, an upper limit on the number of jobs that can be started simultaneously. Normaliz overcomes the time limit by using \emph{successive refinements} and the number limit by running several \emph{rounds} within a refinement.
+
 
 We run a  precomputation
 \begin{Verbatim}
@@ -3115,16 +3118,20 @@ The only purpose iw to find the lowest level where splitting makes sense. (For s
 It is always a default choice:
 \begin{Verbatim}
 1 <l> 1000
+1000 1000
+0 0
 \end{Verbatim}
-where \verb|<l>| is the lowest level. Often it is necessary to edit this file by hand. The general format is
+where \verb|<l>| is the lowest split level. The second line contains the upper bound on the number of jobs in a round, and the second gives the total number of jobs to be run. The third line lists the round and then the refinement: we start with round 0 in refinement 0.
+
+Often it is necessary to edit this file by hand. The general format of the first line is
 \begin{Verbatim}
 <n> <l1> <s1>  ... <ln> <sn>
 \end{Verbatim}
 where \verb*|<n>| is the number of split levels defined by \verb*|<l1>,...<ln>| in increasing order, and the numbers \verb*|<s1>,...,<sn>| list the number of splits as these levels. Example:
 \begin{Verbatim}
-2 1 10 3 100
+2 1 10 3 200
 \end{Verbatim}
-We split at level 1 into 10 parts, and then each of these parts is split at level 3 into 100 sub-parts. The total number of parts run in parallel is the product of \verb*|<s1>,...,<sn>|, 1000 in the example (and the default choice).
+We split at level 1 into 10 splits, and then each of these splits is split at level 3 into 200 sub-splits. The total number of splits run in parallel is the product of \verb*|<s1>,...,<sn>|, 2000 now, and the second number in line 2 must be changed to 2000. (If we stay with the upper limit of 1000 jobs per round, then we will need two rounds.)
 
 We use a job array defined by 
 \begin{Verbatim}
@@ -3148,7 +3155,36 @@ to indicate that this is a split computation, and
 \begin{itemize}
 \itemtt[-X=<s>]	
 \end{itemize}
-gives the number \verb*|<s>| of the split to be run by the Normaliz instance identified by \verb*|${SLURM_ARRAY_TASK_ID}|. Note that every split reads the input file, but it does not write a file with suffix \verb*|out|.
+gives the number \verb*|<s>| is an index transferred to Normaliz. The index of the split run be Normaliz is given by
+$$
+i = s + r*u
+$$
+where $r$ is the number of the current round and $u$ the uppwer limit on jobs per round. the index $i$ is used to identify the output file produced by this job. It is
+\begin{Verbatim}
+<project>.<f>.<i>.lat
+\end{Verbatim}
+where \verb|<f>| is the index of the current refinement. 
+
+If the job could be completed, this file contains the lattice points in the split in the standard format, namely their number, the embedding dimension, and then the vectors. 
+
+If it has not been completed, then the first line is \verb|preliminary_stage|, followed by intermediate results that can be read by the next refinement.
+
+If several rounds are necessary, then one switches Normaliz to the next round by the option
+\begin{itemize}
+\itemtt[NextRound] 
+\end{itemize}
+for example
+\begin{Verbatim}
+normaliz -c tough --NextRound
+\end{Verbatim}
+This will update verb|tough.split.data| leaving a copy of the last version whose name in general is
+\begin{Verbatim}
+<project>.<f>.<r>.split.data
+\end{Verbatim}
+
+
+
+of the split to be run by the Normaliz instance identified by \verb*|${SLURM_ARRAY_TASK_ID}|. Note that every split reads the input file, but it does not write a file with suffix \verb*|out|.
 
 Each job writes the computed lattice points to
 \begin{itemize}

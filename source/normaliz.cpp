@@ -423,12 +423,12 @@ int process_data(OptionsHandler& options, const string& command_line) {
 
         if(options.isUseCollectLat()){
             collect_lat(global_project);
-            exit(0);
+            return 0;
         }
 
         if(options.isUseNextRound()){
             next_round(global_project);
-            exit(0);
+            return 0;
         }
 
         if (options.isUseChunk()) {

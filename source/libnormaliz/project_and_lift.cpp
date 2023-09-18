@@ -33,6 +33,8 @@ using std::list;
 using std::pair;
 //---------------------------------------------------------------------------
 
+// classless functions
+
 void write_control_file(const size_t split_level, const size_t nr_vectors){
 
         if(verbose)
@@ -100,6 +102,92 @@ template<>
 void coarsen_this_cong(const vector<nmz_float>& cong, const size_t k, set<vector<nmz_float> >& CongSet){
     assert(false);
 }
+
+//--------------------------------------------------------------------
+
+// functions for testing simplicity of fusion rings
+
+template <typename IntegerPL, typename IntegerRet>
+set<vector<key_t> >  ProjectAndLift<IntegerPL,IntegerRet>::FrobRec(const vector<key_t>& ind_tuple){
+
+    assert(ind_tuple.size() == 3);
+    key_t i,j,k;
+    i = ind_tuple[0];
+    j = ind_tuple[1];
+    k = ind_tuple[2];
+    set< vector<key_t> > F;
+    F = {
+            {i,j,k},
+            {duality[i],k,j},
+            {j,duality[k],duality[i]},
+            {duality[j],duality[i],duality[k]},
+            {duality[k],i,duality[j]},
+            {k,duality[j],i}
+        };
+    return F;
+}
+
+/*
+template <typename IntegerPL, typename IntegerRet>
+key_t ProjectAndLift<IntegerPL,IntegerRet>::dual(const key_t i) const{
+    return duality[i];
+}
+*/
+
+
+template <typename IntegerPL, typename IntegerRet>
+key_t ProjectAndLift<IntegerPL,IntegerRet>::coord(vector<key_t>& ind_tuple){
+   set<vector<key_t> > FR = FrobRec(ind_tuple);
+    return coord(FR);
+}
+
+template <typename IntegerPL, typename IntegerRet>
+key_t ProjectAndLift<IntegerPL,IntegerRet>::coord(set<vector<key_t> >& FR){
+    return CoordMap[FR];
+}
+
+template <typename IntegerPL, typename IntegerRet>
+dynamic_bitset ProjectAndLift<IntegerPL,IntegerRet>::critical_coords(){
+    set<key_t> cand_set;
+    cand_set.insert(subring_base_key.begin(), subring_base_key.end());
+
+    dynamic_bitset crit_coords(CoordMap.size() + 1); // coordinate 0 is omitted
+
+    for(auto& ind_tuple: all_ind_tuples){
+        if(cand_set.find(ind_tuple[0]) == cand_set.end() || cand_set.find(ind_tuple[1]) == cand_set.end()
+                || cand_set.find(ind_tuple[2]) != cand_set.end() )
+            continue;
+        crit_coords[coord(ind_tuple)] = true;
+    }
+    return crit_coords;
+
+}
+
+template <typename IntegerPL, typename IntegerRet>
+void ProjectAndLift<IntegerPL,IntegerRet>::make_all_ind_tuples(){
+    for(key_t i = 1; i < fusion_rank; ++i){
+        for(key_t j = 1; j < fusion_rank; ++j){
+            for(key_t k = 1; k < fusion_rank; ++k){
+                vector<key_t> ind_tuple = {i,j,k};
+                all_ind_tuples.push_back(ind_tuple);
+            }
+        }
+    }
+}
+
+template <typename IntegerPL, typename IntegerRet>
+void ProjectAndLift<IntegerPL,IntegerRet>::make_CoordMap(){
+    key_t val = 1;  // coordinate 0 is the homogenizing one
+    for(auto& ind_tuple: all_ind_tuples){
+        set<vector<key_t> > F = FrobRec(ind_tuple);
+        if(CoordMap.find(F) != CoordMap.end())
+            continue;
+        CoordMap[F] = val;
+        val++;
+    }
+}
+
+//--------------------------------------------------------------------
 
 template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL,IntegerRet>::add_congruences_from_equations() {
@@ -334,6 +422,16 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
         CongIndicator.push_back(cong_support);
     }
 
+    dynamic_bitset coords_to_check_ind;
+    // we compute basic data for simplicity test
+    if(check_simplicity){
+        make_all_ind_tuples();
+        make_CoordMap();
+        coords_to_check_ind = critical_coords();
+        coords_to_check_key = bitset_to_key(coords_to_check_ind);
+        critical_coord_simplicity = -1;
+    }
+
     compute_covers();
     // exit(0);
 
@@ -453,6 +551,15 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
         AllLocalPL[coord] = PL;
 
         dynamic_bitset new_covered = covered | AllPatches[coord];
+
+        // first we check whether the simplicity test can be done at this point
+        if(check_simplicity){
+            if(critical_coord_simplicity == -1){
+                if(coords_to_check_ind.is_subset_of(new_covered) ){
+                    critical_coord_simplicity = coord;
+                }
+            }
+        }
 
         // now we find the congruences that can be restricted to new_covered, but not to
         // covered or AllPatches[coord]
@@ -587,6 +694,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
         if(talkative){
             if(verbose)
                 verboseOutput() << "index coord " << coord << " nr covered coordinates " << new_covered.count() << endl;
+            if(coord == critical_coord_simplicity)
+                verboseOutput() << "simplicity check at this coordinate" << endl;
             if(verbose && PolyEqusKey.size() > 0)
                 verboseOutput() << "nr poly equations " << PolyEqusKey.size() << endl;
             if(verbose && PolyInequsKey.size() > 0)
@@ -1131,7 +1240,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
 
     size_t max_nr_per_thread =  max_nr_new_latt_points_total/ omp_get_max_threads();
 
-    size_t coord = InsertionOrderPatches[this_patch]; // the coord marking the next patch
+    const size_t coord = InsertionOrderPatches[this_patch]; // the coord marking the next patch
 
     StartTime();
 
@@ -1358,6 +1467,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
 
         size_t nr_latt_points_total = 0;  //statistics for this run of the while loop
         size_t nr_caught_by_restricted = 0;  //restricted inequalities
+        size_t nr_caught_by_simplicity = 0;  //restricted inequalities
         size_t nr_caught_by_equations = 0;  //statistics for this run of the while loop
         // size_t nr_caught_by_congs = 0;  //statistics for this run of the while loop
         size_t nr_points_done_in_this_round = 0;
@@ -1481,6 +1591,21 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                 bool can_be_inserted = true;
 #pragma omp atomic
                 nr_latt_points_total++;
+
+                if(check_simplicity && critical_coord_simplicity == coord){
+                    bool not_simple = true;
+                    for(auto& kk: coords_to_check_key){
+                        if(NewLattPoint[kk] != 0){
+                            not_simple = false;
+                            break;
+                        }
+                    }
+                    if(not_simple){
+                        can_be_inserted = false;
+#pragma omp atomic
+                        nr_caught_by_simplicity++;
+                    }
+                }
 
                 if(can_be_inserted){
                     for(auto pp = order_poly_equs.begin(); pp!= order_poly_equs.end(); ++pp){
@@ -1651,6 +1776,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                 /* assert(nr_caught_by_congs == 0);
                 if(CongsRestricted.size() > 0)
                     verboseOutput() << " cgr " << nr_caught_by_congs;*/
+                if(coord == critical_coord_simplicity)
+                    verboseOutput() << " smp " << nr_caught_by_simplicity;
                 if(nr_points_done_in_this_round > 0)
                     verboseOutput() << " exp rnd " << expected_number_of_rounds;
                 ExpectedNrRounds[this_patch] = expected_number_of_rounds;
@@ -1666,16 +1793,9 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         if(verbose)
             verboseOutput() << "----------" << endl;*/
 
-        if(!last_coord && NewLatticePoints.size() > 0)
-            extend_points_to_next_coord(NewLatticePoints, this_patch + 1);
-        NewLatticePoints.clear();
-
-        if(single_point_found)
-            break;
-
-        // we write a file that preserves what has been done. First we tecord the kiwest patch
+        // we write a file that preserves what has been done. First we tecord the lowest patch
         // to which we must return
-        if(is_split_patching && min_fall_back == 0 && min_return_patch == 0){  // all previous patches were fully done
+        if(NrRemainingLP[this_patch] > 0 && is_split_patching && min_fall_back == 0 && min_return_patch == 0){  // all previous patches were fully done
             min_return_patch = this_patch;
             ofstream prel_data;
             prel_data.open(lat_file_name, ofstream::app);
@@ -1688,6 +1808,13 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
             prel_data << "0" << endl;
             prel_data.close();
         }
+
+        if(!last_coord && NewLatticePoints.size() > 0)
+            extend_points_to_next_coord(NewLatticePoints, this_patch + 1);
+        NewLatticePoints.clear();
+
+        if(single_point_found)
+            break;
 
         if(talkative && verbose && nr_rounds ==1){
             if(nr_points_done_in_this_round > 0 && NrRemainingLP[this_patch] > 0){
@@ -1756,7 +1883,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
             auto check = Deg1Points;
             check.sort();
             check.unique();
-            cout << "$$$$$$$$$$$$$ " << check.size() << " " << Deg1Points.size() << endl;
+            // cout << "$$$$$$$$$$$$$ " << check.size() << " " << Deg1Points.size() << endl;
 
             prel_data << "found_solutions" << endl;
             prel_data << Deg1Points.size() << endl;
@@ -2757,6 +2884,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::initialize(const Matrix<IntegerPL>& 
     linear_order_patches = false;
     cong_order_patches = false;
     distributed_computation = false;
+    check_simplicity = false;
     TotalNrLP = 0;
     min_return_patch = 0;
     NrLP.resize(EmbDim + 1);
@@ -2968,13 +3096,63 @@ void ProjectAndLift<IntegerPL, IntegerRet>::read_split_data() {
     for(auto& d: our_split.this_pred_done_indices)
         predecessor_data >> d;
 
-    cout << "****************** Read done indices " << nr_done_indices << endl;
+    if(verbose)
+        verboseOutput() << "Read done indices " << nr_done_indices << endl;
 
     predecessor_data >> s1;
     if(s1 != "found_solutions")
         throw BadInputException("Corrupt predecessor file " + pred_file_name+ ".");
 
     predecessor_data.close();
+}
+
+//---------------------------------------------------------------------------
+
+template <typename IntegerPL, typename IntegerRet>
+void ProjectAndLift<IntegerPL, IntegerRet>::read_subring_data() {
+
+    string file_name = global_project + ".subring";
+    ifstream in(file_name);
+    if(!in.is_open())
+        return;
+    check_simplicity = true;
+    if(verbose)
+        verboseOutput() << "Simplicity check asked for" << endl;
+    string s;
+    in >> s;
+    if(s != "rank")
+        throw BadInputException("subring file corrupt.");
+    in >> fusion_rank;
+    if(verbose)
+        verboseOutput() << "fusion rank " << fusion_rank << endl;
+
+    duality = identity_key(fusion_rank);
+    in >> s;
+    if(s == "duality"){
+        size_t nr_transpositions;
+        in >> nr_transpositions;
+        for(size_t i = 0; i < nr_transpositions; ++i){
+            key_t k,j;
+            in >> k >> j;
+            duality[k] = j;
+            duality[j] = k;
+        }
+        in >> s;
+    }
+
+    if(s != "candidate")
+        throw BadInputException("subring file corrupt.");
+    size_t rank_candidate;
+    in >> rank_candidate;
+    subring_base_key.resize(rank_candidate);
+    for(size_t i = 0; i< rank_candidate; ++i)
+        in >> subring_base_key[i];
+
+    if(verbose)
+        verboseOutput() << "Candidater base subring " << subring_base_key;
+
+    if(!in.good())
+       throw BadInputException("subring file corrupt.");
 }
 
 
@@ -2995,6 +3173,8 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute(bool all_points, bool liftin
     if(is_split_patching){
         read_split_data();
     }
+
+    read_subring_data();
 
     assert(all_points || !lifting_float);  // only all points allowed with float
 

@@ -239,6 +239,25 @@ class ProjectAndLift {
     void get_h_vectors(vector<num_t>& pos, vector<num_t>& neg) const;
 
     size_t getNumberLatticePoints() const;
+
+    // for simplicity test of fusion rings
+    map<set<vector<key_t> >, key_t> CoordMap;
+    vector<key_t> duality;
+    size_t fusion_rank;
+    void make_CoordMap();
+    // key_t dual(key_t i);
+    key_t dual(const key_t i) const;
+    set<vector<key_t> > FrobRec(const vector<key_t>& ind_tuple);
+    key_t coord(set<vector<key_t> >& FR);
+    key_t coord(vector<key_t>& ind_tuple);
+    vector<vector<key_t> > all_ind_tuples;
+    void make_all_ind_tuples();
+    dynamic_bitset critical_coords();
+    vector<key_t> subring_base_key;
+    bool check_simplicity;
+    void read_subring_data();
+    long critical_coord_simplicity;
+    vector<key_t> coords_to_check_key;
 };
 
 // constructor by conversion

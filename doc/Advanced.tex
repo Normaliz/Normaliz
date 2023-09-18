@@ -224,23 +224,25 @@ To avoid ambiguities, only computation goals for lattice points in polytopes and
 
 \subsubsection{The patching order}\label{patch_order}
 
-If polynmomial equations are present, then Normaliz tries to use them with as few coordinates as possible and schedules the patching algorithm accordingly. However, this can have a negative effect if it makes ``bad'' patches used too early. Also congruences, whether explicitly given in the input or derived by Normaliz from linear equations, can influence the insertion order of the patches. 
+If polynmomial equations are present, then Normaliz tries to use them with as few coordinates as possible and schedules the patching algorithm accordingly. However, this can have a negative effect if it makes ``bad'' patches being used too early. Also congruences, whether explicitly given in the input or derived by Normaliz from linear equations, can influence the insertion order of the patches. 
 
 There are some options that can modify the default behavior:
 \begin{itemize}
-	\itemtt[UseWeightsPatching] gives a ``weight'' to the coordinates so that ```bad'' patches are biased negatively.
+	\itemtt[UseWeightsPatching, -{}-UWP] gives a ``weight'' to the coordinates so that ```bad'' patches are biased negatively.
 	
-	\itemtt[LinearOrderPatches] disables the scheduling by polynomial equations completely. It can be modified by \verb|UseWeightsPatching|.
+	\itemtt[LinearOrderPatches, -{}-LOP] disables the scheduling by polynomial equations completely. It can be modified by \verb|UseWeightsPatching|.
 \end{itemize}
 Moreover it is possible to use another type of constraints:
 \begin{itemize}
-	\itemtt[CongOrderPatches] bases the scheduling on congruences derived from the linear equations in the input. (Can also be modified by \verb|UseWeightsPatching|).
+	\itemtt[CongOrderPatches, -{}-COP] bases the scheduling on congruences derived from the linear equations in the input. (Can also be modified by \verb|UseWeightsPatching|).
 \end{itemize}
+The shortrhands \ttt{-{}-UWP}, \ttt{-{}-LOP} and \ttt{-{}-COP} can only be used on the command line.
+
 Finally it is possible to define the patching order by hand. To this end one uses an extra input file
 \begin{itemize}
 	\itemtt[<project>.order.patches]
 \end{itemize}
-It contains a sequence of numbers: the first is the number \verb|<n>|of patches that follow, and then the first \verb|<n>| patches are inserted in this order. The remaining ones are inserted linearly.
+It contains a sequence of numbers: the first is the number \verb|<n>| of patches that follow, and then the first \verb|<n>| patches are inserted in this order. The remaining ones are inserted linearly.
 
 In very rare cases it could be useful to use
 \begin{itemize}
