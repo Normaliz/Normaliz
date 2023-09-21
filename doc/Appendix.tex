@@ -3102,10 +3102,11 @@ to sum the partial multiplicities in the files \verb|<project>.mult.<n>| The res
 
 \subsection{Lattice points via patching}\label{DistPatch}
 
-The patching algorithm (Section \ref{positive_systems}) allows distributed computation, designed for computation on a high performance cluster (HPC). The parts into which the computation is distributed are called \emph{splits} in the following. 
+The patching algorithm (Section \ref{positive_systems}) allows distributed computation, designed for computation on a high performance cluster (HPC). The parts into which the computation is distributed are called \emph{splits} in the following.
+
+As an example for the whole file structure that we explain in this section, the directory \verb*|example| contains a subdirectory \verb*|split_computation| with an (artificially) split computation in 2 refinements (each with one round). 
 
 The scheme that Normaliz uses is again a batch array. As above we assume it is controlled by SLURM. There are two potential constraints set by the system: an upper limit on the wall clock time of a batch job and, sometimes, an upper limit on the number of jobs that can be started simultaneously. Normaliz overcomes the time limit by using \emph{successive refinements} and the number limit by running several \emph{rounds} within a refinement.
-
 
 We run a  precomputation
 \begin{Verbatim}
@@ -3131,7 +3132,7 @@ where \verb*|<n>| is the number of split levels defined by \verb*|<l1>,...<ln>| 
 \begin{Verbatim}
 2 1 10 3 200
 \end{Verbatim}
-We split at level 1 into 10 splits, and then each of these splits is split at level 3 into 200 sub-splits. The total number of splits run in parallel is the product of \verb*|<s1>,...,<sn>|, 2000 now, and the second number in line 2 must be changed to 2000. (If we stay with the upper limit of 1000 jobs per round, then we will need two rounds.)
+We split at level 1 into 10 splits, and then each of these splits is split at level 3 into 200 sub-splits. The total number of splits run in parallel is the product of \verb*|<s1>,...,<sn>|, 2000 now, and the second number in line 2 must be changed to 2000. (If we stay with the upper limit of 1000 jobs per round, then we will need $2$ rounds.)
 
 We use a job array defined by 
 \begin{Verbatim}
@@ -3159,10 +3160,10 @@ gives the number \verb*|<s>| is an index transferred to Normaliz. The index of t
 $$
 i = s + r*u
 $$
-where $r$ is the number of the current round and $u$ the uppwer limit on jobs per round. the index $i$ is used to identify the output file produced by this job. It is
-\begin{Verbatim}
-<project>.<f>.<i>.lat
-\end{Verbatim}
+where $r$ is the number of the current round and $u$ the upper limit on jobs per round. the index $i$ is used to identify the output file produced by this job. It is
+\begin{itemize}
+\itemtt[<project>.<f>.<i>.lat] 
+\end{itemize}
 where \verb|<f>| is the index of the current refinement. 
 
 If the job could be completed, this file contains the lattice points in the split in the standard format, namely their number, the embedding dimension, and then the vectors. 
@@ -3177,25 +3178,85 @@ for example
 \begin{Verbatim}
 normaliz -c tough --NextRound
 \end{Verbatim}
-This will update verb|tough.split.data| leaving a copy of the last version whose name in general is
+This will update \verb|tough.split.data| leaving a copy of the last version whose name in general is
 \begin{Verbatim}
 <project>.<f>.<r>.split.data
 \end{Verbatim}
 
-
-
 of the split to be run by the Normaliz instance identified by \verb*|${SLURM_ARRAY_TASK_ID}|. Note that every split reads the input file, but it does not write a file with suffix \verb*|out|.
 
-Each job writes the computed lattice points to
-\begin{itemize}
-	\itemtt[<project>.<s>.lat]
-\end{itemize}
-where \verb*|<s>| is the number of the split given by \verb*|-X=<s>|. After the computation has been finished the lattice points are harvested by running Normaliz with the option
+After the refinement  (possibly in several rounds) has been finished, the lattice points are harvested by running Normaliz with the option
 \begin{itemize}
 	\itemtt[CollectLat]
 \end{itemize}
 for example \verb*|./normaliz <project> --CollectLat|. The total list of lattice points is written to
 \begin{itemize}
-	\itemtt[<project>.total.lat]
+	\itemtt[<project>.final.lat]
 \end{itemize}
-in the standard format: number of rows, number of columns, the vectors.
+provided all splits could be finished by Normaliz. If a lat file is still in preliminary stage, Normaliz will realize that, clean up all preliminary lat files, and collect all computed lattice points in the file
+\begin{itemize}
+	\itemtt[<project>.<f>.so\_far.lat]
+\end{itemize}
+Then the next refinement can be started in the same way as refinement $0$.
+
+\section{Lists of input files}\label{input_list}
+
+in order to have Normaliz run over a list of input files one produces a list of input files with their names (and paths relative to the working directory), for example \verb*|InList| in example:
+\begin{Verbatim}
+	Inhalt...
+\end{Verbatim}
+That Normaliz is to be run over a list of input files is indicated by the option
+\begin{itemize}
+	\itemtta[-{}-List]{List}
+\end{itemize}
+on the command line. All other options on the command lines are forwarded to the individual files. As a test run
+\begin{Verbatim}
+	./normaliz -c example/InList --List
+\end{Verbatim}
+in the Normaliz directory.
+
+The processing of an input list can be combined with the computation on an HPC in two ways:
+\begin{arab}
+	\item every parallel instance of Normaliz computes the same split of all files in the list, or
+	\item the files in the input list are distributed to the parallel instances and each is run as a whole without splitting.
+\end{arab}
+
+Type (1) is chosen by adding the option \verb*|--Split| and the split is chosen by \verb*|-X=<s>|. A typical batch script:
+\begin{Verbatim}
+#!/bin/sh
+#SBATCH --job-name="InList"
+#SBATCH --comment="InList"
+#SBATCH --time=24:00:00
+#SBATCH --ntasks=8
+#SBATCH --threads-per-core=1
+#SBATCH --mem=80000
+#SBATCH --array=0-999
+
+# each job will see a different ${SLURM_ARRAY_TASK_ID}
+time ../normaliz -c InList --List --Split -X=${SLURM_ARRAY_TASK_ID}
+\end{Verbatim}
+
+For Type (2) the choice of the input files for a single instance is controlled by two parameters:
+\begin{itemize}
+\itemtt[-A=<a>]	means that the instance with  \verb*|${SLURM_ARRAY_TASK_ID}| equal to \verb*|<a>| gets all input files in the list whose index is $\equiv$ \verb*|<a>| modulo \verb*|<z>| where \verb*|<z>| is given by
+\itemtt[-Z=<z>] 
+\end{itemize}
+If \verb*|-Z=<z>| is missing, then the default choice is the length of the list, so thar every instance computes exactly one input file. A typical batch script for tape (2):
+\begin{Verbatim}
+#!/bin/sh
+#SBATCH --job-name="InList"
+#SBATCH --comment="InList"
+#SBATCH --time=24:00:00
+#SBATCH --ntasks=8
+#SBATCH --threads-per-core=1
+#SBATCH --mem=80000
+#SBATCH --array=0-999
+
+# each job will see a different ${SLURM_ARRAY_TASK_ID}
+time ../normaliz -c InList --List -A=${SLURM_ARRAY_TASK_ID} -Z=1000
+\end{Verbatim}
+	
+The operations started by \verb*|DistributedComp|, \verb*|--NextRaound| or \verb*|CollectLat| avn alos be performed on an input list.
+
+\section{Fusion rings}\label{fusion_rings}
+

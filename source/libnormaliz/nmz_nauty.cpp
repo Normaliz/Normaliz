@@ -75,11 +75,11 @@ void getmyautoms(int count, int* perm, int* orbits, int numorbits, int stabverte
  * What matrixis taken, depends on the type of automorphism group (or isomorphism
  * classes) that are computed.
  *
- * The given matrices are transformed as follows: we replace the tru eentries by
+ * The given matrices are transformed as follows: we replace the true eentries by
  * indices in a vector listing the values of the entries. In this way the pattern
  * of equality is preserved.
  *
- * From this matrix of indices we produce a BinaryMatrix (= layer5s of 0-1-matrices
+ * From this matrix of indices we produce a BinaryMatrix (= layers of 0-1-matrices
  * representing the indices vertically) that can be directly transformed into a graph
  * whose automorphuism group is then computed by nauty. (For isomorphism types we just
  * need the canonical type.). See the nauty manual for this trick.
@@ -201,7 +201,7 @@ void makeMM(BinaryMatrix<Integer>& MM,
     }
 
     // At this point the order of the values stored in VV depends on the order in
-    // which they are computed. This is no problem in the computatio of automorphism groups,
+    // which they are computed. This is no problem in the computation of automorphism groups,
     // but for isomorphism types we must make sure that two matrices Val that differ
     // only by row and column transformations produce binary matrices MVal that again differ only
     // by such permutations. Therefore we must order the values and replace the entries of MVal

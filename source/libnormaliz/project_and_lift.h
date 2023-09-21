@@ -38,6 +38,9 @@
 namespace libnormaliz {
 using std::vector;
 
+template <typename Integer>
+class FusionData;
+
 // the project-and-lift algorithm for lattice points in a polytope
 
 template <typename IntegerPL, typename IntegerRet>
@@ -110,6 +113,9 @@ class ProjectAndLift {
     bool only_single_point;
     bool single_point_found;
     bool distributed_computation;
+
+    bool check_simplicity;
+    long critical_coord_simplicity;
 
     // data for patching method
     vector<dynamic_bitset> Indicator; // indicaor of nonzero coordinates in inequality
@@ -240,7 +246,21 @@ class ProjectAndLift {
 
     size_t getNumberLatticePoints() const;
 
-    // for simplicity test of fusion rings
+    FusionData<IntegerRet> fusion;
+    void read_subring_data();
+};
+
+template <typename Integer>
+class FusionData {
+    template <typename, typename>
+    friend class ProjectAndLift;
+
+    FusionData();
+    void read_data();
+
+    bool check_simplicity;
+
+   // for simplicity test of fusion rings
     map<set<vector<key_t> >, key_t> CoordMap;
     vector<key_t> duality;
     size_t fusion_rank;
@@ -254,10 +274,9 @@ class ProjectAndLift {
     void make_all_ind_tuples();
     dynamic_bitset critical_coords();
     vector<key_t> subring_base_key;
-    bool check_simplicity;
-    void read_subring_data();
-    long critical_coord_simplicity;
     vector<key_t> coords_to_check_key;
+    dynamic_bitset coords_to_check_ind;
+    void prepare_simplicity_check();
 };
 
 // constructor by conversion
@@ -291,6 +310,7 @@ ProjectAndLift<IntegerPL, IntegerRet>::ProjectAndLift(const ProjectAndLift<Integ
     Deg1Thread.resize(omp_get_max_threads());
     h_vec_pos_thread.resize(omp_get_max_threads());
     h_vec_neg_thread.resize(omp_get_max_threads());
+
 }
 
 // computes c1*v1-c2*v2

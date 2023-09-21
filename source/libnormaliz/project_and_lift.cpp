@@ -26,7 +26,7 @@
 #include "libnormaliz/sublattice_representation.h"
 #include "libnormaliz/cone.h"
 
-namespace libnormaliz {
+namespace libnormaliz{
 using std::vector;
 using std::string;
 using std::list;
@@ -105,10 +105,62 @@ void coarsen_this_cong(const vector<nmz_float>& cong, const size_t k, set<vector
 
 //--------------------------------------------------------------------
 
-// functions for testing simplicity of fusion rings
+// functions for fusion rings
 
-template <typename IntegerPL, typename IntegerRet>
-set<vector<key_t> >  ProjectAndLift<IntegerPL,IntegerRet>::FrobRec(const vector<key_t>& ind_tuple){
+template <typename Integer>
+FusionData<Integer>::FusionData(){
+    check_simplicity = false;
+}
+template <typename Integer>
+void FusionData<Integer>::read_data() {
+
+    string file_name = global_project + ".fusion";
+    ifstream in(file_name);
+    if(!in.is_open())
+        return;
+    check_simplicity = true;
+    if(verbose)
+        verboseOutput() << "Simplicity check asked for" << endl;
+    string s;
+    in >> s;
+    if(s != "rank")
+        throw BadInputException("subring file corrupt.");
+    in >> fusion_rank;
+    if(verbose)
+        verboseOutput() << "fusion rank " << fusion_rank << endl;
+
+    duality = identity_key(fusion_rank);
+    in >> s;
+    if(s == "duality"){
+        size_t nr_transpositions;
+        in >> nr_transpositions;
+        for(size_t i = 0; i < nr_transpositions; ++i){
+            key_t k,j;
+            in >> k >> j;
+            duality[k] = j;
+            duality[j] = k;
+        }
+        in >> s;
+    }
+
+    if(s != "subring")
+        throw BadInputException("subring file corrupt.");
+    size_t rank_candidate;
+    in >> rank_candidate;
+    subring_base_key.resize(rank_candidate);
+    for(size_t i = 0; i< rank_candidate; ++i)
+        in >> subring_base_key[i];
+
+    if(verbose)
+        verboseOutput() << "Candidate base subring " << subring_base_key;
+
+    if(in.fail())
+       throw BadInputException("subring file corrupt.");
+}
+
+
+template <typename Integer>
+set<vector<key_t> >  FusionData<Integer>::FrobRec(const vector<key_t>& ind_tuple){
 
     assert(ind_tuple.size() == 3);
     key_t i,j,k;
@@ -135,19 +187,19 @@ key_t ProjectAndLift<IntegerPL,IntegerRet>::dual(const key_t i) const{
 */
 
 
-template <typename IntegerPL, typename IntegerRet>
-key_t ProjectAndLift<IntegerPL,IntegerRet>::coord(vector<key_t>& ind_tuple){
+template <typename Integer>
+key_t FusionData<Integer>::coord(vector<key_t>& ind_tuple){
    set<vector<key_t> > FR = FrobRec(ind_tuple);
     return coord(FR);
 }
 
-template <typename IntegerPL, typename IntegerRet>
-key_t ProjectAndLift<IntegerPL,IntegerRet>::coord(set<vector<key_t> >& FR){
+template <typename Integer>
+key_t FusionData<Integer>::coord(set<vector<key_t> >& FR){
     return CoordMap[FR];
 }
 
-template <typename IntegerPL, typename IntegerRet>
-dynamic_bitset ProjectAndLift<IntegerPL,IntegerRet>::critical_coords(){
+template <typename Integer>
+dynamic_bitset FusionData<Integer>::critical_coords(){
     set<key_t> cand_set;
     cand_set.insert(subring_base_key.begin(), subring_base_key.end());
 
@@ -163,8 +215,8 @@ dynamic_bitset ProjectAndLift<IntegerPL,IntegerRet>::critical_coords(){
 
 }
 
-template <typename IntegerPL, typename IntegerRet>
-void ProjectAndLift<IntegerPL,IntegerRet>::make_all_ind_tuples(){
+template <typename Integer>
+void FusionData<Integer>::make_all_ind_tuples(){
     for(key_t i = 1; i < fusion_rank; ++i){
         for(key_t j = 1; j < fusion_rank; ++j){
             for(key_t k = 1; k < fusion_rank; ++k){
@@ -175,8 +227,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::make_all_ind_tuples(){
     }
 }
 
-template <typename IntegerPL, typename IntegerRet>
-void ProjectAndLift<IntegerPL,IntegerRet>::make_CoordMap(){
+template <typename Integer>
+void FusionData<Integer>::make_CoordMap(){
     key_t val = 1;  // coordinate 0 is the homogenizing one
     for(auto& ind_tuple: all_ind_tuples){
         set<vector<key_t> > F = FrobRec(ind_tuple);
@@ -185,6 +237,17 @@ void ProjectAndLift<IntegerPL,IntegerRet>::make_CoordMap(){
         CoordMap[F] = val;
         val++;
     }
+}
+
+template <typename Integer>
+void FusionData<Integer>::prepare_simplicity_check(){
+    make_all_ind_tuples();
+    make_CoordMap();
+    for(auto& t: all_ind_tuples){
+        cout << coord(t) << " --- " <<t;
+    }
+    coords_to_check_ind = critical_coords();
+    coords_to_check_key = bitset_to_key(coords_to_check_ind);
 }
 
 //--------------------------------------------------------------------
@@ -422,13 +485,9 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
         CongIndicator.push_back(cong_support);
     }
 
-    dynamic_bitset coords_to_check_ind;
     // we compute basic data for simplicity test
     if(check_simplicity){
-        make_all_ind_tuples();
-        make_CoordMap();
-        coords_to_check_ind = critical_coords();
-        coords_to_check_key = bitset_to_key(coords_to_check_ind);
+        fusion.prepare_simplicity_check();
         critical_coord_simplicity = -1;
     }
 
@@ -555,7 +614,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
         // first we check whether the simplicity test can be done at this point
         if(check_simplicity){
             if(critical_coord_simplicity == -1){
-                if(coords_to_check_ind.is_subset_of(new_covered) ){
+                if(fusion.coords_to_check_ind.is_subset_of(new_covered) ){
                     critical_coord_simplicity = coord;
                 }
             }
@@ -1594,7 +1653,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
 
                 if(check_simplicity && critical_coord_simplicity == coord){
                     bool not_simple = true;
-                    for(auto& kk: coords_to_check_key){
+                    for(auto& kk: fusion.coords_to_check_key){
                         if(NewLattPoint[kk] != 0){
                             not_simple = false;
                             break;
@@ -3105,57 +3164,6 @@ void ProjectAndLift<IntegerPL, IntegerRet>::read_split_data() {
 
     predecessor_data.close();
 }
-
-//---------------------------------------------------------------------------
-
-template <typename IntegerPL, typename IntegerRet>
-void ProjectAndLift<IntegerPL, IntegerRet>::read_subring_data() {
-
-    string file_name = global_project + ".subring";
-    ifstream in(file_name);
-    if(!in.is_open())
-        return;
-    check_simplicity = true;
-    if(verbose)
-        verboseOutput() << "Simplicity check asked for" << endl;
-    string s;
-    in >> s;
-    if(s != "rank")
-        throw BadInputException("subring file corrupt.");
-    in >> fusion_rank;
-    if(verbose)
-        verboseOutput() << "fusion rank " << fusion_rank << endl;
-
-    duality = identity_key(fusion_rank);
-    in >> s;
-    if(s == "duality"){
-        size_t nr_transpositions;
-        in >> nr_transpositions;
-        for(size_t i = 0; i < nr_transpositions; ++i){
-            key_t k,j;
-            in >> k >> j;
-            duality[k] = j;
-            duality[j] = k;
-        }
-        in >> s;
-    }
-
-    if(s != "candidate")
-        throw BadInputException("subring file corrupt.");
-    size_t rank_candidate;
-    in >> rank_candidate;
-    subring_base_key.resize(rank_candidate);
-    for(size_t i = 0; i< rank_candidate; ++i)
-        in >> subring_base_key[i];
-
-    if(verbose)
-        verboseOutput() << "Candidater base subring " << subring_base_key;
-
-    if(!in.good())
-       throw BadInputException("subring file corrupt.");
-}
-
-
 //---------------------------------------------------------------------------
 template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL, IntegerRet>::compute(bool all_points, bool lifting_float, bool do_only_count) {
@@ -3174,7 +3182,8 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute(bool all_points, bool liftin
         read_split_data();
     }
 
-    read_subring_data();
+    fusion.read_data();
+    check_simplicity = fusion.check_simplicity;
 
     assert(all_points || !lifting_float);  // only all points allowed with float
 
