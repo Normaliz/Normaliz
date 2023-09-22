@@ -7178,8 +7178,10 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
     ModuleGenerators = Matrix<Integer>(0, dim);
 
     // First we put the coordinates back into thweir original places
-    if (Grading_Is_Coordinate)
+    if (Grading_Is_Coordinate){
+
         Raw.cyclic_shift_left(GradingCoordinate);
+    }
     else{
         for (size_t i = 0; i < Raw.nr_of_rows(); ++i) {
             for (size_t j = 0; j < dim; ++j)
@@ -7228,6 +7230,14 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
         else{
             Deg1Elements.print(name,"lat");
         }
+    }
+
+    if(global_select_simple){
+        if(!inhomogeneous)
+            throw BadInputException("Computation must be inhomogeneous for selection of simple fusionrings.");
+        FusionData<Integer> fusion;
+        fusion.read_data();
+        fusion.select_and_write_simple(ModuleGenerators);
     }
 
     if(ToCompute.test(ConeProperty::SingleLatticePoint)){

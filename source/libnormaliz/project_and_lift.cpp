@@ -25,6 +25,7 @@
 #include "libnormaliz/vector_operations.h"
 #include "libnormaliz/sublattice_representation.h"
 #include "libnormaliz/cone.h"
+#include "libnormaliz/input.h"
 
 namespace libnormaliz{
 using std::vector;
@@ -110,21 +111,21 @@ void coarsen_this_cong(const vector<nmz_float>& cong, const size_t k, set<vector
 template <typename Integer>
 FusionData<Integer>::FusionData(){
     check_simplicity = false;
+    select_simple = false;
 }
 template <typename Integer>
-void FusionData<Integer>::read_data() {
+bool FusionData<Integer>::read_data() {
 
     string file_name = global_project + ".fusion";
     ifstream in(file_name);
     if(!in.is_open())
-        return;
-    check_simplicity = true;
+        return false;
     if(verbose)
         verboseOutput() << "Simplicity check asked for" << endl;
     string s;
     in >> s;
     if(s != "rank")
-        throw BadInputException("subring file corrupt.");
+        throw BadInputException("fusion file corrupt.");
     in >> fusion_rank;
     if(verbose)
         verboseOutput() << "fusion rank " << fusion_rank << endl;
@@ -144,7 +145,7 @@ void FusionData<Integer>::read_data() {
     }
 
     if(s != "subring")
-        throw BadInputException("subring file corrupt.");
+        throw BadInputException("fusion file corrupt.");
     size_t rank_candidate;
     in >> rank_candidate;
     subring_base_key.resize(rank_candidate);
@@ -152,10 +153,24 @@ void FusionData<Integer>::read_data() {
         in >> subring_base_key[i];
 
     if(verbose)
-        verboseOutput() << "Candidate base subring " << subring_base_key;
+        verboseOutput() << "Candidate base of subring " << subring_base_key;
+
+    in >> s;
+    if(s == "only_simple")
+        check_simplicity = true;
+    else{
+        if(s == "select_simple")
+            global_select_simple = true;
+        else
+            throw BadInputException("fusion file corrupt.");
+    }
+    if(check_simplicity || global_select_simple)
+        prepare_simplicity_check();
 
     if(in.fail())
-       throw BadInputException("subring file corrupt.");
+       throw BadInputException("fusion file corrupt.");
+
+    return true;
 }
 
 
@@ -243,12 +258,48 @@ template <typename Integer>
 void FusionData<Integer>::prepare_simplicity_check(){
     make_all_ind_tuples();
     make_CoordMap();
-    for(auto& t: all_ind_tuples){
+    /* for(auto& t: all_ind_tuples){
         cout << coord(t) << " --- " <<t;
-    }
+    }*/
     coords_to_check_ind = critical_coords();
     coords_to_check_key = bitset_to_key(coords_to_check_ind);
 }
+
+template <typename Integer>
+void FusionData<Integer>::select_and_write_simple(const Matrix<Integer>& LattPoints){ // from out file or final.lat
+
+    prepare_simplicity_check();
+    for(auto& c: coords_to_check_key) // homogenizing coordinate is no loonger at 0
+        c--;
+    Matrix<Integer> SimplePoints;
+    SimplePoints.resize(0,LattPoints.nr_of_columns());
+
+
+    for(size_t i = 0; i < LattPoints.nr_of_rows(); ++i){
+        bool simple = false;
+        for(auto& j: coords_to_check_key){
+            if(LattPoints[i][j] != 0){
+                simple = true;
+                break;
+            }
+        }
+        if(simple)
+            SimplePoints.append(LattPoints[i]);
+    }
+
+    string name = global_project + ".simple.lat";
+    ofstream out(name);
+    out << SimplePoints.nr_of_rows() << endl;
+    out << SimplePoints.nr_of_columns() << endl;
+    SimplePoints.pretty_print(out);
+}
+
+template class FusionData<mpz_class>;
+template class FusionData<long long>;
+template class FusionData<long>;
+#ifdef ENFNORMALIZ
+template class FusionData<renf_elem_class>;
+#endif
 
 //--------------------------------------------------------------------
 
@@ -487,7 +538,6 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
 
     // we compute basic data for simplicity test
     if(check_simplicity){
-        fusion.prepare_simplicity_check();
         critical_coord_simplicity = -1;
     }
 
@@ -3356,5 +3406,63 @@ template class ProjectAndLift<nmz_float, long>;
 #ifdef ENFNORMALIZ
 template class ProjectAndLift<renf_elem_class, mpz_class>;
 #endif
+
+//-------------------------------------------------------------------------------
+// helper for fusion rings
+
+Matrix<long long> extract_latt_points_from_out(ifstream& in_out){
+
+    size_t nr_points;
+    in_out >> nr_points;
+    string s;
+    in_out >> s;
+    if(s != "lattice")
+        throw BadInputException("out file not suitable for extraction of sim,ple fusion rtings");
+    while(true){
+        in_out >> s;
+        if(s == "dimension")
+            break;
+    }
+    in_out >> s; // skip = sign
+    size_t emb_dim;
+    in_out >> emb_dim;
+    while(true){
+        in_out >> s;
+        if(s == "constraints:")
+            break;
+    }
+    Matrix<long long> LattPoints(nr_points, emb_dim);
+    for(size_t i = 0; i < nr_points; ++i)
+        for(size_t j = 0; j < emb_dim; ++j)
+            in_out >> LattPoints[i][j];
+
+    if(in_out.fail())
+        throw BadInputException("out file corrupt.");
+    return LattPoints;
+}
+
+void select_simple_fusion_rings(){
+
+    string name = global_project + ".final.lat";
+    Matrix<long long> LattPoints;
+    ifstream in_final(name);
+    if(in_final.is_open()){
+        in_final.close();
+        LattPoints = readMatrix<long long>(name);
+    }
+    else{
+        name = global_project + ".out";
+        ifstream in_out(name);
+        if(!in_out.is_open())
+            throw BadInputException("No file with lattice points found");
+
+        LattPoints = extract_latt_points_from_out(in_out);
+    }
+    FusionData<long long> fusion;
+    bool exists = fusion.read_data();
+    if(!exists)
+        throw BadInputException("fusion file does not exists");
+    fusion.select_and_write_simple(LattPoints);
+}
 
 }  // end namespace libnormaliz

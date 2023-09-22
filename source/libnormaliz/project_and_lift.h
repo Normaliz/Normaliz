@@ -255,10 +255,12 @@ class FusionData {
     template <typename, typename>
     friend class ProjectAndLift;
 
+public:
     FusionData();
-    void read_data();
+    bool read_data();
 
     bool check_simplicity;
+    bool select_simple;
 
    // for simplicity test of fusion rings
     map<set<vector<key_t> >, key_t> CoordMap;
@@ -277,6 +279,7 @@ class FusionData {
     vector<key_t> coords_to_check_key;
     dynamic_bitset coords_to_check_ind;
     void prepare_simplicity_check();
+    void select_and_write_simple(const Matrix<Integer>& LattPoints);
 };
 
 // constructor by conversion
@@ -316,6 +319,10 @@ ProjectAndLift<IntegerPL, IntegerRet>::ProjectAndLift(const ProjectAndLift<Integ
 // computes c1*v1-c2*v2
 template <typename Integer>
 vector<Integer> FM_comb(Integer c1, const vector<Integer>& v1, Integer c2, const vector<Integer>& v2, bool& is_zero);
+
+// helper
+void select_simple_fusion_rings();
+Matrix<long long> extract_latt_points_from_out(ifstream& in_out);
 
 }  // end namespace libnormaliz
 

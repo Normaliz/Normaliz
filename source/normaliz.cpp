@@ -44,6 +44,7 @@ using namespace std;
 #include "libnormaliz/chunk.h"
 #include "libnormaliz/collect_lat.h"
 #include "libnormaliz/vector_operations.h"
+#include "libnormaliz/project_and_lift.h"
 
 using namespace libnormaliz;
 
@@ -428,6 +429,11 @@ int process_data(OptionsHandler& options, const string& command_line) {
 
         if(options.isUseNextRound()){
             next_round(global_project);
+            return 0;
+        }
+
+        if(options.isUseSelectSimple()){
+            select_simple_fusion_rings();
             return 0;
         }
 
