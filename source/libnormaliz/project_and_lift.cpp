@@ -1106,13 +1106,51 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_covers() {
         for(size_t j = 1; j < EmbDim; ++j){
             if(!AllPatches[i][j])
                 continue;
-            if(use_coord_weights){
-                double num = convertTo<nmz_float>(DefiningSupps[i][0]);
-                double den = convertTo<nmz_float>(-DefiningSupps[i][j]);
-                WeightOfCoord[i][j] = num/den;
-            }
-            else
+            double num = convertTo<nmz_float>(DefiningSupps[i][0]);
+            double den = convertTo<nmz_float>(-DefiningSupps[i][j]);
+            WeightOfCoord[i][j] = num/den;
+        }
+    }
+
+    vector<double> TotalWeights(EmbDim);
+    double min_weight = 0, max_weight= 0;
+    bool first = true;
+    for(size_t i = 1; i< EmbDim; ++i){
+        if(AllPatches[i].size() == 0)
+            continue;
+        for(size_t j = 1; j < EmbDim; ++j){
+            if(!AllPatches[i][j])
+                continue;
+            TotalWeights[i] += WeightOfCoord[i][j];
+        }
+        if(first && TotalWeights[i] > 0){
+            first = false;
+            min_weight = TotalWeights[i];
+            max_weight = TotalWeights[i];
+        }
+        if(TotalWeights[i] > 0){
+            if(TotalWeights[i] < min_weight)
+                min_weight = TotalWeights[i];
+            if(TotalWeights[i] > max_weight)
+                max_weight = TotalWeights[i];
+        }
+    }
+
+    if(max_weight / min_weight > 20){
+        use_coord_weights = true;
+        if(verbose)
+            verboseOutput() << "Weights activated" << endl;
+    }
+
+    if(!use_coord_weights){
+        for(size_t i = 1; i< EmbDim; ++i){
+            if(AllPatches[i].size() == 0)
+                continue;
+            for(size_t j = 1; j < EmbDim; ++j){
+                if(!AllPatches[i][j])
+                    continue;
                 WeightOfCoord[i][j] = 1.0;
+            }
         }
     }
 
