@@ -177,6 +177,7 @@ ConeProperties all_options() {
     ret.set(ConeProperty::MaxDegRepresentations);
     ret.set(ConeProperty::ConeForMonoid);
     ret.set(ConeProperty::UseWeightsPatching);
+    ret.set(ConeProperty::NoWeights);
     ret.set(ConeProperty::LinearOrderPatches);
     ret.set(ConeProperty::CongOrderPatches);
     ret.set(ConeProperty::MinimizePolyEquations);
@@ -818,6 +819,8 @@ void ConeProperties::check_conflicting_variants() {
         (CPs.test(ConeProperty::NoSignedDec) && CPs.test(ConeProperty::SignedDec)) ||
         (CPs.test(ConeProperty::Symmetrize) && CPs.test(ConeProperty::Descent)) ||
         (CPs.test(ConeProperty::Descent) && CPs.test(ConeProperty::SignedDec)) ||
+        (CPs.test(ConeProperty::UseWeightsPatching) && CPs.test(ConeProperty::NoWeights)) ||
+        (CPs.test(ConeProperty::LinearOrderPatches) && CPs.test(ConeProperty::CongOrderPatches)) ||
         (CPs.test(ConeProperty::LatticePoints) && CPs.test(ConeProperty::SingleLatticePoint) ) ||
         // (CPs.test(ConeProperty::Symmetrize) && CPs.test(ConeProperty::SignedDec)) ||
         (CPs.test(ConeProperty::Dynamic) && CPs.test(ConeProperty::Static)))
@@ -1049,12 +1052,13 @@ vector<string> initializeCPN() {
     CPN.at(ConeProperty::MaxDegRepresentations) = "MaxDegRepresentations";
     CPN.at(ConeProperty::ConeForMonoid) = "ConeForMonoid";
     CPN.at(ConeProperty::UseWeightsPatching) = "UseWeightsPatching";
+    CPN.at(ConeProperty::NoWeights) = "NoWeights";
     CPN.at(ConeProperty::MinimizePolyEquations) = "MinimizePolyEquations";
     CPN.at(ConeProperty::LinearOrderPatches) = "LinearOrderPatches";
     CPN.at(ConeProperty::CongOrderPatches) = "CongOrderPatches";
 
     // detect changes in size of Enum, to remember to update CPN!
-    static_assert(ConeProperty::EnumSize == 151, "ConeProperties Enum size does not fit! Update cone_property.cpp!");
+    static_assert(ConeProperty::EnumSize == 152, "ConeProperties Enum size does not fit! Update cone_property.cpp!");
     // assert all fields contain an non-empty string
     for (size_t i = 0; i < ConeProperty::EnumSize; i++) {
         // bstd::cout << "iii " << i << "  " << CPN.at(i) << endl;

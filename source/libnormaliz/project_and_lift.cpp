@@ -1136,7 +1136,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_covers() {
         }
     }
 
-    if(max_weight / min_weight > 20){
+    if(max_weight / min_weight > 20 && !no_weights){
         use_coord_weights = true;
         if(verbose)
             verboseOutput() << "Weights activated" << endl;
@@ -3025,6 +3025,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::initialize(const Matrix<IntegerPL>& 
     count_only = false;
     system_unsolvable = false;
     use_coord_weights = false;
+    no_weights = false;
     single_point_found = false;
     first_solution_printed = false;
     only_single_point = false; // if in case don't come via compute
@@ -3140,6 +3141,12 @@ void ProjectAndLift<IntegerPL, IntegerRet>::set_no_relax(bool on_off) {
 template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL, IntegerRet>::set_coord_weights(bool on_off) {
     use_coord_weights = on_off;
+}
+
+//---------------------------------------------------------------------------
+template <typename IntegerPL, typename IntegerRet>
+void ProjectAndLift<IntegerPL, IntegerRet>::set_no_weights(bool on_off) {
+    no_weights = on_off;
 }
 
 //---------------------------------------------------------------------------

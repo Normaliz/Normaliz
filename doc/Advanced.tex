@@ -238,6 +238,12 @@ Moreover it is possible to use another type of constraints:
 \end{itemize}
 The shortrhands \ttt{-{}-UWP}, \ttt{-{}-LOP} and \ttt{-{}-COP} can only be used on the command line.
 
+	
+\verb*|UseWeightsPatching| is activated automatically if the ratio of the maximal and minimal weights, by which Normaliz measures the complexity of the patches, exceeds a certain threshold. This behavior can be suppressed by
+\begin{itemize}
+	\itemtt[NoWeights]
+\end{itemize}
+
 Finally it is possible to define the patching order by hand. To this end one uses an extra input file
 \begin{itemize}
 	\itemtt[<project>.order.patches]

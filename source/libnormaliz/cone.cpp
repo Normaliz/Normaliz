@@ -7351,11 +7351,12 @@ void Cone<renf_elem_class>::project_and_lift(const ConeProperties& ToCompute,
     vector<renf_elem_class> Dummy;
     ProjectAndLift<renf_elem_class, mpz_class> PL;
     PL = ProjectAndLift<renf_elem_class, mpz_class>(Supps, Ind, rank);
-    PL.set_coord_weights(ToCompute.test(ConeProperty::UseWeightsPatching));
     if(primitive){
         PL.set_primitive();
         PL.set_LLL(false);
         PL.set_patching_allowed(!ToCompute.test(ConeProperty::NoPatching));
+        PL.set_coord_weights(ToCompute.test(ConeProperty::UseWeightsPatching));
+        PL.set_no_weights(ToCompute.test(ConeProperty::NoWeights));
         PL.set_cong_order_patches(ToCompute.test(ConeProperty::CongOrderPatches));
         PL.set_linear_order_patches(ToCompute.test(ConeProperty::LinearOrderPatches));
         if(!is_split_patching) // must exclude Split and DistributedComp simultaneously
@@ -7476,13 +7477,14 @@ void Cone<Integer>::project_and_lift(const ConeProperties& ToCompute,
                 Matrix<MachineInteger> CongsMI;
                 convert(CongsMI, Congs);
                 PL.set_congruences(CongsMI);
-                PL.set_coord_weights(ToCompute.test(ConeProperty::UseWeightsPatching));
                 if(primitive){
                     PL.set_primitive();
                     PL.set_LLL(false);
                     PL.set_patching_allowed(!ToCompute.test(ConeProperty::NoPatching));
                     PL.set_cong_order_patches(ToCompute.test(ConeProperty::CongOrderPatches));
                     PL.set_linear_order_patches(ToCompute.test(ConeProperty::LinearOrderPatches));
+                    PL.set_coord_weights(ToCompute.test(ConeProperty::UseWeightsPatching));
+                    PL.set_no_weights(ToCompute.test(ConeProperty::NoWeights));
                     if(!is_split_patching) // must exclude Split and DistributedComp simultaneously
                         PL.set_distributed_computation(ToCompute.test(ConeProperty::DistributedComp));
                 }
@@ -7541,13 +7543,14 @@ void Cone<Integer>::project_and_lift(const ConeProperties& ToCompute,
             else
                 PL = ProjectAndLift<Integer, Integer>(Supps, Pair, ParaInPair, rank);
             PL.set_congruences(Congs);
-            PL.set_coord_weights(ToCompute.test(ConeProperty::UseWeightsPatching));
             if(primitive){
                 PL.set_primitive();
                 PL.set_LLL(false);
                 PL.set_patching_allowed(!ToCompute.test(ConeProperty::NoPatching));
                 PL.set_cong_order_patches(ToCompute.test(ConeProperty::CongOrderPatches));
                 PL.set_linear_order_patches(ToCompute.test(ConeProperty::LinearOrderPatches));
+                PL.set_coord_weights(ToCompute.test(ConeProperty::UseWeightsPatching));
+                PL.set_no_weights(ToCompute.test(ConeProperty::NoWeights));
                 if(!is_split_patching) // must exclude Split and DistributedComp simultaneously
                     PL.set_distributed_computation(ToCompute.test(ConeProperty::DistributedComp));
             }

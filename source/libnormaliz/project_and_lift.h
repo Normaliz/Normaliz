@@ -99,6 +99,7 @@ class ProjectAndLift {
     bool no_relax;
     bool count_only;
     bool use_coord_weights;
+    bool no_weights;
     bool linear_order_patches;
     bool cong_order_patches;
     bool first_solution_printed;
@@ -225,6 +226,7 @@ class ProjectAndLift {
     void set_no_relax(bool on_off);
     void set_primitive();
     void set_coord_weights(bool on_off);
+    void set_no_weights(bool on_off);
     void set_patching_allowed(bool on_off);
     void set_vertices(const Matrix<IntegerPL>& Verts);
     void set_congruences(const Matrix<IntegerRet>& congruences);
