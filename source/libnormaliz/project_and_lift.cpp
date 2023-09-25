@@ -1136,11 +1136,15 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_covers() {
         }
     }
 
-    if(max_weight / min_weight > 20 && !no_weights){
+    if(max_weight / min_weight > 4 && !no_weights && !use_coord_weights){
         use_coord_weights = true;
         if(verbose)
             verboseOutput() << "Weights activated" << endl;
-    }
+    } */
+
+    /* cout << TotalWeights;
+    cout << max_weight / min_weight << endl;
+    exit(0);*/
 
     if(!use_coord_weights){
         for(size_t i = 1; i< EmbDim; ++i){
