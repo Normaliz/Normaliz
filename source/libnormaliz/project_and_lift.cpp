@@ -108,11 +108,57 @@ void coarsen_this_cong(const vector<nmz_float>& cong, const size_t k, set<vector
 
 // functions for fusion rings
 
+vector<dynamic_bitset> make_all_subsets(const size_t card){
+
+    if(card == 0){
+            return vector<dynamic_bitset>(1);
+    }
+
+    vector<dynamic_bitset> one_card_less = make_all_subsets(card -1);
+    vector<dynamic_bitset> all_subsets;
+    dynamic_bitset sub_one_less(card -1);
+    dynamic_bitset sub(card);
+    for(auto& s: one_card_less){
+        for(size_t i = 0; i < card - 1; ++i)
+            sub[i] = s[i];
+        sub[card -1] = 0;
+        all_subsets.push_back(sub);
+        sub[card -1] = 1;
+        all_subsets.push_back(sub);
+    }
+    return all_subsets;
+}
+
+// checks whether sol is contained in the "subring". If so "false" is returned,
+// meaning "not sinmple"
+template <typename Integer>
+bool FusionData<Integer>::check_simplicity(const vector<key_t>& subring, const vector<Integer>& sol){
+
+    for(auto& c: subring){
+        if(sol[c] != 0)
+            return true;
+    }
+    return false;
+}
+
+// checks whether sol is contained in one of the "subrings". If so "false" is returned.
+template <typename Integer>
+bool FusionData<Integer>::check_simplicity(const vector<vector<key_t> >& subrings, const vector<Integer>& sol){
+
+    for(auto& sub: subrings){
+        if(!check_simplicity(sub, sol)){
+            return false;
+        }
+    }
+    return true;
+}
+
 template <typename Integer>
 FusionData<Integer>::FusionData(){
-    check_simplicity = false;
-    select_simple = false;
+    check_simplicity_cand = false;
+    check_simplicity_all = false;
 }
+
 template <typename Integer>
 bool FusionData<Integer>::read_data() {
 
@@ -144,27 +190,43 @@ bool FusionData<Integer>::read_data() {
         in >> s;
     }
 
-    if(s != "subring")
-        throw BadInputException("fusion file corrupt.");
+    candidate_given = false;
+    if(s == "subring"){
     size_t rank_candidate;
-    in >> rank_candidate;
-    subring_base_key.resize(rank_candidate);
-    for(size_t i = 0; i< rank_candidate; ++i)
-        in >> subring_base_key[i];
+        in >> rank_candidate;
+        subring_base_key.resize(rank_candidate);
+        for(size_t i = 0; i< rank_candidate; ++i)
+            in >> subring_base_key[i];
+        set<key_t> subring_base_set;
+        subring_base_set.insert(subring_base_key.begin(), subring_base_key.end());
+        for(auto& kk: subring_base_key){
+            if(subring_base_set.find(duality[kk]) == subring_base_set.end())
+                throw BadInputException("Subring base not closed under duality");
+        }
+        if(verbose)
+            verboseOutput() << "Candidate base of subring " << subring_base_key;
+        candidate_given = true;
+    }
 
-    if(verbose)
-        verboseOutput() << "Candidate base of subring " << subring_base_key;
-
-    in >> s;
-    if(s == "only_simple")
+    if(candidate_given)
+        in>> s;
+    bool check_simplicity = false;
+    if(s == "only_simple"){
         check_simplicity = true;
+        if(candidate_given)
+            check_simplicity_cand = true;
+        else
+            check_simplicity_all = true;
+    }
     else{
-        if(s == "select_simple")
+        if(s == "select_simple"){
+            check_simplicity = true;
             global_select_simple = true;
+        }
         else
             throw BadInputException("fusion file corrupt.");
     }
-    if(check_simplicity || global_select_simple)
+    if(check_simplicity)
         prepare_simplicity_check();
 
     if(in.fail())
@@ -214,9 +276,9 @@ key_t FusionData<Integer>::coord(set<vector<key_t> >& FR){
 }
 
 template <typename Integer>
-dynamic_bitset FusionData<Integer>::critical_coords(){
+dynamic_bitset FusionData<Integer>::critical_coords(const vector<key_t>& base_key){
     set<key_t> cand_set;
-    cand_set.insert(subring_base_key.begin(), subring_base_key.end());
+    cand_set.insert(base_key.begin(), base_key.end());
 
     dynamic_bitset crit_coords(CoordMap.size() + 1); // coordinate 0 is omitted
 
@@ -255,37 +317,66 @@ void FusionData<Integer>::make_CoordMap(){
 }
 
 template <typename Integer>
+void  FusionData<Integer>::make_all_base_keys(){
+
+    vector<dynamic_bitset> all_subsets = make_all_subsets(fusion_rank -1);
+    for(auto& sub: all_subsets){
+        if(sub.count() == 0 || sub.count() == fusion_rank -1) // must discard empty set and the full ring
+            continue;
+        vector<key_t> kk = bitset_to_key(sub);
+        for(auto& c: kk)
+            c++;
+        bool duality_closed = true;
+        for(auto& c: kk){
+            if(!sub[duality[c] -1]){
+                duality_closed = false;
+                break;
+            }
+        }
+        if(!duality_closed)
+            continue;
+        all_base_keys.push_back(kk);
+    }
+}
+
+template <typename Integer>
 void FusionData<Integer>::prepare_simplicity_check(){
     make_all_ind_tuples();
     make_CoordMap();
     /* for(auto& t: all_ind_tuples){
         cout << coord(t) << " --- " <<t;
     }*/
-    coords_to_check_ind = critical_coords();
-    coords_to_check_key = bitset_to_key(coords_to_check_ind);
+    if(candidate_given){
+        coords_to_check_ind.push_back(critical_coords(subring_base_key));
+        coords_to_check_key.push_back(bitset_to_key(coords_to_check_ind[0]));
+        return;
+    }
+    // now we must make all candidates
+    make_all_base_keys();
+    for(auto& bk: all_base_keys){
+        coords_to_check_ind.push_back(critical_coords(bk));
+        coords_to_check_key.push_back(bitset_to_key(coords_to_check_ind.back()));
+    }
 }
 
 template <typename Integer>
 void FusionData<Integer>::select_and_write_simple(const Matrix<Integer>& LattPoints){ // from out file or final.lat
 
     prepare_simplicity_check();
-    for(auto& c: coords_to_check_key) // homogenizing coordinate is no loonger at 0
-        c--;
+    for(auto& aa: coords_to_check_key){
+        for(auto& c: aa) // homogenizing coordinate is no loonger at 0
+            c--;
+    }
     Matrix<Integer> SimplePoints;
     SimplePoints.resize(0,LattPoints.nr_of_columns());
 
-
     for(size_t i = 0; i < LattPoints.nr_of_rows(); ++i){
-        bool simple = false;
-        for(auto& j: coords_to_check_key){
-            if(LattPoints[i][j] != 0){
-                simple = true;
-                break;
-            }
-        }
-        if(simple)
+        if(check_simplicity(coords_to_check_key, LattPoints[i]))
             SimplePoints.append(LattPoints[i]);
     }
+
+    if(verbose)
+        verboseOutput() << SimplePoints.nr_of_rows() << " simple fusion rings found" << endl;
 
     string name = global_project + ".simple.lat";
     ofstream out(name);
@@ -483,6 +574,9 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
 
     DefiningSupps.resize(EmbDim);
 
+    if(fusion.check_simplicity_all)
+        fusion.all_critical_coords_keys.resize(EmbDim);
+
     poly_equs_minimized.resize(EmbDim);
     poly_inequs_minimized.resize(EmbDim);
     poly_congs_minimized.resize(EmbDim);
@@ -537,7 +631,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
     }
 
     // we compute basic data for simplicity test
-    if(check_simplicity){
+    if(fusion.check_simplicity_cand){
         critical_coord_simplicity = -1;
     }
 
@@ -662,11 +756,17 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
         dynamic_bitset new_covered = covered | AllPatches[coord];
 
         // first we check whether the simplicity test can be done at this point
-        if(check_simplicity){
+        if(fusion.check_simplicity_cand){
             if(critical_coord_simplicity == -1){
-                if(fusion.coords_to_check_ind.is_subset_of(new_covered) ){
+                if(fusion.coords_to_check_ind[0].is_subset_of(new_covered) ){
                     critical_coord_simplicity = coord;
                 }
+            }
+        }
+        if(fusion.check_simplicity_all){
+            for(size_t i = 0; i < fusion.coords_to_check_ind.size(); ++i){
+                if(fusion.coords_to_check_ind[i].is_subset_of(new_covered) && !fusion.coords_to_check_ind[i].is_subset_of(covered))
+                    fusion.all_critical_coords_keys[coord].push_back(fusion.coords_to_check_key[i]);
             }
         }
 
@@ -1140,7 +1240,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_covers() {
         use_coord_weights = true;
         if(verbose)
             verboseOutput() << "Weights activated" << endl;
-    } */
+    }
 
     /* cout << TotalWeights;
     cout << max_weight / min_weight << endl;
@@ -1743,21 +1843,20 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
 #pragma omp atomic
                 nr_latt_points_total++;
 
-                if(check_simplicity && critical_coord_simplicity == coord){
-                    bool not_simple = true;
-                    for(auto& kk: fusion.coords_to_check_key){
-                        if(NewLattPoint[kk] != 0){
-                            not_simple = false;
-                            break;
-                        }
-                    }
-                    if(not_simple){
+                if(fusion.check_simplicity_cand && critical_coord_simplicity == coord){
+                    if(!fusion.check_simplicity(fusion.coords_to_check_key[0], NewLattPoint)){
                         can_be_inserted = false;
 #pragma omp atomic
                         nr_caught_by_simplicity++;
                     }
                 }
-
+                if(can_be_inserted && fusion.check_simplicity_all){
+                    if(!fusion.check_simplicity(fusion.all_critical_coords_keys[coord], NewLattPoint)){
+                        can_be_inserted = false;
+#pragma omp atomic
+                        nr_caught_by_simplicity++;
+                    }
+                }
                 if(can_be_inserted){
                     for(auto pp = order_poly_equs.begin(); pp!= order_poly_equs.end(); ++pp){
                         if(pp->second != PolyEqusThread[tn][pp->first].second.evaluate(NewLattPoint)){
@@ -1927,7 +2026,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                 /* assert(nr_caught_by_congs == 0);
                 if(CongsRestricted.size() > 0)
                     verboseOutput() << " cgr " << nr_caught_by_congs;*/
-                if(coord == critical_coord_simplicity)
+                if(nr_caught_by_simplicity > 0)
                     verboseOutput() << " smp " << nr_caught_by_simplicity;
                 if(nr_points_done_in_this_round > 0)
                     verboseOutput() << " exp rnd " << expected_number_of_rounds;
@@ -3036,7 +3135,6 @@ void ProjectAndLift<IntegerPL, IntegerRet>::initialize(const Matrix<IntegerPL>& 
     linear_order_patches = false;
     cong_order_patches = false;
     distributed_computation = false;
-    check_simplicity = false;
     TotalNrLP = 0;
     min_return_patch = 0;
     NrLP.resize(EmbDim + 1);
@@ -3282,7 +3380,6 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute(bool all_points, bool liftin
     }
 
     fusion.read_data();
-    check_simplicity = fusion.check_simplicity;
 
     assert(all_points || !lifting_float);  // only all points allowed with float
 
