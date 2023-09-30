@@ -181,7 +181,8 @@ void next_round(const string& project) {
         verboseOutput() << "New round " << our_split.this_round << endl;
 }
 
-void rewrite_lat_file(ifstream& lat_in, const string& lat_name, long& min_return_total, Matrix<long long>& TotalLat){
+void rewrite_lat_file(ifstream& lat_in, const string& lat_name, long& min_return_total, Matrix<long long>& TotalLat,
+     const long& refinement, const long& predecessor){
 
     string s1, s2;
     lat_in >> s1 >> s2;
@@ -228,18 +229,7 @@ void rewrite_lat_file(ifstream& lat_in, const string& lat_name, long& min_return
         solutions_so_far = prel_solutions;
     }
 
-    // rewrite simplified file with only the last written data
     lat_in.close();
-
-    ofstream lat_out(lat_name);
-    lat_out << "preliminary_stage" << endl << endl;
-    lat_out << "min_return" << endl << min_return << endl << endl;
-    lat_out << "done_indices" << endl;
-    lat_out << done_vectors.size() << endl;
-    for(auto& d: done_vectors){
-        lat_out << d << endl;
-    }
-    lat_out << endl;
 
     if(solutions_so_far.nr_of_rows() > 0){
         if(TotalLat.nr_of_rows() == 0){
@@ -251,8 +241,33 @@ void rewrite_lat_file(ifstream& lat_in, const string& lat_name, long& min_return
     if(verbose)
         verboseOutput() << solutions_so_far.nr_of_rows() << " solutions_transferred" << endl;
 
-    lat_out << "found_solutions" << endl;
-    solutions_so_far.print(lat_out);
+    // New lat file has been read. First we copy the old lat file to the new to keep the history
+    if(refinement > 0){
+        string pred_file_ame = global_project + "." +to_string(refinement - 1) + "." + to_string(predecessor) + ".lat";
+        string command = "cp " + pred_file_ame + " " + lat_name;
+        int dummy = system(command.c_str());
+        if(dummy != 0)
+            throw BadInputException("Coukd not copy lat file.");
+    }
+
+    // rewrite simplified, appemding the indices in this refinement
+
+    ofstream lat_out;
+
+    if(refinement == 0){
+        lat_out.open(lat_name, ofstream::out);
+        lat_out << "preliminary_stage" << endl;
+    }
+    else{
+        lat_out.open(lat_name, ofstream::app);
+    }
+    lat_out << endl << "min_return" << endl << min_return << endl << endl;
+    lat_out << "done_indices" << endl;
+    lat_out << done_vectors.size() << endl;
+    for(auto& d: done_vectors){
+        lat_out << d << endl;
+    }
+    lat_out << endl;
     lat_out.close();
 }
 
@@ -274,7 +289,7 @@ void collect_lat(const string& project) {
         verboseOutput() << "Collecting lattice points and preliminary data from " << our_split.nr_splits_to_do << " lat files" << endl;
     }
 
-    Matrix<long long> TotalLat;
+    Matrix<long long> TotalLat; // collects the solutions found so far
 
     // First we must read what has been compouted in previous refinements
     if(our_split.this_refinement >0 ){
@@ -312,7 +327,10 @@ void collect_lat(const string& project) {
             if(verbose)
                 verboseOutput() << lat_name << " in preliminary stage" << endl;
             NotDone.push_back(i);
-            rewrite_lat_file(lat_in, lat_name, min_return_total, TotalLat);
+            long lat_predecessor = 0;
+            if(our_split.this_refinement > 0)
+                lat_predecessor = our_split.refinement_predecessors[i];
+            rewrite_lat_file(lat_in, lat_name, min_return_total, TotalLat,our_split.this_refinement, lat_predecessor );
             continue; // next lat file
         } // done with preliminray stage
 

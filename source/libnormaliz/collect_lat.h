@@ -42,27 +42,25 @@ public:
     size_t nr_split_levels;
     vector<long> split_moduli;
 
+    long this_refinement;
+    vector<vector<long> > refinement_residues;  // for each split to do the history of residues leading to it
+    vector<long> refinement_predecessors; // for each split to do the last predecessor
+
+    string project;
+
     long max_nr_splits_per_round;
     long nr_splits_to_do;
 
     long this_split_index; // for the index coming from -X=<...>
     vector<long> this_split_residues; // ditto
 
-    long this_split_predecessor; // this_split_index of the "mother" solit, needed to identify the
+    long this_split_predecessor; // this_split_index of the "mother" split, needed to identify the
                       // the lat fdile produced by the mother
-    long this_pred_min_return; // the min return level of the predecessor;
-    vector<long> this_pred_done_indices; // indices of done elelemts of LatPopints
-
-
+    vector<long> this_pred_min_return; // the min return level of the predecessors;
+    vector< vector<long> > this_pred_done_indices; // indices of done elelemts of LatPopints on prwedecrssor levels
+                                                   // to be read from predecessor lat file
     long this_round;
     long nr_rounds;
-
-    long this_refinement;
-    vector<vector<long> > refinement_residues;  // the liast of residues not completed
-                                                // by this refinement ==> will be further refined
-    vector<long> refinement_predecessors; // analog for the predecessors
-
-    string project;
 
     SplitData();
     SplitData(const string& this_project, const long& level, const size_t& nr_vectors);

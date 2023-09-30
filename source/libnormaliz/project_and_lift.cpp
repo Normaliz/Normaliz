@@ -1433,12 +1433,19 @@ void ProjectAndLift<IntegerPL,IntegerRet>::prepare_split(list<vector<IntegerRet>
 
     bool do_split = false;
     bool skip_done_indices = false;
+    long pre_select = -1;
     for(size_t i = 0; i < our_split.nr_split_levels; ++i){
         if(this_patch == our_split.split_levels[i]){
             split_modulus = our_split.split_moduli[i];
             this_split_res = our_split.this_split_residues[i];
             do_split = true;
-            if(our_split.this_refinement > 0 && our_split.split_levels[i] == our_split.this_pred_min_return)
+            for(size_t pp = 0; pp < our_split.this_pred_min_return.size(); ++pp){
+                if(our_split.split_levels[i] == our_split.this_pred_min_return[pp]){
+                    pre_select = pp;
+                    break;
+                }
+            }
+            if(our_split.this_refinement > 0 && pre_select >= 0)
                 skip_done_indices = true;  // done indices will be skipped in the computation
             break;
         }
@@ -1451,7 +1458,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::prepare_split(list<vector<IntegerRet>
 
         if(skip_done_indices){
             set<long> done_indices;
-            done_indices.insert(our_split. this_pred_done_indices.begin(), our_split. this_pred_done_indices.end());
+            done_indices.insert(our_split. this_pred_done_indices[pre_select].begin(), our_split.
+                                                                            this_pred_done_indices[pre_select].end());
             list<vector<IntegerRet> > PreSelection;
             long k = 0;
             for(auto& v: LatticePoints){
@@ -1490,6 +1498,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
     }
 
     size_t max_nr_per_thread =  max_nr_new_latt_points_total/ omp_get_max_threads();
+    if(is_split_patching && this_patch == max_split_level)
+        max_nr_per_thread /= 10; // we want faster return to this level in the recursion, good if refinement is needed
 
     const size_t coord = InsertionOrderPatches[this_patch]; // the coord marking the next patch
 
@@ -3338,25 +3348,29 @@ void ProjectAndLift<IntegerPL, IntegerRet>::read_split_data() {
     if(s1 != "preliminary_stage")
         throw BadInputException("Corrupt predessor file " + pred_file_name+ ".");
 
-    predecessor_data >> s1;
-    if(s1 != "min_return")
-        throw BadInputException("Corrupt predecessor file " + pred_file_name+ ".");
-    predecessor_data >> our_split.this_pred_min_return;
+    our_split.this_pred_done_indices.resize(our_split.this_refinement);
+    our_split.this_pred_min_return.resize(our_split.this_refinement);
 
-    predecessor_data >> s1;
-    if(s1 != "done_indices")
-        throw BadInputException("Corrupt predecessor file " + pred_file_name+ ".");
-    size_t nr_done_indices;
-    predecessor_data >> nr_done_indices;
-    our_split.this_pred_done_indices.resize(nr_done_indices);
-    for(auto& d: our_split.this_pred_done_indices)
-        predecessor_data >> d;
+    // we read the done indices in the previous refinement steps
+    for(size_t pp = 0; pp < our_split.this_refinement; ++pp){
+        predecessor_data >> s1;
+        if(s1 != "min_return")
+            throw BadInputException("Corrupt predecessor file " + pred_file_name+ ".");
+        predecessor_data >> our_split.this_pred_min_return[pp];
 
-    if(verbose)
-        verboseOutput() << "Read done indices " << nr_done_indices << endl;
+        predecessor_data >> s1;
+        if(s1 != "done_indices")
+            throw BadInputException("Corrupt predecessor file " + pred_file_name+ ".");
+        size_t nr_done_indices;
+        predecessor_data >> nr_done_indices;
+        our_split.this_pred_done_indices[pp].resize(nr_done_indices);
+        for(auto& d: our_split.this_pred_done_indices[pp])
+            predecessor_data >> d;
+        if(verbose)
+            verboseOutput() << "Read done indices " << nr_done_indices << endl;
+    }
 
-    predecessor_data >> s1;
-    if(s1 != "found_solutions")
+    if(predecessor_data.fail())
         throw BadInputException("Corrupt predecessor file " + pred_file_name+ ".");
 
     predecessor_data.close();
