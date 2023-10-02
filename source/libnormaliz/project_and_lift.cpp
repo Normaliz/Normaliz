@@ -1435,12 +1435,12 @@ void ProjectAndLift<IntegerPL,IntegerRet>::prepare_split(list<vector<IntegerRet>
     bool skip_done_indices = false;
     long pre_select = -1;
     for(size_t i = 0; i < our_split.nr_split_levels; ++i){
-        if(this_patch == our_split.split_levels[i]){
+        if(this_patch == our_split.this_split_levels[i]){
             split_modulus = our_split.split_moduli[i];
             this_split_res = our_split.this_split_residues[i];
             do_split = true;
             for(size_t pp = 0; pp < our_split.this_pred_min_return.size(); ++pp){
-                if(our_split.split_levels[i] == our_split.this_pred_min_return[pp]){
+                if(our_split.this_split_levels[i] == our_split.this_pred_min_return[pp]){
                     pre_select = pp;
                     break;
                 }
@@ -1470,6 +1470,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::prepare_split(list<vector<IntegerRet>
                 PreSelection.push_back(v);
                 k++;
             }
+            if(verbose)
+                verboseOutput() << PreSelection.size() << " lattice points of " << LatticePoints.size() << "preselected" << endl;
             swap(LatticePoints, PreSelection);
             PreSelection.clear();
         }
@@ -3325,13 +3327,15 @@ void ProjectAndLift<IntegerPL, IntegerRet>::read_split_data() {
     our_split.set_this_split(split_index_option);
     split_refinement = our_split.this_refinement; // needed in cone for output of lat file
     if(verbose){
-        verboseOutput() << "split levels " << our_split.split_levels;
+        verboseOutput() << "split levels " << our_split.this_split_levels;
         verboseOutput() << "split moduli " << our_split.split_moduli;
         verboseOutput() << "split residues " << our_split.this_split_residues;
         verboseOutput() << "refinement " << our_split.this_refinement << " round " << our_split.this_round << endl;
     }
     // starting the new lat file
     lat_file_name = global_project + "." + to_string(split_refinement) + "." + to_string(split_index_rounds) + ".lat";
+    if(verbose)
+        verboseOutput() << "Writing " << lat_file_name << endl;
     ofstream prel_data(lat_file_name);
     prel_data << "preliminary_stage" << endl;
     prel_data.close();
@@ -3347,6 +3351,9 @@ void ProjectAndLift<IntegerPL, IntegerRet>::read_split_data() {
     predecessor_data >> s1;
     if(s1 != "preliminary_stage")
         throw BadInputException("Corrupt predessor file " + pred_file_name+ ".");
+
+    if(verbose)
+        verboseOutput() << "Reading " << pred_file_name << endl;
 
     our_split.this_pred_done_indices.resize(our_split.this_refinement);
     our_split.this_pred_min_return.resize(our_split.this_refinement);

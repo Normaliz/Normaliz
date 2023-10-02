@@ -3064,13 +3064,13 @@ to the input file where \verb|<n>| is the number of simplices of the full triang
 
 The output files are
 \begin{itemize}
-	\itemtt[<project>.hollow\_tri.<n>.gz]
+	\itemtta[<project>.hollow\_tri.<n>.gz]{project>.hollow\_tri.<n>.gz}
 \end{itemize}
 where \verb|<n>| numbers these files consecutively, starting from $0$. As usual, \verb|<project>| is the name of the project. These files are gzipped to save disk space.
 
 Moreover, there is a common data file:
 \begin{itemize}
-	\itemtt[<project>.basic.data] 
+	\itemtta[<project>.basic.data]{project>.basic.data}
 \end{itemize}
 
 Each file of the hollow triangulation must be run by  Normaliz with the option \verb|--Chunk|. The input is read from \ttt{stdin} to which the gzipped file(s) must be decompressed and redirected or piped. The directory \verb|source/chunk| contains \verb|run_single.sh| hat can be used for this purpose:
@@ -3114,7 +3114,7 @@ We run a  precomputation
 \end{Verbatim}
 The only purpose iw to find the lowest level where splitting makes sense. (For small computations such a level may not exist.) The answer is written to the file
 \begin{itemize}
-\itemtt[<project>.split.data]
+\itemtta[<project>.split.data]{project>.split.data}
 \end{itemize}
 It is always a default choice:
 \begin{Verbatim}
@@ -3162,7 +3162,7 @@ i = s + r*u
 $$
 where $r$ is the number of the current round and $u$ the upper limit on jobs per round. the index $i$ is used to identify the output file produced by this job. It is
 \begin{itemize}
-\itemtt[<project>.<f>.<i>.lat] 
+\itemtta[<project>.<f>.<i>.lat]{project>.<f>.<i>.lat}
 \end{itemize}
 where \verb|<f>| is the index of the current refinement. 
 
@@ -3191,11 +3191,11 @@ After the refinement  (possibly in several rounds) has been finished, the lattic
 \end{itemize}
 for example \verb*|./normaliz <project> --CollectLat|. The total list of lattice points is written to
 \begin{itemize}
-	\itemtt[<project>.final.lat]
+	\itemtta[<project>.final.lat]{project>.final.lat}
 \end{itemize}
 provided all splits could be finished by Normaliz. If a lat file is still in preliminary stage, Normaliz will realize that, clean up all preliminary lat files, and collect all computed lattice points in the file
 \begin{itemize}
-	\itemtt[<project>.<f>.so\_far.lat]
+	\itemtta[<project>.<f>.so\_far.lat]{project>.<f>.so\_far.lat}
 \end{itemize}
 Then the next refinement can be started in the same way as refinement $0$.
 

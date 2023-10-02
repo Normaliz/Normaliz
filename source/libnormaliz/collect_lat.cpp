@@ -64,39 +64,60 @@ void SplitData::read_data(const string& this_project){
     if(!split_control.is_open())
         throw BadInputException(name + " does not exist");
 
-    long nr_splitPatches_all_rounds = 1;
+    char c;
+    split_control >> ws;
+    c = split_control.peek();
+    bool start_split;
+    if (c != 'r'){  // start split
+        start_split = true;
+    }
+    else{
+        start_split = false;
+        string s;
+        split_control >> s;
+        if(s != "refinement")
+            throw BadInputException("Split data for refinement corrupt");
+    }
+
     split_control >> nr_split_levels;
-    split_levels.resize(nr_split_levels);
+    this_split_levels.resize(nr_split_levels);
     split_moduli.resize(nr_split_levels);
     this_split_residues.resize(nr_split_levels);
-    for(long i = 0; i < nr_split_levels; ++i){
-            split_control >> split_levels[i] >> split_moduli[i];
-            nr_splitPatches_all_rounds *= split_moduli[i];
-    }
     split_control >> max_nr_splits_per_round >> nr_splits_to_do;
     split_control >> this_round >> this_refinement;
 
-    if(split_control.fail())
-        throw BadInputException(name + " corrupt");
+    if(start_split){
+        long nr_splitPatches_all_rounds = 1;
 
-    if(this_refinement == 0){
+        for(long i = 0; i < nr_split_levels; ++i){
+                split_control >> this_split_levels[i] >> split_moduli[i];
+                nr_splitPatches_all_rounds *= split_moduli[i];
+        }
+
+        if(split_control.fail())
+            throw BadInputException(name + " corrupt");
+
         if( nr_splits_to_do != nr_splitPatches_all_rounds)
             throw BadInputException("Numbers of splits for all rounds does not fit");
     }
     else{
         refinement_residues.resize(nr_splits_to_do);
+        refinement_levels.resize(nr_splits_to_do);
         refinement_predecessors.resize(nr_splits_to_do);
         for(size_t i= 0; i < nr_splits_to_do; ++i){
+            refinement_levels[i].resize(nr_split_levels);
             refinement_residues[i].resize(nr_split_levels);
-            for(size_t j = 0; j < nr_split_levels; ++j)
+            for(size_t j = 0; j < nr_split_levels; ++j){
+                split_control >> refinement_levels[i][j];
                 split_control >> refinement_residues[i][j];
+            }
 
             split_control >> refinement_predecessors[i];
         }
         // Matrix<long>(refinement_residues).debug_print();
     }
 
-    assert(split_control.good());
+    assert(!split_control.fail());
 
     split_control.close();
 }
@@ -105,12 +126,20 @@ void SplitData::write_data() const{
 
     string name = project + ".split.data";
     ofstream new_split_control(name.c_str());
+    if(this_refinement > 0){
+        new_split_control << "refinement" << endl;
+    }
     new_split_control << split_levels.size();
-    for(size_t i = 0; i < split_levels.size(); ++i)
-    new_split_control << " " << split_levels[i] << " " << split_moduli[i];
-    new_split_control << endl;
     new_split_control << max_nr_splits_per_round << " " << nr_splits_to_do << endl;
     new_split_control << this_round << " " << this_refinement << endl;
+    if(this_refinement == 0){
+        for(size_t i = 0; i < split_levels.size(); ++i)
+            new_split_control << " " << split_levels[i] << " " << split_moduli[i];
+        new_split_control << endl;
+    }
+    else{
+            new_split_control << split_moduli;
+    }
 
     if(this_refinement == 0){
         new_split_control.close();
@@ -159,6 +188,7 @@ void SplitData::set_this_split(const long& given_index){
     }
     else{
         this_split_residues = refinement_residues[this_split_index];
+        this_split_levels = refinement_residues[this_split_index];
         this_split_predecessor = refinement_predecessors[this_split_index];
     }
 }
@@ -181,7 +211,7 @@ void next_round(const string& project) {
         verboseOutput() << "New round " << our_split.this_round << endl;
 }
 
-void rewrite_lat_file(ifstream& lat_in, const string& lat_name, long& min_return_total, Matrix<long long>& TotalLat,
+void rewrite_lat_file(ifstream& lat_in, const string& lat_name, size_t& next_split_level, Matrix<long long>& TotalLat,
      const long& refinement, const long& predecessor){
 
     string s1, s2;
@@ -189,13 +219,12 @@ void rewrite_lat_file(ifstream& lat_in, const string& lat_name, long& min_return
     if(s1 != "preliminary_stage" || s2 != "min_return"){
         throw BadInputException("CollectLat failed because of corrupt file " + lat_name);
     }
-    long min_return;
+    size_t min_return;
     lat_in >> min_return;
-    if(min_return_total == -1 || min_return < min_return_total)
-        min_return_total = min_return;
+    next_split_level = min_return + 1;
 
     // now we simplify the preliminary lat file to make the work in project_and_lift easier
-    vector<long> done_vectors;
+    vector<long> done_indices;
     Matrix<long long> solutions_so_far;
 
     while(true){
@@ -207,9 +236,9 @@ void rewrite_lat_file(ifstream& lat_in, const string& lat_name, long& min_return
             break;
         size_t nr_done;
         lat_in >> nr_done;
-        vector<long> prel_done_vecrors(nr_done);
+        vector<long> prel_done_indices(nr_done);
         for(size_t i = 0; i < nr_done; ++i){
-            lat_in >> prel_done_vecrors[i];
+            lat_in >> prel_done_indices[i];
         }
 
         lat_in >> s1;
@@ -225,7 +254,7 @@ void rewrite_lat_file(ifstream& lat_in, const string& lat_name, long& min_return
         }
         if(!lat_in.good())
             break;
-        done_vectors = prel_done_vecrors;
+        done_indices = prel_done_indices;
         solutions_so_far = prel_solutions;
     }
 
@@ -255,7 +284,7 @@ void rewrite_lat_file(ifstream& lat_in, const string& lat_name, long& min_return
     ofstream lat_out;
 
     if(refinement == 0){
-        lat_out.open(lat_name, ofstream::out);
+        lat_out.open(lat_name, ofstream::out); // we are rewriting the file from scratch
         lat_out << "preliminary_stage" << endl;
     }
     else{
@@ -263,8 +292,8 @@ void rewrite_lat_file(ifstream& lat_in, const string& lat_name, long& min_return
     }
     lat_out << endl << "min_return" << endl << min_return << endl << endl;
     lat_out << "done_indices" << endl;
-    lat_out << done_vectors.size() << endl;
-    for(auto& d: done_vectors){
+    lat_out << done_indices.size() << endl;
+    for(auto& d: done_indices){
         lat_out << d << endl;
     }
     lat_out << endl;
@@ -302,7 +331,8 @@ void collect_lat(const string& project) {
     }
 
     vector<size_t> NotDone;
-    long min_return_total = -1;
+    vector<size_t> NextSplitLevelNotDone;
+    size_t next_split_level;
 
 
     // Now we read what has been compouted in the last refinement
@@ -330,7 +360,8 @@ void collect_lat(const string& project) {
             long lat_predecessor = 0;
             if(our_split.this_refinement > 0)
                 lat_predecessor = our_split.refinement_predecessors[i];
-            rewrite_lat_file(lat_in, lat_name, min_return_total, TotalLat,our_split.this_refinement, lat_predecessor );
+            rewrite_lat_file(lat_in, lat_name, next_split_level, TotalLat,our_split.this_refinement, lat_predecessor );
+            NextSplitLevelNotDone.push_back(next_split_level);
             continue; // next lat file
         } // done with preliminray stage
 
@@ -365,10 +396,6 @@ void collect_lat(const string& project) {
     if(our_split.max_nr_splits_per_round/NotDone.size() > 2)
         nr_sub_splits = our_split.max_nr_splits_per_round/NotDone.size();
     new_split_data.nr_splits_to_do = NotDone.size() * nr_sub_splits;
-    long actual_min_return = our_split.split_levels.back() + 1;
-    if(min_return_total > actual_min_return)
-        actual_min_return = min_return_total;
-    new_split_data.split_levels.push_back(actual_min_return);
     new_split_data.nr_split_levels++;
     new_split_data.split_moduli.push_back(nr_sub_splits);
     new_split_data.this_refinement++;
@@ -380,7 +407,9 @@ void collect_lat(const string& project) {
         verboseOutput() << nr_sub_splits << " subplits" << endl;
 
     vector<long> split_residues(our_split.nr_split_levels);
+    vector<long> split_levels(our_split.nr_split_levels);
     new_split_data.refinement_residues.clear();
+    new_split_data.refinement_levels.clear();
     for(auto& split_index:NotDone){
         if(our_split.this_refinement == 0){ // no previous refinement
             long res = split_index;
@@ -388,16 +417,24 @@ void collect_lat(const string& project) {
                 split_residues[i] = res % our_split.split_moduli[i];
                 res /=  our_split.split_moduli[i];
             }
+            split_levels = our_split.this_split_levels;
         }
         else{
             split_residues = our_split.refinement_residues[split_index];
-
+            split_levels =  our_split.refinement_levels[split_index];
         }
         for(long i = 0; i < nr_sub_splits; ++i){
             vector<long> extended_res = split_residues;
+            vector<long> extended_levels = split_levels;
             extended_res.push_back(i); // the new subsplit
-            extended_res.push_back(split_index); // we must know this as a reference to the lat file in the next round
-            new_split_data.refinement_residues.push_back(extended_res);
+            extended_levels.push_back(NextSplitLevelNotDone[split_index]); // we must know this as a reference to the lat file in the next round])
+            vector<long> total_data(extended_res.size() + extended_levels.size());
+            for(size_t j=0; j < extended_levels.size(); ++j){
+                    total_data[2*j] = extended_levels[j];
+                    total_data[2*j + 1] = extended_res[j];
+            }
+            total_data.push_back((long) split_index); // we must know this as a reference to the lat file in the next round
+            new_split_data.refinement_residues.push_back(total_data); // refinement_residues abused for data transfer
         }
     }
     new_split_data.write_data();

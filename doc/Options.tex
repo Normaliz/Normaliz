@@ -672,7 +672,7 @@ If Normaliz is running in the background and cannot be interrupted by CTrl-C, th
 \end{itemize}
 into the working directory. This will stop (possibly with some delay) the instances of normaliz running in that directory. In order to stop a specific instance, use
 \begin{itemize}
-	\itemtt[<project>.stop]
+	\itemtta[<project>.stop]{project>.stop}
 \end{itemize}
 
 \subsection{Time bound}\label{time_bound}
@@ -707,7 +707,7 @@ Similarly, if symmetrization has been used, Normaliz writes the file \verb|<proj
 
 Sometimes one wants the output to be written to another directory. The output directory can be set by
 \begin{itemize}
-	\itemtt[{-}{-OutputDir=<outdir>}]. The path \ttt{<outdir>} is an absolute path or a path relative to the current directory (which is not necessarily the directory of \verb|<project>.in|.)
+	\itemtta[{-}{-OutputDir=<outdir>}]{OutputDir=<outdir}. The path \ttt{<outdir>} is an absolute path or a path relative to the current directory (which is not necessarily the directory of \verb|<project>.in|.)
 \end{itemize}
 Note that all output files will be written to the chosen directory. It must be created before Normaliz is started.
 

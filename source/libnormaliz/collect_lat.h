@@ -44,6 +44,7 @@ public:
 
     long this_refinement;
     vector<vector<long> > refinement_residues;  // for each split to do the history of residues leading to it
+    vector<vector<long> > refinement_levels;  // ditto
     vector<long> refinement_predecessors; // for each split to do the last predecessor
 
     string project;
@@ -53,6 +54,7 @@ public:
 
     long this_split_index; // for the index coming from -X=<...>
     vector<long> this_split_residues; // ditto
+    vector<long> this_split_levels;
 
     long this_split_predecessor; // this_split_index of the "mother" split, needed to identify the
                       // the lat fdile produced by the mother
