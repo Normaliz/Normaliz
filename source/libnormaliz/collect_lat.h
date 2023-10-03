@@ -32,15 +32,14 @@ using std::string;
 
 
 // This class contains two types of data:
-// (i) data common to all split_levels
+// (i) data common to all
 // (ii) data for "this" split determined this_split_index
 class SplitData{
 
 public:
 
-    vector<long> split_levels;
-    size_t nr_split_levels;
-    vector<long> split_moduli;
+    size_t nr_split_levels;  // comm to all sülits
+    vector<long> split_moduli; // they are common to all splits
 
     long this_refinement;
     vector<vector<long> > refinement_residues;  // for each split to do the history of residues leading to it

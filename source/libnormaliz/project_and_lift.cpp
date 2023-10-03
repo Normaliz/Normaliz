@@ -746,7 +746,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
         if(talkative){
             if(false){ // verbose){
                 if(PL.Congs.nr_of_rows() >0 ){
-                    cout << "coord " << coord << endl;
+                    verboseOutput() << "coord " << coord << endl;
                     PL.Congs.debug_print();
                 }
             }
@@ -1495,7 +1495,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
 
     key_t max_split_level = 0;
     if(is_split_patching){
-        max_split_level = our_split.split_levels.back();
+        max_split_level = our_split.this_split_levels.back();
         prepare_split(LatticePoints, this_patch);
     }
 
@@ -2126,7 +2126,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         // this information is compeletely written whenever qwe return here.
         if(is_split_patching && this_patch == min_return_patch){
 
-            cout << "Writing " << this_patch << " " << min_return_patch << endl;
+            // cout << "Writing " << this_patch << " " << min_return_patch << endl;
 
             ofstream prel_data;
             prel_data.open(lat_file_name, ofstream::app);
