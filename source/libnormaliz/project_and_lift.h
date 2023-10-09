@@ -33,13 +33,11 @@
 #include "libnormaliz/HilbertSeries.h"
 #include "libnormaliz/dynamic_bitset.h"
 #include "libnormaliz/nmz_polynomial.h"
+#include "libnormaliz/fusion.h"
 #include "libnormaliz/collect_lat.h"
 
 namespace libnormaliz {
 using std::vector;
-
-template <typename Integer>
-class FusionData;
 
 // the project-and-lift algorithm for lattice points in a polytope
 
@@ -251,44 +249,7 @@ class ProjectAndLift {
     void read_subring_data();
 };
 
-template <typename Integer>
-class FusionData    {
-    template <typename, typename>
-    friend class ProjectAndLift;
 
-public:
-    FusionData();
-    bool read_data();
-
-    bool check_simplicity_cand;
-    bool candidate_given;
-    bool check_simplicity_all;
-
-   // for simplicity test of fusion rings
-    map<set<vector<key_t> >, key_t> CoordMap;
-    vector<key_t> duality;
-    size_t fusion_rank;
-    void make_CoordMap();
-    // key_t dual(key_t i);
-    key_t dual(const key_t i) const;
-    set<vector<key_t> > FrobRec(const vector<key_t>& ind_tuple);
-    key_t coord(set<vector<key_t> >& FR);
-    key_t coord(vector<key_t>& ind_tuple);
-    vector<vector<key_t> > all_ind_tuples;
-    void make_all_ind_tuples();
-    dynamic_bitset critical_coords(const vector<key_t>& base_key);
-    vector<key_t> subring_base_key;
-    vector<vector<key_t> > all_base_keys;
-    void make_all_base_keys();
-    vector<vector<key_t> > coords_to_check_key;
-    vector<dynamic_bitset> coords_to_check_ind;
-    void prepare_simplicity_check();
-    void select_and_write_simple(const Matrix<Integer>& LattPoints);
-    vector<vector<vector<key_t> > > all_critical_coords_keys;
-
-    bool check_simplicity(const vector<key_t>& subring, const vector<Integer>& sol);
-    bool check_simplicity(const vector<vector<key_t> >& subrings, const vector<Integer>& sol);
-};
 
 // constructor by conversion
 

@@ -23,7 +23,6 @@
 
 #include "libnormaliz/project_and_lift.h"
 #include "libnormaliz/vector_operations.h"
-#include "libnormaliz/sublattice_representation.h"
 #include "libnormaliz/cone.h"
 #include "libnormaliz/input.h"
 
@@ -108,289 +107,6 @@ void coarsen_this_cong(const vector<nmz_float>& cong, const size_t k, set<vector
 
 // functions for fusion rings
 
-vector<dynamic_bitset> make_all_subsets(const size_t card){
-
-    if(card == 0){
-            return vector<dynamic_bitset>(1);
-    }
-
-    vector<dynamic_bitset> one_card_less = make_all_subsets(card -1);
-    vector<dynamic_bitset> all_subsets;
-    dynamic_bitset sub_one_less(card -1);
-    dynamic_bitset sub(card);
-    for(auto& s: one_card_less){
-        for(size_t i = 0; i < card - 1; ++i)
-            sub[i] = s[i];
-        sub[card -1] = 0;
-        all_subsets.push_back(sub);
-        sub[card -1] = 1;
-        all_subsets.push_back(sub);
-    }
-    return all_subsets;
-}
-
-// checks whether sol is contained in the "subring". If so "false" is returned,
-// meaning "not sinmple"
-template <typename Integer>
-bool FusionData<Integer>::check_simplicity(const vector<key_t>& subring, const vector<Integer>& sol){
-
-    for(auto& c: subring){
-        if(sol[c] != 0)
-            return true;
-    }
-    return false;
-}
-
-// checks whether sol is contained in one of the "subrings". If so "false" is returned.
-template <typename Integer>
-bool FusionData<Integer>::check_simplicity(const vector<vector<key_t> >& subrings, const vector<Integer>& sol){
-
-    for(auto& sub: subrings){
-        if(!check_simplicity(sub, sol)){
-            return false;
-        }
-    }
-    return true;
-}
-
-template <typename Integer>
-FusionData<Integer>::FusionData(){
-    check_simplicity_cand = false;
-    check_simplicity_all = false;
-}
-
-template <typename Integer>
-bool FusionData<Integer>::read_data() {
-
-    string file_name = global_project + ".fusion";
-    ifstream in(file_name);
-    if(!in.is_open())
-        return false;
-    if(verbose)
-        verboseOutput() << "Simplicity check asked for" << endl;
-    string s;
-    in >> s;
-    if(s != "rank")
-        throw BadInputException("fusion file corrupt.");
-    in >> fusion_rank;
-    if(verbose)
-        verboseOutput() << "fusion rank " << fusion_rank << endl;
-
-    duality = identity_key(fusion_rank);
-    in >> s;
-    if(s == "duality"){
-        size_t nr_transpositions;
-        in >> nr_transpositions;
-        for(size_t i = 0; i < nr_transpositions; ++i){
-            key_t k,j;
-            in >> k >> j;
-            duality[k] = j;
-            duality[j] = k;
-        }
-        in >> s;
-    }
-
-    candidate_given = false;
-    if(s == "subring"){
-    size_t rank_candidate;
-        in >> rank_candidate;
-        subring_base_key.resize(rank_candidate);
-        for(size_t i = 0; i< rank_candidate; ++i)
-            in >> subring_base_key[i];
-        set<key_t> subring_base_set;
-        subring_base_set.insert(subring_base_key.begin(), subring_base_key.end());
-        for(auto& kk: subring_base_key){
-            if(subring_base_set.find(duality[kk]) == subring_base_set.end())
-                throw BadInputException("Subring base not closed under duality");
-        }
-        if(verbose)
-            verboseOutput() << "Candidate base of subring " << subring_base_key;
-        candidate_given = true;
-    }
-
-    if(candidate_given)
-        in>> s;
-    bool check_simplicity = false;
-    if(s == "only_simple"){
-        check_simplicity = true;
-        if(candidate_given)
-            check_simplicity_cand = true;
-        else
-            check_simplicity_all = true;
-    }
-    else{
-        if(s == "select_simple"){
-            check_simplicity = true;
-            global_select_simple = true;
-        }
-        else
-            throw BadInputException("fusion file corrupt.");
-    }
-    if(check_simplicity)
-        prepare_simplicity_check();
-
-    if(in.fail())
-       throw BadInputException("fusion file corrupt.");
-
-    return true;
-}
-
-
-template <typename Integer>
-set<vector<key_t> >  FusionData<Integer>::FrobRec(const vector<key_t>& ind_tuple){
-
-    assert(ind_tuple.size() == 3);
-    key_t i,j,k;
-    i = ind_tuple[0];
-    j = ind_tuple[1];
-    k = ind_tuple[2];
-    set< vector<key_t> > F;
-    F = {
-            {i,j,k},
-            {duality[i],k,j},
-            {j,duality[k],duality[i]},
-            {duality[j],duality[i],duality[k]},
-            {duality[k],i,duality[j]},
-            {k,duality[j],i}
-        };
-    return F;
-}
-
-/*
-template <typename IntegerPL, typename IntegerRet>
-key_t ProjectAndLift<IntegerPL,IntegerRet>::dual(const key_t i) const{
-    return duality[i];
-}
-*/
-
-
-template <typename Integer>
-key_t FusionData<Integer>::coord(vector<key_t>& ind_tuple){
-   set<vector<key_t> > FR = FrobRec(ind_tuple);
-    return coord(FR);
-}
-
-template <typename Integer>
-key_t FusionData<Integer>::coord(set<vector<key_t> >& FR){
-    return CoordMap[FR];
-}
-
-template <typename Integer>
-dynamic_bitset FusionData<Integer>::critical_coords(const vector<key_t>& base_key){
-    set<key_t> cand_set;
-    cand_set.insert(base_key.begin(), base_key.end());
-
-    dynamic_bitset crit_coords(CoordMap.size() + 1); // coordinate 0 is omitted
-
-    for(auto& ind_tuple: all_ind_tuples){
-        if(cand_set.find(ind_tuple[0]) == cand_set.end() || cand_set.find(ind_tuple[1]) == cand_set.end()
-                || cand_set.find(ind_tuple[2]) != cand_set.end() )
-            continue;
-        crit_coords[coord(ind_tuple)] = true;
-    }
-    return crit_coords;
-
-}
-
-template <typename Integer>
-void FusionData<Integer>::make_all_ind_tuples(){
-    for(key_t i = 1; i < fusion_rank; ++i){
-        for(key_t j = 1; j < fusion_rank; ++j){
-            for(key_t k = 1; k < fusion_rank; ++k){
-                vector<key_t> ind_tuple = {i,j,k};
-                all_ind_tuples.push_back(ind_tuple);
-            }
-        }
-    }
-}
-
-template <typename Integer>
-void FusionData<Integer>::make_CoordMap(){
-    key_t val = 1;  // coordinate 0 is the homogenizing one
-    for(auto& ind_tuple: all_ind_tuples){
-        set<vector<key_t> > F = FrobRec(ind_tuple);
-        if(CoordMap.find(F) != CoordMap.end())
-            continue;
-        CoordMap[F] = val;
-        val++;
-    }
-}
-
-template <typename Integer>
-void  FusionData<Integer>::make_all_base_keys(){
-
-    vector<dynamic_bitset> all_subsets = make_all_subsets(fusion_rank -1);
-    for(auto& sub: all_subsets){
-        if(sub.count() == 0 || sub.count() == fusion_rank -1) // must discard empty set and the full ring
-            continue;
-        vector<key_t> kk = bitset_to_key(sub);
-        for(auto& c: kk)
-            c++;
-        bool duality_closed = true;
-        for(auto& c: kk){
-            if(!sub[duality[c] -1]){
-                duality_closed = false;
-                break;
-            }
-        }
-        if(!duality_closed)
-            continue;
-        all_base_keys.push_back(kk);
-    }
-}
-
-template <typename Integer>
-void FusionData<Integer>::prepare_simplicity_check(){
-    make_all_ind_tuples();
-    make_CoordMap();
-    /* for(auto& t: all_ind_tuples){
-        cout << coord(t) << " --- " <<t;
-    }*/
-    if(candidate_given){
-        coords_to_check_ind.push_back(critical_coords(subring_base_key));
-        coords_to_check_key.push_back(bitset_to_key(coords_to_check_ind[0]));
-        return;
-    }
-    // now we must make all candidates
-    make_all_base_keys();
-    for(auto& bk: all_base_keys){
-        coords_to_check_ind.push_back(critical_coords(bk));
-        coords_to_check_key.push_back(bitset_to_key(coords_to_check_ind.back()));
-    }
-}
-
-template <typename Integer>
-void FusionData<Integer>::select_and_write_simple(const Matrix<Integer>& LattPoints){ // from out file or final.lat
-
-    prepare_simplicity_check();
-    for(auto& aa: coords_to_check_key){
-        for(auto& c: aa) // homogenizing coordinate is no loonger at 0
-            c--;
-    }
-    Matrix<Integer> SimplePoints;
-    SimplePoints.resize(0,LattPoints.nr_of_columns());
-
-    for(size_t i = 0; i < LattPoints.nr_of_rows(); ++i){
-        if(check_simplicity(coords_to_check_key, LattPoints[i]))
-            SimplePoints.append(LattPoints[i]);
-    }
-
-    if(verbose)
-        verboseOutput() << SimplePoints.nr_of_rows() << " simple fusion rings found" << endl;
-
-    string name = global_project + ".simple.lat";
-    ofstream out(name);
-    out << SimplePoints.nr_of_rows() << endl;
-    out << SimplePoints.nr_of_columns() << endl;
-    SimplePoints.pretty_print(out);
-}
-
-template class FusionData<mpz_class>;
-template class FusionData<long long>;
-template class FusionData<long>;
-#ifdef ENFNORMALIZ
-template class FusionData<renf_elem_class>;
-#endif
 
 //--------------------------------------------------------------------
 
@@ -1457,21 +1173,16 @@ void ProjectAndLift<IntegerPL,IntegerRet>::prepare_split(list<vector<IntegerRet>
         list<vector<IntegerRet> > Selection;
 
         if(skip_done_indices){
-            set<long> done_indices;
-            done_indices.insert(our_split. this_pred_done_indices[pre_select].begin(), our_split.
-                                                                            this_pred_done_indices[pre_select].end());
+            long done_indices = our_split.this_pred_done_indices[pre_select];
             list<vector<IntegerRet> > PreSelection;
-            long k = 0;
+            size_t k = 0;
             for(auto& v: LatticePoints){
-                if(done_indices.find(k) != done_indices.end()){
-                    k++;
-                    continue;
-                }
-                PreSelection.push_back(v);
+                if(k >= done_indices)
+                    PreSelection.push_back(v);
                 k++;
             }
             if(verbose)
-                verboseOutput() << PreSelection.size() << " lattice points of " << LatticePoints.size() << "preselected" << endl;
+                verboseOutput() << k << " already done lattice points of " << LatticePoints.size() << " discarded " << endl;
             swap(LatticePoints, PreSelection);
             PreSelection.clear();
         }
@@ -1500,8 +1211,6 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
     }
 
     size_t max_nr_per_thread =  max_nr_new_latt_points_total/ omp_get_max_threads();
-    if(is_split_patching && this_patch == max_split_level)
-        max_nr_per_thread /= 10; // we want faster return to this level in the recursion, good if refinement is needed
 
     const size_t coord = InsertionOrderPatches[this_patch]; // the coord marking the next patch
 
@@ -2131,14 +1840,14 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
             ofstream prel_data;
             prel_data.open(lat_file_name, ofstream::app);
 
-            prel_data << "done_indices " << nr_points_matched << endl;
             size_t counter = 0;
-            for(auto& p: LatticePoints){
-                if(p[0] == 0){
-                    prel_data << counter << endl;
+            for(auto& p: LatticePoints){  // we only register the first "block"; there may be sporadic further done indices
+                if(p[0] != 0){
+                    break;
                 }
                 counter++;
             }
+            prel_data << "done_indices " << counter << endl;
             /* list<vector<IntegerRet> > Collector;
             for(auto& T: Deg1Thread)
                 Collector.insert(Collector.end(), T.begin(), T.end());*/
@@ -3370,11 +3079,9 @@ void ProjectAndLift<IntegerPL, IntegerRet>::read_split_data() {
             throw BadInputException("Corrupt predecessor file " + pred_file_name+ ".");
         size_t nr_done_indices;
         predecessor_data >> nr_done_indices;
-        our_split.this_pred_done_indices[pp].resize(nr_done_indices);
-        for(auto& d: our_split.this_pred_done_indices[pp])
-            predecessor_data >> d;
+        our_split.this_pred_done_indices[pp] = nr_done_indices;
         if(verbose)
-            verboseOutput() << "Read done indices " << nr_done_indices << endl;
+            verboseOutput() << nr_done_indices << " done indices for level "  << our_split.this_pred_min_return[pp] << endl;
     }
 
     if(predecessor_data.fail())

@@ -58,7 +58,7 @@ public:
     long this_split_predecessor; // this_split_index of the "mother" split, needed to identify the
                       // the lat fdile produced by the mother
     vector<long> this_pred_min_return; // the min return level of the predecessors;
-    vector< vector<long> > this_pred_done_indices; // indices of done elelemts of LatPopints on prwedecrssor levels
+    vector<long> this_pred_done_indices; // indices of done elelemts of LatPopints on prwedecrssor levels
                                                    // to be read from predecessor lat file
     long this_round;
     long nr_rounds;
