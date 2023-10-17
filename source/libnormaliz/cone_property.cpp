@@ -181,6 +181,10 @@ ConeProperties all_options() {
     ret.set(ConeProperty::LinearOrderPatches);
     ret.set(ConeProperty::CongOrderPatches);
     ret.set(ConeProperty::MinimizePolyEquations);
+    ret.set(ConeProperty::SelectSimple);
+    ret.set(ConeProperty::OnlySimple);
+    ret.set(ConeProperty::FusionIsoClasses);
+    ret.set(ConeProperty::ExploitFusionAutoms);
     return ret;
 }
 
@@ -1056,9 +1060,13 @@ vector<string> initializeCPN() {
     CPN.at(ConeProperty::MinimizePolyEquations) = "MinimizePolyEquations";
     CPN.at(ConeProperty::LinearOrderPatches) = "LinearOrderPatches";
     CPN.at(ConeProperty::CongOrderPatches) = "CongOrderPatches";
+    CPN.at(ConeProperty::SelectSimple) = "SelectSimple";
+    CPN.at(ConeProperty::OnlySimple) = "OnlySimple";
+    CPN.at(ConeProperty::FusionIsoClasses) = "FusionIsoClasses";
+    CPN.at(ConeProperty::ExploitFusionAutoms) = "ExploitFusionAutoms";
 
     // detect changes in size of Enum, to remember to update CPN!
-    static_assert(ConeProperty::EnumSize == 152, "ConeProperties Enum size does not fit! Update cone_property.cpp!");
+    static_assert(ConeProperty::EnumSize == 156, "ConeProperties Enum size does not fit! Update cone_property.cpp!");
     // assert all fields contain an non-empty string
     for (size_t i = 0; i < ConeProperty::EnumSize; i++) {
         // bstd::cout << "iii " << i << "  " << CPN.at(i) << endl;

@@ -259,6 +259,11 @@ enum Enum {
     RevLex,
     DegLex,
     //
+    SelectSimple,
+    OnlySimple,
+    FusionIsoClasses,
+    ExploitFusionAutoms,
+    //
     END_ENUM_RANGE(LAST_PROPERTY),
     //
     // ONLY FOR INTERNAL CONTROL
