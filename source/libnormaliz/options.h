@@ -329,6 +329,8 @@ void OptionsHandler::applyOutputOptions(Output<Integer>& Out) {
     Out.set_name(output_file);
 }
 
+string pureName(const string& fullName);
+
 inline string package_string() {
     string optional_packages;
 

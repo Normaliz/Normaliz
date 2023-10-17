@@ -48,7 +48,7 @@ static void printVersion() {
     printCopying();
 }
 
-static string pureName(const string& fullName) {
+string pureName(const string& fullName) {
     // extracts the pure filename
 
     string slash = "/";

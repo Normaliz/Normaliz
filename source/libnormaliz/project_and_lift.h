@@ -289,9 +289,6 @@ ProjectAndLift<IntegerPL, IntegerRet>::ProjectAndLift(const ProjectAndLift<Integ
 template <typename Integer>
 vector<Integer> FM_comb(Integer c1, const vector<Integer>& v1, Integer c2, const vector<Integer>& v2, bool& is_zero);
 
-// helper
-void select_simple_fusion_rings();
-Matrix<long long> extract_latt_points_from_out(ifstream& in_out);
 
 }  // end namespace libnormaliz
 

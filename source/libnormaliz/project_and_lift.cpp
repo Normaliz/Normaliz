@@ -3281,62 +3281,7 @@ template class ProjectAndLift<nmz_float, long>;
 template class ProjectAndLift<renf_elem_class, mpz_class>;
 #endif
 
-//-------------------------------------------------------------------------------
-// helper for fusion rings
 
-Matrix<long long> extract_latt_points_from_out(ifstream& in_out){
 
-    size_t nr_points;
-    in_out >> nr_points;
-    string s;
-    in_out >> s;
-    if(s != "lattice")
-        throw BadInputException("out file not suitable for extraction of sim,ple fusion rtings");
-    while(true){
-        in_out >> s;
-        if(s == "dimension")
-            break;
-    }
-    in_out >> s; // skip = sign
-    size_t emb_dim;
-    in_out >> emb_dim;
-    while(true){
-        in_out >> s;
-        if(s == "constraints:")
-            break;
-    }
-    Matrix<long long> LattPoints(nr_points, emb_dim);
-    for(size_t i = 0; i < nr_points; ++i)
-        for(size_t j = 0; j < emb_dim; ++j)
-            in_out >> LattPoints[i][j];
-
-    if(in_out.fail())
-        throw BadInputException("out file corrupt.");
-    return LattPoints;
-}
-
-void select_simple_fusion_rings(){
-
-    string name = global_project + ".final.lat";
-    Matrix<long long> LattPoints;
-    ifstream in_final(name);
-    if(in_final.is_open()){
-        in_final.close();
-        LattPoints = readMatrix<long long>(name);
-    }
-    else{
-        name = global_project + ".out";
-        ifstream in_out(name);
-        if(!in_out.is_open())
-            throw BadInputException("No file with lattice points found");
-
-        LattPoints = extract_latt_points_from_out(in_out);
-    }
-    FusionData<long long> fusion;
-    bool exists = fusion.read_data();
-    if(!exists)
-        throw BadInputException("fusion file does not exists");
-    fusion.select_and_write_simple(LattPoints);
-}
 
 }  // end namespace libnormaliz
