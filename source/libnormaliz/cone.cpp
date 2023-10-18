@@ -40,6 +40,7 @@
 #include "libnormaliz/face_lattice.h"
 #include "libnormaliz/input.h"
 #include "libnormaliz/lattice_ideal.h"
+#include "libnormaliz/project_and_lift.h"
 
 namespace libnormaliz {
 using namespace std;
@@ -2226,6 +2227,11 @@ bool Cone<Integer>::setVerbose(bool v) {
     verbose = v;
     return old;
 }
+
+template <typename Integer>
+bool Cone<Integer>::getVerbose() const {
+    return verbose;
+}
 //---------------------------------------------------------------------------
 
 template <typename Integer>
@@ -2395,6 +2401,11 @@ Cone<Integer>& Cone<Integer>::getSymmetrizedCone() const {
 template <typename Integer>
 size_t Cone<Integer>::getRank() {
     compute(ConeProperty::Sublattice);
+    return BasisChange.getRank();
+}
+
+template <typename Integer>
+size_t Cone<Integer>::getRankRaw() {
     return BasisChange.getRank();
 }
 
@@ -2882,6 +2893,37 @@ size_t Cone<Integer>::getNumberLatticePoints() {
 }
 
 template <typename Integer>
+bool Cone<Integer>::isParallelotope() const{
+    return is_parallelotope;
+}
+
+
+template <typename Integer>
+vector<dynamic_bitset> Cone<Integer>::getPair() const{       // for indicator vectors in project-and_lift
+    return Pair;
+}
+
+template <typename Integer>
+vector<dynamic_bitset> Cone<Integer>::getParaInPair() const{       // for indicator vectors in project-and_lift
+    return ParaInPair;
+}
+
+template <typename Integer>
+void Cone<Integer>::setChangeIntegerType(const bool onoff){
+    change_integer_type = onoff;
+}
+
+template <typename Integer>
+bool Cone<Integer>::getChangeIntegerType() const{
+    return change_integer_type;
+}
+
+template <typename Integer>
+void Cone<Integer>::setNumberLatticePoints(const size_t nr_lp) {
+    number_lattice_points = nr_lp;
+}
+
+template <typename Integer>
 const Matrix<Integer>& Cone<Integer>::getLatticePointsMatrix() {
     compute(ConeProperty::LatticePoints);
     if (!inhomogeneous)
@@ -2933,6 +2975,12 @@ Integer Cone<Integer>::getGradingDenom() {
     compute(ConeProperty::Grading);
     return GradingDenom;
 }
+
+template <typename Integer>
+Integer Cone<Integer>::getGradingDenomRaw() const{
+    return GradingDenom;
+}
+
 
 template <typename Integer>
 vector<Integer> Cone<Integer>::getDehomogenization() {
@@ -7168,7 +7216,7 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
         Equs.scalar_multiplication(-1);
         Supps.append(Equs);
         // Supps.debug_print('&');
-        project_and_lift(ToCompute, Raw, GradGen, Supps, Congs, GradingOnPolytope, primitive, PolyEqus, PolyInequs);
+        project_and_lift<Integer>(*this, ToCompute, Raw, GradGen, Supps, Congs, GradingOnPolytope, primitive, PolyEqus, PolyInequs);
     }
 
     // computation done. It remains to restore the old coordinates
@@ -7234,7 +7282,7 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
 
     if(global_select_simple){
         if(!inhomogeneous)
-            throw BadInputException("Computation must be inhomogeneous for selection of simple fusionrings.");
+            throw BadInputException("Computation must be inhomogeneous for selection of simple fusion rings.");
         FusionData<Integer> fusion;
         fusion.read_data();
         fusion.select_and_write_simple(ModuleGenerators);
@@ -7310,296 +7358,7 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
 
 //---------------------------------------------------------------------------
 
-#ifdef ENFNORMALIZ
 
-// special version to avoid problems with machine integer etc.
-template <>
-void Cone<renf_elem_class>::project_and_lift(const ConeProperties& ToCompute,
-                                             Matrix<renf_elem_class>& Deg1,
-                                             const Matrix<renf_elem_class>& Gens,
-                                             const Matrix<renf_elem_class>& Supps,
-                                             const Matrix<renf_elem_class>& Congs,
-                                             const vector<renf_elem_class>& GradingOnPolytope,
-                                             const bool primitive,
-                                             const OurPolynomialSystem<renf_elem_class>& PolyEqus,
-                                             const OurPolynomialSystem<renf_elem_class>& PolyInequs) {   // no primitive vgersion yet for renf
-    bool count_only = ToCompute.test(ConeProperty::NumberLatticePoints);
-    bool all_points = !ToCompute.test(ConeProperty::SingleLatticePoint);
-
-    vector<dynamic_bitset> Ind;
-    if(!primitive){
-        Ind = vector<dynamic_bitset>(Supps.nr_of_rows(), dynamic_bitset(Gens.nr_of_rows()));
-        for (size_t i = 0; i < Supps.nr_of_rows(); ++i)
-            for (size_t j = 0; j < Gens.nr_of_rows(); ++j)
-                if (v_scalar_product(Supps[i], Gens[j]) == 0)
-                    Ind[i][j] = true;
-    }
-
-    size_t rank = BasisChangePointed.getRank();
-
-    Matrix<renf_elem_class> Verts;
-    if(!primitive){
-        if (isComputed(ConeProperty::Generators)) {
-            vector<key_t> choice = identity_key(Gens.nr_of_rows());  // Gens.max_rank_submatrix_lex();
-            if (choice.size() >= dim)
-                Verts = Gens.submatrix(choice);
-        }
-    }
-
-    // Matrix<mpz_class> Raw(0, Gens.nr_of_columns());
-
-    vector<renf_elem_class> Dummy;
-    ProjectAndLift<renf_elem_class, mpz_class> PL;
-    PL = ProjectAndLift<renf_elem_class, mpz_class>(Supps, Ind, rank);
-    if(primitive){
-        PL.set_primitive();
-        PL.set_LLL(false);
-        PL.set_patching_allowed(!ToCompute.test(ConeProperty::NoPatching));
-        PL.set_coord_weights(ToCompute.test(ConeProperty::UseWeightsPatching));
-        PL.set_no_weights(ToCompute.test(ConeProperty::NoWeights));
-        PL.set_cong_order_patches(ToCompute.test(ConeProperty::CongOrderPatches));
-        PL.set_linear_order_patches(ToCompute.test(ConeProperty::LinearOrderPatches));
-        if(!is_split_patching) // must exclude Split and DistributedComp simultaneously
-            PL.set_distributed_computation(ToCompute.test(ConeProperty::DistributedComp));
-    }
-
-    PL.set_grading_denom(1);
-    PL.set_verbose(verbose);
-    PL.set_no_relax(ToCompute.test(ConeProperty::NoRelax));
-    PL.set_LLL(false);
-    PL.set_vertices(Verts);
-    OurPolynomialSystem<mpz_class> PolyEqus_mpz;
-    convert(PolyEqus_mpz, PolyEqus);
-    PL.set_PolyEquations(PolyEqus_mpz, ToCompute.test(ConeProperty::MinimizePolyEquations));
-    OurPolynomialSystem<mpz_class> PolyInequs_mpz;
-    convert(PolyInequs_mpz, PolyInequs);
-    PL.set_PolyInequalities(PolyInequs_mpz);
-    PL.compute(all_points, false, count_only);
-
-    Matrix<mpz_class> Deg1_mpz(0,Supps.nr_of_columns());
-
-    if(all_points){
-            PL.put_eg1Points_into(Deg1_mpz);
-            number_lattice_points = PL.getNumberLatticePoints();
-        }
-    else{
-        vector<mpz_class> SLP;
-        PL.put_single_point_into(SLP);
-        if(SLP.size() > 0){
-            Deg1_mpz.append(SLP);
-        }
-    }
-
-    convert(Deg1, Deg1_mpz);
-
-}
-
-#endif
-
-//---------------------------------------------------------------------------
-template <typename Integer>
-void Cone<Integer>::project_and_lift(const ConeProperties& ToCompute,
-                                     Matrix<Integer>& Deg1,
-                                     const Matrix<Integer>& Gens,
-                                     const Matrix<Integer>& Supps,
-                                     const Matrix<Integer>& Congs,
-                                     const vector<Integer>& GradingOnPolytope,
-                                     const bool primitive,
-                                     const OurPolynomialSystem<Integer>& PolyEqus,
-                                     const OurPolynomialSystem<Integer>& PolyInequs ) {
-    bool float_projection = ToCompute.test(ConeProperty::ProjectionFloat);
-    bool count_only = ToCompute.test(ConeProperty::NumberLatticePoints);
-    bool all_points = !ToCompute.test(ConeProperty::SingleLatticePoint);
-
-    vector<dynamic_bitset> Ind;
-
-    if (!primitive && !is_parallelotope) {
-        Ind = vector<dynamic_bitset>(Supps.nr_of_rows(), dynamic_bitset(Gens.nr_of_rows()));
-        for (size_t i = 0; i < Supps.nr_of_rows(); ++i)
-            for (size_t j = 0; j < Gens.nr_of_rows(); ++j)
-                if (v_scalar_product(Supps[i], Gens[j]) == 0)
-                    Ind[i][j] = true;
-    }
-
-    size_t rank = BasisChangePointed.getRank();
-
-    Matrix<Integer> Verts;
-        if(!primitive){
-        if (isComputed(ConeProperty::Generators)) {
-            vector<key_t> choice = identity_key(Gens.nr_of_rows());  // Gens.max_rank_submatrix_lex();
-            if (choice.size() >= dim)
-                Verts = Gens.submatrix(choice);
-        }
-    }
-
-    vector<num_t> h_vec_pos, h_vec_neg;
-
-    if (float_projection) {  // conversion to float inside project-and-lift
-        // vector<Integer> Dummy;
-        ProjectAndLift<Integer, MachineInteger> PL;
-        if (!is_parallelotope)
-            PL = ProjectAndLift<Integer, MachineInteger>(Supps, Ind, rank);
-        else
-            PL = ProjectAndLift<Integer, MachineInteger>(Supps, Pair, ParaInPair, rank);
-        Matrix<MachineInteger> CongsMI;
-        convert(CongsMI, Congs);
-        PL.set_congruences(CongsMI);
-        PL.set_grading_denom(convertTo<MachineInteger>(GradingDenom));
-        vector<MachineInteger> GOPMI;
-        convert(GOPMI, GradingOnPolytope);
-        PL.set_grading(GOPMI);
-        PL.set_verbose(verbose);
-        PL.set_LLL(!ToCompute.test(ConeProperty::NoLLL));
-        PL.set_no_relax(ToCompute.test(ConeProperty::NoRelax));
-        PL.set_vertices(Verts);
-
-        PL.compute(true, true, count_only);  // the first true for all_points, the second for float
-        Matrix<MachineInteger> Deg1MI(0, Deg1.nr_of_columns());
-        PL.put_eg1Points_into(Deg1MI);
-        convert(Deg1, Deg1MI);
-        number_lattice_points = PL.getNumberLatticePoints();
-        PL.get_h_vectors(h_vec_pos, h_vec_neg);
-    }
-    else {
-        if (change_integer_type) {
-            Matrix<MachineInteger> Deg1MI(0, Deg1.nr_of_columns());
-            // Matrix<MachineInteger> GensMI;
-            Matrix<MachineInteger> SuppsMI;
-            try {
-                // convert(GensMI,Gens);
-                convert(SuppsMI, Supps);
-                MachineInteger GDMI = convertTo<MachineInteger>(GradingDenom);
-                ProjectAndLift<MachineInteger, MachineInteger> PL;
-                if (!is_parallelotope || primitive)
-                    PL = ProjectAndLift<MachineInteger, MachineInteger>(SuppsMI, Ind, rank);
-                else
-                    PL = ProjectAndLift<MachineInteger, MachineInteger>(SuppsMI, Pair, ParaInPair, rank);
-                Matrix<MachineInteger> CongsMI;
-                convert(CongsMI, Congs);
-                PL.set_congruences(CongsMI);
-                if(primitive){
-                    PL.set_primitive();
-                    PL.set_LLL(false);
-                    PL.set_patching_allowed(!ToCompute.test(ConeProperty::NoPatching));
-                    PL.set_cong_order_patches(ToCompute.test(ConeProperty::CongOrderPatches));
-                    PL.set_linear_order_patches(ToCompute.test(ConeProperty::LinearOrderPatches));
-                    PL.set_coord_weights(ToCompute.test(ConeProperty::UseWeightsPatching));
-                    PL.set_no_weights(ToCompute.test(ConeProperty::NoWeights));
-                    if(!is_split_patching) // must exclude Split and DistributedComp simultaneously
-                        PL.set_distributed_computation(ToCompute.test(ConeProperty::DistributedComp));
-                }
-                PL.set_grading_denom(GDMI);
-                vector<MachineInteger> GOPMI;
-                convert(GOPMI, GradingOnPolytope);
-                PL.set_grading(GOPMI);
-                PL.set_verbose(verbose);
-                PL.set_no_relax(ToCompute.test(ConeProperty::NoRelax));
-                if(!primitive)
-                    PL.set_LLL(!ToCompute.test(ConeProperty::NoLLL));
-                Matrix<MachineInteger> VertsMI;
-                convert(VertsMI, Verts);
-                PL.set_vertices(VertsMI);
-
-                OurPolynomialSystem<MachineInteger> PolyEqus_MI;
-                OurPolynomialSystem<MachineInteger> PolyInequs_MI;
-                convert(PolyEqus_MI, PolyEqus);
-                convert(PolyInequs_MI, PolyInequs);
-                PL.set_PolyEquations(PolyEqus_MI, ToCompute.test(ConeProperty::MinimizePolyEquations));
-                PL.set_PolyInequalities(PolyInequs_MI);
-                if(PolyInequs.size() > 0 || PolyEqus.size() > 0)
-                    PL.set_LLL(false);
-
-                PL.compute(all_points, false, count_only);
-
-                if(all_points){
-                    PL.put_eg1Points_into(Deg1MI);
-                    number_lattice_points = PL.getNumberLatticePoints();
-                }
-                else{
-                    vector<MachineInteger> SLP_MI;
-                    PL.put_single_point_into(SLP_MI);
-                    if(SLP_MI.size() > 0){
-                        Deg1MI.append(SLP_MI);
-                    }
-                }
-
-                PL.get_h_vectors(h_vec_pos, h_vec_neg);
-            } catch (const ArithmeticException& e) {
-                if (verbose) {
-                    verboseOutput() << e.what() << endl;
-                    verboseOutput() << "Restarting with a bigger type." << endl;
-                }
-                change_integer_type = false;
-            }
-            if (change_integer_type) {
-                convert(Deg1, Deg1MI);
-            }
-        }
-
-        if (!change_integer_type) {
-            ProjectAndLift<Integer, Integer> PL;
-            if (!is_parallelotope || primitive)
-                PL = ProjectAndLift<Integer, Integer>(Supps, Ind, rank);
-            else
-                PL = ProjectAndLift<Integer, Integer>(Supps, Pair, ParaInPair, rank);
-            PL.set_congruences(Congs);
-            if(primitive){
-                PL.set_primitive();
-                PL.set_LLL(false);
-                PL.set_patching_allowed(!ToCompute.test(ConeProperty::NoPatching));
-                PL.set_cong_order_patches(ToCompute.test(ConeProperty::CongOrderPatches));
-                PL.set_linear_order_patches(ToCompute.test(ConeProperty::LinearOrderPatches));
-                PL.set_coord_weights(ToCompute.test(ConeProperty::UseWeightsPatching));
-                PL.set_no_weights(ToCompute.test(ConeProperty::NoWeights));
-                if(!is_split_patching) // must exclude Split and DistributedComp simultaneously
-                    PL.set_distributed_computation(ToCompute.test(ConeProperty::DistributedComp));
-            }
-            PL.set_grading_denom(GradingDenom);
-            PL.set_grading(GradingOnPolytope);
-            PL.set_verbose(verbose);
-            PL.set_no_relax(ToCompute.test(ConeProperty::NoRelax));
-            if(!primitive)
-                PL.set_LLL(!ToCompute.test(ConeProperty::NoLLL));
-            PL.set_vertices(Verts);
-            PL.set_PolyEquations(PolyEqus, ToCompute.test(ConeProperty::MinimizePolyEquations));
-            PL.set_PolyInequalities(PolyInequs);
-            if(PolyInequs.size() > 0 || PolyEqus.size() > 0)
-                PL.set_LLL(false);
-
-            PL.compute(all_points, false, count_only);
-
-            if(all_points){
-                    PL.put_eg1Points_into(Deg1);
-                    number_lattice_points = PL.getNumberLatticePoints();
-                }
-            else{
-                vector<Integer> SLP;
-                PL.put_single_point_into(SLP);
-                if(SLP.size() > 0){
-                    Deg1.append(SLP);
-                }
-            }
-
-            PL.get_h_vectors(h_vec_pos, h_vec_neg);
-        }
-    }
-
-    if (ToCompute.test(ConeProperty::HilbertSeries) && isComputed(ConeProperty::Grading)) {
-        make_Hilbert_series_from_pos_and_neg(h_vec_pos, h_vec_neg);
-    }
-
-    /* setComputed(ConeProperty::Projection);
-    if(ToCompute.test(ConeProperty::NoRelax))
-        setComputed(ConeProperty::NoRelax);
-    if(ToCompute.test(ConeProperty::NoLLL))
-        setComputed(ConeProperty::NoLLL);
-    if(float_projection)
-        setComputed(ConeProperty::ProjectionFloat);*/
-
-    if (verbose)
-        verboseOutput() << "Project-and-lift complete" << endl
-                        << "------------------------------------------------------------" << endl;
-}
 
 //---------------------------------------------------------------------------
 

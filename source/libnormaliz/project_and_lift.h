@@ -41,6 +41,9 @@ using std::vector;
 
 // the project-and-lift algorithm for lattice points in a polytope
 
+template <typename Integer>
+class Cone;
+
 template <typename IntegerPL, typename IntegerRet>
 class ProjectAndLift {
     template <typename, typename>
@@ -247,6 +250,8 @@ class ProjectAndLift {
 
     FusionData<IntegerRet> fusion;
     void read_subring_data();
+
+    void setOptions(const ConeProperties& ToCompute, const bool primitive, const bool our_verbose);
 };
 
 
@@ -288,6 +293,19 @@ ProjectAndLift<IntegerPL, IntegerRet>::ProjectAndLift(const ProjectAndLift<Integ
 // computes c1*v1-c2*v2
 template <typename Integer>
 vector<Integer> FM_comb(Integer c1, const vector<Integer>& v1, Integer c2, const vector<Integer>& v2, bool& is_zero);
+
+// setup function
+
+template <typename Integer>
+void project_and_lift(Cone<Integer>&  C, const ConeProperties& ToCompute,
+                                     Matrix<Integer>& Deg1,
+                                     const Matrix<Integer>& Gens,
+                                     const Matrix<Integer>& Supps,
+                                     const Matrix<Integer>& Congs,
+                                     const vector<Integer>& GradingOnPolytope,
+                                     const bool primitive,
+                                     const OurPolynomialSystem<Integer>& PolyEqus,
+                                     const OurPolynomialSystem<Integer>& PolyInequs );
 
 
 }  // end namespace libnormaliz

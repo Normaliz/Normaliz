@@ -3263,6 +3263,33 @@ void ProjectAndLift<IntegerPL, IntegerRet>::putSuppsAndEqus(Matrix<IntegerPL>& S
     SuppsRet.resize(equs_start_in_row);  // we must delete the superfluous rows because the transformation
                                          // to vector<vector> could else fail.
 }
+
+//---------------------------------------------------------------------------
+
+template <typename IntegerPL, typename IntegerRet>
+void ProjectAndLift<IntegerPL, IntegerRet>::setOptions(const ConeProperties& ToCompute, const bool primitive, const bool our_verbose){
+
+    if(primitive){
+        set_primitive();
+        set_LLL(false);
+        set_patching_allowed(!ToCompute.test(ConeProperty::NoPatching));
+        set_cong_order_patches(ToCompute.test(ConeProperty::CongOrderPatches));
+        set_linear_order_patches(ToCompute.test(ConeProperty::LinearOrderPatches));
+        set_coord_weights(ToCompute.test(ConeProperty::UseWeightsPatching));
+        set_no_weights(ToCompute.test(ConeProperty::NoWeights));
+        if(!is_split_patching) // must exclude Split and DistributedComp simultaneously
+            set_distributed_computation(ToCompute.test(ConeProperty::DistributedComp));
+    }
+    set_verbose(our_verbose);
+    set_no_relax(ToCompute.test(ConeProperty::NoRelax));
+    if(using_renf<IntegerPL>())
+        set_LLL(false);
+    else{
+        if(!primitive)
+            set_LLL(!ToCompute.test(ConeProperty::NoLLL));
+    }
+}
+
 //---------------------------------------------------------------------------
 
 template class ProjectAndLift<mpz_class, mpz_class>;
@@ -3281,6 +3308,305 @@ template class ProjectAndLift<nmz_float, long>;
 template class ProjectAndLift<renf_elem_class, mpz_class>;
 #endif
 
+#ifdef ENFNORMALIZ
+
+// special version to avoid problems with machine integer etc.
+template <>
+void project_and_lift(Cone<renf_elem_class>&  C, const ConeProperties& ToCompute,
+                                             Matrix<renf_elem_class>& Deg1,
+                                             const Matrix<renf_elem_class>& Gens,
+                                             const Matrix<renf_elem_class>& Supps,
+                                             const Matrix<renf_elem_class>& Congs,
+                                             const vector<renf_elem_class>& GradingOnPolytope,
+                                             const bool primitive,
+                                             const OurPolynomialSystem<renf_elem_class>& PolyEqus,
+                                             const OurPolynomialSystem<renf_elem_class>& PolyInequs) {   // no primitive vgersion yet for renf
+    bool count_only = ToCompute.test(ConeProperty::NumberLatticePoints);
+    bool all_points = !ToCompute.test(ConeProperty::SingleLatticePoint);
+
+    vector<dynamic_bitset> Ind;
+    if(!primitive){
+        Ind = vector<dynamic_bitset>(Supps.nr_of_rows(), dynamic_bitset(Gens.nr_of_rows()));
+        for (size_t i = 0; i < Supps.nr_of_rows(); ++i)
+            for (size_t j = 0; j < Gens.nr_of_rows(); ++j)
+                if (v_scalar_product(Supps[i], Gens[j]) == 0)
+                    Ind[i][j] = true;
+    }
+
+    size_t rank = C.getRankRaw();
+
+    Matrix<renf_elem_class> Verts;
+    if(!primitive){
+        if (C.isComputed(ConeProperty::Generators)) {
+            vector<key_t> choice = identity_key(Gens.nr_of_rows());  // Gens.max_rank_submatrix_lex();
+            if (choice.size() >= C.getEmbeddingDim())
+                Verts = Gens.submatrix(choice);
+        }
+    }
+
+    // Matrix<mpz_class> Raw(0, Gens.nr_of_columns());
+
+    vector<renf_elem_class> Dummy;
+    ProjectAndLift<renf_elem_class, mpz_class> PL;
+    PL = ProjectAndLift<renf_elem_class, mpz_class>(Supps, Ind, rank);
+
+    PL.setOptions(ToCompute, primitive, C.getVerbose());
+
+    PL.set_grading_denom(1);
+    PL.set_vertices(Verts);
+    OurPolynomialSystem<mpz_class> PolyEqus_mpz;
+    convert(PolyEqus_mpz, PolyEqus);
+    PL.set_PolyEquations(PolyEqus_mpz, ToCompute.test(ConeProperty::MinimizePolyEquations));
+    OurPolynomialSystem<mpz_class> PolyInequs_mpz;
+    convert(PolyInequs_mpz, PolyInequs);
+    PL.set_PolyInequalities(PolyInequs_mpz);
+    PL.compute(all_points, false, count_only);
+
+    Matrix<mpz_class> Deg1_mpz(0,Supps.nr_of_columns());
+
+    if(all_points){
+            PL.put_eg1Points_into(Deg1_mpz);
+            C.setNumberLatticePoints(PL.getNumberLatticePoints());
+        }
+    else{
+        vector<mpz_class> SLP;
+        PL.put_single_point_into(SLP);
+        if(SLP.size() > 0){
+            Deg1_mpz.append(SLP);
+        }
+    }
+
+    convert(Deg1, Deg1_mpz);
+
+}
+
+#endif
+
+//---------------------------------------------------------------------------
+template <typename Integer>
+void project_and_lift(Cone<Integer>&  C, const ConeProperties& ToCompute,
+                                     Matrix<Integer>& Deg1,
+                                     const Matrix<Integer>& Gens,
+                                     const Matrix<Integer>& Supps,
+                                     const Matrix<Integer>& Congs,
+                                     const vector<Integer>& GradingOnPolytope,
+                                     const bool primitive,
+                                     const OurPolynomialSystem<Integer>& PolyEqus,
+                                     const OurPolynomialSystem<Integer>& PolyInequs ) {
+    bool float_projection = ToCompute.test(ConeProperty::ProjectionFloat);
+    bool count_only = ToCompute.test(ConeProperty::NumberLatticePoints);
+    bool all_points = !ToCompute.test(ConeProperty::SingleLatticePoint);
+
+    vector<dynamic_bitset> Ind;
+
+    if (!primitive && !C.isParallelotope()) {
+        Ind = vector<dynamic_bitset>(Supps.nr_of_rows(), dynamic_bitset(Gens.nr_of_rows()));
+        for (size_t i = 0; i < Supps.nr_of_rows(); ++i)
+            for (size_t j = 0; j < Gens.nr_of_rows(); ++j)
+                if (v_scalar_product(Supps[i], Gens[j]) == 0)
+                    Ind[i][j] = true;
+    }
+
+    size_t rank = C.getRankRaw();
+
+    Matrix<Integer> Verts;
+        if(!primitive){
+        if (C.isComputed(ConeProperty::Generators)) {
+            vector<key_t> choice = identity_key(Gens.nr_of_rows());  // Gens.max_rank_submatrix_lex();
+            if (choice.size() >= C.getEmbeddingDim())
+                Verts = Gens.submatrix(choice);
+        }
+    }
+
+    vector<num_t> h_vec_pos, h_vec_neg;
+
+    if (float_projection) {  // conversion to float inside project-and-lift
+        // vector<Integer> Dummy;
+        ProjectAndLift<Integer, MachineInteger> PL;
+        if (!C.isParallelotope())
+            PL = ProjectAndLift<Integer, MachineInteger>(Supps, Ind, rank);
+        else
+            PL = ProjectAndLift<Integer, MachineInteger>(Supps, C.getPair(), C.getParaInPair(), rank);
+        Matrix<MachineInteger> CongsMI;
+        convert(CongsMI, Congs);
+        PL.set_congruences(CongsMI);
+        PL.set_grading_denom(convertTo<MachineInteger>(C.getGradingDenomRaw()));
+        vector<MachineInteger> GOPMI;
+        convert(GOPMI, GradingOnPolytope);
+        PL.set_grading(GOPMI);
+        PL.set_verbose(verbose);
+        PL.set_LLL(!ToCompute.test(ConeProperty::NoLLL));
+        PL.set_no_relax(ToCompute.test(ConeProperty::NoRelax));
+        PL.set_vertices(Verts);
+
+        PL.compute(true, true, count_only);  // the first true for all_points, the second for float
+        Matrix<MachineInteger> Deg1MI(0, Deg1.nr_of_columns());
+        PL.put_eg1Points_into(Deg1MI);
+        convert(Deg1, Deg1MI);
+        C.setNumberLatticePoints(PL.getNumberLatticePoints());
+        PL.get_h_vectors(h_vec_pos, h_vec_neg);
+    }
+    else {
+        if (C.getChangeIntegerType()) {
+            Matrix<MachineInteger> Deg1MI(0, Deg1.nr_of_columns());
+            // Matrix<MachineInteger> GensMI;
+            Matrix<MachineInteger> SuppsMI;
+            try {
+                // convert(GensMI,Gens);
+                convert(SuppsMI, Supps);
+                MachineInteger GDMI = convertTo<MachineInteger>(C.getGradingDenomRaw());
+                ProjectAndLift<MachineInteger, MachineInteger> PL;
+                if (!C.isParallelotope() || primitive)
+                    PL = ProjectAndLift<MachineInteger, MachineInteger>(SuppsMI, Ind, rank);
+                else
+                    PL = ProjectAndLift<MachineInteger, MachineInteger>(SuppsMI, C.getPair(), C.getParaInPair(), rank);
+                Matrix<MachineInteger> CongsMI;
+                convert(CongsMI, Congs);
+                PL.set_congruences(CongsMI);
+
+                PL.setOptions(ToCompute, primitive, C.getVerbose());
+
+                PL.set_grading_denom(GDMI);
+                vector<MachineInteger> GOPMI;
+                convert(GOPMI, GradingOnPolytope);
+                PL.set_grading(GOPMI);
+                Matrix<MachineInteger> VertsMI;
+                convert(VertsMI, Verts);
+                PL.set_vertices(VertsMI);
+
+                OurPolynomialSystem<MachineInteger> PolyEqus_MI;
+                OurPolynomialSystem<MachineInteger> PolyInequs_MI;
+                convert(PolyEqus_MI, PolyEqus);
+                convert(PolyInequs_MI, PolyInequs);
+                PL.set_PolyEquations(PolyEqus_MI, ToCompute.test(ConeProperty::MinimizePolyEquations));
+                PL.set_PolyInequalities(PolyInequs_MI);
+                if(PolyInequs.size() > 0 || PolyEqus.size() > 0)
+                    PL.set_LLL(false);
+
+                PL.compute(all_points, false, count_only);
+
+                if(all_points){
+                    PL.put_eg1Points_into(Deg1MI);
+                    C.setNumberLatticePoints(PL.getNumberLatticePoints());
+                }
+                else{
+                    vector<MachineInteger> SLP_MI;
+                    PL.put_single_point_into(SLP_MI);
+                    if(SLP_MI.size() > 0){
+                        Deg1MI.append(SLP_MI);
+                    }
+                }
+
+                PL.get_h_vectors(h_vec_pos, h_vec_neg);
+            } catch (const ArithmeticException& e) {
+                if (verbose) {
+                    verboseOutput() << e.what() << endl;
+                    verboseOutput() << "Restarting with a bigger type." << endl;
+                }
+                C.setChangeIntegerType(false);
+            }
+            if (C.getChangeIntegerType()) {
+                convert(Deg1, Deg1MI);
+            }
+        }
+
+        if (!C.getChangeIntegerType()) {
+            ProjectAndLift<Integer, Integer> PL;
+            if (!C.isParallelotope() || primitive)
+                PL = ProjectAndLift<Integer, Integer>(Supps, Ind, rank);
+            else
+                PL = ProjectAndLift<Integer, Integer>(Supps, C.getPair(), C.getParaInPair(), rank);
+            PL.set_congruences(Congs);
+
+            PL.setOptions(ToCompute, primitive, C.getVerbose());
+
+            PL.set_grading_denom(C.getGradingDenomRaw());
+            PL.set_grading(GradingOnPolytope);
+            PL.set_vertices(Verts);
+            PL.set_PolyEquations(PolyEqus, ToCompute.test(ConeProperty::MinimizePolyEquations));
+            PL.set_PolyInequalities(PolyInequs);
+            if(PolyInequs.size() > 0 || PolyEqus.size() > 0)
+                PL.set_LLL(false);
+
+            PL.compute(all_points, false, count_only);
+
+            if(all_points){
+                    PL.put_eg1Points_into(Deg1);
+                    C.setNumberLatticePoints(PL.getNumberLatticePoints());
+                }
+            else{
+                vector<Integer> SLP;
+                PL.put_single_point_into(SLP);
+                if(SLP.size() > 0){
+                    Deg1.append(SLP);
+                }
+            }
+
+            PL.get_h_vectors(h_vec_pos, h_vec_neg);
+        }
+    }
+
+    if (ToCompute.test(ConeProperty::HilbertSeries) && C.isComputed(ConeProperty::Grading)) {
+        C.make_Hilbert_series_from_pos_and_neg(h_vec_pos, h_vec_neg);
+    }
+
+    /* setComputed(ConeProperty::Projection);
+    if(ToCompute.test(ConeProperty::NoRelax))
+        setComputed(ConeProperty::NoRelax);
+    if(ToCompute.test(ConeProperty::NoLLL))
+        setComputed(ConeProperty::NoLLL);
+    if(float_projection)
+        setComputed(ConeProperty::ProjectionFloat);*/
+
+    if (verbose)
+        verboseOutput() << "Project-and-lift complete" << endl
+                        << "------------------------------------------------------------" << endl;
+}
+
+template void project_and_lift<long long>(Cone<long long>&  C, const ConeProperties& ToCompute,
+                                     Matrix<long long>& Deg1,
+                                     const Matrix<long long>& Gens,
+                                     const Matrix<long long>& Supps,
+                                     const Matrix<long long>& Congs,
+                                     const vector<long long>& GradingOnPolytope,
+                                     const bool primitive,
+                                     const OurPolynomialSystem<long long>& PolyEqus,
+                                     const OurPolynomialSystem<long long>& PolyInequs );
+
+template void project_and_lift<long>(Cone<long>&  C, const ConeProperties& ToCompute,
+                                     Matrix<long>& Deg1,
+                                     const Matrix<long>& Gens,
+                                     const Matrix<long>& Supps,
+                                     const Matrix<long>& Congs,
+                                     const vector<long>& GradingOnPolytope,
+                                     const bool primitive,
+                                     const OurPolynomialSystem<long>& PolyEqus,
+                                     const OurPolynomialSystem<long>& PolyInequs );
+
+template void project_and_lift<mpz_class>(Cone<mpz_class>&  C, const ConeProperties& ToCompute,
+                                     Matrix<mpz_class>& Deg1,
+                                     const Matrix<mpz_class>& Gens,
+                                     const Matrix<mpz_class>& Supps,
+                                     const Matrix<mpz_class>& Congs,
+                                     const vector<mpz_class>& GradingOnPolytope,
+                                     const bool primitive,
+                                     const OurPolynomialSystem<mpz_class>& PolyEqus,
+                                     const OurPolynomialSystem<mpz_class>& PolyInequs );
+
+
+#ifdef ENFNORMALIZ
+
+template void project_and_lift<renf_elem_class>(Cone<renf_elem_class>&  C, const ConeProperties& ToCompute,
+                                     Matrix<renf_elem_class>& Deg1,
+                                     const Matrix<renf_elem_class>& Gens,
+                                     const Matrix<renf_elem_class>& Supps,
+                                     const Matrix<renf_elem_class>& Congs,
+                                     const vector<renf_elem_class>& GradingOnPolytope,
+                                     const bool primitive,
+                                     const OurPolynomialSystem<renf_elem_class>& PolyEqus,
+                                     const OurPolynomialSystem<renf_elem_class>& PolyInequs );
+
+#endif
 
 
 

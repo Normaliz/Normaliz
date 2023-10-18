@@ -129,6 +129,10 @@ struct STANLEYDATA {
 
 template <typename Integer>
 class Cone {
+
+    template <typename, typename>
+    friend class ProjectAndLift;
+
     // friend class ConeCollection<Integer>;
     //---------------------------------------------------------------------------
     //                               public methods
@@ -275,6 +279,7 @@ class Cone {
      * returns the old value
      */
     bool setVerbose(bool v);
+    bool getVerbose() const;
 
     void deactivateChangeOfPrecision();
 
@@ -364,6 +369,7 @@ class Cone {
         return dim;
     };                            // is always known
     size_t getRank();             // depends on ExtremeRays
+    size_t getRankRaw(); // returns what is computed at the time of call
     Integer getInternalIndex();   // depends on OriginalMonoidGenerators
     Integer getUnitGroupIndex();  // ditto
     // only for inhomogeneous case:
@@ -456,6 +462,7 @@ class Cone {
     size_t getNrDeg1Elements();
 
     size_t getNumberLatticePoints();
+    void setNumberLatticePoints(const size_t nr_lp);
 
     const Matrix<Integer>& getLatticePointsMatrix();
     const vector<vector<Integer> >& getLatticePoints();
@@ -477,6 +484,7 @@ class Cone {
     // the actual grading is Grading/GradingDenom
     vector<Integer> getGrading();
     Integer getGradingDenom();
+    Integer getGradingDenomRaw() const;
     vector<long long> ValuesGradingOnMonoid;
 
     vector<Integer> getDehomogenization();
@@ -582,6 +590,15 @@ class Cone {
     string getRenfGenerator(const renf_class*);
     const renf_class* getRenf();
     renf_class_shared getRenfSharedPtr();
+
+    bool isParallelotope() const;
+    vector<dynamic_bitset> getPair() const;        // for indicator vectors in project-and_lift
+    vector<dynamic_bitset> getParaInPair() const;
+
+    bool getChangeIntegerType() const;
+    void setChangeIntegerType(const bool onoff);
+
+    void make_Hilbert_series_from_pos_and_neg(const vector<num_t>& h_vec_pos, const vector<num_t>& h_vec_neg);
 
     //---------------------------------------------------------------------------
     //                          private part
@@ -809,7 +826,6 @@ class Cone {
     void try_approximation_or_projection(ConeProperties& ToCompute);
 
     void try_Hilbert_Series_from_lattice_points(const ConeProperties& ToCompute);
-    void make_Hilbert_series_from_pos_and_neg(const vector<num_t>& h_vec_pos, const vector<num_t>& h_vec_neg);
 
     void make_face_lattice(const ConeProperties& ToCompute);
     void make_face_lattice_primal(const ConeProperties& ToCompute);
@@ -942,7 +958,7 @@ class Cone {
     template <typename IntegerFC>
     void give_data_of_approximated_cone_to(Full_Cone<IntegerFC>& FC);
 
-    void project_and_lift(const ConeProperties& ToCompute,
+    /* void project_and_lift(const ConeProperties& ToCompute,
                           Matrix<Integer>& Deg1,
                           const Matrix<Integer>& Gens,
                           const Matrix<Integer>& Supps,
@@ -950,7 +966,7 @@ class Cone {
                           const vector<Integer>& GradingOnPolytope,
                           const bool primitive,
                           const OurPolynomialSystem<Integer>& PolyEqs,
-                          const OurPolynomialSystem<Integer>& PolyIneqs);
+                          const OurPolynomialSystem<Integer>& PolyIneqs);*/
 
     void compute_volume(ConeProperties& ToCompute);
 
