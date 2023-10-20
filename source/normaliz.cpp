@@ -432,11 +432,6 @@ int process_data(OptionsHandler& options, const string& command_line) {
             return 0;
         }
 
-        if(options.isUseSelectSimple()){
-            select_simple_fusion_rings();
-            return 0;
-        }
-
         if (options.isUseChunk()) {
             chunk();
             exit(0);

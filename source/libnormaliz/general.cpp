@@ -96,7 +96,6 @@ long split_index_option = -1;
 long split_index_rounds = -1;
 long split_refinement = -1;
 bool is_split_patching = false;
-bool global_select_simple= false;
 
 bool list_of_input_files = false;
 long number_normaliz_instances= -1;

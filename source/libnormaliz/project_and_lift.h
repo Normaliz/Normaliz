@@ -117,6 +117,8 @@ class ProjectAndLift {
     bool distributed_computation;
 
     long critical_coord_simplicity;
+    bool check_simplicity_cand;
+    bool check_simplicity_all;
 
     // data for patching method
     vector<dynamic_bitset> Indicator; // indicaor of nonzero coordinates in inequality

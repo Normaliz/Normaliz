@@ -290,7 +290,14 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
 
     DefiningSupps.resize(EmbDim);
 
-    if(fusion.check_simplicity_all)
+    if(fusion.check_simplicity){
+        if(fusion.candidate_given)
+            check_simplicity_cand = true;
+        else
+            check_simplicity_all = true;
+    }
+
+    if(check_simplicity_all)
         fusion.all_critical_coords_keys.resize(EmbDim);
 
     poly_equs_minimized.resize(EmbDim);
@@ -347,7 +354,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
     }
 
     // we compute basic data for simplicity test
-    if(fusion.check_simplicity_cand){
+    if(check_simplicity_cand){
         critical_coord_simplicity = -1;
     }
 
@@ -472,14 +479,14 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
         dynamic_bitset new_covered = covered | AllPatches[coord];
 
         // first we check whether the simplicity test can be done at this point
-        if(fusion.check_simplicity_cand){
+        if(check_simplicity_cand){
             if(critical_coord_simplicity == -1){
                 if(fusion.coords_to_check_ind[0].is_subset_of(new_covered) ){
                     critical_coord_simplicity = coord;
                 }
             }
         }
-        if(fusion.check_simplicity_all){
+        if(check_simplicity_all){
             for(size_t i = 0; i < fusion.coords_to_check_ind.size(); ++i){
                 if(fusion.coords_to_check_ind[i].is_subset_of(new_covered) && !fusion.coords_to_check_ind[i].is_subset_of(covered))
                     fusion.all_critical_coords_keys[coord].push_back(fusion.coords_to_check_key[i]);
@@ -1564,15 +1571,15 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
 #pragma omp atomic
                 nr_latt_points_total++;
 
-                if(fusion.check_simplicity_cand && critical_coord_simplicity == coord){
-                    if(!fusion.check_simplicity(fusion.coords_to_check_key[0], NewLattPoint)){
+                if(check_simplicity_cand && critical_coord_simplicity == coord){
+                    if(!fusion.simplicity_check(fusion.coords_to_check_key[0], NewLattPoint)){
                         can_be_inserted = false;
 #pragma omp atomic
                         nr_caught_by_simplicity++;
                     }
                 }
-                if(can_be_inserted && fusion.check_simplicity_all){
-                    if(!fusion.check_simplicity(fusion.all_critical_coords_keys[coord], NewLattPoint)){
+                if(can_be_inserted && check_simplicity_all){
+                    if(!fusion.simplicity_check(fusion.all_critical_coords_keys[coord], NewLattPoint)){
                         can_be_inserted = false;
 #pragma omp atomic
                         nr_caught_by_simplicity++;
@@ -2856,6 +2863,8 @@ void ProjectAndLift<IntegerPL, IntegerRet>::initialize(const Matrix<IntegerPL>& 
     linear_order_patches = false;
     cong_order_patches = false;
     distributed_computation = false;
+    check_simplicity_all = false;
+    check_simplicity_cand = false;
     TotalNrLP = 0;
     min_return_patch = 0;
     NrLP.resize(EmbDim + 1);
@@ -3288,6 +3297,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::setOptions(const ConeProperties& ToC
         if(!primitive)
             set_LLL(!ToCompute.test(ConeProperty::NoLLL));
     }
+    fusion.set_options(ToCompute, verbose);
 }
 
 //---------------------------------------------------------------------------
@@ -3308,8 +3318,11 @@ template class ProjectAndLift<nmz_float, long>;
 template class ProjectAndLift<renf_elem_class, mpz_class>;
 #endif
 
-#ifdef ENFNORMALIZ
+//---------------------------------------------------------------------------
 
+// interface cone/project-and-lift
+
+#ifdef ENFNORMALIZ
 // special version to avoid problems with machine integer etc.
 template <>
 void project_and_lift(Cone<renf_elem_class>&  C, const ConeProperties& ToCompute,
@@ -3383,6 +3396,7 @@ void project_and_lift(Cone<renf_elem_class>&  C, const ConeProperties& ToCompute
 #endif
 
 //---------------------------------------------------------------------------
+
 template <typename Integer>
 void project_and_lift(Cone<Integer>&  C, const ConeProperties& ToCompute,
                                      Matrix<Integer>& Deg1,
@@ -3562,6 +3576,8 @@ void project_and_lift(Cone<Integer>&  C, const ConeProperties& ToCompute,
         verboseOutput() << "Project-and-lift complete" << endl
                         << "------------------------------------------------------------" << endl;
 }
+
+//---------------------------------------------------------------------------
 
 template void project_and_lift<long long>(Cone<long long>&  C, const ConeProperties& ToCompute,
                                      Matrix<long long>& Deg1,

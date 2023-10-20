@@ -132,10 +132,6 @@ class OptionsHandler {
         return use_collect_lat;
     }
 
-    inline bool isUseSelectSimple() const {
-        return use_select_simple;
-    }
-
     inline bool isUseNextRound() const {
         return use_next_round;
     }
@@ -198,7 +194,6 @@ class OptionsHandler {
     bool use_long_long;
     bool use_chunk;
     bool use_collect_lat;
-    bool use_select_simple;
     bool use_next_round;
     bool use_add_chunks;
     bool no_ext_rays_output;
@@ -235,7 +230,6 @@ inline OptionsHandler::OptionsHandler() {
     use_long_long = false;
     use_chunk = false;
     use_collect_lat = false;
-    use_select_simple = false;
     use_next_round = false;
     use_add_chunks = false;
     ignoreInFileOpt = false;

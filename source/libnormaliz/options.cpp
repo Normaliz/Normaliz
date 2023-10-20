@@ -391,10 +391,6 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
             use_collect_lat = true;
             continue;
         }
-        if (LongOption == "SelectSimple") {
-            use_select_simple = true;
-            continue;
-        }
         if (LongOption == "NextRound") {
             use_next_round = true;
             continue;

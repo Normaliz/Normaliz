@@ -7280,12 +7280,10 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
         }
     }
 
-    if(global_select_simple){
+    if(ToCompute.test(ConeProperty::SelectSimple)){
         if(!inhomogeneous)
             throw BadInputException("Computation must be inhomogeneous for selection of simple fusion rings.");
-        FusionData<Integer> fusion;
-        fusion.read_data();
-        fusion.select_and_write_simple(ModuleGenerators);
+        select_and_write_simple(ModuleGenerators, ToCompute, verbose);
     }
 
     if(ToCompute.test(ConeProperty::SingleLatticePoint)){
