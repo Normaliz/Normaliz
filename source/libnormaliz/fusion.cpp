@@ -58,8 +58,144 @@ vector<dynamic_bitset> make_all_subsets(const size_t card){
     return all_subsets;
 }
 
+vector<vector<key_t> > make_all_permutations(const size_t n){
+    vector<vector <vector<key_t> > > Perms(1);
+    Perms[0].resize(1);
+    Perms[0][0].resize(1);
+    Perms[0][0][0] = 0;
+    for(key_t i=1; i<n; ++i){
+        Perms.resize(i+1);
+        for(key_t j=0;j<=i;++j){
+            for(key_t k=0; k< (key_t) Perms[i-1].size(); ++k){
+                vector<key_t> new_perm = Perms[i-1][k];
+                new_perm.resize(i+1);
+                new_perm[i] = i;
+                swap(new_perm[j],new_perm[i]);
+                Perms[i].push_back(new_perm);
+            }
+        }
+    }
+    sort(Perms[n-1].begin(),Perms[n-1].end());
+    return Perms[n-1];
+}
+
+vector<vector<key_t> > make_all_permutations(const vector<key_t>& v){
+
+    vector<vector<key_t> >Perms = make_all_permutations(v.size());
+    for(auto& w: Perms){
+        vector<key_t> w_new(v.size());
+        for(size_t i = 0; i< w.size(); ++i)
+            w_new[i] = v[w[i]];
+        w = w_new;
+    }
+    return Perms;
+}
+
+vector<vector<key_t> > super_impose(const vector<vector<key_t> >& set_1, const vector<vector<key_t> >& set_2){
+
+    vector<vector<key_t> > total;
+    for(auto& v: set_1){
+        for(auto& w: set_2)
+            total.push_back(v_add(v,w));
+    }
+    return total;
+}
+
+vector<vector<key_t> > make_all_permutations(const vector<key_t>& type,const vector<key_t>& duality){
+
+    auto type_1 = type;
+    type_1[0] = 0; // to single out the unit
+
+    auto coincidence_keys = collect_coincidence_subset_keys(type_1);
+    vector<vector< vector<key_t> > > FullPermsByCoinc;
+
+    for(auto& co: coincidence_keys){
+        vector<vector<key_t> > ThisFullPerms;
+        auto Perms = make_all_permutations(co);
+        vector<key_t> FullPerm(type.size());
+        for(auto& p: Perms){
+            for(size_t i = 0; i< p.size(); ++i){
+                FullPerm[co[i]] = p[i];
+            }
+            ThisFullPerms.push_back(FullPerm);
+        }
+        FullPermsByCoinc.push_back(ThisFullPerms);
+    }
+
+    vector<vector<key_t> > AllFullPerms;
+    for(size_t i = 0; i < coincidence_keys.size(); ++i){
+        if(i == 0){
+            AllFullPerms=FullPermsByCoinc[0];
+        }
+        else{
+            AllFullPerms = super_impose(AllFullPerms, FullPermsByCoinc[i]);
+        }
+    }
+
+    if(duality == identity_key(type.size()))
+        return AllFullPerms;
+
+    vector<vector<key_t> > Compatible;
+    for(auto& p: AllFullPerms){
+        bool comp = true;
+        for(size_t i = 0; i < p.size(); ++i){
+            if(p[duality[i]] != duality[p[i]]){
+                comp = false;
+                break;
+            }
+        }
+        if(comp)
+            Compatible.push_back(p);
+    }
+    return Compatible;
+}
+
+vector<vector<key_t> > collect_coincidence_subset_keys(const vector<key_t>& type){
+
+    vector<vector<key_t> > coincidence_keys;
+    dynamic_bitset done(type.size());
+
+    for(size_t i = 0; i < type.size(); ++i){
+        if(done[i])
+            continue;
+        coincidence_keys.push_back(vector<key_t>(1,i));
+        done[i] = 1;
+        for(size_t j = i + 1; j < type.size(); ++j){
+            if(done[j])
+                continue;
+            if(type[i] == type[j]){
+                coincidence_keys.back().push_back(j);
+                done[j] = 1;
+            }
+        }
+    }
+    return coincidence_keys;
+}
+
+
 // checks whether sol is contained in the "subring". If so, "false" is returned,
 // meaning "not sinmple"
+
+template <typename Integer>
+void FusionData<Integer>::make_automorphisms(){
+
+    make_CoordMap();
+
+    auto type_automs = make_all_permutations(fusion_type,duality);
+
+    for(auto& p: type_automs){
+        vector<key_t> coord_perm(1); // must start with 0 !!!!
+        for(auto& t: selected_ind_tuples){
+            vector<key_t> image;
+            for(auto& c: t)
+                image.push_back(p[c]);
+            coord_perm.push_back(coord(image));
+        }
+        Automorphisms.push_back(coord_perm);
+    }
+}
+
+
 template <typename Integer>
 bool FusionData<Integer>::simplicity_check(const vector<key_t>& subring, const vector<Integer>& sol){
 
@@ -106,7 +242,7 @@ void FusionData<Integer>::set_options(const ConeProperties& ToCompute, const boo
 }
 
 template <typename Integer>
-void FusionData<Integer>::read_data() {
+void FusionData<Integer>::read_data(const bool a_priori) {
 
     if(!activated)
         return;
@@ -140,8 +276,12 @@ void FusionData<Integer>::read_data() {
     if(dual_ind.count() != fusion_rank)
         throw BadInputException("Filename not standard fusion");
 
-    if(check_simplicity)
+    if((check_simplicity && a_priori) || (select_simple && !a_priori) )
         prepare_simplicity_check();
+
+    if((use_automorphisms && a_priori) || (select_iso_classes && !a_priori) )
+        make_automorphisms();
+
     if(verbose){
         verboseOutput() << "rank " << fusion_rank << endl;
         verboseOutput() << "type " << fusion_type;
@@ -149,6 +289,8 @@ void FusionData<Integer>::read_data() {
     }
     if(candidate_given && verbose)
         verboseOutput() << "candidate base of subring " << subring_base_key;
+
+    make_automorphisms();
 }
 
 
@@ -234,8 +376,6 @@ void FusionData<Integer>::read_data_from_file() {
             fusion_type.resize(fusion_rank);
             for(auto& b: fusion_type)
                 in >> b;
-            if(verbose)
-                verboseOutput() << "Fusion type " << fusion_type;
             continue;
         }
         if(s == "duality"){
@@ -311,6 +451,9 @@ key_t FusionData<Integer>::coord(set<vector<key_t> >& FR){
     return CoordMap[FR];
 }
 
+
+// makes the critical coordinates for the simplicity check
+// bse_key is the vector of bases (by keys) of the potential subrings
 template <typename Integer>
 dynamic_bitset FusionData<Integer>::critical_coords(const vector<key_t>& base_key){
     set<key_t> cand_set;
@@ -342,6 +485,12 @@ void FusionData<Integer>::make_all_ind_tuples(){
 
 template <typename Integer>
 void FusionData<Integer>::make_CoordMap(){
+
+    if(CoordMap.size() > 0)
+        return;
+
+    make_all_ind_tuples();
+
     key_t val = 1;  // coordinate 0 is the homogenizing one
     for(auto& ind_tuple: all_ind_tuples){
         set<vector<key_t> > F = FrobRec(ind_tuple);
@@ -349,6 +498,11 @@ void FusionData<Integer>::make_CoordMap(){
             continue;
         CoordMap[F] = val;
         val++;
+    }
+
+    // we also want the inverse i-th coordinate --> lex smallest index tuple
+    for(auto m = CoordMap.begin(); m!= CoordMap.end(); ++m){
+        selected_ind_tuples.push_back(*(m->first.begin()));
     }
 }
 
@@ -377,7 +531,6 @@ void  FusionData<Integer>::make_all_base_keys(){
 
 template <typename Integer>
 void FusionData<Integer>::prepare_simplicity_check(){
-    make_all_ind_tuples();
     make_CoordMap();
     /* for(auto& t: all_ind_tuples){
         cout << coord(t) << " --- " <<t;
@@ -396,7 +549,7 @@ void FusionData<Integer>::prepare_simplicity_check(){
 }
 
 template <typename Integer>
-void FusionData<Integer>::do_select_and_write_simple(const Matrix<Integer>& LattPoints){ // from out file or final.lat
+Matrix<Integer> FusionData<Integer>::do_select_simple(const Matrix<Integer>& LattPoints){ // from out file or final.lat
 
     prepare_simplicity_check();
     for(auto& aa: coords_to_check_key){
@@ -414,11 +567,13 @@ void FusionData<Integer>::do_select_and_write_simple(const Matrix<Integer>& Latt
     if(verbose)
         verboseOutput() << SimplePoints.nr_of_rows() << " simple fusion rings found" << endl;
 
-    string name = global_project + ".simple.lat";
+    return SimplePoints;
+
+    /* string name = global_project + ".simple.lat";
     ofstream out(name);
     out << SimplePoints.nr_of_rows() << endl;
     out << SimplePoints.nr_of_columns() << endl;
-    SimplePoints.pretty_print(out);
+    SimplePoints.pretty_print(out); */
 }
 
 //-------------------------------------------------------------------------------
@@ -426,12 +581,12 @@ void FusionData<Integer>::do_select_and_write_simple(const Matrix<Integer>& Latt
 
 // bridge to cone
 template <typename Integer>
-void select_and_write_simple(const Matrix<Integer>& LattPoints, const ConeProperties& ToCompute, const bool verb){
+Matrix<Integer> select_simple(const Matrix<Integer>& LattPoints, const ConeProperties& ToCompute, const bool verb){
 
     FusionData<Integer> fusion;
     fusion.set_options(ToCompute, verb);
-    fusion.read_data();
-    fusion.do_select_and_write_simple(LattPoints);
+    fusion.read_data(false); // falsae = a posteriori
+    return fusion.do_select_simple(LattPoints);
 }
 
 Matrix<long long> extract_latt_points_from_out(ifstream& in_out){
@@ -497,11 +652,11 @@ template class FusionData<long>;
 template class FusionData<renf_elem_class>;
 #endif
 
-template void select_and_write_simple(const Matrix<long>& LattPoints, const ConeProperties& ToCompute, const bool verb);
-template void select_and_write_simple(const Matrix<long long>& LattPoints, const ConeProperties& ToCompute, const bool verb);
-template void select_and_write_simple(const Matrix<mpz_class>& LattPoints, const ConeProperties& ToCompute, const bool verb);
+template Matrix<long> select_simple(const Matrix<long>& LattPoints, const ConeProperties& ToCompute, const bool verb);
+template Matrix<long long> select_simple(const Matrix<long long>& LattPoints, const ConeProperties& ToCompute, const bool verb);
+template Matrix<mpz_class> select_simple(const Matrix<mpz_class>& LattPoints, const ConeProperties& ToCompute, const bool verb);
 #ifdef ENFNORMALIZ
-template void select_and_write_simple(const Matrix<renf_elem_class>& LattPoints, const ConeProperties& ToCompute, const bool verb);
+template Matrix<renf_elem_class> select_simple(const Matrix<renf_elem_class>& LattPoints, const ConeProperties& ToCompute, const bool verb);
 #endif
 
 } // namespace

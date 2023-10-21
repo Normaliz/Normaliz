@@ -61,7 +61,7 @@ public:
 
     vector<key_t> duality;
     size_t fusion_rank;
-    vector<size_t> fusion_type;
+    vector<key_t> fusion_type;
 
     vector<key_t> subring_base_key;
     vector<vector<key_t> > all_base_keys;
@@ -69,37 +69,51 @@ public:
     vector<vector<key_t> > coords_to_check_key;
     vector<dynamic_bitset> coords_to_check_ind;
     vector<vector<key_t> > all_ind_tuples;
-
+    vector<vector<key_t> > selected_ind_tuples; // the lex smallest in each FrobRec set
     map<set<vector<key_t> >, key_t> CoordMap;
 
+    vector<vector<key_t> > Automorphisms;
+    vector<dynamic_bitset> Orbits;
+
     FusionData();
-    void read_data();
+    void set_options(const ConeProperties& ToCompute, const bool verb);
+    void read_data(const bool a_priori);
     void read_data_from_file();
     void data_from_roject();
 
+    // coordinates
     void make_CoordMap();
-    // key_t dual(key_t i);
     key_t dual(const key_t i) const;
     set<vector<key_t> > FrobRec(const vector<key_t>& ind_tuple);
     key_t coord(set<vector<key_t> >& FR);
     key_t coord(vector<key_t>& ind_tuple);
     void make_all_ind_tuples();
+
+    // for simplicity check
     dynamic_bitset critical_coords(const vector<key_t>& base_key);
     void make_all_base_keys();
     void prepare_simplicity_check();
-    void do_select_and_write_simple(const Matrix<Integer>& LattPoints);
+    Matrix<Integer> do_select_simple(const Matrix<Integer>& LattPoints);
     bool simplicity_check(const vector<key_t>& subring, const vector<Integer>& sol);
     bool simplicity_check(const vector<vector<key_t> >& subrings, const vector<Integer>& sol);
 
-    void set_options(const ConeProperties& ToCompute, const bool verb);
+    // for automosphisms
+    void make_automorphisms();
+    vector<Integer> norrmal_form(const vector<Integer> lattice_point);
 
 };
 
-// helper
+// helpers
 Matrix<long long> extract_latt_points_from_out(ifstream& in_out);
 template <typename Integer>
-void select_and_write_simple(const Matrix<Integer>& LattPoints, const ConeProperties& ToCompute, const bool verb);
+Matrix<Integer> select_simple(const Matrix<Integer>& LattPoints, const ConeProperties& ToCompute, const bool verb);
 //void select_simple_fusion_rings();
+
+vector<dynamic_bitset> make_all_subsets(const size_t card);
+vector<vector<key_t> > make_all_permutations(size_t n);
+vector<vector<key_t> > collect_coincidence_subset_keys(const vector<key_t>& type);
+vector<vector<key_t> > make_all_permutations(const vector<key_t>& v);
+vector<vector<key_t> > make_all_permutations(const vector<key_t>& type, const vector<key_t>& duality);
 
 }  // end namespace libnormaliz
 

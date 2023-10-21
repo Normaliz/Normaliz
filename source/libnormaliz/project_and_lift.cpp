@@ -3116,7 +3116,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute(bool all_points, bool liftin
         read_split_data();
     }
 
-    fusion.read_data();
+    fusion.read_data(true); // true = a_priori
 
     assert(all_points || !lifting_float);  // only all points allowed with float
 
