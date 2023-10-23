@@ -1448,7 +1448,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         size_t nr_caught_by_restricted = 0;  //restricted inequalities
         size_t nr_caught_by_simplicity = 0;  //restricted inequalities
         size_t nr_caught_by_equations = 0;  //statistics for this run of the while loop
-        // size_t nr_caught_by_congs = 0;  //statistics for this run of the while loop
+        size_t nr_caught_by_automs = 0;  //statistics for this run of the while loop
         size_t nr_points_done_in_this_round = 0;
 
         vector<vector<size_t> > poly_equs_stat; // TODO make macro
@@ -1612,6 +1612,26 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                             break;
                         }
                     }
+                if(can_be_inserted && fusion.use_automorphisms){
+                    vector<IntegerRet> restricted(CoveredKey.size());
+                    for(size_t i = 0; i < CoveredKey.size(); ++i)
+                        restricted[i] = NewLattPoint[CoveredKey[i]];;
+                    for(auto& aa: fusion.Automorphisms){
+                        vector<IntegerRet> conjugate(CoveredKey.size());
+                        for(size_t j = 0; j < CoveredKey.size(); ++j){
+                            key_t image = aa[CoveredKey[j]];
+                            if(image < CoveredKey.size()){
+                                conjugate[image] = restricted[j];
+                            }
+                        }
+                        if(restricted < conjugate){
+                            can_be_inserted = false;
+#pragma omp atomic
+                            nr_caught_by_automs++;
+                            break;
+                        }
+                    }
+                }
                 }
                 if(can_be_inserted){
                     nr_points_in_thread++;
@@ -1620,6 +1640,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                     else
                         Deg1Thread[tn].push_back(NewLattPoint);
                 }
+
             } // for i (inner for loop)
 
             (*P)[0] = 0;  // mark point as done
@@ -1756,6 +1777,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                     verboseOutput() << " cgr " << nr_caught_by_congs;*/
                 if(nr_caught_by_simplicity > 0)
                     verboseOutput() << " smp " << nr_caught_by_simplicity;
+                if(nr_caught_by_automs > 0)
+                    verboseOutput() << " aut " << nr_caught_by_automs;
                 if(nr_points_done_in_this_round > 0)
                     verboseOutput() << " exp rnd " << expected_number_of_rounds;
                 ExpectedNrRounds[this_patch] = expected_number_of_rounds;
