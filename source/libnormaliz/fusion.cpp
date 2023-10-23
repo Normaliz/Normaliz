@@ -193,6 +193,8 @@ void FusionData<Integer>::make_automorphisms(){
         }
         Automorphisms.push_back(coord_perm);
     }
+    if(verbose)
+        verboseOutput() << "Automorphism group of order " << Automorphisms.size() << " computed" << endl;
 }
 
 
@@ -289,8 +291,6 @@ void FusionData<Integer>::read_data(const bool a_priori) {
     }
     if(candidate_given && verbose)
         verboseOutput() << "candidate base of subring " << subring_base_key;
-
-    make_automorphisms();
 }
 
 
@@ -354,6 +354,8 @@ void FusionData<Integer>::read_data_from_file() {
 
     string s;
 
+    size_t duality_count = 0;
+
     while(true){
         in >> ws;    int c = in.peek();
         if (c == EOF) {
@@ -365,6 +367,7 @@ void FusionData<Integer>::read_data_from_file() {
             in >> fusion_rank;
             if(fusion_rank == 0)
                 throw BadInputException("Fusion rank must be > 0");
+            duality = identity_key(fusion_rank);
             continue;
         }
 
@@ -381,9 +384,9 @@ void FusionData<Integer>::read_data_from_file() {
         if(s == "duality"){
             if(fusion_rank == 0)
                 throw BadInputException("Need fusion rank before reading duality");
-            if(duality.size() != 0)
+            if(duality_count > 0)
                 throw BadInputException("Only one duality input allowed.");
-            duality = identity_key(fusion_rank);
+            duality_count++;
             size_t nr_transpositions;
             in >> nr_transpositions;
             for(size_t i = 0; i < nr_transpositions; ++i){
@@ -406,10 +409,10 @@ void FusionData<Integer>::read_data_from_file() {
         throw BadInputException("Illegal fusion keyword " + s);
     }
 
-    if( (duality.size() == 0 && fusion_type.size() > 0) || (duality.size() > 0 && fusion_type.size() == 0) )
-        throw BadInputException("Either both type and duality in fusion file or none");
-    if(duality.size() > 0)
-        type_and_duality_set = true;
+    if( (fusion_type.size() == 0) )
+        throw BadInputException("No type in fusion file");
+
+    type_and_duality_set = true;
 }
 
 template <typename Integer>
@@ -549,7 +552,7 @@ void FusionData<Integer>::prepare_simplicity_check(){
 }
 
 template <typename Integer>
-Matrix<Integer> FusionData<Integer>::do_select_simple(const Matrix<Integer>& LattPoints){ // from out file or final.lat
+Matrix<Integer> FusionData<Integer>::do_select_simple(const Matrix<Integer>& LattPoints){
 
     prepare_simplicity_check();
     for(auto& aa: coords_to_check_key){
@@ -568,12 +571,52 @@ Matrix<Integer> FusionData<Integer>::do_select_simple(const Matrix<Integer>& Lat
         verboseOutput() << SimplePoints.nr_of_rows() << " simple fusion rings found" << endl;
 
     return SimplePoints;
+}
 
-    /* string name = global_project + ".simple.lat";
-    ofstream out(name);
-    out << SimplePoints.nr_of_rows() << endl;
-    out << SimplePoints.nr_of_columns() << endl;
-    SimplePoints.pretty_print(out); */
+template <typename Integer>
+Matrix<Integer> FusionData<Integer>::do_iso_classes(const Matrix<Integer>& LattPoints){
+
+    Matrix<Integer> IsoClasses;
+    IsoClasses.resize(0,LattPoints.nr_of_columns());
+
+    for(auto& aa: Automorphisms){  // homogenizing coordinate is the last now
+        vector<key_t> modified = aa;
+        v_cyclic_shift_left(modified, modified.size() -1);
+        modified.resize(modified.size()-1);
+        for(auto& c: modified)
+            c--;
+        aa = modified;
+    }
+
+    set<vector<Integer> > Classes;
+
+    for(size_t i = 0; i < LattPoints.nr_of_rows(); ++i){
+        vector<Integer> max_conjugate = LattPoints[i];
+        bool first = true;
+        for(auto& aa: Automorphisms){
+            vector<Integer> conjugate(LattPoints.nr_of_columns());
+            for(size_t j = 0; j < aa.size(); ++ j){
+                conjugate[j] = LattPoints[i][aa[j]];
+            }
+            conjugate.back() = 1;
+            if(first || conjugate > max_conjugate){
+                max_conjugate = conjugate;
+                first = false;
+            }
+        }
+        if(Classes.find(max_conjugate) == Classes.end())
+            Classes.insert(max_conjugate);
+    }
+
+    for(auto& c: Classes)
+        IsoClasses.append(c);
+
+    if(verbose){
+        verboseOutput() << IsoClasses.nr_of_rows() << " isomorphism classes computed" << endl;
+
+    }
+
+    return IsoClasses;
 }
 
 //-------------------------------------------------------------------------------
@@ -587,6 +630,15 @@ Matrix<Integer> select_simple(const Matrix<Integer>& LattPoints, const ConePrope
     fusion.set_options(ToCompute, verb);
     fusion.read_data(false); // falsae = a posteriori
     return fusion.do_select_simple(LattPoints);
+}
+
+template <typename Integer>
+Matrix<Integer> fusion_iso_classes(const Matrix<Integer>& LattPoints, const ConeProperties& ToCompute, const bool verb){
+
+    FusionData<Integer> fusion;
+    fusion.set_options(ToCompute, verb);
+    fusion.read_data(false); // falsae = a posteriori
+    return fusion.do_iso_classes(LattPoints);
 }
 
 Matrix<long long> extract_latt_points_from_out(ifstream& in_out){
@@ -657,6 +709,13 @@ template Matrix<long long> select_simple(const Matrix<long long>& LattPoints, co
 template Matrix<mpz_class> select_simple(const Matrix<mpz_class>& LattPoints, const ConeProperties& ToCompute, const bool verb);
 #ifdef ENFNORMALIZ
 template Matrix<renf_elem_class> select_simple(const Matrix<renf_elem_class>& LattPoints, const ConeProperties& ToCompute, const bool verb);
+#endif
+
+template Matrix<long> fusion_iso_classes(const Matrix<long>& LattPoints, const ConeProperties& ToCompute, const bool verb);
+template Matrix<long long> fusion_iso_classes(const Matrix<long long>& LattPoints, const ConeProperties& ToCompute, const bool verb);
+template Matrix<mpz_class> fusion_iso_classes(const Matrix<mpz_class>& LattPoints, const ConeProperties& ToCompute, const bool verb);
+#ifdef ENFNORMALIZ
+template Matrix<renf_elem_class> fusion_iso_classes(const Matrix<renf_elem_class>& LattPoints, const ConeProperties& ToCompute, const bool verb);
 #endif
 
 } // namespace

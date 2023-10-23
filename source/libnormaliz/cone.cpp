@@ -7292,6 +7292,18 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
         Selection.pretty_print(out);
     }
 
+    if(ToCompute.test(ConeProperty::FusionIsoClasses)){
+        Matrix<Integer> Selection;
+        if(!inhomogeneous)
+            throw BadInputException("Computation must be inhomogeneous for automorphisms of fusion rings.");
+        Selection = fusion_iso_classes(ModuleGenerators, ToCompute, verbose);
+        string name = global_project + ".iso.lat";
+        ofstream out(name);
+        out << Selection.nr_of_rows() << endl;
+        out << Selection.nr_of_columns() << endl;
+        Selection.pretty_print(out);
+    }
+
     if(ToCompute.test(ConeProperty::SingleLatticePoint)){
         if(inhomogeneous && ModuleGenerators.nr_of_rows() >0){
             SingleLatticePoint = ModuleGenerators[0];

@@ -94,6 +94,7 @@ public:
     void make_all_base_keys();
     void prepare_simplicity_check();
     Matrix<Integer> do_select_simple(const Matrix<Integer>& LattPoints);
+    Matrix<Integer> do_iso_classes(const Matrix<Integer>& LattPoints);
     bool simplicity_check(const vector<key_t>& subring, const vector<Integer>& sol);
     bool simplicity_check(const vector<vector<key_t> >& subrings, const vector<Integer>& sol);
 
@@ -107,6 +108,8 @@ public:
 Matrix<long long> extract_latt_points_from_out(ifstream& in_out);
 template <typename Integer>
 Matrix<Integer> select_simple(const Matrix<Integer>& LattPoints, const ConeProperties& ToCompute, const bool verb);
+template <typename Integer>
+Matrix<Integer> fusion_iso_classes(const Matrix<Integer>& LattPoints, const ConeProperties& ToCompute, const bool verb);
 //void select_simple_fusion_rings();
 
 vector<dynamic_bitset> make_all_subsets(const size_t card);
