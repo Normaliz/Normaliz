@@ -282,6 +282,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
     AllPolyInequsThread.resize(EmbDim);
     for(auto& T: AllPolyInequsThread)
         T.resize(omp_get_max_threads());
+    AllAutoms.resize(EmbDim);
 
     NrRemainingLP.resize(EmbDim,0);
     NrDoneLP.resize(EmbDim,0);
@@ -302,7 +303,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
 
     poly_equs_minimized.resize(EmbDim);
     poly_inequs_minimized.resize(EmbDim);
-    poly_congs_minimized.resize(EmbDim);
+    // poly_congs_minimized.resize(EmbDim);
+    automs_minimized.resize(EmbDim);
 
     // First we compute the patches
     for(size_t coord = 1; coord < EmbDim; coord++){
@@ -622,6 +624,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
         for(auto& T: AllPolyInequsThread[coord]){ // vcopy for each thread
             T = AllPolyInequs[coord];
         }
+
+        AllAutoms[coord] =identity_key(fusion.Automorphisms.size()); // initialized with all automorphisms in the given order
 
         if(talkative){
             if(verbose)
@@ -1145,6 +1149,7 @@ IntegerRet eval_cong_partially(const OurPolynomialCong<IntegerRet>& cong,
 
 const size_t max_nr_new_latt_points_total = 1000000;
 const size_t nr_new_latt_points_for_elimination_equs = 10000;
+const size_t nr_new_latt_points_for_elimination_automs = 10000;
 
 //---------------------------------------------------------------------------
 
@@ -1261,6 +1266,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
 
     vector< vector < pair<OurPolynomial<IntegerRet>, OurPolynomial<IntegerRet> > >>& PolyEqusThread = AllPolyEqusThread[coord];
     vector<OurPolynomialSystem<IntegerRet>>& PolyInequsThread = AllPolyInequsThread[coord];
+    vector<key_t>& Automs = AllAutoms[coord];
 
     ProjectAndLift<IntegerPL, IntegerRet>& LocalPL = AllLocalPL[coord];
     map< vector<IntegerRet>, map< vector<IntegerRet>, vector<key_t> > >& LocalSolutions_by_intersection_and_cong =
@@ -1469,6 +1475,15 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
             poly_inequs_stat_total.resize(poly_inequs_stat[0].size());
         }
 
+        vector<vector<size_t> > automs_stat;
+        vector<size_t> automs_stat_total;
+        if(!automs_minimized[coord]){
+            automs_stat.resize(omp_get_max_threads());  // counts the number of "successful". i.e. < 0,
+            for(auto& p:automs_stat)                    // evaluations of a restricted mpolynomial inequalities
+                p.resize(Automs.size());
+            automs_stat_total.resize(automs_stat[0].size());
+        }
+
         /*vector<vector<size_t> > poly_congs_stat;
         vector<size_t> poly_congs_stat_total;
         if(!poly_congs_minimized[coord]){
@@ -1507,6 +1522,9 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         list<key_t> order_poly_inequs;
         for(key_t k = 0; k < PolyInequsThread[tn].size(); ++k)
             order_poly_inequs.push_back(k);
+        list<key_t> order_automs;
+        for(key_t k = 0; k < Automs.size(); ++k)
+            order_automs.push_back(k);
         /*list<key_t> order_poly_congs;
         for(key_t k = 0; k < CongsRestricted.size(); ++k)
             order_poly_congs.push_back(k);*/
@@ -1612,14 +1630,15 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                             break;
                         }
                     }
+                }
                 if(can_be_inserted && fusion.use_automorphisms){
                     vector<IntegerRet> restricted(CoveredKey.size());
                     for(size_t i = 0; i < CoveredKey.size(); ++i)
                         restricted[i] = NewLattPoint[CoveredKey[i]];;
-                    for(auto& aa: fusion.Automorphisms){
+                    for(auto pp = order_automs.begin(); pp!= order_automs.end(); ++pp){
                         vector<IntegerRet> conjugate(CoveredKey.size());
                         for(size_t j = 0; j < CoveredKey.size(); ++j){
-                            key_t image = aa[CoveredKey[j]];
+                            key_t image = fusion.Automorphisms[Automs[*pp]][CoveredKey[j]];
                             if(image < CoveredKey.size()){
                                 conjugate[image] = restricted[j];
                             }
@@ -1627,11 +1646,14 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                         if(restricted < conjugate){
                             can_be_inserted = false;
 #pragma omp atomic
-                            nr_caught_by_automs++;
+                           nr_caught_by_automs++;
+                           if(!automs_minimized[coord])
+                                automs_stat[tn][*pp]++;
+                            else
+                                order_automs.splice(order_automs.begin(), order_automs, pp);
                             break;
                         }
                     }
-                }
                 }
                 if(can_be_inserted){
                     nr_points_in_thread++;
@@ -1690,6 +1712,14 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         for (size_t i = 0; i < Deg1Thread.size(); ++i)
             NewLatticePoints.splice(NewLatticePoints.end(), Deg1Thread[i]);
 
+        if(!automs_minimized[coord]){
+            for(size_t i = 0; i< automs_stat.size(); ++i){
+                    for(size_t j = 0; j < automs_stat[0].size(); ++j)
+                        automs_stat_total[j] += automs_stat[i][j];
+            }
+            // cout << "PPPP " << poly_equs_stat_total;
+        }
+
         // size_t nr_new_latt_points = NewLatticePoints.size();
 
         if(last_coord)
@@ -1711,6 +1741,21 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
 
             for(size_t thr = 0; thr < PolyEqusThread.size(); ++thr)
                     PolyEqusThread[thr] = EffectivePolys;
+        }
+
+        if(!automs_minimized[coord] &&  nr_latt_points_total > nr_new_latt_points_for_elimination_automs &&!last_coord){
+            automs_minimized[coord] = true;
+            vector<key_t> EffectiveAutoms;
+            for(size_t i = 0; i < Automs.size(); ++i){
+                if(automs_stat_total[i] > 0)
+                    EffectiveAutoms.push_back(Automs[i]);
+            }
+
+            if(verbose && Automs.size() > 0)
+                verboseOutput() << LevelPatches[coord] << " / " << coord << " active automorphisms "
+                  << EffectiveAutoms.size() << " of " << fusion.Automorphisms.size() << endl;
+
+             Automs = EffectiveAutoms;
         }
 
         /*

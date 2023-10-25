@@ -136,23 +136,22 @@ class ProjectAndLift {
     vector<vector<key_t> > AllNew_coords_key;
     vector<dynamic_bitset > AllCovered;
     vector<dynamic_bitset > AllPatches; // patches associated with the coordinates
-    // vector<vector<key_t> > AllOrderedCoordinates;
     vector<ProjectAndLift<IntegerPL, IntegerRet> > AllLocalPL;
     dynamic_bitset active_coords;
-    // vector<Matrix<IntegerRet> > AllExtraInequalities;
-    // vector<vector<key_z> > AllPolyEqusKey;
-    // vector<vector<key_t> > AllPolyInequsKey;
+
     vector<vector<OurPolynomialCong<IntegerRet> > > AllCongsRestricted; // the congruences that can be restrictd to the unions of patches built successively
     vector< vector < pair<OurPolynomial<IntegerRet>, OurPolynomial<IntegerRet> > > > AllPolyEqus; // indexed by coord, poly equs (split into two components) applied with this coord
     vector<OurPolynomialSystem<IntegerRet> > AllPolyInequs; // ditto for inequalities
-    // vector<OurPolynomialSystem<IntegerRet> > AllRestrictablePolyInequs; // resstricted inequalities derived from equations
+    vector<vector<key_t> > AllAutoms; // ditto for automorphisms where the key is the index
+
     vector<vector<vector < pair<OurPolynomial<IntegerRet>, OurPolynomial<IntegerRet> > > > > AllPolyEqusThread; // a copy for each thread
     vector<vector<OurPolynomialSystem<IntegerRet> > > AllPolyInequsThread; // ditto for inequalities
-    // vector<vector<OurPolynomialSystem<IntegerRet> > > AllRestrictablePolyInequsThread; // ditto for inequalities
+
     dynamic_bitset used_supps; // registers which inequalities are used in the patching process
     dynamic_bitset poly_equs_minimized; // redisters whether the polynomial equations at a coord have been minimized
-    dynamic_bitset poly_congs_minimized; // ditto for congruences
+    // dynamic_bitset poly_congs_minimized; // ditto for congruences
     dynamic_bitset poly_inequs_minimized; //  ditto for the inequalities from equations
+    dynamic_bitset automs_minimized; //  ditto for automorphisms
     vector<dynamic_bitset> CongIndicator; // stores supports of congruences
     Matrix<double> WeightOfCoord;
     Matrix<IntegerPL> DefiningSupps;
