@@ -589,19 +589,6 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
                 continue;
             if(!(PolyInequalities[i]).support.is_subset_of(new_covered))
                 continue;
-
-            /* cout << "***********************************************" << endl;
-            cout << "ccord " << coord << endl;
-            cout << bitset_to_key(new_covered);
-            OurPolynomial<IntegerRet> PPPPP = PolyInequalities[i];
-            for(auto& T: PPPPP){
-                cout << bitset_to_key(T.support);
-                cout << T.coeff << endl;
-                cout << "------" << endl;
-            }
-
-            cout << "***********************************************" << endl;
-            exit(0);*/
             AllPolyInequs[coord].push_back(PolyInequalities[i]);
             PolyInequsKey.push_back(i);
         }
@@ -640,9 +627,6 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
                 verboseOutput() <<  "nr restrictable poly inequalities " << RestrictablePolyInequsKey.size() << endl;
             if(verbose && AllCongsRestricted[coord].size() > 0){
                 verboseOutput() <<  "nr congruences " << AllCongsRestricted[coord].size() << endl;
-                /*verboseOutput() << "supports" << endl;
-                for(auto c: AllCongsRestricted[coord])
-                    verboseOutput() << bitset_to_key(c.poly.support);*/
             }
             if(verbose)
                 verboseOutput() << "---------------------------------------------------------------" << endl;
@@ -705,13 +689,6 @@ vector<pair<size_t, vector<key_t> > > ProjectAndLift<IntegerPL,IntegerRet>::
 
 template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL,IntegerRet>::find_order_congruences() {
-
-    /* for(size_t i = 0; i < AllPatches.size(); ++i){
-        if(AllPatches[i].size() > 0){
-            InsertionOrderPatches.push_back(i);
-            break;
-        }
-    }*/
 
     dynamic_bitset used_covering_congruences(Congs.nr_of_rows());
     dynamic_bitset covered_coords(EmbDim); // = AllPatches[InsertionOrderPatches[0]];
@@ -969,10 +946,6 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_covers() {
             verboseOutput() << "Weights activated" << endl;
     }
 
-    /* cout << TotalWeights;
-    cout << max_weight / min_weight << endl;
-    exit(0);*/
-
     if(!use_coord_weights){
         for(size_t i = 1; i< EmbDim; ++i){
             if(AllPatches[i].size() == 0)
@@ -984,14 +957,6 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_covers() {
             }
         }
     }
-
-/*
-#ifdef NMZ_DEVELOP
-    if(verbose){ // && use_coord_weights){
-        WeightOfCoord.sparse_print(cout);
-    }
-#endif
-*/
 
     assert(!linear_order_patches || !cong_order_patches);
 
@@ -1025,17 +990,6 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_covers() {
     // possible.
 
     sort(covering_equations.begin(), covering_equations.end());
-
-/*
-#ifdef NMZ_DEVELOP
-    if(verbose){
-        for(auto& N: covering_equations){
-            verboseOutput() << N.second;
-        }
-        verboseOutput() << endl;
-    }
-#endif
-*/
 
     size_t dim = EmbDim;
 
@@ -1247,18 +1201,6 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         LatticePoints.sort(); // this patch could become min_return and then we depend on sorting in the next
                               // refinement, should it become necessary
 
-    /* if(verbose){
-        verboseOutput() << "coord " << coord;
-        if(min_found){
-            verboseOutput() << " back min " << min_fall_back << " max " << max_fall_back;
-            verboseOutput() << endl;
-            // verboseOutput() << NrRemainingLP << endl;
-        }
-        else{
-            verboseOutput() << endl;
-        }
-    }*/
-
     INTERRUPT_COMPUTATION_BY_EXCEPTION
 
     auto& intersection_key = AllIntersections_key[coord];
@@ -1310,25 +1252,6 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
 
     dynamic_bitset full_coords_ind(EmbDim);
     full_coords_ind.flip();
-
-
-    /* // Statistics for overlaps and congruences
-    cout << "----" << endl << "IIIIIIIIIIII " << start_list.size() << " / " << LatticePoints.size() << endl;
-
-    if(CongsRestricted.size() > 0){
-        set<pair<vector<IntegerRet>, vector<IntegerRet>> > OurPairs;
-        cout << "CCCCCCCCCCCCCCC " << CongsRestricted.size() << endl;
-
-        for(auto P: LatticePoints){
-            vector<IntegerRet> Cap = v_select_coordinates(P,intersection_key);
-            vector<IntegerRet> Cong(CongsRestricted.size());
-            for(size_t k = 0; k < CongsRestricted.size(); ++k)
-                Cong[k]  = eval_cong_partially(CongsRestricted[k],P, full_coords_ind, false);
-            OurPairs.insert(make_pair(Cap,Cong));
-
-        }
-        cout << "PPPPPPPPPPPP " << OurPairs.size() << endl;
-    }*/
 
     // Now we extend the "new" intersection coordinates by the local system
     LocalPL. set_startList(start_list);
@@ -1390,16 +1313,6 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
             LocalSolutions_by_intersection_and_cong[overlap][partial_cong_values].push_back(i);
         }
     }  // for i
-
-    /* cout << "LLLLL " << LocalSolutions_by_intersection_and_cong.size() << endl;
-    for(auto& LL: LocalSolutions_by_intersection_and_cong){
-            cout << "overlap " << LL.first;
-            for(auto& MM: LL.second){
-                cout << "    cong " << MM.first;
-                cout << "    $$$$ " << MM.second;
-            }
-    }*/
-
 
     bool last_coord = (coord == InsertionOrderPatches.back());
 
@@ -1484,15 +1397,6 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
             automs_stat_total.resize(automs_stat[0].size());
         }
 
-        /*vector<vector<size_t> > poly_congs_stat;
-        vector<size_t> poly_congs_stat_total;
-        if(!poly_congs_minimized[coord]){
-            poly_congs_stat.resize(omp_get_max_threads());  // counts the number of "successful". i.e. != 0,
-            for(auto& p:poly_congs_stat)                    // evaluations of a mpolynomial erquation
-                p.resize(CongsRestricted.size());
-            poly_congs_stat_total.resize(poly_congs_stat[0].size());
-        }*/
-
         size_t nr_intersect = intersection_key.size();
         dynamic_bitset full_support(EmbDim);
         full_support.flip();
@@ -1525,9 +1429,6 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         list<key_t> order_automs;
         for(key_t k = 0; k < Automs.size(); ++k)
             order_automs.push_back(k);
-        /*list<key_t> order_poly_congs;
-        for(key_t k = 0; k < CongsRestricted.size(); ++k)
-            order_poly_congs.push_back(k);*/
 
 #pragma omp for schedule(dynamic)
         for (size_t ppp = 0; ppp < nr_to_match; ++ppp) {
@@ -1548,11 +1449,6 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
 
 #pragma omp atomic
             nr_points_done_in_this_round++;
-
-            /*if(ppp % 2 != 0){
-                (*P)[0] = 0;
-                continue;
-            }*/
 
         NewLattPoint = *P;
 
@@ -1692,14 +1588,6 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
             }
             // cout << "PPPP " << poly_equs_stat_total;
         }
-        /*
-        if(!poly_congs_minimized[coord]){
-            for(size_t i = 0; i< poly_congs_stat.size(); ++i){
-                    for(size_t j = 0; j < poly_congs_stat[0].size(); ++j)
-                        poly_congs_stat_total[j] += poly_congs_stat[i][j];
-            }
-            // cout << "PPPP " << poly_congs_stat_total;
-        }*/
 
         if(!poly_inequs_minimized[coord]){
             for(size_t i = 0; i< poly_equs_stat.size(); ++i){
@@ -1758,23 +1646,6 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
              Automs = EffectiveAutoms;
         }
 
-        /*
-       // the same for the congruences
-       if(!poly_congs_minimized[coord] &&  nr_latt_points_total > nr_new_latt_points_for_elimination_equs){
-            poly_congs_minimized[coord] = true;
-            vector<OurPolynomialCong<IntegerRet> >EffectivePolys;
-            for(size_t i = 0; i < CongsRestricted.size(); ++i){
-                if(poly_congs_stat_total[i] > 0)
-                    EffectivePolys.push_back(CongsRestricted[i]);
-            }
-
-            if(verbose && CongsRestricted.size() > 0)
-                verboseOutput() << LevelPatches[coord] << " / " << coord << " active polynomial congruences " << EffectivePolys.size() << " of " <<  CongsRestricted.size() << endl;
-            CongsRestricted = EffectivePolys;
-        }
-        */
-
-
         //Discard ineffective restrictable plolynjomial inequalities
         if(!poly_inequs_minimized[coord] &&  nr_latt_points_total > nr_new_latt_points_for_elimination_equs){
             poly_inequs_minimized[coord] = true;
@@ -1817,9 +1688,6 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                     verboseOutput() << " equ " << nr_caught_by_equations;
                 if(PolyInequsThread[0].size() > 0)
                     verboseOutput() << " ine " << nr_caught_by_restricted;
-                /* assert(nr_caught_by_congs == 0);
-                if(CongsRestricted.size() > 0)
-                    verboseOutput() << " cgr " << nr_caught_by_congs;*/
                 if(nr_caught_by_simplicity > 0)
                     verboseOutput() << " smp " << nr_caught_by_simplicity;
                 if(nr_caught_by_automs > 0)
@@ -1830,15 +1698,6 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                 verboseOutput() << endl;
             }
         }
-
-        // MeasureTime(false, "Elapsed ");
-
-        /* for(auto& P: NewLatticePoints)
-            cout << P;
-
-        if(verbose)
-            verboseOutput() << "----------" << endl;*/
-
         // we write a file that preserves what has been done. First we tecord the lowest patch
         // to which we must return
         if(NrRemainingLP[this_patch] > 0 && is_split_patching && min_fall_back == 0 && min_return_patch == 0){  // all previous patches were fully done
@@ -1864,18 +1723,12 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
 
         if(talkative && verbose && nr_rounds ==1){
             if(nr_points_done_in_this_round > 0 && NrRemainingLP[this_patch] > 0){
-                // cout << "nr_rounds " << nr_rounds << " expected rounds " << expected_number_of_rounds << endl;
                 double time_spent = MeasureTime(time_begin);
-                // cout << "spent " << time_spent << " time_per_round " << time_per_round << endl;
                 double expected_time = time_spent*expected_number_of_rounds;
                 if(verbose){
                     verboseOutput() << "---------" << endl;
                     verboseOutput() << "expected future time on level  " << LevelPatches[coord] << "  " << expected_time;
-                    // verboseOutput() << " / "  << step_expected_time << " sec " << endl;
                 }
-                /*if(verbose) {
-                    verboseOutput() << "==============================" << endl;
-                }*/
                 double total_expected_time = time_spent;
                 double factor =1.0;
                 bool found = false;
@@ -1923,14 +1776,9 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                 counter++;
             }
             prel_data << "done_indices " << counter << endl;
-            /* list<vector<IntegerRet> > Collector;
-            for(auto& T: Deg1Thread)
-                Collector.insert(Collector.end(), T.begin(), T.end());*/
             auto check = Deg1Points;
             check.sort();
             check.unique();
-            // cout << "$$$$$$$$$$$$$ " << check.size() << " " << Deg1Points.size() << endl;
-
             prel_data << "found_solutions" << endl;
             prel_data << Deg1Points.size() << endl;
             prel_data << EmbDim << endl;
@@ -2033,45 +1881,12 @@ void ProjectAndLift<IntegerPL, IntegerRet>::reorder_coordinates(){
         if(!new_covered[i])
             NewOrder.push_back(i);
     }
-    // cout << "NNNNNNNNNNN " << NewOrder;
-
-    // NewOrder = identity_key(dim);
-
-    // convert(TestPL, TestV);
-    /* cout << "Equations Old " << endl;
-    for(size_t i = 0; i < AllSupps[EmbDim].nr_of_rows(); ++i){
-        cout << i << "    " << v_scalar_product(AllSupps[EmbDim][i], TestPL) << endl;
-    }*/
-
-    // cout << "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$" << endl;
-
     AllSupps[EmbDim].permute_columns(NewOrder);
-
-    // cout << PolyEquations[0] << endl;
-
-    // convert(TestRet, TestV);
-
-
 
     PolyEquations.permute_variables(NewOrder);
     // cout << PolyEquations[0] << endl;;
 
     PolyInequalities.permute_variables(NewOrder);
-
-    // TestRet = v_permute_coordinates(TestRet, NewOrder);
-    //for(size_t i = 0; i < PolyEquations.size(); ++i)
-    //     cout << "New " << PolyEquations[i].evaluate(TestRet) << endl;
-
-    // convert(TestPL, TestRet);
-     /* cout << "Equations New" << endl;
-    for(size_t i = 0; i < AllSupps[EmbDim].nr_of_rows(); ++i){
-        cout << i << "    " << v_scalar_product(AllSupps[EmbDim][i], TestPL) << endl;
-    }*/
-
-    // xit(0);
-
-    /* PolyEquations.clear();
-    PolyInequalities.clear();*/
 }
 
 //---------------------------------------------------------------------------
@@ -2554,10 +2369,6 @@ void ProjectAndLift<IntegerPL, IntegerRet>::finalize_latt_point(const vector<Int
         if(!PolyInequalities.check(NewPoint, false, false)) // false = inequlities, fasle = any length
             return;
     }
-
-    /* if (!Congs.check_congruences(NewPoint)) // already checked
-        return;*/
-
     if(only_single_point || !first_solution_printed){
 #pragma omp critical(FINALSOL)
         {
@@ -3631,14 +3442,6 @@ void project_and_lift(Cone<Integer>&  C, const ConeProperties& ToCompute,
     if (ToCompute.test(ConeProperty::HilbertSeries) && C.isComputed(ConeProperty::Grading)) {
         C.make_Hilbert_series_from_pos_and_neg(h_vec_pos, h_vec_neg);
     }
-
-    /* setComputed(ConeProperty::Projection);
-    if(ToCompute.test(ConeProperty::NoRelax))
-        setComputed(ConeProperty::NoRelax);
-    if(ToCompute.test(ConeProperty::NoLLL))
-        setComputed(ConeProperty::NoLLL);
-    if(float_projection)
-        setComputed(ConeProperty::ProjectionFloat);*/
 
     if (verbose)
         verboseOutput() << "Project-and-lift complete" << endl

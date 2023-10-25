@@ -149,7 +149,6 @@ class ProjectAndLift {
 
     dynamic_bitset used_supps; // registers which inequalities are used in the patching process
     dynamic_bitset poly_equs_minimized; // redisters whether the polynomial equations at a coord have been minimized
-    // dynamic_bitset poly_congs_minimized; // ditto for congruences
     dynamic_bitset poly_inequs_minimized; //  ditto for the inequalities from equations
     dynamic_bitset automs_minimized; //  ditto for automorphisms
     vector<dynamic_bitset> CongIndicator; // stores supports of congruences
