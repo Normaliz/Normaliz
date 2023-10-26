@@ -269,6 +269,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
     AllIntersections_key.resize(EmbDim);
     AllNew_coords_key.resize(EmbDim);
     AllCovered.resize(EmbDim);
+    AllCoveredKey.resize(EmbDim);
     AllPatches.resize(EmbDim);
     active_coords.resize(EmbDim);
 
@@ -373,6 +374,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
     // Now wer go over the insertion order
 
     //  Indicator[next_supp] ersetzen durch AllPatches
+
+    vector<key_t> old_coord_key;
 
     for(auto& coord: InsertionOrderPatches){
 
@@ -632,13 +635,24 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
                 verboseOutput() << "---------------------------------------------------------------" << endl;
         }
 
+        if(old_coord_key.size() == 0){
+            vector<key_t> addition = bitset_to_key(new_covered);
+            AllCoveredKey[coord].insert(AllCoveredKey[coord].end(), addition.begin(),addition.end());
+        }
+        else{
+            AllCoveredKey[coord] = old_coord_key;
+            for(key_t i = 0; i< new_covered.size(); ++i){
+                if(!new_covered[i] || covered[i])
+                    continue;
+                AllCoveredKey[coord].push_back(i);
+            }
+        }
+        old_coord_key = AllCoveredKey[coord];
+
+        AllCovered[coord] = new_covered;
         covered = new_covered;
 
-        AllCovered[coord] = covered;
-
-    } // coord
-
-
+        } // coord
 }
 
 //---------------------------------------------------------------------------
@@ -1206,20 +1220,27 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
     auto& intersection_key = AllIntersections_key[coord];
     auto& new_coords_key = AllNew_coords_key[coord];
 
-    vector< vector < pair<OurPolynomial<IntegerRet>, OurPolynomial<IntegerRet> > >>& PolyEqusThread = AllPolyEqusThread[coord];
-    vector<OurPolynomialSystem<IntegerRet>>& PolyInequsThread = AllPolyInequsThread[coord];
-    vector<key_t>& Automs = AllAutoms[coord];
+    auto&& PolyEqusThread = AllPolyEqusThread[coord];
+    // vector< vector < pair<OurPolynomial<IntegerRet>, OurPolynomial<IntegerRet> > >>& PolyEqusThread = AllPolyEqusThread[coord];
+    auto& PolyInequsThread = AllPolyInequsThread[coord];
+    // ector<OurPolynomialSystem<IntegerRet>>& PolyInequsThread = AllPolyInequsThread[coord];
+    auto& Automs = AllAutoms[coord];
 
-    ProjectAndLift<IntegerPL, IntegerRet>& LocalPL = AllLocalPL[coord];
-    map< vector<IntegerRet>, map< vector<IntegerRet>, vector<key_t> > >& LocalSolutions_by_intersection_and_cong =
+    auto&& CoveredKey = AllCoveredKey[coord];
+
+    auto& LocalPL = AllLocalPL[coord];
+    // ProjectAndLift<IntegerPL, IntegerRet>& LocalPL = AllLocalPL[coord];
+    auto&& LocalSolutions_by_intersection_and_cong =
             AllLocalSolutions_by_intersection_and_cong[coord];
+    //map< vector<IntegerRet>, map< vector<IntegerRet>, vector<key_t> > >& LocalSolutions_by_intersection_and_cong =
+     //       AllLocalSolutions_by_intersection_and_cong[coord];
 
-    Matrix<IntegerRet>& LocalSolutions = AllLocalSolutions[coord];
+    auto& LocalSolutions = AllLocalSolutions[coord];
+    // Matrix<IntegerRet>& LocalSolutions = AllLocalSolutions[coord];
     dynamic_bitset covered = AllCovered[coord];
 
-    vector<OurPolynomialCong<IntegerRet> >& CongsRestricted = AllCongsRestricted[coord];
-
-    vector<key_t> CoveredKey = bitset_to_key(covered);
+    auto& CongsRestricted = AllCongsRestricted[coord];
+    // vector<OurPolynomialCong<IntegerRet> >& CongsRestricted = AllCongsRestricted[coord];
 
     // We extract the "intersection coordinates" from the LatticePoints
     // and extend them to solutions of the local system LocalPL
@@ -1528,18 +1549,25 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                     }
                 }
                 if(can_be_inserted && fusion.use_automorphisms){
+                    // cout << "CCCCC " << CoveredKey;
                     vector<IntegerRet> restricted(CoveredKey.size());
+                    // cout << "ori " << NewLattPoint;
                     for(size_t i = 0; i < CoveredKey.size(); ++i)
-                        restricted[i] = NewLattPoint[CoveredKey[i]];;
+                        restricted[i] = NewLattPoint[CoveredKey[i]];
+                    // cout << "res " << restricted;
                     for(auto pp = order_automs.begin(); pp!= order_automs.end(); ++pp){
-                        vector<IntegerRet> conjugate(CoveredKey.size());
-                        for(size_t j = 0; j < CoveredKey.size(); ++j){
-                            key_t image = fusion.Automorphisms[Automs[*pp]][CoveredKey[j]];
-                            if(image < CoveredKey.size()){
-                                conjugate[image] = restricted[j];
-                            }
+                        vector<IntegerRet> conjugate(NewLattPoint.size());
+                        for(size_t j = 0; j < NewLattPoint.size(); ++j){
+                            key_t image = fusion.Automorphisms[Automs[*pp]][j];
+                            conjugate[image] = NewLattPoint[j];
                         }
-                        if(restricted < conjugate){
+                        // cout << "con " << conjugate;
+                        vector<IntegerRet> restricted_conjugate(CoveredKey.size());
+                        for(size_t i = 0; i < CoveredKey.size(); ++i){
+                            restricted_conjugate[i] = conjugate[CoveredKey[i]];
+                        }
+                        // cout << "rco " << restricted_conjugate;
+                        if(restricted < restricted_conjugate){
                             can_be_inserted = false;
 #pragma omp atomic
                            nr_caught_by_automs++;

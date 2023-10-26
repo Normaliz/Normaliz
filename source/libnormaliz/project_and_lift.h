@@ -135,6 +135,7 @@ class ProjectAndLift {
     vector<vector<key_t> > AllIntersections_key;
     vector<vector<key_t> > AllNew_coords_key;
     vector<dynamic_bitset > AllCovered;
+    vector<vector<key_t > > AllCoveredKey;  // key in the order of insertion of patches
     vector<dynamic_bitset > AllPatches; // patches associated with the coordinates
     vector<ProjectAndLift<IntegerPL, IntegerRet> > AllLocalPL;
     dynamic_bitset active_coords;
