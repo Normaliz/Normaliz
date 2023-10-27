@@ -270,6 +270,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
     AllNew_coords_key.resize(EmbDim);
     AllCovered.resize(EmbDim);
     AllCoveredKey.resize(EmbDim);
+    AllCoveredKeyInverse.resize(EmbDim);
     AllPatches.resize(EmbDim);
     active_coords.resize(EmbDim);
 
@@ -648,6 +649,10 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
             }
         }
         old_coord_key = AllCoveredKey[coord];
+
+        AllCoveredKeyInverse[coord].resize(new_covered.size());
+        for(size_t i = 0; i < AllCoveredKey[coord].size(); ++i)
+            AllCoveredKeyInverse[coord][AllCoveredKey[coord][i]] = i;
 
         AllCovered[coord] = new_covered;
         covered = new_covered;
@@ -1217,30 +1222,26 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
 
     INTERRUPT_COMPUTATION_BY_EXCEPTION
 
+    // for easier access and simpler code
     auto& intersection_key = AllIntersections_key[coord];
     auto& new_coords_key = AllNew_coords_key[coord];
 
     auto&& PolyEqusThread = AllPolyEqusThread[coord];
-    // vector< vector < pair<OurPolynomial<IntegerRet>, OurPolynomial<IntegerRet> > >>& PolyEqusThread = AllPolyEqusThread[coord];
     auto& PolyInequsThread = AllPolyInequsThread[coord];
-    // ector<OurPolynomialSystem<IntegerRet>>& PolyInequsThread = AllPolyInequsThread[coord];
     auto& Automs = AllAutoms[coord];
 
     auto&& CoveredKey = AllCoveredKey[coord];
+    auto&& CoveredKeyInverse = AllCoveredKeyInverse[coord];
+    auto&  Automorphisms = fusion.Automorphisms;
 
     auto& LocalPL = AllLocalPL[coord];
-    // ProjectAndLift<IntegerPL, IntegerRet>& LocalPL = AllLocalPL[coord];
     auto&& LocalSolutions_by_intersection_and_cong =
             AllLocalSolutions_by_intersection_and_cong[coord];
-    //map< vector<IntegerRet>, map< vector<IntegerRet>, vector<key_t> > >& LocalSolutions_by_intersection_and_cong =
-     //       AllLocalSolutions_by_intersection_and_cong[coord];
 
     auto& LocalSolutions = AllLocalSolutions[coord];
-    // Matrix<IntegerRet>& LocalSolutions = AllLocalSolutions[coord];
     dynamic_bitset covered = AllCovered[coord];
 
     auto& CongsRestricted = AllCongsRestricted[coord];
-    // vector<OurPolynomialCong<IntegerRet> >& CongsRestricted = AllCongsRestricted[coord];
 
     // We extract the "intersection coordinates" from the LatticePoints
     // and extend them to solutions of the local system LocalPL
@@ -1556,15 +1557,20 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                         restricted[i] = NewLattPoint[CoveredKey[i]];
                     // cout << "res " << restricted;
                     for(auto pp = order_automs.begin(); pp!= order_automs.end(); ++pp){
-                        vector<IntegerRet> conjugate(NewLattPoint.size());
+                        /* vector<IntegerRet> conjugate(NewLattPoint.size());
                         for(size_t j = 0; j < NewLattPoint.size(); ++j){
                             key_t image = fusion.Automorphisms[Automs[*pp]][j];
                             conjugate[image] = NewLattPoint[j];
                         }
-                        // cout << "con " << conjugate;
+                        // cout << "con " << conjugate; */
                         vector<IntegerRet> restricted_conjugate(CoveredKey.size());
                         for(size_t i = 0; i < CoveredKey.size(); ++i){
-                            restricted_conjugate[i] = conjugate[CoveredKey[i]];
+                            // restricted_conjugate[i] = conjugate[CoveredKey[i]];
+                            key_t image = Automorphisms[Automs[*pp]][CoveredKey[i]];
+                            if(covered[image]){
+                                key_t inverse_image = CoveredKeyInverse[image];
+                                restricted_conjugate[inverse_image] = restricted[i];
+                            }
                         }
                         // cout << "rco " << restricted_conjugate;
                         if(restricted < restricted_conjugate){
@@ -1669,7 +1675,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
 
             if(verbose && Automs.size() > 0)
                 verboseOutput() << LevelPatches[coord] << " / " << coord << " active automorphisms "
-                  << EffectiveAutoms.size() << " of " << fusion.Automorphisms.size() << endl;
+                  << EffectiveAutoms.size() << " of " << Automorphisms.size() << endl;
 
              Automs = EffectiveAutoms;
         }

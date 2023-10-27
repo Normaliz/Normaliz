@@ -136,6 +136,7 @@ class ProjectAndLift {
     vector<vector<key_t> > AllNew_coords_key;
     vector<dynamic_bitset > AllCovered;
     vector<vector<key_t > > AllCoveredKey;  // key in the order of insertion of patches
+    vector<vector<key_t > > AllCoveredKeyInverse;  // ionverse key
     vector<dynamic_bitset > AllPatches; // patches associated with the coordinates
     vector<ProjectAndLift<IntegerPL, IntegerRet> > AllLocalPL;
     dynamic_bitset active_coords;
