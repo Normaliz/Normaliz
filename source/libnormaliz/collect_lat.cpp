@@ -230,18 +230,20 @@ void rewrite_lat_file(ifstream& lat_in, const string& lat_name, size_t& min_retu
     Matrix<long long> solutions_so_far;
 
     while(true){
-        if(!lat_in.good())
+        lat_in >> ws;
+        int c = lat_in.peek();
+        if (c == EOF) {
             break;
+        }
         string s1;
         lat_in >> s1;
         if(s1 != "done_indices")
-            break;
+            throw BadInputException(lat_name + " corrupt.");
         long prel_done_indices;
         lat_in >> prel_done_indices;
-
         lat_in >> s1;
         if(s1 != "found_solutions")
-            break;
+            throw BadInputException(lat_name + " corrupt.");
         size_t nr_rows, nr_cols;
         lat_in >> nr_rows >>  nr_cols;
         Matrix<long long> prel_solutions(nr_rows, nr_cols);
@@ -250,8 +252,6 @@ void rewrite_lat_file(ifstream& lat_in, const string& lat_name, size_t& min_retu
                 lat_in >> prel_solutions[i][j];
             }
         }
-        if(!lat_in.good())
-            break;
         done_indices = prel_done_indices;
         solutions_so_far = prel_solutions;
     }
@@ -289,7 +289,7 @@ void rewrite_lat_file(ifstream& lat_in, const string& lat_name, size_t& min_retu
         lat_out.open(lat_name, ofstream::app);
     }
     lat_out << endl << "min_return" << endl << min_return << endl;
-    lat_out << "done_indices" << done_indices << endl << endl;;
+    lat_out << "done_indices " << done_indices << endl << endl;;
 
     lat_out.close();
 }

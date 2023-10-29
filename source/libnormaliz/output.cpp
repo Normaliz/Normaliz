@@ -150,18 +150,30 @@ void Output<Integer>::setCone(Cone<Integer>& C) {
         else
             monoid_or_cone = "cone";
         of_polyhedron = " of polyhedron (homogenized)";
-        if ((Result->isComputed(ConeProperty::ModuleGenerators) || Result->isComputed(ConeProperty::NumberLatticePoints)) &&
-            Result->getRecessionRank() == 0) {
-            if (!using_renf<Integer>())
-                module_generators_name = " lattice points in polytope (module generators)" + polynomial_constraints;
-            else
-                module_generators_name = " lattice points in polytope" + polynomial_constraints;
+        if(!Result->isComputed(ConeProperty::OnlySimple) && !Result->isComputed(ConeProperty::ExploitFusionAutoms)){
+            if ((Result->isComputed(ConeProperty::ModuleGenerators) || Result->isComputed(ConeProperty::NumberLatticePoints)) &&
+                Result->getRecessionRank() == 0) {
+                if (!using_renf<Integer>())
+                    module_generators_name = " lattice points in polytope (module generators)" + polynomial_constraints;
+                else
+                    module_generators_name = " lattice points in polytope" + polynomial_constraints;
+            }
+            else {
+                if (using_renf<Integer>())
+                    module_generators_name = " lattice points in polytope" + polynomial_constraints;
+                else
+                    module_generators_name = " module generators";
+            }
         }
-        else {
-            if (using_renf<Integer>())
-                module_generators_name = " lattice points in polytope" + polynomial_constraints;
+        else{
+            if(Result->isComputed(ConeProperty::OnlySimple)){
+                if(!Result->isComputed(ConeProperty::ExploitFusionAutoms))
+                    module_generators_name = " simple fusion data";
+                else
+                    module_generators_name = " simple fusion data up to siomorphism";
+            }
             else
-                module_generators_name = " module generators";
+                module_generators_name = " fusion data up to isomorphism";
         }
     }
 }

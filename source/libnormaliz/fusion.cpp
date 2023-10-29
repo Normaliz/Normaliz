@@ -278,11 +278,11 @@ void FusionData<Integer>::read_data(const bool a_priori) {
     if(dual_ind.count() != fusion_rank)
         throw BadInputException("Filename not standard fusion");
 
-    if((check_simplicity && a_priori) || (select_simple && !a_priori) )
-        prepare_simplicity_check();
-
     if((use_automorphisms && a_priori) || (select_iso_classes && !a_priori) )
         make_automorphisms();
+
+    if((check_simplicity && a_priori) || (select_simple && !a_priori) ) // after automorphisms !!
+        prepare_simplicity_check();
 
     if(verbose){
         verboseOutput() << "rank " << fusion_rank << endl;
@@ -357,7 +357,8 @@ void FusionData<Integer>::read_data_from_file() {
     size_t duality_count = 0;
 
     while(true){
-        in >> ws;    int c = in.peek();
+        in >> ws;
+        int c = in.peek();
         if (c == EOF) {
             break;
         }
@@ -533,21 +534,38 @@ void  FusionData<Integer>::make_all_base_keys(){
 }
 
 template <typename Integer>
+bool FusionData<Integer>::automs_compatible(const vector<key_t>& cand ) const{
+
+    for(auto& aa: Automorphisms){
+        dynamic_bitset cand_ind = key_to_bitset(cand, Automorphisms.begin()->size());
+        for(auto& c: cand){
+            if(!cand_ind[aa[c]])
+                return false;
+        }
+    }
+    return true;
+}
+
+template <typename Integer>
 void FusionData<Integer>::prepare_simplicity_check(){
     make_CoordMap();
     /* for(auto& t: all_ind_tuples){
         cout << coord(t) << " --- " <<t;
     }*/
     if(candidate_given){
-        coords_to_check_ind.push_back(critical_coords(subring_base_key));
-        coords_to_check_key.push_back(bitset_to_key(coords_to_check_ind[0]));
+        if(automs_compatible(subring_base_key)){
+            coords_to_check_ind.push_back(critical_coords(subring_base_key));
+            coords_to_check_key.push_back(bitset_to_key(coords_to_check_ind[0]));
+        }
+        else
+            throw BadInputException("Candidate sunbring for non-simplicity not invarient under automorphisms.");
         return;
     }
     // now we must make all candidates
     make_all_base_keys();
     for(auto& bk: all_base_keys){
-        coords_to_check_ind.push_back(critical_coords(bk));
-        coords_to_check_key.push_back(bitset_to_key(coords_to_check_ind.back()));
+            coords_to_check_ind.push_back(critical_coords(bk));
+            coords_to_check_key.push_back(bitset_to_key(coords_to_check_ind.back()));
     }
 }
 

@@ -97,6 +97,7 @@ public:
     Matrix<Integer> do_iso_classes(const Matrix<Integer>& LattPoints);
     bool simplicity_check(const vector<key_t>& subring, const vector<Integer>& sol);
     bool simplicity_check(const vector<vector<key_t> >& subrings, const vector<Integer>& sol);
+    bool automs_compatible(const vector<key_t>& cand) const;
 
     // for automosphisms
     void make_automorphisms();

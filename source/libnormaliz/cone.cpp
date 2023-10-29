@@ -7280,28 +7280,31 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
         }
     }
 
-    if(ToCompute.test(ConeProperty::SelectSimple)){
-        Matrix<Integer> Selection;
-        if(!inhomogeneous)
-            throw BadInputException("Computation must be inhomogeneous for selection of simple fusion rings.");
-        Selection = select_simple(ModuleGenerators, ToCompute, verbose);
-        string name = global_project + ".simple.lat";
-        ofstream out(name);
-        out << Selection.nr_of_rows() << endl;
-        out << Selection.nr_of_columns() << endl;
-        Selection.pretty_print(out);
-    }
+    if(ToCompute.test(ConeProperty::OnlySimple))
+        setComputed(ConeProperty::OnlySimple);
+    if(ToCompute.test(ConeProperty::ExploitFusionAutoms))
+        setComputed(ConeProperty::ExploitFusionAutoms);
 
-    if(ToCompute.test(ConeProperty::FusionIsoClasses)){
-        Matrix<Integer> Selection;
+
+    if(ToCompute.test(ConeProperty::SelectSimple) || ToCompute.test(ConeProperty::FusionIsoClasses)){
         if(!inhomogeneous)
-            throw BadInputException("Computation must be inhomogeneous for automorphisms of fusion rings.");
-        Selection = fusion_iso_classes(ModuleGenerators, ToCompute, verbose);
-        string name = global_project + ".iso.lat";
+            throw BadInputException("Computation must be inhomogeneous for fusion ring operations.");
+        auto Selection = ModuleGenerators;
+        if(ToCompute.test(ConeProperty::SelectSimple))
+            Selection = select_simple(Selection, ToCompute, verbose);
+        if(ToCompute.test(ConeProperty::FusionIsoClasses))
+            Selection = fusion_iso_classes(Selection, ToCompute, verbose);
+        string name = global_project + ".fusion.lat";
         ofstream out(name);
         out << Selection.nr_of_rows() << endl;
         out << Selection.nr_of_columns() << endl;
         Selection.pretty_print(out);
+        string properties;
+        if(ToCompute.test(ConeProperty::SelectSimple) || ToCompute.test(ConeProperty::OnlySimple))
+            properties += "simple ";
+        if(ToCompute.test(ConeProperty::ExploitFusionAutoms) || ToCompute.test(ConeProperty::FusionIsoClasses))
+            properties += "isomotphism classes";
+        out << properties << endl;
     }
 
     if(ToCompute.test(ConeProperty::SingleLatticePoint)){

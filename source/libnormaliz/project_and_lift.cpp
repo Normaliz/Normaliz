@@ -1152,8 +1152,10 @@ void ProjectAndLift<IntegerPL,IntegerRet>::prepare_split(list<vector<IntegerRet>
         }
     }
     if(do_split){
-        if(verbose)
+        if(verbose){
+            verboseOutput() << "==========================" << endl;
             verboseOutput() << "Spilt level " << this_patch << " modulus " << split_modulus << " residue " << this_split_res << endl;
+        }
         LatticePoints.sort();
         list<vector<IntegerRet> > Selection;
 
@@ -1166,9 +1168,11 @@ void ProjectAndLift<IntegerPL,IntegerRet>::prepare_split(list<vector<IntegerRet>
                     PreSelection.push_back(v);
                 k++;
             }
-            if(verbose)
-                verboseOutput() << k << " already done lattice points of " << LatticePoints.size() << " discarded " << endl;
+            size_t given_lattice_points = LatticePoints.size();
             swap(LatticePoints, PreSelection);
+            if(verbose)
+                verboseOutput() << done_indices << " already done lattice points of " << given_lattice_points << " discarded, "
+                << LatticePoints.size() << " remaining" << endl;
             PreSelection.clear();
         }
 
