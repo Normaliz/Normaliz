@@ -1782,6 +1782,6 @@ NMZTESTS +=						\
 	test-patch/n8_feas_single.in			\
 	test-patch/n8_feas_single.ref			\
 	test-patch/n8_feas_single_nop.in		\
-	test-patch/n8_feas_single_nop.ref		\
+	test-patch/n8_feas_single_nop.ref
 
 EXTRA_DIST += $(NMZTESTS)

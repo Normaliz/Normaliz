@@ -441,6 +441,7 @@ void read_symbolic_constraint(istream& in, string& rel, vector<Number>& left, Nu
         current_term += test;
     }
     terms.push_back(current_term);
+    // cout << terms;
     if (!relation_read)
         throw BadInputException("No relation in constraint");
 
@@ -533,12 +534,16 @@ void read_symbolic_constraint(istream& in, string& rel, vector<Number>& left, Nu
         }
 
         if (comp_string != "") {
+
+            // cout << "CCCCCCCCCC " << comp_string << endl;
             bool bracket_read = false;
             string expo_string;
             for (char j : comp_string) {
                 if (j == ']')
                     break;
                 if (j == '[') {
+                    if(bracket_read)
+                        throw BadInputException("Double [ in term.");
                     bracket_read = true;
                     continue;
                 }

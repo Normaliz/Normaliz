@@ -57,6 +57,7 @@ libnormaliz_la_SOURCES = \
   libnormaliz/descent.cpp \
   libnormaliz/face_lattice.cpp \
   libnormaliz/full_cone.cpp \
+  libnormaliz/fusion.cpp \
   libnormaliz/general.cpp \
   libnormaliz/HilbertSeries.cpp \
   libnormaliz/input.cpp \
@@ -85,6 +86,7 @@ noinst_HEADERS = \
   libnormaliz/cone_dual_mode.h \
   libnormaliz/face_lattice.h \
   libnormaliz/full_cone.h \
+  libnormaliz/fusion.h \
   libnormaliz/lattice_ideal.h \
   libnormaliz/nmz_hash.h \
   libnormaliz/offload_handler.h \
