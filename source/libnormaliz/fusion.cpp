@@ -229,6 +229,8 @@ FusionData<Integer>::FusionData(){
     verbose = false;
     activated = false;
     type_and_duality_set =false;
+    commutative = false;
+    nr_coordinates = 0;
 }
 
 template <typename Integer>
@@ -288,6 +290,7 @@ void FusionData<Integer>::read_data(const bool a_priori) {
         verboseOutput() << "rank " << fusion_rank << endl;
         verboseOutput() << "type " << fusion_type;
         verboseOutput() << "duality " << duality;
+        verboseOutput() << "commutative " << commutative << endl;
     }
     if(candidate_given && verbose)
         verboseOutput() << "candidate base of subring " << subring_base_key;
@@ -329,6 +332,10 @@ void FusionData<Integer>::data_from_roject() {
     while(true){
         long nr;
         data >> nr;
+        if(nr == -1){
+            commutative = true;
+            nr = 0;
+        }
         duality.push_back(nr);
         data >> c;
         if(c == ']'){
@@ -407,6 +414,10 @@ void FusionData<Integer>::read_data_from_file() {
             candidate_given = true;
             continue;
         }
+        if(s == "commutative"){
+            commutative = true;
+            continue;
+        }
         throw BadInputException("Illegal fusion keyword " + s);
     }
 
@@ -418,6 +429,15 @@ void FusionData<Integer>::read_data_from_file() {
 
 template <typename Integer>
 set<vector<key_t> >  FusionData<Integer>::FrobRec(const vector<key_t>& ind_tuple){
+    if(commutative)
+        return FrobRec_12(ind_tuple);
+    else
+        return FrobRec_6(ind_tuple);
+}
+
+
+template <typename Integer>
+set<vector<key_t> >  FusionData<Integer>::FrobRec_6(const vector<key_t>& ind_tuple){
 
     assert(ind_tuple.size() == 3);
     key_t i,j,k;
@@ -436,6 +456,21 @@ set<vector<key_t> >  FusionData<Integer>::FrobRec(const vector<key_t>& ind_tuple
     return F;
 }
 
+template <typename Integer>
+set<vector<key_t> >  FusionData<Integer>::FrobRec_12(const vector<key_t>& ind_tuple){
+
+    set< vector<key_t> > F = FrobRec_6(ind_tuple);
+    vector<key_t> comm_tuple(3);
+    comm_tuple[0] = ind_tuple[1];
+    comm_tuple[1] = ind_tuple[0];
+    comm_tuple[2] = ind_tuple[2];
+    set< vector<key_t> > G = FrobRec_6(comm_tuple);
+    for(auto& t: G)
+        F.insert(t);
+    return F;
+}
+
+
 /*
 template <typename IntegerPL, typename IntegerRet>
 key_t ProjectAndLift<IntegerPL,IntegerRet>::dual(const key_t i) const{
@@ -446,7 +481,7 @@ key_t ProjectAndLift<IntegerPL,IntegerRet>::dual(const key_t i) const{
 
 template <typename Integer>
 key_t FusionData<Integer>::coord(vector<key_t>& ind_tuple){
-   set<vector<key_t> > FR = FrobRec(ind_tuple);
+    set<vector<key_t> > FR = FrobRec(ind_tuple);
     return coord(FR);
 }
 
@@ -497,12 +532,14 @@ void FusionData<Integer>::make_CoordMap(){
 
     key_t val = 1;  // coordinate 0 is the homogenizing one
     for(auto& ind_tuple: all_ind_tuples){
-        set<vector<key_t> > F = FrobRec(ind_tuple);
+        set<vector<key_t> > F= FrobRec(ind_tuple);
         if(CoordMap.find(F) != CoordMap.end())
             continue;
         CoordMap[F] = val;
         val++;
     }
+
+    nr_coordinates = CoordMap.size();
 
     // we also want the inverse i-th coordinate --> lex smallest index tuple
     for(auto m = CoordMap.begin(); m!= CoordMap.end(); ++m){
@@ -572,7 +609,13 @@ void FusionData<Integer>::prepare_simplicity_check(){
 template <typename Integer>
 Matrix<Integer> FusionData<Integer>::do_select_simple(const Matrix<Integer>& LattPoints){
 
+    if(LattPoints.nr_of_rows() == 0)
+        return LattPoints;
+
     prepare_simplicity_check();
+    if(nr_coordinates != LattPoints.nr_of_columns() - 1)
+        throw BadInputException("Wrong number of coordinates in fusion data. Mismatch of duality or commutativity.");
+
     for(auto& aa: coords_to_check_key){
         for(auto& c: aa) // homogenizing coordinate is no loonger at 0
             c--;
@@ -593,6 +636,12 @@ Matrix<Integer> FusionData<Integer>::do_select_simple(const Matrix<Integer>& Lat
 
 template <typename Integer>
 Matrix<Integer> FusionData<Integer>::do_iso_classes(const Matrix<Integer>& LattPoints){
+
+    if(LattPoints.nr_of_rows() == 0)
+        return LattPoints;
+
+   if(nr_coordinates != LattPoints.nr_of_columns() - 1)
+        throw BadInputException("Wrong number of coordinates in fusion data. Mismatch of duality or commutativity.");
 
     Matrix<Integer> IsoClasses;
     IsoClasses.resize(0,LattPoints.nr_of_columns());

@@ -3034,6 +3034,10 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute(bool all_points, bool liftin
     }
 
     fusion.read_data(true); // true = a_priori
+    if(fusion.nr_coordinates > 0 && fusion.nr_coordinates != EmbDim -1){
+        cout << "SSSSSSSSSSSSSSSS " << fusion.nr_coordinates << endl;
+        throw BadInputException("Wrong number of coordinates in fusion data. Mismatch of duality or commutativity.");
+    }
 
     assert(all_points || !lifting_float);  // only all points allowed with float
 

@@ -52,12 +52,16 @@ public:
 
     bool verbose;
 
+    bool commutative;
+
     bool check_simplicity;
     bool select_simple; // not used at present
     bool candidate_given;
 
     bool use_automorphisms;
     bool select_iso_classes;
+
+    size_t nr_coordinates;
 
     vector<key_t> duality;
     size_t fusion_rank;
@@ -85,6 +89,8 @@ public:
     void make_CoordMap();
     key_t dual(const key_t i) const;
     set<vector<key_t> > FrobRec(const vector<key_t>& ind_tuple);
+    set<vector<key_t> > FrobRec_6(const vector<key_t>& ind_tuple);
+    set<vector<key_t> > FrobRec_12(const vector<key_t>& ind_tuple);
     key_t coord(set<vector<key_t> >& FR);
     key_t coord(vector<key_t>& ind_tuple);
     void make_all_ind_tuples();
