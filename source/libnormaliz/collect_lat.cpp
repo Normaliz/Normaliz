@@ -419,9 +419,9 @@ void collect_lat(const string& project) {
             split_levels =  our_split.refinement_levels[split_index];
         }
 
-        size_t next_split_level = split_levels.back() + 1;
-        if(MinReturnNotDone[spl] > next_split_level)
-            next_split_level = MinReturnNotDone[spl];
+        size_t next_split_level = split_levels.back() + 1;  // <-------------------- ???? Ohne  + 1
+        if(MinReturnNotDone[spl] > next_split_level)        //
+            next_split_level = MinReturnNotDone[spl];       //
 
         for(long i = 0; i < nr_sub_splits; ++i){
             vector<long> extended_res = split_residues;

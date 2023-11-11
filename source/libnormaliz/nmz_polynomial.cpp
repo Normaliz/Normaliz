@@ -172,11 +172,13 @@ bool OurTerm<Number>::is_restrictable_inequ(const dynamic_bitset& set_of_var)  c
 
 template<typename Number>
 OurPolynomial<Number>::OurPolynomial(){
-
+    vectorized = false;
 }
 
 template<typename Number>
 OurPolynomial<Number>::OurPolynomial(const vector<Number>& linear_form){
+
+    vectorized = false;
 
     for(size_t i = 0; i < linear_form.size(); ++i){
         if(linear_form[i] == 0)
@@ -226,10 +228,23 @@ template<typename Number>
 Number OurPolynomial<Number>::evaluate(const vector<Number>& argument) const{
 
     Number value = 0;
+    if(vectorized){
+        return evaluate_vectorized(argument);
+    }
     for(auto& T: *this){
         value += T.evaluate(argument);
         if(!check_range(value))
              throw ArithmeticException("Overflow in evaluation of polynomial");
+    }
+    return value;
+}
+
+template<typename Number>
+Number OurPolynomial<Number>::evaluate_vectorized(const vector<Number>& argument) const{
+
+    Number value = const_term;
+    for(size_t i = 0; i < coeffs.size(); ++i){
+        value += coeffs[i] * argument[expo_1[i]] *  argument[expo_2[i]];
     }
     return value;
 }
@@ -245,6 +260,9 @@ OurPolynomial<Number> OurPolynomial<Number>::restrict_to(const dynamic_bitset& v
     return Rest;
 }
 
+
+// splits the polynomial into two parts: terms whose support is contained in support_variables
+// and the remaining terms
 template<typename Number>
 pair<OurPolynomial<Number>, OurPolynomial<Number> > OurPolynomial<Number>::split(const dynamic_bitset& support_variables) const{
     OurPolynomial<Number> Rest;
@@ -269,6 +287,32 @@ bool OurPolynomial<Number>::check_linearity(const dynamic_bitset& critical_varia
     }
     return true;
 }
+
+template<typename Number>
+void OurPolynomial<Number>::vectorize_deg_2(){
+    vector<key_t> fact_1, fact_2;
+    vector<Number> coe;
+    Number ct = 0;
+    for(auto& T: *this){
+        if(T.vars.size() != 2 && T.vars.size() != 0)
+            return;
+        if(T.vars.size() == 0){
+            ct += T.coeff;
+            continue;
+        }
+        if(T.vars.size() == 2){
+            fact_1.push_back(T.vars[0]);
+            fact_2.push_back(T.vars[1]);
+            coe.push_back(T.coeff);
+        }
+    }
+    expo_1 = fact_1;
+    expo_2 = fact_2;
+    coeffs = coe;
+    const_term = ct;
+    vectorized = true;
+}
+
 
 
 template<typename Number>
@@ -438,6 +482,8 @@ OurPolynomial<Number>::OurPolynomial(const string& poly_string, const size_t dim
     string poly_string_new("x[1]^2/2+1/3");
     RingElem FQQ = ReadExpr(RQQ, poly_string_new);
     cout << "FFF " << FQQ << endl;*/
+
+    vectorized = false;
 
     if(verbose)
         verboseOutput() << poly_string << endl;

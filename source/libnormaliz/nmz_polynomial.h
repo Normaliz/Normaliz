@@ -59,7 +59,7 @@ public:
 
     Number coeff;
     map<key_t, long> monomial;
-    vector<key_t> vars; // each variable repeated if expo > 1
+    vector<key_t> vars; // each variable repeated repetitions if expo > 1
     dynamic_bitset support;
 
     Number evaluate(const vector<Number>& argument) const;
@@ -87,7 +87,14 @@ public:
     key_t highest_indet;
     dynamic_bitset support;
 
+    // for linearization of degree 2 polynomials
+    vector<key_t> expo_1, expo_2;
+    vector<Number> coeffs;
+    Number const_term;
+    bool vectorized;
+
     Number evaluate(const vector<Number>& argument) const;
+    Number evaluate_vectorized(const vector<Number>& argument) const;
     Number evaluate_restricted(const vector<Number>& argument, const dynamic_bitset& set_of_var) const;
     OurPolynomial();
     OurPolynomial(const string& poly_string, const size_t dim, const bool);
@@ -103,6 +110,8 @@ public:
     OurPolynomial<Number> restrict_to(const dynamic_bitset& variables) const;
     pair<OurPolynomial<Number>, OurPolynomial<Number> > split(const dynamic_bitset& support_variables) const;
     bool check_linearity(const dynamic_bitset& critical_variables, dynamic_bitset& support_linear) const;
+
+    void vectorize_deg_2();
 
 #ifdef NMZ_COCOA
     CoCoA::RingElem ToCoCoA(CoCoA::SparsePolyRing R) const;

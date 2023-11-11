@@ -5,6 +5,7 @@
 CXX = g++
 #CXX = clang++-13
 CXXFLAGS += -std=c++14 -Wall -pedantic -Wno-sign-compare -Wno-deprecated  -funroll-loops -fPIC -g
+#CXXFLAGS += -march=native
 #CXXFLAGS += -pg      ## profiling
 #CXXFLAGS += -DNDEBUG ## disables asserts
 

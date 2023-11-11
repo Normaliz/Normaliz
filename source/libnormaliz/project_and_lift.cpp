@@ -580,6 +580,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
                 first_rest = false;
             }*/
             AllPolyEqus[coord].push_back(PolyEquations[i].split(covered));
+            AllPolyEqus[coord].back().first.vectorize_deg_2();
+            AllPolyEqus[coord].back().second.vectorize_deg_2();
             PolyEqusKey.push_back(i);
         }
         for(auto& T: AllPolyEqusThread[coord]){ // vcopy for each thread
@@ -1494,6 +1496,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                 throw TimeBoundException("extending");
             }
 
+            // the - is important because the sum of the two parts should give 0 <==> equation satisfied
             for(auto pp = order_poly_equs.begin(); pp!= order_poly_equs.end(); ++pp){
                 pp-> second = - PolyEqusThread[tn][pp->first].first.evaluate(NewLattPoint);
             }
@@ -3035,7 +3038,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute(bool all_points, bool liftin
 
     fusion.read_data(true); // true = a_priori
     if(fusion.nr_coordinates > 0 && fusion.nr_coordinates != EmbDim -1){
-        cout << "SSSSSSSSSSSSSSSS " << fusion.nr_coordinates << endl;
+        // cout << "SSSSSSSSSSSSSSSS " << fusion.nr_coordinates << endl;
         throw BadInputException("Wrong number of coordinates in fusion data. Mismatch of duality or commutativity.");
     }
 
