@@ -1126,67 +1126,67 @@ const size_t max_nr_new_latt_points_total = 1000000;
 const size_t nr_new_latt_points_for_elimination_equs = 10000;
 const size_t nr_new_latt_points_for_elimination_automs = 10000;
 
+
 //---------------------------------------------------------------------------
+
+template <typename Integer>
+void select_and_split(list<vector<Integer> >& LatticePoints, const key_t& this_patch, const long& split_modulus, const long& split_residue, const size_t& done_indices){
+
+
+    if(verbose){
+        verboseOutput() << "==========================" << endl;
+        verboseOutput() << LatticePoints.size() << "lattice points before splitting and selection" << endl;
+        verboseOutput() << "Spilt level " << this_patch << " modulus " << split_modulus << " residue " << split_residue << endl;
+    }
+    LatticePoints.sort();
+    list<vector<Integer> > Selection;
+
+
+    if(done_indices > 0){
+        list<vector<Integer> > PreSelection;
+        size_t k = 0;
+        for(auto& v: LatticePoints){
+            if(k >= done_indices)
+                PreSelection.push_back(v);
+            k++;
+        }
+        size_t given_lattice_points = LatticePoints.size();
+        swap(LatticePoints, PreSelection);
+        if(verbose)
+            verboseOutput() << done_indices << " already done lattice points of " << given_lattice_points << " discarded, "
+            << LatticePoints.size() << " remaining" << endl;
+        PreSelection.clear();
+    }
+
+    long i = 0;
+    for(auto& p: LatticePoints){
+        if(i% split_modulus == split_residue){
+            Selection.push_back(p);
+        }
+        i++;
+    }
+    if(verbose)
+        verboseOutput() << Selection.size() << " lattice points adter splitting" << endl;
+
+    swap(LatticePoints, Selection);
+}
+
+//--------------------------------------------------------------------------
 
 template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL,IntegerRet>::prepare_split(list<vector<IntegerRet> >& LatticePoints, const key_t this_patch){
 
-    long split_modulus;
-    long this_split_res = -1;
 
-    bool do_split = false;
-    bool skip_done_indices = false;
-    long pre_select = -1;
     for(size_t i = 0; i < our_split.nr_split_levels; ++i){
         if(this_patch == our_split.this_split_levels[i]){
-            split_modulus = our_split.split_moduli[i];
-            this_split_res = our_split.this_split_residues[i];
-            do_split = true;
-            for(size_t pp = 0; pp < our_split.this_pred_min_return.size(); ++pp){
-                if(our_split.this_split_levels[i] == our_split.this_pred_min_return[pp]){
-                    pre_select = pp;
-                    break;
-                }
+            long split_modulus = our_split.split_moduli[i];
+            long split_residue = our_split.this_split_residues[i];
+            size_t done_indices = 0;
+            if(i >= our_split.nr_split_levels - our_split.this_refinement){
+                done_indices = our_split.this_split_done_indices[i - our_split.this_refinement];
             }
-            if(our_split.this_refinement > 0 && pre_select >= 0)
-                skip_done_indices = true;  // done indices will be skipped in the computation
-            break;
+            select_and_split(LatticePoints, this_patch, split_modulus,split_residue, done_indices);
         }
-    }
-    if(do_split){
-        if(verbose){
-            verboseOutput() << "==========================" << endl;
-            verboseOutput() << "Spilt level " << this_patch << " modulus " << split_modulus << " residue " << this_split_res << endl;
-        }
-        LatticePoints.sort();
-        list<vector<IntegerRet> > Selection;
-
-        if(skip_done_indices){
-            long done_indices = our_split.this_pred_done_indices[pre_select];
-            list<vector<IntegerRet> > PreSelection;
-            size_t k = 0;
-            for(auto& v: LatticePoints){
-                if(k >= done_indices)
-                    PreSelection.push_back(v);
-                k++;
-            }
-            size_t given_lattice_points = LatticePoints.size();
-            swap(LatticePoints, PreSelection);
-            if(verbose)
-                verboseOutput() << done_indices << " already done lattice points of " << given_lattice_points << " discarded, "
-                << LatticePoints.size() << " remaining" << endl;
-            PreSelection.clear();
-        }
-
-        long i = 0;
-        for(auto& p: LatticePoints){
-            if(i% split_modulus == this_split_res)
-                Selection.push_back(p);
-            i++;
-        }
-
-        swap(LatticePoints, Selection);
-        Selection.clear();
     }
 }
 
@@ -1198,10 +1198,11 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
     key_t max_split_level = 0;
     if(is_split_patching){
         max_split_level = our_split.this_split_levels.back();
-        prepare_split(LatticePoints, this_patch);
+        if(this_patch <= max_split_level)
+            prepare_split(LatticePoints, this_patch);
     }
 
-    size_t max_nr_per_thread =  max_nr_new_latt_points_total/ omp_get_max_threads();
+    size_t max_nr_per_thread = max_nr_new_latt_points_total/ omp_get_max_threads();
 
     const size_t coord = InsertionOrderPatches[this_patch]; // the coord marking the next patch
 
@@ -2497,7 +2498,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::lift_points_to_this_dim(list<vector<
 
     list<vector<IntegerRet> > Deg1Lifted;  // to this dimension if < EmbDim
 
-    size_t max_nr_per_thread = 1000000 / omp_get_max_threads();
+    size_t max_nr_per_thread = max_nr_new_latt_points_total / omp_get_max_threads();
 
     size_t nr_to_lift = Deg1Proj.size();
     NrLP[dim1] += nr_to_lift;
@@ -2969,6 +2970,8 @@ void ProjectAndLift<IntegerPL, IntegerRet>::read_split_data() {
         verboseOutput() << "split moduli " << our_split.split_moduli;
         verboseOutput() << "split residues " << our_split.this_split_residues;
         verboseOutput() << "refinement " << our_split.this_refinement << " round " << our_split.this_round << endl;
+        if(split_refinement >0)
+            verboseOutput() << "split residues " << our_split.this_split_min_returns;
     }
     // starting the new lat file
     lat_file_name = global_project + "." + to_string(split_refinement) + "." + to_string(split_index_rounds) + ".lat";
@@ -2977,46 +2980,6 @@ void ProjectAndLift<IntegerPL, IntegerRet>::read_split_data() {
     ofstream prel_data(lat_file_name);
     prel_data << "preliminary_stage" << endl;
     prel_data.close();
-
-    if(split_refinement == 0)
-        return;
-    // reading the lat file of the predecessor
-    string pred_file_name = global_project + "." + to_string(split_refinement - 1) + "." +
-                    to_string(our_split.this_split_predecessor) + ".lat";
-
-    ifstream predecessor_data(pred_file_name);
-    string s1;
-    predecessor_data >> s1;
-    if(s1 != "preliminary_stage")
-        throw BadInputException("Corrupt predessor file " + pred_file_name+ ".");
-
-    if(verbose)
-        verboseOutput() << "Reading " << pred_file_name << endl;
-
-    our_split.this_pred_done_indices.resize(our_split.this_refinement);
-    our_split.this_pred_min_return.resize(our_split.this_refinement);
-
-    // we read the done indices in the previous refinement steps
-    for(size_t pp = 0; pp < our_split.this_refinement; ++pp){
-        predecessor_data >> s1;
-        if(s1 != "min_return")
-            throw BadInputException("Corrupt predecessor file " + pred_file_name+ ".");
-        predecessor_data >> our_split.this_pred_min_return[pp];
-
-        predecessor_data >> s1;
-        if(s1 != "done_indices")
-            throw BadInputException("Corrupt predecessor file " + pred_file_name+ ".");
-        size_t nr_done_indices;
-        predecessor_data >> nr_done_indices;
-        our_split.this_pred_done_indices[pp] = nr_done_indices;
-        if(verbose)
-            verboseOutput() << nr_done_indices << " done indices for level "  << our_split.this_pred_min_return[pp] << endl;
-    }
-
-    if(predecessor_data.fail())
-        throw BadInputException("Corrupt predecessor file " + pred_file_name+ ".");
-
-    predecessor_data.close();
 }
 //---------------------------------------------------------------------------
 template <typename IntegerPL, typename IntegerRet>

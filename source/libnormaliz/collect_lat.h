@@ -38,30 +38,28 @@ class SplitData{
 
 public:
 
-    size_t nr_split_levels;  // comm to all sülits
+    string project;
+
+    size_t nr_split_levels;  // common to all splits
     vector<long> split_moduli; // they are common to all splits
 
     long this_refinement;
-    vector<vector<long> > refinement_residues;  // for each split to do the history of residues leading to it
+    vector<vector<long> > refinement_residues;  // for each split to record the history of residues leading to it
     vector<vector<long> > refinement_levels;  // ditto
-    vector<long> refinement_predecessors; // for each split to do the last predecessor
-
-    string project;
+    vector<vector<long> > refinement_done_indices;  // ditto
 
     long max_nr_splits_per_round;
     long nr_splits_to_do;
+    long nr_rounds;
 
     long this_split_index; // for the index coming from -X=<...>
     vector<long> this_split_residues; // ditto
     vector<long> this_split_levels;
+    vector<long> this_split_done_indices;
+    vector<long> this_split_min_returns;
 
-    long this_split_predecessor; // this_split_index of the "mother" split, needed to identify the
-                      // the lat fdile produced by the mother
-    vector<long> this_pred_min_return; // the min return level of the predecessors;
-    vector<long> this_pred_done_indices; // indices of done elelemts of LatPopints on prwedecrssor levels
-                                                   // to be read from predecessor lat file
+
     long this_round;
-    long nr_rounds;
 
     SplitData();
     SplitData(const string& this_project, const long& level, const size_t& nr_vectors);
