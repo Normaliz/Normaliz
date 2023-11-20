@@ -45,6 +45,7 @@ using namespace std;
 #include "libnormaliz/collect_lat.h"
 #include "libnormaliz/vector_operations.h"
 #include "libnormaliz/project_and_lift.h"
+#include "libnormaliz/fusion.h"
 
 using namespace libnormaliz;
 
@@ -143,9 +144,26 @@ int main(int argc, char* argv[]){
     // signal handler for interrupt
     signal(SIGINT, &interrupt_signal_handler);
 
+    vector<string> command_line_items;
     string command_line;
-    for (int i = 1; i < argc; ++i)
+    for (int i = 1; i < argc; ++i){
         command_line = command_line + string(argv[i]) + " ";
+        command_line_items.push_back(string(argv[i]));
+    }
+
+    for(auto& s: command_line_items){
+        if(s == "--PostProcessFusion"){
+            try{
+                post_process_fusion(command_line_items);
+            } catch (const BadInputException& e) {
+                cerr << e.what() << endl;
+                cerr << "BadInputException caught... exiting." << endl;
+                exit(1);
+            }
+            exit(0);
+        }
+    }
+
 
     string global_command_line = command_line;
 

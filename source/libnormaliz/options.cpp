@@ -387,7 +387,7 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
             use_chunk = true;
             continue;
         }
-        if (LongOption == "CollectLat") {
+        if (LongOption == "CollectLat" || LongOption == "CLL") {
             use_collect_lat = true;
             continue;
         }
@@ -455,6 +455,21 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
         if(LongOption == "LOP"){
             to_compute.set(ConeProperty::LinearOrderPatches);
             continue;
+        }
+        if(LongOption == "EFA"){
+            to_compute.set(ConeProperty::ExploitFusionAutoms);
+            continue;
+
+        }
+        if(LongOption == "DCM"){
+            to_compute.set(ConeProperty::DistributedComp);
+            continue;
+
+        }
+        if(LongOption == "CLL"){
+            to_compute.set(ConeProperty::UseWeightsPatching);
+            continue;
+
         }
         if (find(AdmissibleOut.begin(), AdmissibleOut.end(), LongOption) != AdmissibleOut.end()) {
             OutFiles.push_back(LongOption);

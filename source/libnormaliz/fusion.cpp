@@ -280,18 +280,19 @@ void FusionData<Integer>::read_data(const bool a_priori) {
     if(dual_ind.count() != fusion_rank)
         throw BadInputException("Filename not standard fusion");
 
-    if((use_automorphisms && a_priori) || (select_iso_classes && !a_priori) )
-        make_automorphisms();
-
-    if((check_simplicity && a_priori) || (select_simple && !a_priori) ) // after automorphisms !!
-        prepare_simplicity_check();
-
     if(verbose){
         verboseOutput() << "rank " << fusion_rank << endl;
         verboseOutput() << "type " << fusion_type;
         verboseOutput() << "duality " << duality;
         verboseOutput() << "commutative " << commutative << endl;
     }
+
+    if((use_automorphisms && a_priori) || (select_iso_classes && !a_priori) )
+        make_automorphisms();
+
+    if((check_simplicity && a_priori) || (select_simple && !a_priori) ) // after automorphisms !!
+        prepare_simplicity_check();
+
     if(candidate_given && verbose)
         verboseOutput() << "candidate base of subring " << subring_base_key;
 }
@@ -609,7 +610,7 @@ void FusionData<Integer>::prepare_simplicity_check(){
 template <typename Integer>
 Matrix<Integer> FusionData<Integer>::do_select_simple(const Matrix<Integer>& LattPoints){
 
-    if(LattPoints.nr_of_rows() == 0)
+    if(LattPoints.nr_of_rows() == 0 || !select_simple)
         return LattPoints;
 
     prepare_simplicity_check();
@@ -637,7 +638,7 @@ Matrix<Integer> FusionData<Integer>::do_select_simple(const Matrix<Integer>& Lat
 template <typename Integer>
 Matrix<Integer> FusionData<Integer>::do_iso_classes(const Matrix<Integer>& LattPoints){
 
-    if(LattPoints.nr_of_rows() == 0)
+    if(LattPoints.nr_of_rows() == 0 || !select_iso_classes)
         return LattPoints;
 
    if(nr_coordinates != LattPoints.nr_of_columns() - 1)
@@ -740,13 +741,14 @@ Matrix<long long> extract_latt_points_from_out(ifstream& in_out){
 }
 
 
-/*
-void select_simple_fusion_rings(){
+Matrix<long long> read_lat_points_from_file(bool our_verbose){
 
     string name = global_project + ".final.lat";
     Matrix<long long> LattPoints;
     ifstream in_final(name);
     if(in_final.is_open()){
+        if(our_verbose)
+            verboseOutput() << "Reading from " << name << endl;
         in_final.close();
         LattPoints = readMatrix<long long>(name);
     }
@@ -755,14 +757,113 @@ void select_simple_fusion_rings(){
         ifstream in_out(name);
         if(!in_out.is_open())
             throw BadInputException("No file with lattice points found");
-
+        if(our_verbose)
+            verboseOutput() << "Reading from " << name << endl;
         LattPoints = extract_latt_points_from_out(in_out);
     }
-    FusionData<long long> fusion;
-    fusion.read_data(); // true: allow using project name for fusion data
-    fusion.select_and_write_simple(LattPoints);
+    return LattPoints;
 }
-*/
+
+void post_process_fusion_file(const vector<string>& command_line_items,string our_project){
+
+    if(our_project.size() >= 11){
+        if(our_project.substr(our_project.size()-10,10) == ".final.lat"){
+            our_project = our_project.substr(0, our_project.size()-10);
+        }
+    }
+    if(our_project.size() >= 5){
+        if(our_project.substr(our_project.size()-4,4) == ".out"){
+            our_project = our_project.substr(0, our_project.size()-4);
+        }
+    }
+    if(our_project.size() >= 4){
+        if(our_project.substr(our_project.size()-3,3) == ".in"){
+            our_project = our_project.substr(0, our_project.size()-3);
+        }
+    }
+
+    global_project = our_project;
+    if(verbose)
+        verboseOutput() << "Project " << global_project << endl;
+    FusionData<long long> our_fusion;
+    for(auto& s: command_line_items){
+        if(s == "--SelectSimple")
+            our_fusion.select_simple = true;
+        if(s == "--FusionIsoClasses")
+            our_fusion.select_iso_classes = true;
+        if(s == "-c" || s =="--verbose")
+            our_fusion.verbose = true;
+    }
+    if(!our_fusion.select_simple && !our_fusion.select_iso_classes)
+        throw BadInputException("No action selected");
+
+    our_fusion.activated = true;
+
+    our_fusion.read_data(false); // false = a posteriori
+
+    Matrix<long long> LatPoints = read_lat_points_from_file(our_fusion.verbose);
+    // LatPoints.debug_print();
+    FusionData<long long> save_our_fusion = our_fusion; // because of transformation
+    Matrix<long long> IsoClasses = our_fusion.do_select_simple(LatPoints);
+    our_fusion = save_our_fusion;
+    Matrix<long long> SimpleFusionRings = our_fusion.do_iso_classes(IsoClasses);
+
+    string name = global_project + ".fusion.lat";
+    ofstream out(name);
+    out << SimpleFusionRings.nr_of_rows() << endl;
+    out << SimpleFusionRings.nr_of_columns() << endl;
+    SimpleFusionRings.pretty_print(out);
+    string properties;
+    if(our_fusion.select_simple)
+        properties += "simple ";
+    if(our_fusion.select_iso_classes)
+        properties += "isomotphism classes";
+    out << properties << endl;
+    out.close();
+}
+
+void post_process_fusion(const vector<string>& command_line_items){
+
+    string our_project;
+    bool list_processing = false;
+    bool our_verbose = false;
+
+    for(auto& s: command_line_items){
+        if(s[0] != '-')
+            our_project = s;
+        if(s == "--List")
+            list_processing = true;
+       if(s == "-c" || s =="--verbose")
+            our_verbose = true;
+    }
+    verbose = our_verbose;
+
+    if(our_project.empty())
+        throw BadInputException("No project derfined");
+    if(verbose)
+        verboseOutput() << "Given file " << our_project << endl;
+
+    if(!list_processing){
+        if(verbose)
+            verboseOutput() << "Processing single file" << endl;
+        post_process_fusion_file(command_line_items, our_project);
+        return;
+    }
+
+    if(verbose)
+        verboseOutput() << "Processing list of files" << endl;
+
+     ifstream list(our_project);
+     while(true){
+        list >> ws;
+        int c = list.peek();
+        if (c == EOF) {
+            break;
+        }
+        list >> our_project;
+        post_process_fusion_file(command_line_items, our_project);
+     }
+}
 
 template class FusionData<mpz_class>;
 template class FusionData<long long>;
@@ -786,3 +887,4 @@ template Matrix<renf_elem_class> fusion_iso_classes(const Matrix<renf_elem_class
 #endif
 
 } // namespace
+

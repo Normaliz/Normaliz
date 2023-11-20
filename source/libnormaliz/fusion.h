@@ -125,6 +125,8 @@ vector<vector<key_t> > collect_coincidence_subset_keys(const vector<key_t>& type
 vector<vector<key_t> > make_all_permutations(const vector<key_t>& v);
 vector<vector<key_t> > make_all_permutations(const vector<key_t>& type, const vector<key_t>& duality);
 
+void post_process_fusion(const vector<string>& command_line_items);
+
 }  // end namespace libnormaliz
 
 #endif /* FUSION_H_ */

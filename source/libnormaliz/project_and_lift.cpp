@@ -1135,7 +1135,7 @@ void select_and_split(list<vector<Integer> >& LatticePoints, const key_t& this_p
 
     if(verbose){
         verboseOutput() << "==========================" << endl;
-        verboseOutput() << LatticePoints.size() << "lattice points before splitting and selection" << endl;
+        verboseOutput() << LatticePoints.size() << " lattice points before splitting and selection" << endl;
         verboseOutput() << "Spilt level " << this_patch << " modulus " << split_modulus << " residue " << split_residue << endl;
     }
     LatticePoints.sort();
@@ -1166,7 +1166,7 @@ void select_and_split(list<vector<Integer> >& LatticePoints, const key_t& this_p
         i++;
     }
     if(verbose)
-        verboseOutput() << Selection.size() << " lattice points adter splitting" << endl;
+        verboseOutput() << Selection.size() << " lattice points after splitting" << endl;
 
     swap(LatticePoints, Selection);
 }
@@ -1195,16 +1195,18 @@ void ProjectAndLift<IntegerPL,IntegerRet>::prepare_split(list<vector<IntegerRet>
 template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vector<IntegerRet> >& LatticePoints, const key_t this_patch) {
 
+    size_t max_nr_per_thread = max_nr_new_latt_points_total/ omp_get_max_threads();
+
     key_t max_split_level = 0;
     if(is_split_patching){
         max_split_level = our_split.this_split_levels.back();
-        if(this_patch <= max_split_level)
+        if(this_patch <= max_split_level){
             prepare_split(LatticePoints, this_patch);
+            max_nr_per_thread /= 10; // we want to force a quick min_return
+        }
     }
 
-    size_t max_nr_per_thread = max_nr_new_latt_points_total/ omp_get_max_threads();
-
-    const size_t coord = InsertionOrderPatches[this_patch]; // the coord marking the next patch
+    const size_t coord = InsertionOrderPatches[this_patch]; // the coord marking this patch
 
     StartTime();
 
@@ -2416,7 +2418,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::finalize_latt_point(const vector<Int
         {
         if(!first_solution_printed){
             if(verbose)
-                verboseOutput() << "Final solution 1 -----  "  << NewPoint;
+                verboseOutput() << "Final solution 1 (preliminary format)-----  "  << NewPoint;
             }
             SingleDeg1Point = NewPoint;
         }

@@ -262,6 +262,8 @@ void read_lat_file(ifstream& lat_in, const string& lat_name, size_t& min_return,
 
     lat_in.close();
 
+    solutions_so_far.cyclic_shift_left(solutions_so_far.nr_of_columns()-1); // need dolutions in final format (hom coord is the last)
+
     if(solutions_so_far.nr_of_rows() > 0){
         if(TotalLat.nr_of_rows() == 0){
             TotalLat.resize(0, solutions_so_far.nr_of_columns());
@@ -291,6 +293,12 @@ void collect_lat(const string& project) {
     }
 
     Matrix<long long> TotalLat; // collects the solutions found so far
+
+    if(our_split.this_refinement > 0){
+        string lat_name = global_project + "." + to_string(our_split.this_refinement - 1) + ".so_far.lat";
+        TotalLat = readMatrix<long long>(lat_name);
+    }
+
 
     vector<size_t> NotDone; // register the lat files of preliminary stage
     vector<size_t> MinReturnNotDone; // collects their min returns
