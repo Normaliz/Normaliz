@@ -1195,7 +1195,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::prepare_split(list<vector<IntegerRet>
 template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vector<IntegerRet> >& LatticePoints, const key_t this_patch) {
 
-    size_t max_nr_per_thread = max_nr_new_latt_points_total/ omp_get_max_threads();
+    size_t max_nr_per_thread = 500; //max_nr_new_latt_points_total/ omp_get_max_threads();
 
     key_t max_split_level = 0;
     if(is_split_patching){
@@ -1826,8 +1826,10 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
             prel_data << "found_solutions" << endl;
             prel_data << Deg1Points.size() << endl;
             prel_data << EmbDim << endl;
-            for(auto& v: Deg1Points)
+            for(auto& v: Deg1Points){
+                // v_cyclic_shift_left(v, v.size()-1); // coordinate transformation into final format
                 prel_data << v;
+            }
             prel_data.close();
         }
 

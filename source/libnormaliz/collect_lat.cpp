@@ -353,6 +353,10 @@ void collect_lat(const string& project) {
     if(NotDone.size() == 0){
         string comp_name = global_project + ".final.lat";
         ofstream comp_out(comp_name.c_str());
+        for(size_t i = 0; i< TotalLat.nr_of_rows(); ++i){
+            if(TotalLat[i].back() != 1)
+                throw BadInputException("Cpoordinate error in final.lat");
+        }
         TotalLat.print(comp_out);
         if(verbose)
             verboseOutput() << "Computation of " + global_project + " complete " << endl;
