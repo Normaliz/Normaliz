@@ -243,8 +243,11 @@ template<typename Number>
 Number OurPolynomial<Number>::evaluate_vectorized(const vector<Number>& argument) const{
 
     Number value = const_term;
-    for(size_t i = 0; i < coeffs.size(); ++i){
-        value += coeffs[i] * argument[expo_1[i]] *  argument[expo_2[i]];
+    for(size_t i = 0; i <  expo_1_pos.size(); ++i){
+        value += argument[expo_1_pos[i]] *  argument[expo_2_pos[i]];
+    }
+    for(size_t i = 0; i <  expo_1_neg.size(); ++i){
+        value -= argument[expo_1_neg[i]] *  argument[expo_2_neg[i]];
     }
     return value;
 }
@@ -290,8 +293,9 @@ bool OurPolynomial<Number>::check_linearity(const dynamic_bitset& critical_varia
 
 template<typename Number>
 void OurPolynomial<Number>::vectorize_deg_2(){
-    vector<key_t> fact_1, fact_2;
-    vector<Number> coe;
+    vector<key_t> fact_1_pos, fact_2_pos;
+    vector<key_t> fact_1_neg, fact_2_neg;
+    // vector<Number> coe;
     Number ct = 0;
     for(auto& T: *this){
         if(T.vars.size() != 2 && T.vars.size() != 0)
@@ -301,14 +305,24 @@ void OurPolynomial<Number>::vectorize_deg_2(){
             continue;
         }
         if(T.vars.size() == 2){
-            fact_1.push_back(T.vars[0]);
-            fact_2.push_back(T.vars[1]);
-            coe.push_back(T.coeff);
+            if(T.coeff !=1 && T.coeff != -1)
+                return;
+            if(T.coeff == 1){
+                fact_1_pos.push_back(T.vars[0]);
+                fact_2_pos.push_back(T.vars[1]);
+            }
+            if(T.coeff == -1){
+                fact_1_neg.push_back(T.vars[0]);
+                fact_2_neg.push_back(T.vars[1]);
+            }
+            // coe.push_back(T.coeff);
         }
     }
-    expo_1 = fact_1;
-    expo_2 = fact_2;
-    coeffs = coe;
+    expo_1_pos = fact_1_pos;
+    expo_2_pos = fact_2_pos;
+    expo_1_neg = fact_1_neg;
+    expo_2_neg = fact_2_neg;
+    // coeffs = coe;
     const_term = ct;
     vectorized = true;
 }

@@ -87,8 +87,9 @@ public:
     key_t highest_indet;
     dynamic_bitset support;
 
-    // for linearization of degree 2 polynomials
-    vector<key_t> expo_1, expo_2;
+    // for linearization of degree 2 polynomials with +- 1 coeff
+    vector<key_t> expo_1_pos, expo_2_pos;
+    vector<key_t> expo_1_neg, expo_2_neg;
     vector<Number> coeffs;
     Number const_term;
     bool vectorized;
