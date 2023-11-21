@@ -7144,6 +7144,12 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
     }
     // Gernrrsators prepared
 
+    // a security check
+    if(is_split_patching){
+        if(!Grading_Is_Coordinate || GradingCoordinate != dim -1)
+            throw BadInputException("Split computation of lattice points requires grading/dehomogenization in last coordinate");
+    }
+
     // Support hyperplanes etc. prepared now
     Matrix<Integer> CongOri = BasisChange.getCongruencesMatrix();
     vector<Integer> GradingOnPolytope;  // used in the inhomogeneous case for Hilbert function
@@ -7287,9 +7293,9 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
 
 
     if(ToCompute.test(ConeProperty::SelectSimple) || ToCompute.test(ConeProperty::FusionIsoClasses)){
-        if(!inhomogeneous)
-            throw BadInputException("Computation must be inhomogeneous for fusion ring operations.");
         auto Selection = ModuleGenerators;
+        if(!inhomogeneous)
+            Selection = Deg1Elements;
         if(ToCompute.test(ConeProperty::SelectSimple))
             Selection = select_simple(Selection, ToCompute, verbose);
         if(ToCompute.test(ConeProperty::FusionIsoClasses))

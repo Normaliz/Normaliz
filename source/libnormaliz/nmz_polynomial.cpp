@@ -325,6 +325,7 @@ void OurPolynomial<Number>::vectorize_deg_2(){
     // coeffs = coe;
     const_term = ct;
     vectorized = true;
+    (*this).clear();
 }
 
 

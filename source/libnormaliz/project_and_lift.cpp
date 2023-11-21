@@ -1195,7 +1195,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::prepare_split(list<vector<IntegerRet>
 template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vector<IntegerRet> >& LatticePoints, const key_t this_patch) {
 
-    size_t max_nr_per_thread = 500; //max_nr_new_latt_points_total/ omp_get_max_threads();
+    size_t max_nr_per_thread = 1000; //max_nr_new_latt_points_total/ omp_get_max_threads();
 
     key_t max_split_level = 0;
     if(is_split_patching){
@@ -1440,6 +1440,9 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
 
         vector<IntegerRet> NewLattPoint(EmbDim);
 
+        vector<IntegerRet> restricted(CoveredKey.size());
+        vector<IntegerRet> restricted_conjugate(CoveredKey.size());
+
         int tn;
         if (omp_get_level() == omp_start_level)
             tn = 0;
@@ -1561,11 +1564,11 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                 }
                 if(can_be_inserted && fusion.use_automorphisms){
                     // cout << "CCCCC " << CoveredKey;
-                    vector<IntegerRet> restricted(CoveredKey.size());
                     // cout << "ori " << NewLattPoint;
                     for(size_t i = 0; i < CoveredKey.size(); ++i)
                         restricted[i] = NewLattPoint[CoveredKey[i]];
                     // cout << "res " << restricted;
+                    key_t image;
                     for(auto pp = order_automs.begin(); pp!= order_automs.end(); ++pp){
                         /* vector<IntegerRet> conjugate(NewLattPoint.size());
                         for(size_t j = 0; j < NewLattPoint.size(); ++j){
@@ -1573,10 +1576,9 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                             conjugate[image] = NewLattPoint[j];
                         }
                         // cout << "con " << conjugate; */
-                        vector<IntegerRet> restricted_conjugate(CoveredKey.size());
                         for(size_t i = 0; i < CoveredKey.size(); ++i){
                             // restricted_conjugate[i] = conjugate[CoveredKey[i]];
-                            key_t image = Automorphisms[Automs[*pp]][CoveredKey[i]];
+                             image = Automorphisms[Automs[*pp]][CoveredKey[i]];
                             if(covered[image]){
                                 key_t inverse_image = CoveredKeyInverse[image];
                                 restricted_conjugate[inverse_image] = restricted[i];
