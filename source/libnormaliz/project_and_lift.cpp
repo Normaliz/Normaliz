@@ -1090,8 +1090,10 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_latt_points_by_patching() {
     start_list.push_back(start);
     extend_points_to_next_coord(start_list, 0);
     NrLP[EmbDim] = TotalNrLP;
-    if(verbose)
+    if(verbose){
+        verboseOutput() << "=======================================" << endl;
         verboseOutput() << "Final number of lattice points "  << NrLP[EmbDim] << endl;
+    }
 
     if(!only_single_point && !distributed_computation){
         for(auto& n: NrRemainingLP){
@@ -1297,7 +1299,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         LocalSolutions.swap_append(LocalSolutionsNow);
 
     if(talkative){
-        if(verbose){
+        if(verbose && LocalSolutions.nr_of_rows() > 1000){
+            // verbose_0 = "Local solutions total " + to_string(LocalSolutions.nr_of_rows()) + " new " < to_string(nr_new_solutions);
             verboseOutput() << "--" << endl;
             verboseOutput() << "Local solutions total " << LocalSolutions.nr_of_rows() << " new " << nr_new_solutions << endl;
         }
@@ -1363,11 +1366,11 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
 
     while (true) {
 
-        if(talkative){
+        /* if(talkative){
             if(nr_rounds > 0 && verbose){
                 verboseOutput() << "----" << endl;
             }
-        }
+        }*/
 
         nr_rounds++;
         if(GlobalTimeBound > 0 &&  TimeSinceStart() > GlobalTimeBound){
@@ -1379,13 +1382,17 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         struct timeval step_time_begin;
         StartTime(step_time_begin);
 
+        string verbose_1, verbose_2;
+
         if(verbose){
-            verboseOutput() <<  LevelPatches[coord] << " / " << coord << " left " << nr_to_match - nr_points_matched;
+            verbose_1 = to_string(LevelPatches[coord]) + " / " + to_string(coord) + " left " + to_string(nr_to_match - nr_points_matched);
+            // verboseOutput() <<  LevelPatches[coord] << " / " << coord << " left " << nr_to_match - nr_points_matched;
             if(talkative){
                 if(min_fall_back > 0)
-                    verboseOutput() << " min " << min_fall_back << " max " << max_fall_back;
+                    verbose_2 = " min " + to_string(min_fall_back) + " max " + to_string (max_fall_back);
+                // verboseOutput() << " min " << min_fall_back << " max " << max_fall_back;
             }
-            verboseOutput()    << endl;
+            //verboseOutput()    << endl;
         }
 
         bool skip_remaining;
@@ -1666,12 +1673,20 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
             poly_equs_minimized[coord] = true;
              vector < pair<OurPolynomial<IntegerRet>, OurPolynomial<IntegerRet> > > EffectivePolys;
             for(size_t i = 0; i < PolyEqusThread[0].size(); ++i){
-                if(poly_equs_stat_total[i] > 0)
+                if(poly_equs_stat_total[i] > 0){
                     EffectivePolys.push_back(PolyEqusThread[0][i]);
+                    // dynamic_bitset supp = PolyEqusThread[0][i].first.support | PolyEqusThread[0][i].second.support;
+                    // cout << "Poly " << supp.count() << " --- " << CoveredKey.size() << endl;
+                }
             }
 
-            if(verbose && PolyEqusThread[0].size() > 0)
+            if(talkative && PolyEqusThread[0].size() > 0){
+                verboseOutput() << "----" << endl;
+                verboseOutput() << verbose_1 << verbose_2 << endl;
+                verbose_1 = "";
+                verbose_2 = "";
                 verboseOutput() << LevelPatches[coord] << " / " << coord << " active polynomial equations " << EffectivePolys.size() << " of " <<  PolyEqusThread[0].size() << endl;
+            }
 
             for(size_t thr = 0; thr < PolyEqusThread.size(); ++thr)
                     PolyEqusThread[thr] = EffectivePolys;
@@ -1685,9 +1700,16 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                     EffectiveAutoms.push_back(Automs[i]);
             }
 
-            if(verbose && Automs.size() > 0)
+            if(talkative && Automs.size() > 0){
+                if(verbose_1.size() > 0){
+                    verboseOutput() << "----" << endl;
+                    verboseOutput() << verbose_1 << verbose_2 << endl;
+                    verbose_1 = "";
+                    verbose_2 = "";
+                }
                 verboseOutput() << LevelPatches[coord] << " / " << coord << " active automorphisms "
                   << EffectiveAutoms.size() << " of " << Automorphisms.size() << endl;
+            }
 
              Automs = EffectiveAutoms;
         }
@@ -1701,9 +1723,16 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                     EffectivePolyInequs.push_back(PolyInequsThread[0][i]);
             }
 
-            if(verbose && PolyInequsThread[0].size() > 0)
+            if(talkative && PolyInequsThread[0].size() > 0){
+                if(verbose_1.size() > 0){
+                    verboseOutput() << "----" << endl;
+                    verboseOutput() << verbose_1 << verbose_2 << endl;
+                    verbose_1 = "";
+                    verbose_2 = "";
+                }
                 verboseOutput() << LevelPatches[coord] << " / " << coord << " active restricted polynomial inequalities "
                   << EffectivePolyInequs.size() << " of " <<  PolyInequsThread[0].size() << endl;
+            }
 
              for(size_t thr = 0; thr < PolyEqusThread.size(); ++thr)
                 PolyInequsThread[thr] = EffectivePolyInequs;
@@ -1726,23 +1755,27 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
             expected_number_of_rounds/= nr_points_done_in_this_round;
         }
 
-        if(talkative){
-            if(verbose){
-                verboseOutput() << "done " << nr_points_done_in_this_round;
-                verboseOutput() << " ext " << nr_latt_points_total;
-                if(PolyEqusThread[0].size() > 0)
-                    verboseOutput() << " equ " << nr_caught_by_equations;
-                if(PolyInequsThread[0].size() > 0)
-                    verboseOutput() << " ine " << nr_caught_by_restricted;
-                if(nr_caught_by_simplicity > 0)
-                    verboseOutput() << " smp " << nr_caught_by_simplicity;
-                if(nr_caught_by_automs > 0)
-                    verboseOutput() << " aut " << nr_caught_by_automs;
-                if(nr_points_done_in_this_round > 0)
-                    verboseOutput() << " exp rnd " << expected_number_of_rounds;
-                ExpectedNrRounds[this_patch] = expected_number_of_rounds;
-                verboseOutput() << endl;
+        if(talkative && nr_latt_points_total > 1000){
+            if(verbose_1.size() > 0){
+                verboseOutput() << "----" << endl;
+                verboseOutput() << verbose_1 << verbose_2 << endl;
+                verbose_1 = "";
+                verbose_2 = "";
             }
+            verboseOutput() << "done " << nr_points_done_in_this_round;
+            verboseOutput() << " ext " << nr_latt_points_total;
+            if(PolyEqusThread[0].size() > 0)
+                verboseOutput() << " equ " << nr_caught_by_equations;
+            if(PolyInequsThread[0].size() > 0)
+                verboseOutput() << " ine " << nr_caught_by_restricted;
+            if(nr_caught_by_simplicity > 0)
+                verboseOutput() << " smp " << nr_caught_by_simplicity;
+            if(nr_caught_by_automs > 0)
+                verboseOutput() << " aut " << nr_caught_by_automs;
+            if(nr_points_done_in_this_round > 0)
+                verboseOutput() << " exp rnd " << expected_number_of_rounds;
+            ExpectedNrRounds[this_patch] = expected_number_of_rounds;
+            verboseOutput() << endl;
         }
         // we write a file that preserves what has been done. First we tecord the lowest patch
         // to which we must return
@@ -2740,8 +2773,10 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute_latt_points() {
     }
     lift_points_to_this_dim(start_list);
     NrLP[EmbDim] = TotalNrLP;
-    if(verbose)
+    if(verbose){
+        verboseOutput() << "=======================================" << endl;
         verboseOutput() << "Final number of lattice points "  << NrLP[EmbDim] << endl;
+    }
 }
 
 ///---------------------------------------------------------------------------
