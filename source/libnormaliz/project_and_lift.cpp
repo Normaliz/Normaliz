@@ -1128,11 +1128,29 @@ const size_t max_nr_new_latt_points_total = 1000000;
 const size_t nr_new_latt_points_for_elimination_equs = 10000;
 const size_t nr_new_latt_points_for_elimination_automs = 10000;
 
+vector<key_t> global_intersection_key;
 
+// lexicographic comparison with overlap first
+template <typename Integer>
+bool intersect_compare(const vector<Integer>& v, const vector<Integer>& w){
+
+    if(v_select_coordinates(v, global_intersection_key) < v_select_coordinates(w, global_intersection_key))
+        return true;
+    if(v_select_coordinates(v, global_intersection_key) == v_select_coordinates(w, global_intersection_key))
+        return (v < w);
+    return false;
+}
+
+
+template <typename Integer>
+void sort_lattice_points_by_overlap(list<vector<Integer> >& LatticePoints,const vector<key_t>&  intersection_key){
+    global_intersection_key = intersection_key;
+    LatticePoints.sort(intersect_compare<Integer>);
+}
 //---------------------------------------------------------------------------
 
 template <typename Integer>
-void select_and_split(list<vector<Integer> >& LatticePoints, const key_t& this_patch, const long& split_modulus, const long& split_residue, const size_t& done_indices){
+void select_and_split(list<vector<Integer> >& LatticePoints, const key_t& this_patch, const long& split_modulus, const long& split_residue, const size_t& done_indices, const vector<key_t>&  intersection_key){
 
 
     if(verbose){
@@ -1140,7 +1158,7 @@ void select_and_split(list<vector<Integer> >& LatticePoints, const key_t& this_p
         verboseOutput() << LatticePoints.size() << " lattice points before splitting and selection" << endl;
         verboseOutput() << "Spilt level " << this_patch << " modulus " << split_modulus << " residue " << split_residue << endl;
     }
-    LatticePoints.sort();
+    sort_lattice_points_by_overlap(LatticePoints,intersection_key);
     list<vector<Integer> > Selection;
 
 
@@ -1159,14 +1177,30 @@ void select_and_split(list<vector<Integer> >& LatticePoints, const key_t& this_p
             << LatticePoints.size() << " remaining" << endl;
         PreSelection.clear();
     }
-
+    /*
     long i = 0;
     for(auto& p: LatticePoints){
         if(i% split_modulus == split_residue){
             Selection.push_back(p);
         }
         i++;
+    }*/
+
+    size_t nr_left = LatticePoints.size();
+    size_t nr_per_split = nr_left / split_modulus;
+    if(nr_left != nr_per_split * split_modulus)
+        nr_per_split++;
+
+    size_t start = nr_per_split * split_residue;
+    size_t last = start + nr_per_split;
+
+    size_t i = 0;
+    for(auto& p: LatticePoints){
+        if(i >= start && i < last)
+            Selection.push_back(p);
+       i++;
     }
+
     if(verbose)
         verboseOutput() << Selection.size() << " lattice points after splitting" << endl;
 
@@ -1176,8 +1210,10 @@ void select_and_split(list<vector<Integer> >& LatticePoints, const key_t& this_p
 //--------------------------------------------------------------------------
 
 template <typename IntegerPL, typename IntegerRet>
-void ProjectAndLift<IntegerPL,IntegerRet>::prepare_split(list<vector<IntegerRet> >& LatticePoints, const key_t this_patch){
+void ProjectAndLift<IntegerPL,IntegerRet>::prepare_split(list<vector<IntegerRet> >& LatticePoints, const key_t& this_patch){
 
+    const size_t coord = InsertionOrderPatches[this_patch];
+    auto& intersection_key = AllIntersections_key[coord];
 
     for(size_t i = 0; i < our_split.nr_split_levels; ++i){
         if(this_patch == our_split.this_split_levels[i]){
@@ -1187,7 +1223,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::prepare_split(list<vector<IntegerRet>
             if(i >= our_split.nr_split_levels - our_split.this_refinement){
                 done_indices = our_split.this_split_done_indices[i - our_split.this_refinement];
             }
-            select_and_split(LatticePoints, this_patch, split_modulus,split_residue, done_indices);
+            select_and_split(LatticePoints, this_patch, split_modulus,split_residue, done_indices, intersection_key);
         }
     }
 }
@@ -1197,41 +1233,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::prepare_split(list<vector<IntegerRet>
 template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vector<IntegerRet> >& LatticePoints, const key_t this_patch) {
 
-    size_t max_nr_per_thread = 1000; //max_nr_new_latt_points_total/ omp_get_max_threads();
-
-    key_t max_split_level = 0;
-    if(is_split_patching){
-        max_split_level = our_split.this_split_levels.back();
-        if(this_patch <= max_split_level){
-            prepare_split(LatticePoints, this_patch);
-            max_nr_per_thread /= 10; // we want to force a quick min_return
-        }
-    }
-
     const size_t coord = InsertionOrderPatches[this_patch]; // the coord marking this patch
-
-    StartTime();
-
-    // cout << NrRemainingLP;
-
-    size_t min_fall_back = 0;
-    bool min_found = false;
-    size_t max_fall_back = 0;
-    for(size_t i = 0; i < this_patch; ++i){
-        if(NrRemainingLP[i] > 0){
-            max_fall_back = i;
-            if(!min_found){
-                min_found = true;
-                min_fall_back = i;
-            }
-        }
-    }
-
-    if(min_fall_back == 0)
-        LatticePoints.sort(); // this patch could become min_return and then we depend on sorting in the next
-                              // refinement, should it become necessary
-
-    INTERRUPT_COMPUTATION_BY_EXCEPTION
 
     // for easier access and simpler code
     auto& intersection_key = AllIntersections_key[coord];
@@ -1253,6 +1255,39 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
     dynamic_bitset covered = AllCovered[coord];
 
     auto& CongsRestricted = AllCongsRestricted[coord];
+
+    size_t max_nr_per_thread = 1000; //max_nr_new_latt_points_total/ omp_get_max_threads();
+
+    key_t max_split_level = 0;
+    if(is_split_patching){
+        max_split_level = our_split.this_split_levels.back();
+        if(this_patch <= max_split_level){
+            prepare_split(LatticePoints, this_patch);
+            max_nr_per_thread /= 10; // we want to force a quick min_return
+        }
+    }
+
+    StartTime();
+
+    // cout << NrRemainingLP;
+
+    size_t min_fall_back = 0;
+    bool min_found = false;
+    size_t max_fall_back = 0;
+    for(size_t i = 0; i < this_patch; ++i){
+        if(NrRemainingLP[i] > 0){
+            max_fall_back = i;
+            if(!min_found){
+                min_found = true;
+                min_fall_back = i;
+            }
+        }
+    }
+
+    if(min_fall_back == 0)
+        sort_lattice_points_by_overlap(LatticePoints, intersection_key);
+
+    INTERRUPT_COMPUTATION_BY_EXCEPTION
 
     // We extract the "intersection coordinates" from the LatticePoints
     // and extend them to solutions of the local system LocalPL
@@ -1755,7 +1790,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
             expected_number_of_rounds/= nr_points_done_in_this_round;
         }
 
-        if(talkative && nr_latt_points_total > 1000){
+        if(talkative && nr_latt_points_total > 10000){
             if(verbose_1.size() > 0){
                 verboseOutput() << "----" << endl;
                 verboseOutput() << verbose_1 << verbose_2 << endl;

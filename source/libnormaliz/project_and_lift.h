@@ -206,7 +206,7 @@ class ProjectAndLift {
     bool order_patches_user_defined();
     void finalize_order(const dynamic_bitset& used_patches);
 
-    void prepare_split(list<vector<IntegerRet> >& LatticePoints, const key_t this_patch);
+    void prepare_split(list<vector<IntegerRet> >& LatticePoints, const key_t& this_patch);
     void read_split_data();
 
     // void make_LLL_coordinates();

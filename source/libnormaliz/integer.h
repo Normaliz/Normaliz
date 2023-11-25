@@ -138,11 +138,6 @@ inline bool try_convert(Type& ret, const Type& val) {
     return true;
 }
 
-inline bool try_convert(nmz_float& ret, const nmz_float& val) {
-    ret = val;
-    return true;
-}
-
 inline bool try_convert(mpq_class& ret, const mpz_class& val) {
     ret = val;
     return true;

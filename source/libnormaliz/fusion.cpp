@@ -715,7 +715,7 @@ Matrix<long long> extract_latt_points_from_out(ifstream& in_out){
     in_out >> nr_points;
     string s;
     in_out >> s;
-    if(s != "lattice")
+    if(s != "lattice" && s != "fusion" && s!= "simple")
         throw BadInputException("out file not suitable for extraction of sim,ple fusion rtings");
     while(true){
         in_out >> s;
