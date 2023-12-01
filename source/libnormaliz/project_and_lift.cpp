@@ -410,10 +410,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
         AllNew_coords_key[coord] = new_coords_key;
 
         if(talkative){
-            if(verbose){
                 verboseOutput() << "level " << LevelPatches[coord] << endl;
                 verboseOutput() << "new coords " << new_coords_key;
-            }
         }
         // for the "local" project-and-lift we need their suport hyperplanes
         vector<key_t> LocalKey = bitset_to_key(AllPatches[coord]);
@@ -472,12 +470,10 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
         // cout << "In local PLs" << endl;
         PL.add_congruences_from_equations();
         PL.restrict_congruences();
-        if(talkative){
-            if(false){ // verbose){
-                if(PL.Congs.nr_of_rows() >0 ){
-                    verboseOutput() << "coord " << coord << endl;
-                    PL.Congs.debug_print();
-                }
+        if(false){ // verbose){
+            if(PL.Congs.nr_of_rows() >0 ){
+                verboseOutput() << "coord " << coord << endl;
+                PL.Congs.debug_print();
             }
         }
         AllLocalPL[coord] = PL;
@@ -621,7 +617,6 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
         AllAutoms[coord] =identity_key(fusion.Automorphisms.size()); // initialized with all automorphisms in the given order
 
         if(talkative){
-            if(verbose)
                 verboseOutput() << "index coord " << coord << " nr covered coordinates " << new_covered.count() << endl;
             if(coord == critical_coord_simplicity)
                 verboseOutput() << "simplicity check at this coordinate" << endl;
@@ -909,11 +904,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_covers() {
 
 
     if(talkative){
-        if(verbose){
-            for(size_t i = 0; i < EmbDim; ++i){
-                verboseOutput() << i << " ----- " << bitset_to_key(AllPatches[i]);
-            }
-        }
+        for(size_t i = 0; i < EmbDim; ++i)
+            verboseOutput() << i << " ----- " << bitset_to_key(AllPatches[i]);
     }
 
 
@@ -1091,7 +1083,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_latt_points_by_patching() {
     extend_points_to_next_coord(start_list, 0);
     NrLP[EmbDim] = TotalNrLP;
     if(verbose){
-        verboseOutput() << "=======================================" << endl;
+        verboseOutput() << endl << "=======================================" << endl;
         verboseOutput() << "Final number of lattice points "  << NrLP[EmbDim] << endl;
     }
 
@@ -1334,11 +1326,9 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         LocalSolutions.swap_append(LocalSolutionsNow);
 
     if(talkative){
-        if(verbose && LocalSolutions.nr_of_rows() > 1000){
             // verbose_0 = "Local solutions total " + to_string(LocalSolutions.nr_of_rows()) + " new " < to_string(nr_new_solutions);
             verboseOutput() << "--" << endl;
             verboseOutput() << "Local solutions total " << LocalSolutions.nr_of_rows() << " new " << nr_new_solutions << endl;
-        }
     }
 
     // Next the newly computed extensions are registered
@@ -1417,17 +1407,12 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         struct timeval step_time_begin;
         StartTime(step_time_begin);
 
-        string verbose_1, verbose_2;
-
-        if(verbose){
-            verbose_1 = to_string(LevelPatches[coord]) + " / " + to_string(coord) + " left " + to_string(nr_to_match - nr_points_matched);
-            // verboseOutput() <<  LevelPatches[coord] << " / " << coord << " left " << nr_to_match - nr_points_matched;
-            if(talkative){
+        if(talkative){
+            verboseOutput() << "----" << endl;
+            verboseOutput() <<  LevelPatches[coord] << " / " << coord << " left " << nr_to_match - nr_points_matched;
                 if(min_fall_back > 0)
-                    verbose_2 = " min " + to_string(min_fall_back) + " max " + to_string (max_fall_back);
-                // verboseOutput() << " min " << min_fall_back << " max " << max_fall_back;
-            }
-            //verboseOutput()    << endl;
+                    verboseOutput() << " min " << min_fall_back << " max " << max_fall_back;
+            verboseOutput()    << endl;
         }
 
         bool skip_remaining;
@@ -1604,29 +1589,19 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                         }
                     }
                 }
-                if(can_be_inserted && fusion.use_automorphisms){
-                    // cout << "CCCCC " << CoveredKey;
-                    // cout << "ori " << NewLattPoint;
+               if(can_be_inserted && fusion.use_automorphisms){
                     for(size_t i = 0; i < CoveredKey.size(); ++i)
                         restricted[i] = NewLattPoint[CoveredKey[i]];
-                    // cout << "res " << restricted;
-                    key_t image;
                     for(auto pp = order_automs.begin(); pp!= order_automs.end(); ++pp){
-                        /* vector<IntegerRet> conjugate(NewLattPoint.size());
-                        for(size_t j = 0; j < NewLattPoint.size(); ++j){
-                            key_t image = fusion.Automorphisms[Automs[*pp]][j];
-                            conjugate[image] = NewLattPoint[j];
-                        }
-                        // cout << "con " << conjugate; */
+                        for(auto& r: restricted_conjugate)
+                            r = 0;
                         for(size_t i = 0; i < CoveredKey.size(); ++i){
-                            // restricted_conjugate[i] = conjugate[CoveredKey[i]];
-                             image = Automorphisms[Automs[*pp]][CoveredKey[i]];
+                            key_t image = Automorphisms[Automs[*pp]][CoveredKey[i]];
                             if(covered[image]){
                                 key_t inverse_image = CoveredKeyInverse[image];
                                 restricted_conjugate[inverse_image] = restricted[i];
                             }
                         }
-                        // cout << "rco " << restricted_conjugate;
                         if(restricted < restricted_conjugate){
                             can_be_inserted = false;
 #pragma omp atomic
@@ -1716,10 +1691,6 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
             }
 
             if(talkative && PolyEqusThread[0].size() > 0){
-                verboseOutput() << "----" << endl;
-                verboseOutput() << verbose_1 << verbose_2 << endl;
-                verbose_1 = "";
-                verbose_2 = "";
                 verboseOutput() << LevelPatches[coord] << " / " << coord << " active polynomial equations " << EffectivePolys.size() << " of " <<  PolyEqusThread[0].size() << endl;
             }
 
@@ -1736,16 +1707,9 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
             }
 
             if(talkative && Automs.size() > 0){
-                if(verbose_1.size() > 0){
-                    verboseOutput() << "----" << endl;
-                    verboseOutput() << verbose_1 << verbose_2 << endl;
-                    verbose_1 = "";
-                    verbose_2 = "";
-                }
                 verboseOutput() << LevelPatches[coord] << " / " << coord << " active automorphisms "
                   << EffectiveAutoms.size() << " of " << Automorphisms.size() << endl;
             }
-
              Automs = EffectiveAutoms;
         }
 
@@ -1759,12 +1723,6 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
             }
 
             if(talkative && PolyInequsThread[0].size() > 0){
-                if(verbose_1.size() > 0){
-                    verboseOutput() << "----" << endl;
-                    verboseOutput() << verbose_1 << verbose_2 << endl;
-                    verbose_1 = "";
-                    verbose_2 = "";
-                }
                 verboseOutput() << LevelPatches[coord] << " / " << coord << " active restricted polynomial inequalities "
                   << EffectivePolyInequs.size() << " of " <<  PolyInequsThread[0].size() << endl;
             }
@@ -1790,13 +1748,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
             expected_number_of_rounds/= nr_points_done_in_this_round;
         }
 
-        if(talkative && nr_latt_points_total > 10000){
-            if(verbose_1.size() > 0){
-                verboseOutput() << "----" << endl;
-                verboseOutput() << verbose_1 << verbose_2 << endl;
-                verbose_1 = "";
-                verbose_2 = "";
-            }
+        if(talkative){
             verboseOutput() << "done " << nr_points_done_in_this_round;
             verboseOutput() << " ext " << nr_latt_points_total;
             if(PolyEqusThread[0].size() > 0)
@@ -1824,12 +1776,29 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
             prel_data << "0" << endl;
             prel_data << "found_solutions" << endl;
             prel_data << "0" << endl;
-            prel_data << "0" << endl;
+            prel_data << EmbDim << endl;
             prel_data.close();
         }
 
-        if(!last_coord && NewLatticePoints.size() > 0)
+        if(!last_coord && NewLatticePoints.size() > 0){
+            if(verbose && !talkative){
+                verboseOutput() << "+" << flush;
+                verb_length++;
+                if(verb_length == 50){
+                    verboseOutput() << endl;
+                    verb_length = 0;
+                }
+            }
             extend_points_to_next_coord(NewLatticePoints, this_patch + 1);
+            if(verbose && !talkative){
+                verboseOutput() << "-" << flush;
+                verb_length++;
+                if(verb_length == 50){
+                    verboseOutput() << endl;
+                    verb_length = 0;
+                 }
+            }
+        }
         NewLatticePoints.clear();
 
         if(single_point_found)
@@ -1893,13 +1862,17 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
             auto check = Deg1Points;
             check.sort();
             check.unique();
-            prel_data << "found_solutions" << endl;
-            prel_data << Deg1Points.size() << endl;
-            prel_data << EmbDim << endl;
-            for(auto& v: Deg1Points){
-                // v_cyclic_shift_left(v, v.size()-1); // coordinate transformation into final format
-                prel_data << v;
+            Matrix<IntegerRet> FoundSolutions(check);
+            if(FoundSolutions.nr_of_rows() > 0){
+                FoundSolutions.cyclic_shift_left(FoundSolutions.nr_of_columns()-1); // to get final coordinates
+                if(fusion.use_automorphisms)
+                    fusion.do_iso_classes(FoundSolutions); // to use the natural order of coordiantes for lex
             }
+
+            prel_data << "found_solutions" << endl;
+            prel_data << FoundSolutions.nr_of_rows() << endl;
+            prel_data << FoundSolutions.nr_of_columns() << endl;
+            FoundSolutions.pretty_print(prel_data);
             prel_data.close();
         }
 
@@ -2490,7 +2463,8 @@ void ProjectAndLift<IntegerPL, IntegerRet>::finalize_latt_point(const vector<Int
         {
         if(!first_solution_printed){
             if(verbose)
-                verboseOutput() << "Final solution 1 (preliminary format)-----  "  << NewPoint;
+                verboseOutput() << endl << "Final solution 1 (preliminary format)-----  "  << NewPoint;
+            verb_length = 0;
             }
             SingleDeg1Point = NewPoint;
         }
@@ -2809,7 +2783,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute_latt_points() {
     lift_points_to_this_dim(start_list);
     NrLP[EmbDim] = TotalNrLP;
     if(verbose){
-        verboseOutput() << "=======================================" << endl;
+        verboseOutput() << endl << "=======================================" << endl;
         verboseOutput() << "Final number of lattice points "  << NrLP[EmbDim] << endl;
     }
 }

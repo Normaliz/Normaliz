@@ -4411,6 +4411,9 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     ToCompute.check_conflicting_variants();
     ToCompute.set_preconditions(inhomogeneous, using_renf<Integer>());
 
+    if(is_split_patching && (ToCompute.test(ConeProperty::SelectSimple) || ToCompute.test(ConeProperty::FusionIsoClasses)) )
+        throw BadInputException("SelectSimple and FusionIsoClasses not allowed in split computation.");
+
     if (using_renf<Integer>())
         ToCompute.check_Q_permissible(true);  // after implications!
 
@@ -7276,6 +7279,15 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
         }
     }
 
+    if(ToCompute.test(ConeProperty::FusionIsoClasses)){ // make the normal form w.r.t. natrural coordinate order
+        if (inhomogeneous) {
+            ModuleGenerators = fusion_iso_classes(ModuleGenerators,ToCompute,verbose);
+        }
+        else{
+            Deg1Elements = fusion_iso_classes(Deg1Elements,ToCompute,verbose);
+        }
+    }
+
     if(is_split_patching){
         string name = global_project + "." + to_string(split_refinement) + "." + to_string(split_index_rounds);
         if (inhomogeneous) {
@@ -7300,6 +7312,7 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
             Selection = select_simple(Selection, ToCompute, verbose);
         if(ToCompute.test(ConeProperty::FusionIsoClasses))
             Selection = fusion_iso_classes(Selection, ToCompute, verbose);
+        Selection.sort_lex();
         string name = global_project + ".fusion.lat";
         ofstream out(name);
         out << Selection.nr_of_rows() << endl;

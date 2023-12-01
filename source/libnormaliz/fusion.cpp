@@ -608,12 +608,8 @@ void FusionData<Integer>::prepare_simplicity_check(){
 }
 
 template <typename Integer>
-Matrix<Integer> FusionData<Integer>::do_select_simple(const Matrix<Integer>& LattPoints){
-
-    if(LattPoints.nr_of_rows() == 0 || !select_simple)
-        return LattPoints;
-
-    prepare_simplicity_check();
+Matrix<Integer> FusionData<Integer>::do_select_simple_inner(const Matrix<Integer>& LattPoints){
+        prepare_simplicity_check();
     if(nr_coordinates != LattPoints.nr_of_columns() - 1)
         throw BadInputException("Wrong number of coordinates in fusion data. Mismatch of duality or commutativity.");
 
@@ -635,11 +631,21 @@ Matrix<Integer> FusionData<Integer>::do_select_simple(const Matrix<Integer>& Lat
     return SimplePoints;
 }
 
-template <typename Integer>
-Matrix<Integer> FusionData<Integer>::do_iso_classes(const Matrix<Integer>& LattPoints){
 
-    if(LattPoints.nr_of_rows() == 0 || !select_iso_classes)
+// We work with final format (last coordinate is homogenizing)
+// This function protects *this
+template <typename Integer>
+Matrix<Integer> FusionData<Integer>::do_select_simple(const Matrix<Integer>& LattPoints) const {
+
+    if(LattPoints.nr_of_rows() == 0 || !select_simple)
         return LattPoints;
+
+    FusionData<Integer> work_fusion = *this;
+    return work_fusion.do_select_simple_inner(LattPoints);
+}
+
+template <typename Integer>
+Matrix<Integer> FusionData<Integer>::do_iso_classes_inner(const Matrix<Integer>& LattPoints){
 
    if(nr_coordinates != LattPoints.nr_of_columns() - 1)
         throw BadInputException("Wrong number of coordinates in fusion data. Mismatch of duality or commutativity.");
@@ -687,6 +693,20 @@ Matrix<Integer> FusionData<Integer>::do_iso_classes(const Matrix<Integer>& LattP
     return IsoClasses;
 }
 
+// We work with final format (last coordinate is homogenizing)
+// This function protects *this
+template <typename Integer>
+Matrix<Integer> FusionData<Integer>::do_iso_classes(const Matrix<Integer>& LattPoints)const {
+
+    if(LattPoints.nr_of_rows() == 0 || !select_iso_classes)
+        return LattPoints;
+
+    FusionData<Integer> work_fusion = *this;
+
+    return work_fusion.do_iso_classes_inner(LattPoints);
+}
+
+
 //-------------------------------------------------------------------------------
 // helper for fusion rings
 
@@ -727,7 +747,7 @@ Matrix<long long> extract_latt_points_from_out(ifstream& in_out){
     in_out >> emb_dim;
     while(true){
         in_out >> s;
-        if(s == "constraints:")
+        if(s == "constraints:" || s == "isomorphism:" || s == "data:")
             break;
     }
     Matrix<long long> LattPoints(nr_points, emb_dim);
@@ -803,11 +823,11 @@ void post_process_fusion_file(const vector<string>& command_line_items,string ou
 
     Matrix<long long> LatPoints = read_lat_points_from_file(our_fusion.verbose);
     // LatPoints.debug_print();
-    FusionData<long long> save_our_fusion = our_fusion; // because of transformation
+
     Matrix<long long> IsoClasses = our_fusion.do_select_simple(LatPoints);
-    our_fusion = save_our_fusion;
     Matrix<long long> SimpleFusionRings = our_fusion.do_iso_classes(IsoClasses);
 
+    SimpleFusionRings.sort_lex();
     string name = global_project + ".fusion.lat";
     ofstream out(name);
     out << SimpleFusionRings.nr_of_rows() << endl;

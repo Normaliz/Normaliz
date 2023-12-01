@@ -141,6 +141,8 @@ int main(int argc, char* argv[]){
     ProfilerStart("normaliz.prof");
 #endif
 
+    verb_length = 0;
+
     // signal handler for interrupt
     signal(SIGINT, &interrupt_signal_handler);
 
@@ -585,8 +587,10 @@ int process_data(OptionsHandler& options, const string& command_line) {
         cerr << e.what() << endl;
         cerr << "Time bound exceeded ... exiting." << endl;
         cerr << "Creating signal file with suffix exc" << endl;
-        string exc_name = options.getProjectName() + ".exc";
-        ofstream exc_file(exc_name.c_str());
+        if(!is_split_patching){
+            string exc_name = options.getProjectName() + ".exc";
+            ofstream exc_file(exc_name.c_str());
+        }
         if(!list_of_input_files)
             exit(6);
     } catch (const NmzCoCoAException& e) {

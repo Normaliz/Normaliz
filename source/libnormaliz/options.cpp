@@ -190,9 +190,11 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
                 break;
             case 'c':
                 verbose = true;
+                /*
 #ifdef NMZ_DEVELOP
                 talkative = true;
 #endif
+                */
                 break;
             case 'f':
                 write_extra_files = true;

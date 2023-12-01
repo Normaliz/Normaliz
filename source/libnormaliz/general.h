@@ -180,6 +180,7 @@ NORMALIZ_DLL_EXPORT extern bool is_split_patching; // indicates that we are comp
 NORMALIZ_DLL_EXPORT extern bool list_of_input_files; // true if processing list of input files
 NORMALIZ_DLL_EXPORT extern long number_normaliz_instances; // for distribution of input files to several instances of normaliz
 NORMALIZ_DLL_EXPORT extern long input_file_option; // index modulo number_normaliz_instances  of input fileas to be run by this instance
+NORMALIZ_DLL_EXPORT extern size_t verb_length;
 
 NORMALIZ_DLL_EXPORT extern std::string global_project;
 NORMALIZ_DLL_EXPORT extern std::string lat_file_name;
