@@ -225,7 +225,7 @@ FusionData<Integer>::FusionData(){
     check_simplicity = false;
     candidate_given = false;
     use_automorphisms = false;
-    select_iso_classes = false;
+    // select_iso_classes = false;
     verbose = false;
     activated = false;
     type_and_duality_set =false;
@@ -237,11 +237,11 @@ template <typename Integer>
 void FusionData<Integer>::set_options(const ConeProperties& ToCompute, const bool verb){
 
     verbose = verb;
-    check_simplicity= ToCompute.test(ConeProperty::OnlySimple);
-    select_simple = ToCompute.test(ConeProperty::SelectSimple);
-    use_automorphisms = ToCompute.test(ConeProperty::ExploitFusionAutoms);
-    select_iso_classes = ToCompute.test(ConeProperty::FusionIsoClasses);
-    if(check_simplicity || select_simple || use_automorphisms || select_iso_classes)
+    check_simplicity= ToCompute.test(ConeProperty::SimpleFusionRings);
+    // select_simple = ToCompute.test(ConeProperty::SelectSimple);
+    use_automorphisms = ToCompute.test(ConeProperty::FusionRings) || ToCompute.test(ConeProperty::SimpleFusionRings);
+    // select_iso_classes = ToCompute.test(ConeProperty::FusionIsoClasses);
+    if(check_simplicity || use_automorphisms)
         activated = true;
 }
 
@@ -721,6 +721,39 @@ Matrix<Integer> select_simple(const Matrix<Integer>& LattPoints, const ConePrope
 }
 
 template <typename Integer>
+void split_into_simple_and_nonsimple(Matrix<Integer>& SimpleFusionRings, Matrix<Integer>& NonsimpleFusionRings, const Matrix<Integer>& FusionRings, bool verb){
+
+    if(verb)
+        verboseOutput() << "Splitting fusion rings into simple and nonsimple" << endl;
+
+    if(FusionRings.nr_of_rows() == 0){
+        if(verb)
+            verboseOutput() << "No fusion rings given" << endl;
+        return;
+    }
+
+    FusionData<Integer> fusion;
+    fusion.select_simple = true;
+    fusion.activated = true;
+    fusion.verbose = verb;
+    fusion.read_data(false); // falsae = a posteriori
+    SimpleFusionRings = fusion.do_select_simple(FusionRings);
+    if(verb)
+        verboseOutput() << SimpleFusionRings.nr_of_rows() << " simple fusion rings found" << endl;
+    set<vector<Integer> > OurSimple;
+    for(size_t i = 0; i < SimpleFusionRings.nr_of_rows(); ++i){
+        OurSimple.insert(SimpleFusionRings[i]);
+    }
+    NonsimpleFusionRings.resize(0,FusionRings. nr_of_columns());
+    for(size_t i = 0; i < FusionRings.nr_of_rows(); ++i){
+        if(OurSimple.find(FusionRings[i]) == OurSimple.end())
+            NonsimpleFusionRings.append(FusionRings[i]);
+    }
+    if(verb)
+        verboseOutput() << NonsimpleFusionRings.nr_of_rows() << " nonsimple fusion rings found" << endl;
+}
+
+template <typename Integer>
 Matrix<Integer> fusion_iso_classes(const Matrix<Integer>& LattPoints, const ConeProperties& ToCompute, const bool verb){
 
     FusionData<Integer> fusion;
@@ -897,6 +930,13 @@ template Matrix<long long> select_simple(const Matrix<long long>& LattPoints, co
 template Matrix<mpz_class> select_simple(const Matrix<mpz_class>& LattPoints, const ConeProperties& ToCompute, const bool verb);
 #ifdef ENFNORMALIZ
 template Matrix<renf_elem_class> select_simple(const Matrix<renf_elem_class>& LattPoints, const ConeProperties& ToCompute, const bool verb);
+#endif
+
+template void split_into_simple_and_nonsimple(Matrix<long long>& SimpleFusionRings, Matrix<long long>& NonsimpleFusionRings, const Matrix<long long>& FusionRings, bool verb);
+template void split_into_simple_and_nonsimple(Matrix<long>& SimpleFusionRings, Matrix<long>& NonsimpleFusionRings, const Matrix<long>& FusionRings, bool verb);
+template void split_into_simple_and_nonsimple(Matrix<mpz_class>& SimpleFusionRings, Matrix<mpz_class>& NonsimpleFusionRings, const Matrix<mpz_class>& FusionRings, bool verb);
+#ifdef ENFNORMALIZ
+template void split_into_simple_and_nonsimple(Matrix<renf_elem_class>& SimpleFusionRings, Matrix<renf_elem_class>& NonsimpleFusionRings, const Matrix<renf_elem_class>& FusionRings, bool verb);
 #endif
 
 template Matrix<long> fusion_iso_classes(const Matrix<long>& LattPoints, const ConeProperties& ToCompute, const bool verb);

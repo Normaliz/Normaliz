@@ -417,6 +417,18 @@ class Cone {
     const vector<vector<Integer> >& getSupportHyperplanes();
     size_t getNrSupportHyperplanes();
 
+    const Matrix<Integer>& getFusionRingsMatrix();
+    const vector<vector<Integer> >& getFusionRings();
+    size_t getNrFusionRings();
+
+    const Matrix<Integer>& getSimpleFusionRingsMatrix();
+    const vector<vector<Integer> >& getSimpleFusionRings();
+    size_t getNrSimpleFusionRings();
+
+    const Matrix<Integer>& getNonsimpleFusionRingsMatrix();
+    const vector<vector<Integer> >& getNonsimpleFusionRings();
+    size_t getNrNonsimpleFusionRings();
+
     const Matrix<Integer>& getMaximalSubspaceMatrix();
     const vector<vector<Integer> >& getMaximalSubspace();
     size_t getDimMaximalSubspace();
@@ -683,6 +695,10 @@ class Cone {
     Matrix<Integer> ModuleGeneratorsOverOriginalMonoid;
     Matrix<Integer> Deg1Elements;
     vector<Integer> SingleLatticePoint;
+    Matrix<Integer> FusionRings;
+    Matrix<Integer> SimpleFusionRings;
+    Matrix<Integer> NonsimpleFusionRings;
+
     HilbertSeries HSeries;
     HilbertSeries EhrSeries;
     IntegrationData IntData;

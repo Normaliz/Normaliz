@@ -2871,6 +2871,56 @@ size_t Cone<Integer>::getNrModuleGenerators() {
 }
 
 template <typename Integer>
+const Matrix<Integer>& Cone<Integer>::getFusionRingsMatrix() {
+    compute(ConeProperty::FusionRings);
+    return FusionRings;
+}
+template <typename Integer>
+const vector<vector<Integer> >& Cone<Integer>::getFusionRings() {
+    compute(ConeProperty::FusionRings);
+    return FusionRings.get_elements();
+}
+template <typename Integer>
+size_t Cone<Integer>::getNrFusionRings() {
+    compute(ConeProperty::FusionRings);
+    return FusionRings.nr_of_rows();
+}
+
+template <typename Integer>
+const Matrix<Integer>& Cone<Integer>::getSimpleFusionRingsMatrix() {
+    compute(ConeProperty::SimpleFusionRings);
+    return SimpleFusionRings;
+}
+template <typename Integer>
+const vector<vector<Integer> >& Cone<Integer>::getSimpleFusionRings() {
+    compute(ConeProperty::SimpleFusionRings);
+    return SimpleFusionRings.get_elements();
+}
+template <typename Integer>
+size_t Cone<Integer>::getNrSimpleFusionRings() {
+    compute(ConeProperty::SimpleFusionRings);
+    return SimpleFusionRings.nr_of_rows();
+}
+
+
+// Nonsimple fusion rings cannot be computed separately
+template <typename Integer>
+const Matrix<Integer>& Cone<Integer>::getNonsimpleFusionRingsMatrix() {
+    compute(ConeProperty::FusionRings);
+    return NonsimpleFusionRings;
+}
+template <typename Integer>
+const vector<vector<Integer> >& Cone<Integer>::getNonsimpleFusionRings() {
+    compute(ConeProperty::FusionRings);
+    return NonsimpleFusionRings.get_elements();
+}
+template <typename Integer>
+size_t Cone<Integer>::getNrNonsimpleFusionRings() {
+    compute(ConeProperty::FusionRings);
+    return NonsimpleFusionRings.nr_of_rows();
+}
+
+template <typename Integer>
 const Matrix<Integer>& Cone<Integer>::getDeg1ElementsMatrix() {
     compute(ConeProperty::Deg1Elements);
     return Deg1Elements;
@@ -4408,11 +4458,11 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     if (using_renf<Integer>())
         ToCompute.check_Q_permissible(false);  // before implications!
 
+    if(ToCompute.test(ConeProperty::FusionRings) || ToCompute.test(ConeProperty::SimpleFusionRings))
+        ToCompute.check_fusion_ring_props();
+
     ToCompute.check_conflicting_variants();
     ToCompute.set_preconditions(inhomogeneous, using_renf<Integer>());
-
-    if(is_split_patching && (ToCompute.test(ConeProperty::SelectSimple) || ToCompute.test(ConeProperty::FusionIsoClasses)) )
-        throw BadInputException("SelectSimple and FusionIsoClasses not allowed in split computation.");
 
     if (using_renf<Integer>())
         ToCompute.check_Q_permissible(true);  // after implications!
@@ -7279,14 +7329,14 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
         }
     }
 
-    if(ToCompute.test(ConeProperty::FusionIsoClasses)){ // make the normal form w.r.t. natrural coordinate order
+    /* if(ToCompute.test(ConeProperty::FusionRings)){ // make the normal form w.r.t. natrural coordinate order
         if (inhomogeneous) {
             ModuleGenerators = fusion_iso_classes(ModuleGenerators,ToCompute,verbose);
         }
         else{
             Deg1Elements = fusion_iso_classes(Deg1Elements,ToCompute,verbose);
         }
-    }
+    } */
 
     if(is_split_patching){
         string name = global_project + "." + to_string(split_refinement) + "." + to_string(split_index_rounds);
@@ -7298,12 +7348,36 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
         }
     }
 
-    if(ToCompute.test(ConeProperty::OnlySimple))
-        setComputed(ConeProperty::OnlySimple);
-    if(ToCompute.test(ConeProperty::ExploitFusionAutoms))
-        setComputed(ConeProperty::ExploitFusionAutoms);
+    // special treatment of fusion rings
+    if(ToCompute.test(ConeProperty::FusionRings) || ToCompute.test(ConeProperty::SimpleFusionRings)){
+        ToCompute.reset(ConeProperty::LatticePoints);
+        is_Computed.reset(ConeProperty::LatticePoints);
+        ToCompute.reset(ConeProperty::Deg1Elements);
+        is_Computed.reset(ConeProperty::Deg1Elements);
+        ToCompute.reset(ConeProperty::ModuleGenerators);
+        is_Computed.reset(ConeProperty::ModuleGenerators);
+        ToCompute.reset(ConeProperty::HilbertBasis);
+    }
+    if(ToCompute.test(ConeProperty::FusionRings)){
+        FusionRings = ModuleGenerators;
+        split_into_simple_and_nonsimple(SimpleFusionRings, NonsimpleFusionRings, FusionRings, verbose);
+        setComputed(ConeProperty::FusionRings);
+        setComputed(ConeProperty::SimpleFusionRings);
+        setComputed(ConeProperty::NonsimpleFusionRings);
+        FusionRings.sort_lex();
+        SimpleFusionRings.sort_lex();
+        NonsimpleFusionRings.sort_lex();
+        return;
+    }
+    if(ToCompute.test(ConeProperty::SimpleFusionRings)){
+        SimpleFusionRings = ModuleGenerators;
+        setComputed(ConeProperty::SimpleFusionRings);
+        SimpleFusionRings.sort_lex();
+        return;
+    }
 
-
+    /*
+     *
     if(ToCompute.test(ConeProperty::SelectSimple) || ToCompute.test(ConeProperty::FusionIsoClasses)){
         auto Selection = ModuleGenerators;
         if(!inhomogeneous)
@@ -7325,6 +7399,7 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
             properties += "isomotphism classes";
         out << properties << endl;
     }
+    */
 
     if(ToCompute.test(ConeProperty::SingleLatticePoint)){
         if(inhomogeneous && ModuleGenerators.nr_of_rows() >0){
@@ -9356,6 +9431,12 @@ const Matrix<Integer>& Cone<Integer>::getMatrixConePropertyMatrix(ConeProperty::
             return this->getOriginalMonoidGeneratorsMatrix();
         case ConeProperty::MaximalSubspace:
             return this->getMaximalSubspaceMatrix();
+        case ConeProperty::FusionRings:
+            return this->getFusionRingsMatrix();
+        case ConeProperty::NonsimpleFusionRings:
+            return this->getNonsimpleFusionRingsMatrix();
+        case ConeProperty::SimpleFusionRings:
+            return this->getSimpleFusionRingsMatrix();
         // The following point to the sublattice
         case ConeProperty::Equations:
             return this->getSublattice().getEquationsMatrix();

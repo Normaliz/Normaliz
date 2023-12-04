@@ -150,30 +150,19 @@ void Output<Integer>::setCone(Cone<Integer>& C) {
         else
             monoid_or_cone = "cone";
         of_polyhedron = " of polyhedron (homogenized)";
-        if(!Result->isComputed(ConeProperty::OnlySimple) && !Result->isComputed(ConeProperty::ExploitFusionAutoms)){
-            if ((Result->isComputed(ConeProperty::ModuleGenerators) || Result->isComputed(ConeProperty::NumberLatticePoints)) &&
-                Result->getRecessionRank() == 0) {
-                if (!using_renf<Integer>())
-                    module_generators_name = " lattice points in polytope (module generators)" + polynomial_constraints;
-                else
-                    module_generators_name = " lattice points in polytope" + polynomial_constraints;
-            }
-            else {
-                if (using_renf<Integer>())
-                    module_generators_name = " lattice points in polytope" + polynomial_constraints;
-                else
-                    module_generators_name = " module generators";
-            }
-        }
-        else{
-            if(Result->isComputed(ConeProperty::OnlySimple)){
-                if(!Result->isComputed(ConeProperty::ExploitFusionAutoms))
-                    module_generators_name = " simple fusion data";
-                else
-                    module_generators_name = " simple fusion data up to siomorphism";
-            }
+
+        if ((Result->isComputed(ConeProperty::ModuleGenerators) || Result->isComputed(ConeProperty::NumberLatticePoints)) &&
+            Result->getRecessionRank() == 0) {
+            if (!using_renf<Integer>())
+                module_generators_name = " lattice points in polytope (module generators)" + polynomial_constraints;
             else
-                module_generators_name = " fusion data up to isomorphism";
+                module_generators_name = " lattice points in polytope" + polynomial_constraints;
+        }
+        else {
+            if (using_renf<Integer>())
+                module_generators_name = " lattice points in polytope" + polynomial_constraints;
+            else
+                module_generators_name = " module generators";
         }
     }
 }
@@ -1216,7 +1205,65 @@ void Output<Integer>::writeSeries(ofstream& out, const HilbertSeries& HS, string
 //---------------------------------------------------------------------------
 
 template <typename Integer>
+void Output<Integer>::write_fusion_files() {
+
+    if (out == false)
+        return;
+
+    string name_open = name + ".out";  // preparing output files
+    const char* file = name_open.c_str();
+    ofstream out(file);
+    if (out.fail()) {
+        throw BadInputException("Cannot write to output file. Typo in directory name?");
+    }
+
+    if(Result->isComputed(ConeProperty::FusionRings)){
+        out << Result->getNrFusionRings() << " fusion rings up to isomorphism" << endl;
+    }
+    if(Result->isComputed(ConeProperty::SimpleFusionRings)){
+        out << Result->getNrSimpleFusionRings() << " simple fusion rings up to isomorphism" << endl;
+    }
+    if(Result->isComputed(ConeProperty::NonsimpleFusionRings)){
+        out << Result->getNrNonsimpleFusionRings() << " nonsimple fusion rings up to isomorphism" << endl;
+    }
+
+    out << endl;
+    if(Result->isComputed(ConeProperty::EmbeddingDim)){
+        out << "Embdiing dimension " << Result->getEmbeddingDim() << endl;
+    }
+
+    out << endl;
+    out << "***********************************************************************" << endl << endl;
+
+    if(no_matrices_output){
+        out.close();
+        return;
+    }
+
+    if(Result->isComputed(ConeProperty::SimpleFusionRings)){
+        out << Result->getNrSimpleFusionRings() << " simple fusion rings up to isomorphism:" << endl;
+        Result->getSimpleFusionRingsMatrix().pretty_print(out);
+        out << endl;
+    }
+
+    if(Result->isComputed(ConeProperty::NonsimpleFusionRings)){
+        out << Result->getNrNonsimpleFusionRings() << " nonsimple fusion rings up to isomorphism:" << endl;
+        Result->getNonsimpleFusionRingsMatrix().pretty_print(out);
+        out << endl;
+    }
+    out.close();
+}
+
+//---------------------------------------------------------------------------
+
+template <typename Integer>
 void Output<Integer>::write_files() {
+
+    if(Result->isComputed(ConeProperty::FusionRings) || Result->isComputed(ConeProperty::SimpleFusionRings)){
+        write_fusion_files();
+        return;
+    }
+
     size_t i, nr;
     vector<libnormaliz::key_t> rees_ideal_key;
 

@@ -80,6 +80,9 @@ enum Enum {
     GroebnerBasis,
     MarkovBasis,
     Representations,
+    SimpleFusionRings,
+    NonsimpleFusionRings,
+    FusionRings,
     END_ENUM_RANGE(LAST_MATRIX),
 
     START_ENUM_RANGE(FIRST_MATRIX_FLOAT),
@@ -259,11 +262,6 @@ enum Enum {
     RevLex,
     DegLex,
     //
-    SelectSimple,
-    OnlySimple,
-    FusionIsoClasses,
-    ExploitFusionAutoms,
-    //
     END_ENUM_RANGE(LAST_PROPERTY),
     //
     // ONLY FOR INTERNAL CONTROL
@@ -347,6 +345,7 @@ class ConeProperties {
     void check_Q_permissible(bool after_implications);
     void check_monoid_goals() const;
     void check_lattice_ideal_goals() const;
+    void check_fusion_ring_props() const;
     void check_compatibility_with_polynomial_constraints(bool inhomogeneous);
     // void set_default_goals(bool inhomogeneous, bool numberfield);
 

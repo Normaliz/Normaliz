@@ -448,7 +448,6 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
         if(LongOption == "UWP"){
             to_compute.set(ConeProperty::UseWeightsPatching);
             continue;
-
         }
         if(LongOption == "COP"){
             to_compute.set(ConeProperty::CongOrderPatches);
@@ -458,18 +457,8 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
             to_compute.set(ConeProperty::LinearOrderPatches);
             continue;
         }
-        if(LongOption == "EFA"){
-            to_compute.set(ConeProperty::ExploitFusionAutoms);
-            continue;
-
-        }
         if(LongOption == "DCM"){
             to_compute.set(ConeProperty::DistributedComp);
-            continue;
-
-        }
-        if(LongOption == "CLL"){
-            to_compute.set(ConeProperty::UseWeightsPatching);
             continue;
 
         }

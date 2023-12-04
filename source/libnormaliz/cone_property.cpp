@@ -181,10 +181,6 @@ ConeProperties all_options() {
     ret.set(ConeProperty::LinearOrderPatches);
     ret.set(ConeProperty::CongOrderPatches);
     ret.set(ConeProperty::MinimizePolyEquations);
-    ret.set(ConeProperty::SelectSimple);
-    ret.set(ConeProperty::OnlySimple);
-    ret.set(ConeProperty::FusionIsoClasses);
-    ret.set(ConeProperty::ExploitFusionAutoms);
     return ret;
 }
 
@@ -319,6 +315,23 @@ void ConeProperties::check_lattice_ideal_goals() const{
     }
 }
 
+void ConeProperties::check_fusion_ring_props() const{
+    ConeProperties copy(*this);
+    copy.reset(ConeProperty::FusionRings);
+    copy.reset(ConeProperty::SimpleFusionRings);
+    copy.reset(ConeProperty::LatticePoints);
+    copy.reset(ConeProperty::LinearOrderPatches);
+    copy.reset(ConeProperty::CongOrderPatches);
+    copy.reset(ConeProperty::UseWeightsPatching);
+    copy.reset(ConeProperty::NoWeights);
+    copy.reset(ConeProperty::NoGradingDenom);
+    copy.reset(ConeProperty::DistributedComp);
+    if (copy.any()) {
+        errorOutput() << copy << endl;
+        throw BadInputException("Cone Property in last line not allowed for fusion rings");
+    }
+}
+
 ConeProperties all_automorphisms() {
     static ConeProperties ret;
     ret.set(ConeProperty::Automorphisms);
@@ -387,6 +400,14 @@ size_t ConeProperties::count() const {
 
 /* add preconditions */
 void ConeProperties::set_preconditions(bool inhomogeneous, bool numberfield) {
+
+    if(CPs.test(ConeProperty::NonsimpleFusionRings)){
+        CPs.set(ConeProperty::FusionRings);
+        CPs.reset(ConeProperty::NonsimpleFusionRings);
+    }
+
+    if(CPs.test(ConeProperty::FusionRings) || CPs.test(ConeProperty::SimpleFusionRings))
+        CPs.set(ConeProperty::LatticePoints);
 
     if(CPs.test(ConeProperty::GroebnerBasis) ||
                 CPs.test(ConeProperty::MarkovBasis)){
@@ -723,6 +744,9 @@ void ConeProperties::check_compatibility_with_polynomial_constraints(bool inhomo
     wanted.reset(ConeProperty::NumberLatticePoints);
     wanted.reset(ConeProperty::SingleLatticePoint);
     wanted.reset(ConeProperty::DistributedComp);
+    wanted.reset(ConeProperty::FusionRings);
+    wanted.reset(ConeProperty::SimpleFusionRings);
+    wanted.reset(ConeProperty::NonsimpleFusionRings);
     if(inhomogeneous)
         wanted.reset(ConeProperty::HilbertBasis);
     if(wanted.any()){
@@ -827,7 +851,9 @@ void ConeProperties::check_conflicting_variants() {
         (CPs.test(ConeProperty::LinearOrderPatches) && CPs.test(ConeProperty::CongOrderPatches)) ||
         (CPs.test(ConeProperty::LatticePoints) && CPs.test(ConeProperty::SingleLatticePoint) ) ||
         // (CPs.test(ConeProperty::Symmetrize) && CPs.test(ConeProperty::SignedDec)) ||
-        (CPs.test(ConeProperty::Dynamic) && CPs.test(ConeProperty::Static)))
+        (CPs.test(ConeProperty::Dynamic) && CPs.test(ConeProperty::Static)) ||
+        (CPs.test(ConeProperty::FusionRings) && CPs.test(ConeProperty::SimpleFusionRings))
+    )
         throw BadInputException("Contradictory algorithmic variants in options.");
 
     size_t nr_var = 0;
@@ -1060,13 +1086,12 @@ vector<string> initializeCPN() {
     CPN.at(ConeProperty::MinimizePolyEquations) = "MinimizePolyEquations";
     CPN.at(ConeProperty::LinearOrderPatches) = "LinearOrderPatches";
     CPN.at(ConeProperty::CongOrderPatches) = "CongOrderPatches";
-    CPN.at(ConeProperty::SelectSimple) = "SelectSimple";
-    CPN.at(ConeProperty::OnlySimple) = "OnlySimple";
-    CPN.at(ConeProperty::FusionIsoClasses) = "FusionIsoClasses";
-    CPN.at(ConeProperty::ExploitFusionAutoms) = "ExploitFusionAutoms";
+    CPN.at(ConeProperty::FusionRings) = "FusionRings";
+    CPN.at(ConeProperty::SimpleFusionRings) = "SimpleFusionRings";
+    CPN.at(ConeProperty::NonsimpleFusionRings) = "NonsimpleFusionRings";
 
     // detect changes in size of Enum, to remember to update CPN!
-    static_assert(ConeProperty::EnumSize == 156, "ConeProperties Enum size does not fit! Update cone_property.cpp!");
+    static_assert(ConeProperty::EnumSize == 155, "ConeProperties Enum size does not fit! Update cone_property.cpp!");
     // assert all fields contain an non-empty string
     for (size_t i = 0; i < ConeProperty::EnumSize; i++) {
         // bstd::cout << "iii " << i << "  " << CPN.at(i) << endl;

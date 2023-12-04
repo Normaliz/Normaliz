@@ -55,7 +55,7 @@ public:
     bool commutative;
 
     bool check_simplicity;
-    bool select_simple; // not used at present
+    bool select_simple;
     bool candidate_given;
 
     bool use_automorphisms;
@@ -120,6 +120,8 @@ Matrix<Integer> select_simple(const Matrix<Integer>& LattPoints, const ConePrope
 template <typename Integer>
 Matrix<Integer> fusion_iso_classes(const Matrix<Integer>& LattPoints, const ConeProperties& ToCompute, const bool verb);
 //void select_simple_fusion_rings();
+template <typename Integer>
+void split_into_simple_and_nonsimple(Matrix<Integer>& SimpleFusionRings, Matrix<Integer>& NonsimpleFusionRings, const Matrix<Integer>& FusionRings, bool verb);
 
 vector<dynamic_bitset> make_all_subsets(const size_t card);
 vector<vector<key_t> > make_all_permutations(size_t n);

@@ -157,6 +157,7 @@ class Output {
     //---------------------------------------------------------------------------
 
     void write_files();
+    void write_fusion_files();
     void writeWeightedEhrhartSeries(ofstream& out) const;
     void writeSeries(ofstream& out, const HilbertSeries& HS, string HilbertOrEhrhart) const;
 
