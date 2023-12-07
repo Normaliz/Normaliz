@@ -248,8 +248,6 @@ void FusionData<Integer>::set_options(const ConeProperties& ToCompute, const boo
 template <typename Integer>
 void FusionData<Integer>::read_data(const bool a_priori) {
 
-    if(!activated)
-        return;
     string file_name = global_project + ".fusion";
     ifstream in(file_name);
     if(in.is_open()){
@@ -286,6 +284,9 @@ void FusionData<Integer>::read_data(const bool a_priori) {
         verboseOutput() << "duality " << duality;
         verboseOutput() << "commutative " << commutative << endl;
     }
+
+    if(!activated)
+        return;
 
     if((use_automorphisms && a_priori) || (select_iso_classes && !a_priori) )
         make_automorphisms();

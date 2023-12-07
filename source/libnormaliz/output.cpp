@@ -39,6 +39,7 @@
 #include "libnormaliz/vector_operations.h"
 #include "libnormaliz/list_and_map_operations.h"
 #include "libnormaliz/automorph.h"
+#include "libnormaliz/fusion.h"
 
 namespace libnormaliz {
 using namespace std;
@@ -1880,11 +1881,25 @@ void write_fusion_files(const string& name, const bool non_simple_fusion_rings, 
                                          const Matrix<Integer>& NonsimpleFusionRings,
                                          const bool no_matrices_output) {
 
-    string name_open = name + ".out";  // preparing output files
+     string name_open = name + ".out";  // preparing output files
     const char* file = name_open.c_str();
     ofstream out(file);
     if (out.fail()) {
         throw BadInputException("Cannot write to output file. Typo in directory name?");
+    }
+
+    FusionData<Integer> fusion;
+    fusion.read_data(false);
+
+    string simple_fusion_text, nonsimple_fusion_text;
+
+    if(fusion.candidate_given){
+        simple_fusion_text =  " fusion rings not containing candidate subring";
+        nonsimple_fusion_text = " fusion rings containing candidate subring";
+    }
+    else{
+        simple_fusion_text =  " simple fusion rings up to isomorphism";
+        nonsimple_fusion_text = " nonsimple fusion rings up to isomorphism";
     }
 
     bool fusion_rings = simple_fusion_rings && non_simple_fusion_rings;
@@ -1893,10 +1908,10 @@ void write_fusion_files(const string& name, const bool non_simple_fusion_rings, 
         out << total_nr_fusion_rings << " fusion rings up to isomorphism" << endl;
     }
     if(simple_fusion_rings){
-        out << SimpleFusionRings.nr_of_rows() << " simple fusion rings up to isomorphism" << endl;
+        out << SimpleFusionRings.nr_of_rows() << simple_fusion_text << endl;
     }
     if(non_simple_fusion_rings){
-        out << NonsimpleFusionRings.nr_of_rows() << " nonsimple fusion rings up to isomorphism" << endl;
+        out << NonsimpleFusionRings.nr_of_rows() << nonsimple_fusion_text << endl;
     }
 
     out << endl;
@@ -1914,13 +1929,13 @@ void write_fusion_files(const string& name, const bool non_simple_fusion_rings, 
     }
 
     if(simple_fusion_rings){
-        out <<  SimpleFusionRings.nr_of_rows() << " simple fusion rings up to isomorphism:" << endl;
+        out <<  SimpleFusionRings.nr_of_rows() << simple_fusion_text << ":" << endl;
         SimpleFusionRings.pretty_print(out);
         out << endl;
     }
 
     if(non_simple_fusion_rings){
-        out << NonsimpleFusionRings.nr_of_rows() << " nonsimple fusion rings up to isomorphism:" << endl;
+        out << NonsimpleFusionRings.nr_of_rows() << nonsimple_fusion_text << ":" << endl;
         NonsimpleFusionRings.pretty_print(out);
         out << endl;
     }
