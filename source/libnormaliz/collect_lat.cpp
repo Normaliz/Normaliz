@@ -29,6 +29,8 @@
 #include "libnormaliz/collect_lat.h"
 #include "libnormaliz/matrix.h"
 #include "libnormaliz/input.h"
+#include "libnormaliz/output.h"
+#include "libnormaliz/fusion.h"
 
 namespace libnormaliz {
 using std::cout;
@@ -218,11 +220,10 @@ void next_round(const string& project) {
         verboseOutput() << "New round " << our_split.this_round << endl;
 }
 
-void read_lat_file(ifstream& lat_in, const string& lat_name, size_t& min_return, size_t& done_indices,Matrix<long long>& TotalLat){
+void read_prel_lat_file(ifstream& lat_in, const string& lat_name, size_t& min_return, size_t& done_indices,Matrix<long long>& TotalLat){
 
-    string s1, s2;
-    lat_in >> s1 >> s2;
-    if(s1 != "preliminary_stage" || s2 != "min_return"){
+    string s1;
+    if(s1 != "min_return"){
         throw BadInputException("CollectLat failed because of corrupt file " + lat_name);
     }
 
@@ -273,6 +274,54 @@ void read_lat_file(ifstream& lat_in, const string& lat_name, size_t& min_return,
     }
 }
 
+void analyze_lat_file(ifstream& lat_in,  const string& lat_name, bool & preliminary, string& lat_type){
+
+    preliminary = false;
+    char c;
+    lat_in >> ws;
+    c = lat_in.peek();
+    if (c == 'p'){
+        string prel;
+        lat_in >> prel;
+        if(prel != "preliminary_stage")
+            throw BadInputException(lat_name + "is corrupt");
+        preliminary = true;
+        if(verbose)
+            verboseOutput() << lat_name << " in preliminary stage" << endl;
+    }
+    lat_in >> lat_type;
+    if(lat_type != "simple_fusion_rings" && lat_type != "fusion_rings" && lat_type != "lattice_points")
+        throw BadInputException(lat_name + "is corrupt");
+}
+
+void write_lat_file(const Matrix<long long>& LatticePoints) {
+
+    string name_open = global_project + ".out";  // preparing output files
+    const char* file = name_open.c_str();
+    ofstream out(file);
+    if (out.fail()) {
+        throw BadInputException("Cannot write to output file. Typo in directory name?");
+    }
+
+    out << LatticePoints.nr_of_rows() << " lattice points in polytope (module generators) satisfying polynomial constraints" << endl;
+
+    out << endl;
+    size_t embdim = LatticePoints.nr_of_columns();
+
+    if(embdim > 0){
+        out << "Embdiing dimension " << embdim << endl;
+    }
+
+    out << endl;
+    out << "***********************************************************************" << endl << endl;
+
+    out <<  LatticePoints.nr_of_rows() << " lattice points in polytope (module generators) satisfying polynomial constraints:" << endl;
+        LatticePoints.pretty_print(out);
+    out << endl;
+
+    out.close();
+}
+
 void collect_lat(const string& project) {
 
     string name;
@@ -294,7 +343,7 @@ void collect_lat(const string& project) {
     Matrix<long long> TotalLat; // collects the solutions found so far
 
     if(our_split.this_refinement > 0){
-        string lat_name = global_project + "." + to_string(our_split.this_refinement - 1) + ".so_far.lat";
+        string lat_name = global_project + "." + to_string(our_split.this_refinement - 1) + ".lat.so_far";
         TotalLat = readMatrix<long long>(lat_name);
     }
 
@@ -306,6 +355,9 @@ void collect_lat(const string& project) {
     // Now we read what has been compouted in the last refinement
     // and register the splits that have not been complete in NotDone
     // We read the data of the others and rewrite a simplified version.
+
+    string lat_type; // can be fusion_rings, simple_fusion_rings, lattice_points
+
     for(size_t i = 0; i < our_split.nr_splits_to_do; ++i){
         string lat_name = project + "." + to_string(our_split.this_refinement) + "." +  to_string(i) + ".lat";
         if(verbose)
@@ -318,25 +370,36 @@ void collect_lat(const string& project) {
             throw BadInputException("Not all lat files computed. CollectLat not yet possible!");
         }
 
-        char c;
-        lat_in >> ws;
-        c = lat_in.peek();
-        if (c == 'p'){
-            if(verbose)
-                verboseOutput() << lat_name << " in preliminary stage" << endl;
+        bool preliminary;
+        string this_type;
+        analyze_lat_file(lat_in, lat_name, preliminary,  this_type);
+        if(i == 0){
+            lat_type = this_type;
+        }
+        else{
+            if(this_type != lat_type)
+                throw BadInputException(lat_name + "is corrupt");
+        }
+
+        if(preliminary){
             NotDone.push_back(i);
             size_t min_return;
             size_t done_indices;
-            read_lat_file(lat_in, lat_name, min_return, done_indices, TotalLat);
+            read_prel_lat_file(lat_in, lat_name, min_return, done_indices, TotalLat);
             MinReturnNotDone.push_back(min_return);
             DoneIndicesNotDone.push_back(done_indices);
-
             continue; // next lat file
         } // done with preliminray stage
 
-        // now the completed lat files
-        lat_in.close();
-        Matrix<long long> this_lat = readMatrix<long long>(lat_name);
+        // now the completed lat files, file is open and lat_type has been determined
+        size_t nr_rows, nr_cols;
+        lat_in >> nr_rows >> nr_cols;
+        Matrix<long long> this_lat(nr_rows, nr_cols) ;
+        for(size_t i = 0; i < nr_rows; ++i){
+            for(size_t j = 0; j < nr_cols; ++j){
+                lat_in >> this_lat[i][j];
+            }
+        }
         if(this_lat.nr_of_rows() == 0)
             continue;
         if(TotalLat.nr_of_rows() == 0)
@@ -345,19 +408,31 @@ void collect_lat(const string& project) {
 
     } // loop over all lat files
 
-    name = global_project + "." + to_string(our_split.this_refinement) + ".so_far.lat";
+    name = global_project + "." + to_string(our_split.this_refinement) + ".lat.so_far";
     ofstream lat_out(name.c_str());
     TotalLat.print(lat_out);
 
     if(NotDone.size() == 0){
-        string comp_name = global_project + ".final.lat";
-        ofstream comp_out(comp_name.c_str());
+        TotalLat.sort_lex();
         for(size_t i = 0; i< TotalLat.nr_of_rows(); ++i){
             if(TotalLat[i].back() != 1)
                 throw BadInputException("Cpoordinate error in final.lat");
         }
-        TotalLat.sort_lex();
-        TotalLat.print(comp_out);
+        if(lat_type == "lattice_points"){
+            write_lat_file(TotalLat);
+        }
+        else{
+            Matrix<long long> SimpleFusionRings;
+            Matrix<long long> NonsimpleFusionRings;
+            size_t embdim = TotalLat.nr_of_columns();
+            if(lat_type == "fusion_rings"){
+                split_into_simple_and_nonsimple(SimpleFusionRings, NonsimpleFusionRings, TotalLat, verbose);
+                write_fusion_files(global_project, true, true, embdim, SimpleFusionRings, NonsimpleFusionRings, false);
+            }
+            else{ // only soimple computed
+                write_fusion_files(global_project, true, false, embdim, SimpleFusionRings, NonsimpleFusionRings, false);
+            }
+        }
         if(verbose)
             verboseOutput() << "Computation of " + global_project + " complete " << endl;
         return;
@@ -427,5 +502,6 @@ void collect_lat(const string& project) {
     }
     new_split_data.write_data();
 }
+
 
 }  // namespace libnormaliz

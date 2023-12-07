@@ -50,7 +50,7 @@ class FaceLattice {
 
     size_t dim;  // we aqssume pointed!
 
-    Matrix<Integer> SuppHyps;  // local storage for supporet hypeplanes
+    Matrix<Integer> SuppHyps;  // local storage for support hypeplanes
 
     map<dynamic_bitset, int> FaceLat;
     vector<dynamic_bitset> SuppHypInd;

@@ -7338,42 +7338,56 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
         }
     } */
 
-    if(is_split_patching){
-        string name = global_project + "." + to_string(split_refinement) + "." + to_string(split_index_rounds);
-        if (inhomogeneous) {
-            ModuleGenerators.print(name,"lat");
+    if(is_split_patching){ // this split has been completely computed
+        string name = global_project + "." + to_string(split_refinement) + "." + to_string(split_index_rounds) + ".lat";
+        ofstream lat_out(name);
+        if(ToCompute.test(ConeProperty::FusionRings) || ToCompute.test(ConeProperty::SimpleFusionRings)){
+            if(ToCompute.test(ConeProperty::SimpleFusionRings))
+                lat_out << "simple_";
+            lat_out << "fusion_rings" << endl;
         }
         else{
-            Deg1Elements.print(name,"lat");
+            lat_out << "lattice_points" << endl;
+        }
+        if (inhomogeneous) {
+            lat_out << ModuleGenerators.nr_of_rows() << endl;
+            lat_out << ModuleGenerators.nr_of_columns() << endl;
+            ModuleGenerators.pretty_print(lat_out);
+        }
+        else{
+            lat_out << Deg1Elements.nr_of_rows() << endl;
+            lat_out << Deg1Elements.nr_of_columns() << endl;
+            Deg1Elements.pretty_print(lat_out);
         }
     }
-
-    // special treatment of fusion rings
-    if(ToCompute.test(ConeProperty::FusionRings) || ToCompute.test(ConeProperty::SimpleFusionRings)){
-        ToCompute.reset(ConeProperty::LatticePoints);
-        is_Computed.reset(ConeProperty::LatticePoints);
-        ToCompute.reset(ConeProperty::Deg1Elements);
-        is_Computed.reset(ConeProperty::Deg1Elements);
-        ToCompute.reset(ConeProperty::ModuleGenerators);
-        is_Computed.reset(ConeProperty::ModuleGenerators);
-        ToCompute.reset(ConeProperty::HilbertBasis);
-    }
-    if(ToCompute.test(ConeProperty::FusionRings)){
-        FusionRings = ModuleGenerators;
-        split_into_simple_and_nonsimple(SimpleFusionRings, NonsimpleFusionRings, FusionRings, verbose);
-        setComputed(ConeProperty::FusionRings);
-        setComputed(ConeProperty::SimpleFusionRings);
-        setComputed(ConeProperty::NonsimpleFusionRings);
-        FusionRings.sort_lex();
-        SimpleFusionRings.sort_lex();
-        NonsimpleFusionRings.sort_lex();
-        return;
-    }
-    if(ToCompute.test(ConeProperty::SimpleFusionRings)){
-        SimpleFusionRings = ModuleGenerators;
-        setComputed(ConeProperty::SimpleFusionRings);
-        SimpleFusionRings.sort_lex();
-        return;
+    else{
+        // special treatment of fusion rings if fully compouted
+        if(ToCompute.test(ConeProperty::FusionRings) || ToCompute.test(ConeProperty::SimpleFusionRings)){
+            ToCompute.reset(ConeProperty::LatticePoints);
+            is_Computed.reset(ConeProperty::LatticePoints);
+            ToCompute.reset(ConeProperty::Deg1Elements);
+            is_Computed.reset(ConeProperty::Deg1Elements);
+            ToCompute.reset(ConeProperty::ModuleGenerators);
+            is_Computed.reset(ConeProperty::ModuleGenerators);
+            ToCompute.reset(ConeProperty::HilbertBasis);
+        }
+        if(ToCompute.test(ConeProperty::FusionRings)){
+            FusionRings = ModuleGenerators;
+            split_into_simple_and_nonsimple(SimpleFusionRings, NonsimpleFusionRings, FusionRings, verbose);
+            setComputed(ConeProperty::FusionRings);
+            setComputed(ConeProperty::SimpleFusionRings);
+            setComputed(ConeProperty::NonsimpleFusionRings);
+            FusionRings.sort_lex();
+            SimpleFusionRings.sort_lex();
+            NonsimpleFusionRings.sort_lex();
+            return;
+        }
+        if(ToCompute.test(ConeProperty::SimpleFusionRings)){
+            SimpleFusionRings = ModuleGenerators;
+            setComputed(ConeProperty::SimpleFusionRings);
+            SimpleFusionRings.sort_lex();
+            return;
+        }
     }
 
     /*

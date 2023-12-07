@@ -735,7 +735,7 @@ void split_into_simple_and_nonsimple(Matrix<Integer>& SimpleFusionRings, Matrix<
     FusionData<Integer> fusion;
     fusion.select_simple = true;
     fusion.activated = true;
-    fusion.verbose = verb;
+    fusion.verbose = false;
     fusion.read_data(false); // falsae = a posteriori
     SimpleFusionRings = fusion.do_select_simple(FusionRings);
     if(verb)

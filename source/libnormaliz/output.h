@@ -157,7 +157,6 @@ class Output {
     //---------------------------------------------------------------------------
 
     void write_files();
-    void write_fusion_files();
     void writeWeightedEhrhartSeries(ofstream& out) const;
     void writeSeries(ofstream& out, const HilbertSeries& HS, string HilbertOrEhrhart) const;
 
@@ -167,6 +166,12 @@ class Output {
                                 const string& type_string) const;
 };
 // class end *****************************************************************
+
+template <typename Integer>
+void write_fusion_files(const string& name, const bool non_simple_fusion_rings, const bool simple_fusion_rings,
+                                         size_t embdim, const Matrix<Integer>& SimpleFusionRings,
+                                         const Matrix<Integer>& NonSimpleFusionRings,
+                                         const bool no_matrices_output);
 
 }  // namespace libnormaliz
 

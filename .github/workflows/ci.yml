@@ -166,7 +166,7 @@ jobs:
     env:
       BUILDSYSTEM: "flint"
       NO_COVERAGE: "1"
-      NMZ_COMPILER: "clang++-12"
+      NMZ_COMPILER: "clang++"
     steps:
       - uses: actions/checkout@v3
         with:

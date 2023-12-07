@@ -1770,6 +1770,14 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
             min_return_patch = this_patch;
             ofstream prel_data;
             prel_data.open(lat_file_name, ofstream::app);
+            if(fusion.use_automorphisms){
+                if(check_simplicity_all)
+                    prel_data << "simple_";
+                prel_data << "fusion_ringhs" << endl;
+            }
+            else{
+                prel_data << "lattice_points" << endl;
+            }
             prel_data << endl << "min_return " << min_return_patch << endl << endl;
 
             prel_data << "done_indices" << endl;
