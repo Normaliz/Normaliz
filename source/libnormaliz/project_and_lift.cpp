@@ -1773,7 +1773,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
             if(fusion.use_automorphisms){
                 if(check_simplicity_all)
                     prel_data << "simple_";
-                prel_data << "fusion_ringhs" << endl;
+                prel_data << "fusion_rings" << endl;
             }
             else{
                 prel_data << "lattice_points" << endl;
