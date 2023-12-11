@@ -2836,6 +2836,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::initialize(const Matrix<IntegerPL>& 
     system_unsolvable = false;
     use_coord_weights = false;
     no_weights = false;
+    fusion_rings_computation = false;
     single_point_found = false;
     first_solution_printed = false;
     only_single_point = false; // if in case don't come via compute
@@ -3057,7 +3058,8 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute(bool all_points, bool liftin
         read_split_data();
     }
 
-    fusion.read_data(true); // true = a_priori
+    if(fusion_rings_computation)
+        fusion.read_data(true); // true = a_priori
     if(fusion.nr_coordinates > 0 && fusion.nr_coordinates != EmbDim -1){
         // cout << "SSSSSSSSSSSSSSSS " << fusion.nr_coordinates << endl;
         throw BadInputException("Wrong number of coordinates in fusion data. Mismatch of duality or commutativity.");
@@ -3223,6 +3225,11 @@ void ProjectAndLift<IntegerPL, IntegerRet>::putSuppsAndEqus(Matrix<IntegerPL>& S
 template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL, IntegerRet>::setOptions(const ConeProperties& ToCompute, const bool primitive, const bool our_verbose){
 
+    if(ToCompute.test(ConeProperty::FusionRings) || ToCompute.test(ConeProperty::SimpleFusionRings)){
+        fusion_rings_computation = true;
+        fusion.set_options(ToCompute, verbose);
+    }
+
     if(primitive){
         set_primitive();
         set_LLL(false);
@@ -3242,7 +3249,6 @@ void ProjectAndLift<IntegerPL, IntegerRet>::setOptions(const ConeProperties& ToC
         if(!primitive)
             set_LLL(!ToCompute.test(ConeProperty::NoLLL));
     }
-    fusion.set_options(ToCompute, verbose);
 }
 
 //---------------------------------------------------------------------------

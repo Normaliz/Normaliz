@@ -1916,6 +1916,14 @@ void write_fusion_files(const string& name, const bool non_simple_fusion_rings, 
 
     out << endl;
 
+    if(embdim == 0){
+        embdim = NonsimpleFusionRings.nr_of_columns();
+    }
+
+    if(embdim == 0){
+        embdim = SimpleFusionRings.nr_of_columns();
+    }
+
     if(embdim > 0){
         out << "Embdiing dimension " << embdim << endl;
     }

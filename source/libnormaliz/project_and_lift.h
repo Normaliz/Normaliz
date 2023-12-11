@@ -104,6 +104,7 @@ class ProjectAndLift {
     bool linear_order_patches;
     bool cong_order_patches;
     bool first_solution_printed;
+    bool fusion_rings_computation;
 
     bool system_unsolvable;
 

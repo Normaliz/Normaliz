@@ -820,6 +820,15 @@ Matrix<long long> read_lat_points_from_file(bool our_verbose){
 
 void post_process_fusion_file(const vector<string>& command_line_items,string our_project){
 
+    bool non_simple_fusion_rings = true;
+    bool verbose = false;
+    for(auto& s: command_line_items){
+        if(s == "--SimpleFusionRings")
+            non_simple_fusion_rings = false;
+        if(s == "-c" || s =="--verbose")
+            verbose = true;
+    }
+
     if(our_project.size() >= 11){
         if(our_project.substr(our_project.size()-10,10) == ".final.lat"){
             our_project = our_project.substr(0, our_project.size()-10);
@@ -839,41 +848,18 @@ void post_process_fusion_file(const vector<string>& command_line_items,string ou
     global_project = our_project;
     if(verbose)
         verboseOutput() << "Project " << global_project << endl;
-    FusionData<long long> our_fusion;
-    for(auto& s: command_line_items){
-        if(s == "--SelectSimple")
-            our_fusion.select_simple = true;
-        if(s == "--FusionIsoClasses")
-            our_fusion.select_iso_classes = true;
-        if(s == "-c" || s =="--verbose")
-            our_fusion.verbose = true;
-    }
-    if(!our_fusion.select_simple && !our_fusion.select_iso_classes)
-        throw BadInputException("No action selected");
 
-    our_fusion.activated = true;
-
-    our_fusion.read_data(false); // false = a posteriori
-
-    Matrix<long long> LatPoints = read_lat_points_from_file(our_fusion.verbose);
+    Matrix<long long> LattPoints = read_lat_points_from_file(verbose);
     // LatPoints.debug_print();
+    LattPoints.sort_lex();
+    size_t embdim = LattPoints.nr_of_columns();
 
-    Matrix<long long> IsoClasses = our_fusion.do_select_simple(LatPoints);
-    Matrix<long long> SimpleFusionRings = our_fusion.do_iso_classes(IsoClasses);
+    Matrix<long long> SimpleFusionRings, NonsimpleFusionRings;
+    split_into_simple_and_nonsimple(SimpleFusionRings, NonsimpleFusionRings, LattPoints, verbose);
 
-    SimpleFusionRings.sort_lex();
-    string name = global_project + ".fusion.lat";
-    ofstream out(name);
-    out << SimpleFusionRings.nr_of_rows() << endl;
-    out << SimpleFusionRings.nr_of_columns() << endl;
-    SimpleFusionRings.pretty_print(out);
-    string properties;
-    if(our_fusion.select_simple)
-        properties += "simple ";
-    if(our_fusion.select_iso_classes)
-        properties += "isomotphism classes";
-    out << properties << endl;
-    out.close();
+    string name = global_project + ".fusion";
+    write_fusion_files(name, non_simple_fusion_rings, true, embdim,
+                            SimpleFusionRings, NonsimpleFusionRings,false);
 }
 
 void post_process_fusion(const vector<string>& command_line_items){
