@@ -223,6 +223,7 @@ void next_round(const string& project) {
 void read_prel_lat_file(ifstream& lat_in, const string& lat_name, size_t& min_return, size_t& done_indices,Matrix<long long>& TotalLat){
 
     string s1;
+    lat_in >> s1;
     if(s1 != "min_return"){
         throw BadInputException("CollectLat failed because of corrupt file " + lat_name);
     }

@@ -217,6 +217,8 @@ ConeProperties treated_as_hom_props() {
     ret.set(ConeProperty::DualIncidence);
     ret.set(ConeProperty::DualFVector);
     ret.set(ConeProperty::DualFaceLattice);
+    ret.set(ConeProperty::DualFVectorOrbits);
+    ret.set(ConeProperty::DualFaceLatticeOrbits);
     return ret;
 }
 
@@ -806,6 +808,10 @@ void ConeProperties::check_Q_permissible(bool after_implications) {
     copy.reset(ConeProperty::DualFaceLattice);
     copy.reset(ConeProperty::DualFVector);
     copy.reset(ConeProperty::DualIncidence);
+    copy.reset(ConeProperty::FaceLatticeOrbits);
+    copy.reset(ConeProperty::FVectorOrbits);
+    copy.reset(ConeProperty::DualFaceLatticeOrbits);
+    copy.reset(ConeProperty::DualFVectorOrbits);
     copy.reset(ConeProperty::AmbientAutomorphisms);
     copy.reset(ConeProperty::InputAutomorphisms);
     copy.reset(ConeProperty::Automorphisms);
@@ -908,12 +914,24 @@ void ConeProperties::check_sanity(bool inhomogeneous) {  //, bool input_automorp
 
     bool something_to_do_primal =
         CPs.test(ConeProperty::FaceLattice) || CPs.test(ConeProperty::FVector) || CPs.test(ConeProperty::Incidence);
+    bool something_to_do_primal_orbits = test(ConeProperty::FaceLatticeOrbits) || CPs.test(ConeProperty::FVectorOrbits);
 
     bool something_to_do_dual =
         CPs.test(ConeProperty::DualFaceLattice) || CPs.test(ConeProperty::DualFVector) || CPs.test(ConeProperty::DualIncidence);
+    bool something_to_do_dual_orbits =test(ConeProperty::DualFaceLatticeOrbits) || CPs.test(ConeProperty::DualFVectorOrbits);
 
-    if (something_to_do_dual && something_to_do_primal)
-        throw BadInputException("Only one of primal or dual face lattice/f-vector/incidence allowed");
+    int nr_face_kattice_goals = 0;
+    if(something_to_do_primal)
+        nr_face_kattice_goals++;
+    if(something_to_do_primal_orbits)
+        nr_face_kattice_goals++;
+    if(something_to_do_dual)
+        nr_face_kattice_goals++;
+    if(something_to_do_dual_orbits)
+        nr_face_kattice_goals++;
+
+    if (nr_face_kattice_goals > 1)
+        throw BadInputException("Only one of primal/dual full/orbits face lattice/f-vector/incidence allowed");
 
     if (intersection_with(all_automorphisms()).count() > 1)
         throw BadInputException("Only one type of automorphism group allowed.");
@@ -1057,9 +1075,13 @@ vector<string> initializeCPN() {
     CPN.at(ConeProperty::NumberLatticePoints) = "NumberLatticePoints";
     CPN.at(ConeProperty::FaceLattice) = "FaceLattice";
     CPN.at(ConeProperty::FVector) = "FVector";
-    CPN.at(ConeProperty::Incidence) = "Incidence";
     CPN.at(ConeProperty::DualFaceLattice) = "DualFaceLattice";
     CPN.at(ConeProperty::DualFVector) = "DualFVector";
+    CPN.at(ConeProperty::FaceLatticeOrbits) = "FaceLatticeOrbits";
+    CPN.at(ConeProperty::FVectorOrbits) = "FVectorOrbits";
+    CPN.at(ConeProperty::DualFaceLatticeOrbits) = "DualFaceLatticeOrbits";
+    CPN.at(ConeProperty::DualFVectorOrbits) = "DualFVectorOrbits";
+    CPN.at(ConeProperty::Incidence) = "Incidence";
     CPN.at(ConeProperty::DualIncidence) = "DualIncidence";
     CPN.at(ConeProperty::SingularLocus) = "SingularLocus";
     CPN.at(ConeProperty::CodimSingularLocus) = "CodimSingularLocus";
@@ -1091,7 +1113,7 @@ vector<string> initializeCPN() {
     CPN.at(ConeProperty::NonsimpleFusionRings) = "NonsimpleFusionRings";
 
     // detect changes in size of Enum, to remember to update CPN!
-    static_assert(ConeProperty::EnumSize == 155, "ConeProperties Enum size does not fit! Update cone_property.cpp!");
+    static_assert(ConeProperty::EnumSize == 159, "ConeProperties Enum size does not fit! Update cone_property.cpp!");
     // assert all fields contain an non-empty string
     for (size_t i = 0; i < ConeProperty::EnumSize; i++) {
         // bstd::cout << "iii " << i << "  " << CPN.at(i) << endl;

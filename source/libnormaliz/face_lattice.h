@@ -48,13 +48,15 @@ class FaceLattice {
     size_t nr_vert;
     size_t nr_gens;
 
-    size_t dim;  // we aqssume pointed!
+    size_t dim;  // we assume pointed!
 
     Matrix<Integer> SuppHyps;  // local storage for support hypeplanes
 
     map<dynamic_bitset, int> FaceLat;
     vector<dynamic_bitset> SuppHypInd;
     vector<size_t> f_vector;
+
+    vector<vector<key_t> > AllPermutations;
 
    public:
     FaceLattice(Matrix<Integer>& SupportHyperplanes,
@@ -64,9 +66,12 @@ class FaceLattice {
                 bool swap_allowed = true);
     FaceLattice();
     void compute(const long face_codim_bound, const bool verbose, bool change_integer_type);
+    void compute_orbits(const long face_codim_bound, const bool verbose, bool change_integer_type);
     vector<size_t> getFVector();
     void get(map<dynamic_bitset, int>& FaceLatticeOutput);
     void get(vector<dynamic_bitset>& SuppHypIndOutput);
+    void set_permutations(const vector<vector<key_t> >& gens, const bool verb);
+    dynamic_bitset normal_form(const dynamic_bitset& arg);
 };
 
 }  // namespace libnormaliz
