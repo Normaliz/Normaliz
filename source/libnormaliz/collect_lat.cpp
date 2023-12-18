@@ -88,6 +88,10 @@ void SplitData::read_data(const string& this_project){
     split_control >> max_nr_splits_per_round >> nr_splits_to_do;
     split_control >> this_round >> this_refinement;
 
+    if(nr_split_levels != this_refinement +1){
+        throw BadInputException("Incosistent number of split lavels");
+    }
+
     if(start_split){
         long nr_splitPatches_all_rounds = 1;
 

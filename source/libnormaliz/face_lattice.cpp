@@ -42,10 +42,13 @@ FaceLattice<Integer>::FaceLattice() {
 
 template <typename Integer>
 FaceLattice<Integer>::FaceLattice(Matrix<Integer>& SupportHyperplanes,
-                                  const Matrix<Integer>& VerticesOfPolyhedron,
-                                  const Matrix<Integer>& ExtremeRaysRecCone,
+                                  const Matrix<Integer>& Vert,
+                                  const Matrix<Integer>& ExtRaysRC,
                                   const bool cone_inhomogeneous,
                                   bool swap_allowed) {
+
+    VerticesOfPolyhedron = Vert;
+    ExtremeRaysRecCone = ExtRaysRC;
     inhomogeneous = cone_inhomogeneous;
 
     nr_supphyps = SupportHyperplanes.nr_of_rows();
@@ -165,20 +168,29 @@ vector<vector<key_t> > make_permutation_group(const vector<vector<key_t> >& gens
 }
 
 template <typename Integer>
-void FaceLattice<Integer>::set_permutations(const vector<vector<key_t> >& gens, const bool verb){
+void FaceLattice<Integer>::set_supphyp_permutations(const vector<vector<key_t> >& gens, const bool verb){
     verbose = verb;
-    AllPermutations = make_permutation_group(gens);
+    SuppHypPermutations = make_permutation_group(gens);
     if(verbose)
-        verboseOutput() << AllPermutations.size() <<" permutations computed" << endl;
+        verboseOutput() << SuppHypPermutations.size() <<" permutations computed" << endl;
+}
+
+template <typename Integer>
+void FaceLattice<Integer>::set_extray_permutations(const vector<vector<key_t> >& gens, const bool verb){
+    verbose = verb;
+    ExtRayPermutations = make_permutation_group(gens);
+    if(verbose)
+        verboseOutput() << ExtRayPermutations.size() <<" permutations computed" << endl;
 }
 
 
 
+
 template <typename Integer>
-dynamic_bitset FaceLattice<Integer>::normal_form(const dynamic_bitset& arg){
+dynamic_bitset FaceLattice<Integer>::normal_form(const dynamic_bitset& arg, const vector<vector<key_t> >& Perms){
 
     dynamic_bitset normal = arg;
-    for(auto & p: AllPermutations){
+    for(auto & p: Perms){
         dynamic_bitset conjugate(arg.size());
         for(size_t i = 0; i< p.size(); ++i)
             conjugate[i] = arg[p[i]];
@@ -245,8 +257,9 @@ void FaceLattice<Integer>::compute(const long face_codim_bound, const bool verbo
     }
 
     Matrix<MachineInteger> SuppHyps_MI;
-    if (change_integer_type)
+    if (change_integer_type){
         convert(SuppHyps_MI, SuppHyps);
+    }
 
     /*for(int i=0;i< 10000;++i){ // for perturbation of order of supphyps
         int j=rand()%nr_supphyps;
@@ -328,6 +341,12 @@ void FaceLattice<Integer>::compute(const long face_codim_bound, const bool verbo
                     }
                 }
 
+                #pragma omp atomic
+                    prel_f_vector[codimension_so_far - 1]++;
+
+               if (bound_codim && codimension_so_far == face_codim_bound + 1) // finished because codim bopund reached already
+                    continue;
+
                 Faces.clear();
 
                 try {
@@ -336,9 +355,6 @@ void FaceLattice<Integer>::compute(const long face_codim_bound, const bool verbo
                     dynamic_bitset beta_F = F->second.first;
 
                     bool F_simple = ((long)F->first.count() == codimension_so_far - 1);
-
-#pragma omp atomic
-                    prel_f_vector[codimension_so_far - 1]++;
 
                     dynamic_bitset Gens = the_cone;  // make indicator vector of *F
                     for (int i = 0; i < (int)nr_supphyps; ++i) {
@@ -588,6 +604,7 @@ void FaceLattice<Integer>::compute_orbits(const long face_codim_bound, const boo
     // We use a simpler data structure for orbits
     set<dynamic_bitset> NewFaces;
     set<dynamic_bitset> WorkFaces;
+    set<dynamic_bitset> HelpNormalForms;
 
     WorkFaces.insert(empty); // the full cone
 
@@ -599,9 +616,24 @@ void FaceLattice<Integer>::compute_orbits(const long face_codim_bound, const boo
         ;
     }
 
+    Matrix<Integer> ExtremeRays;
+    if(VerticesOfPolyhedron.nr_of_rows() > 0){
+        ExtremeRays = VerticesOfPolyhedron;
+        ExtremeRays.append(ExtremeRaysRecCone);
+    }
+    else
+        ExtremeRays = ExtremeRaysRecCone;
+
     Matrix<MachineInteger> SuppHyps_MI;
-    if (change_integer_type)
+    Matrix<MachineInteger> ExtremeRays_MI;
+    if (change_integer_type){
         convert(SuppHyps_MI, SuppHyps);
+        convert(ExtremeRays_MI, ExtremeRays);
+    }
+
+    bool use_extreme_rays = false;
+    if(SuppHyps.nr_of_rows() > ExtremeRays.nr_of_rows())
+        use_extreme_rays = true;
 
     long codimension_so_far = 0;  // the lower bound for the codimension so far
 
@@ -631,7 +663,7 @@ void FaceLattice<Integer>::compute_orbits(const long face_codim_bound, const boo
         {
             size_t Fpos = 0;
             auto F = WorkFaces.begin();
-            list<pair<dynamic_bitset, FaceInfo> > FreeFaces, Faces;  // FreeFaces for mempory recycling
+            list<pair<dynamic_bitset, FaceInfo> > FreeFaces, Faces, NormalForms;  // FreeFaces for mempory recycling
             pair<dynamic_bitset, FaceInfo> fr;
             fr.first.resize(nr_gens);
             fr.second.HypsContaining.resize(nr_supphyps);
@@ -658,13 +690,16 @@ void FaceLattice<Integer>::compute_orbits(const long face_codim_bound, const boo
                     }
                 }
 
+#pragma omp atomic
+                    prel_f_vector[codimension_so_far - 1]++;
+
+                if (bound_codim && codimension_so_far == face_codim_bound + 1) // finished because codim bopund reached already
+                    continue;
+
                 Faces.clear();
 
                 try {
                     INTERRUPT_COMPUTATION_BY_EXCEPTION
-
-#pragma omp atomic
-                    prel_f_vector[codimension_so_far - 1]++;
 
                     dynamic_bitset Gens = the_cone;  // make indicator vector of *F
                     for (int i = 0; i < (int)nr_supphyps; ++i) {
@@ -697,50 +732,70 @@ void FaceLattice<Integer>::compute_orbits(const long face_codim_bound, const boo
 
                     INTERRUPT_COMPUTATION_BY_EXCEPTION
 
-                    // Now we must decide which of the faces of F found above are really facets.
                     Faces.sort(face_compare);
-                    // first we identify dupicates
+                    // first we sort out dupicates
                     for (auto Fac = Faces.begin(); Fac != Faces.end(); ++Fac) {
                         if (Fac != Faces.begin()) {
                             auto Gac = Fac;
                             --Gac;
                             if (Fac->first == Gac->first) {
-                                // Fac->second.max_subset = false; // disabled since I don't understand it anymore
                                 Gac->second.max_subset = false; // is duplicate
                             }
                         }
                     }
 
-                    cout << "Duplicates found" << endl;
+                    // cout << "Duplicates found" << endl;
 
-                    for (auto Fac = Faces.end(); Fac != Faces.begin();) {  // fWe check for inclusion
+                    // size_t counter = 0;
+
+                    // We use the rank criterion to identify the facets of *F
+                    for (auto Fac = Faces.begin(); Fac != Faces.end(); Fac++) {
+
+                        // counter++;
+
 
                         INTERRUPT_COMPUTATION_BY_EXCEPTION
 
-                        --Fac;
+                        dynamic_bitset Containing = *F;
 
-                        if (!Fac->second.max_subset)
-                            continue;
-
-                        auto Gac = Fac;
-                        Gac++;
-                        for (; Gac != Faces.end(); Gac++) {
-                            if (!Gac->second.max_subset)
-                                continue;
-                            if (Fac->first.is_subset_of(Gac->first)) {
-                                Fac->second.max_subset = false;
-                                break;
-                            }
-                        }
-                    }
-
-
-
-                    for (auto Fac = Faces.end(); Fac != Faces.begin();) {  // why backwards??
-                        --Fac;
                         if(!Fac->second.max_subset)
                             continue;
-                        dynamic_bitset Containing = *F;
+
+                        long codim_of_face = 0;  // to make gcc happy
+
+                        if(use_extreme_rays){
+
+                            /* if(counter% 1000 == 0)
+                                cout << counter << endl;*/
+
+                            vector<key_t> selection = bitset_to_key(Fac->first);
+
+                           if (change_integer_type) {
+                                try {
+                                    codim_of_face = dim -ExtremeRays_MI.submatrix(selection).rank();
+                                } catch (const ArithmeticException& e) {
+                                    change_integer_type = false;
+                                }
+                            }
+                            if (!change_integer_type)
+                                codim_of_face = dim - ExtremeRays.submatrix(selection).rank();
+
+                            if(codim_of_face > codimension_so_far)
+                                continue;
+
+                            dynamic_bitset nf = normal_form(Fac->first, ExtRayPermutations);
+                            bool is_new = true;
+#pragma omp critical(INSERT_HELP)
+                            {
+                            if(HelpNormalForms.find(nf) != HelpNormalForms.end())
+                                is_new = false;
+                            if(is_new)
+                                HelpNormalForms.insert(nf);
+                            }
+                            if(!is_new)
+                                continue;
+                        }
+
                         for(size_t i = 0; i < nr_supphyps; ++i){
                             if(Containing[i])
                                 continue;
@@ -748,7 +803,24 @@ void FaceLattice<Integer>::compute_orbits(const long face_codim_bound, const boo
                             if(Fac->first.is_subset_of(SuppHypInd[i]))
                                 Containing[i] = 1;
                         }
-                        Containing = normal_form(Containing);
+
+                        if(!use_extreme_rays){
+                            vector<key_t> selection = bitset_to_key(Containing);
+                            if (change_integer_type) {
+                                try {
+                                    codim_of_face = SuppHyps_MI.submatrix(selection).rank();
+                                } catch (const ArithmeticException& e) {
+                                    change_integer_type = false;
+                                }
+                            }
+                            if (!change_integer_type)
+                                codim_of_face = SuppHyps.submatrix(selection).rank();
+
+                            if(codim_of_face > codimension_so_far)
+                                continue;
+                        }
+
+                        Containing = normal_form(Containing, SuppHypPermutations);
 #pragma omp critical(INSERT_NEW)
                         NewFaces.insert(Containing);
                     }
@@ -795,7 +867,7 @@ void FaceLattice<Integer>::compute_orbits(const long face_codim_bound, const boo
 
     if (verbose) {
         verboseOutput() << endl << "Total number of faces computed " << total_nr_faces << endl;
-        verboseOutput() << "f-vector " << f_vector;
+        verboseOutput() << "f-vector (preliminary, possibly dualized) " << f_vector;
     }
 }
 

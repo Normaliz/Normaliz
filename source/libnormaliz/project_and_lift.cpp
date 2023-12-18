@@ -1167,6 +1167,10 @@ void select_and_split(list<vector<Integer> >& LatticePoints, const key_t& this_p
         if(verbose)
             verboseOutput() << done_indices << " already done lattice points of " << given_lattice_points << " discarded, "
             << LatticePoints.size() << " remaining" << endl;
+        if(done_indices > given_lattice_points){
+            verboseOutput() << "ALARM" << endl;
+            assert(false);
+        }
         PreSelection.clear();
     }
     /*
@@ -1208,12 +1212,15 @@ void ProjectAndLift<IntegerPL,IntegerRet>::prepare_split(list<vector<IntegerRet>
     auto& intersection_key = AllIntersections_key[coord];
 
     for(size_t i = 0; i < our_split.nr_split_levels; ++i){
+        // cout << "ii " << i << " done_indices " << our_split.this_split_done_indices;
         if(this_patch == our_split.this_split_levels[i]){
+            // cout << "Drin patch " << this_patch << endl;
             long split_modulus = our_split.split_moduli[i];
             long split_residue = our_split.this_split_residues[i];
             size_t done_indices = 0;
-            if(i >= our_split.nr_split_levels - our_split.this_refinement){
-                done_indices = our_split.this_split_done_indices[i - our_split.this_refinement];
+            if(i >= 1){
+                // cout << "%%% " << our_split.nr_split_levels << " ref " << our_split.this_refinement << " diff " << i + 1 - our_split.this_refinement << endl;
+                done_indices = our_split.this_split_done_indices[i - 1];
             }
             select_and_split(LatticePoints, this_patch, split_modulus,split_residue, done_indices, intersection_key);
         }
@@ -3028,6 +3035,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::read_split_data() {
         verboseOutput() << "split levels " << our_split.this_split_levels;
         verboseOutput() << "split moduli " << our_split.split_moduli;
         verboseOutput() << "split residues " << our_split.this_split_residues;
+        verboseOutput() << "done indices " << our_split.this_split_done_indices;
         verboseOutput() << "refinement " << our_split.this_refinement << " round " << our_split.this_round << endl;
         if(split_refinement >0)
             verboseOutput() << "split residues " << our_split.this_split_min_returns;
