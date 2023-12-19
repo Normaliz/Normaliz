@@ -226,7 +226,7 @@ AS_CASE([$with_flint],
 AS_IF([test "x$with_flint" != xno],
     [AC_MSG_CHECKING([whether flint headers and library are available])
      FLINT_LIBS="-lflint -lmpfr"
-     AX_CHECK_LIBRARY([FLINT], [flint/flint.h], [flint], [fmpz_poly_set_coeff_mpz],[],[],[$GMP_LIBS])
+     AX_CHECK_LIBRARY([FLINT], [flint/flint.h], [flint], [fmpz_poly_set_coeff_fmpz],[],[],[$GMP_LIBS])
      AS_IF([test x$ax_cv_have_FLINT = xyes],
        [
          CPPFLAGS="$CPPFLAGS $FLINT_CPPFLAGS"
