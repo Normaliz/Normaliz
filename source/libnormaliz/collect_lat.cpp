@@ -338,8 +338,6 @@ void collect_lat(const string& project) {
 
     SplitData our_split;
     our_split.read_data(project);
-    /* if(our_split.necessary_rounds() > 0)
-        throw BadInputException("Last round not complete. Use --NextRound??");*/
     // archive <project>.split.data that was jiust read
     string command = "cp " + project + ".split.data " + project + "." + to_string(our_split.this_refinement)+ ".split.data";
     int dummy = system(command.c_str());
@@ -349,6 +347,12 @@ void collect_lat(const string& project) {
     if(verbose){
         verboseOutput() << "Collecting lattice points and preliminary data from " << our_split.nr_splits_to_do << " lat files" << endl;
     }
+
+    // first we zip the lat files
+    string zip_command;
+    zip_command = "zip " + project + "." + to_string(our_split.this_refinement) + ".lat.zip " + project + "." + to_string(our_split.this_refinement) + ".*.lat";
+    dummy = system(zip_command.c_str());
+    assert(dummy == 0);
 
     Matrix<long long> TotalLat; // collects the solutions found so far
 
@@ -421,6 +425,12 @@ void collect_lat(const string& project) {
     name = global_project + "." + to_string(our_split.this_refinement) + ".lat.so_far";
     ofstream lat_out(name.c_str());
     TotalLat.print(lat_out);
+
+    string rm_command;
+    rm_command = "rm " + project + "." + to_string(our_split.this_refinement) + ".*.lat";
+    dummy = system(rm_command.c_str());
+    if(verbose)
+        verboseOutput() << "Removing zipped files by " << rm_command << endl;
 
     if(NotDone.size() == 0){
         TotalLat.sort_lex();
