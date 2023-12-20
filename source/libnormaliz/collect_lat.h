@@ -47,6 +47,7 @@ public:
     vector<vector<long> > refinement_residues;  // for each split to record the history of residues leading to it
     vector<vector<long> > refinement_levels;  // ditto
     vector<vector<long> > refinement_done_indices;  // ditto
+    vector<vector<long> > refinement_predecessors;  // ditto
 
     // long max_nr_splits_per_round;
     long nr_splits_to_do;

@@ -87,22 +87,38 @@ void SplitData::read_data(const string& this_project){
     else{
         refinement_residues.resize(nr_splits_to_do);
         refinement_levels.resize(nr_splits_to_do);
+        refinement_predecessors.resize(nr_splits_to_do);
         refinement_done_indices.resize(nr_splits_to_do);
         for(long i = 0; i < nr_split_levels; ++i){
             split_control >> split_moduli[i];
         }
         for(size_t i= 0; i < nr_splits_to_do; ++i){
+            size_t kk;
+            string s;
+            split_control >> kk;
+            assert(i == kk);
             refinement_levels[i].resize(nr_split_levels);
             refinement_residues[i].resize(nr_split_levels);
+            split_control >> s;
+            assert(s == "lev");
             for(size_t j = 0; j < nr_split_levels; ++j){
                 split_control >> refinement_levels[i][j];
             }
+            split_control >> s;
+            assert(s == "res");
             for(size_t j = 0; j < nr_split_levels; ++j){
                 split_control >> refinement_residues[i][j];
             }
             refinement_done_indices[i].resize(this_refinement);
+            split_control >> s;
+            assert(s == "done");
             for(size_t j = 0; j < this_refinement; ++j)
                 split_control >> refinement_done_indices[i][j];
+            refinement_predecessors[i].resize(this_refinement);
+            split_control >> s;
+            assert(s == "pred");
+            for(size_t j = 0; j < this_refinement; ++j)
+                split_control >> refinement_predecessors[i][j];
         }
         // Matrix<long>(refinement_residues).debug_print();
     }
@@ -136,12 +152,18 @@ void SplitData::write_data() const{
     new_split_control << endl;
 
     for(size_t i = 0; i < nr_splits_to_do; ++i){
+        new_split_control << i << " lev ";
         for(size_t j = 0; j < nr_split_levels; ++j)
             new_split_control << refinement_levels[i][j] << " ";
+        new_split_control << " res ";
         for(size_t j = 0; j < nr_split_levels; ++j)
             new_split_control << refinement_residues[i][j] << " ";
+        new_split_control << " done ";
+        for(size_t j = 0; j < this_refinement; ++j)
+            new_split_control << refinement_done_indices[i][j] << " ";
+        new_split_control << " pred ";
        for(size_t j = 0; j < this_refinement; ++j)
-           new_split_control << refinement_done_indices[i][j] << " ";
+            new_split_control << refinement_predecessors[i][j] << " ";
         new_split_control << endl;
     }
 
@@ -181,9 +203,6 @@ void SplitData::set_this_split(const long& given_index){
         }
     }
     else{
-        cout << "REF " << refinement_residues;
-        cout << "LEV " << refinement_levels;
-        cout << "DON " << refinement_done_indices;
         this_split_residues = refinement_residues[this_split_index];
         this_split_levels = refinement_levels[this_split_index];
         this_split_done_indices = refinement_done_indices[this_split_index];
@@ -457,6 +476,7 @@ void collect_lat(const string& project) {
         vector<long> split_residues;
         vector<long> split_levels;
         vector<long> split_done_indices;
+        vector<long> split_predecessors;
 
         size_t split_index = NotDone[spl];
 
@@ -473,6 +493,7 @@ void collect_lat(const string& project) {
             split_residues = our_split.refinement_residues[split_index];
             split_levels =  our_split.refinement_levels[split_index];
             split_done_indices = our_split.refinement_done_indices[split_index];
+            split_predecessors = our_split.refinement_predecessors[split_index];
         }
 
         size_t next_split_level = split_levels.back();
@@ -482,6 +503,7 @@ void collect_lat(const string& project) {
         // common to all subsplits
         split_levels.push_back(next_split_level);
         split_done_indices.push_back(DoneIndicesNotDone[spl]);
+        split_predecessors.push_back(NotDone[spl]);
 
         for(long i = 0; i < nr_sub_splits; ++i){
             vector<long> extended_res = split_residues;
@@ -489,6 +511,7 @@ void collect_lat(const string& project) {
             new_split_data.refinement_residues.push_back(extended_res);
             new_split_data.refinement_levels.push_back(split_levels);
             new_split_data.refinement_done_indices.push_back(split_done_indices);
+            new_split_data.refinement_predecessors.push_back(split_predecessors);
         }
     }
     new_split_data.write_data();
