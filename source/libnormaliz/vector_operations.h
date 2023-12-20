@@ -547,7 +547,10 @@ inline void vector2fmpq_poly(fmpq_poly_t flp, const std::vector<mpq_class>& poly
 
     fmpq_poly_fit_length(flp, n);
     for (size_t i = 0; i < poly_vector.size(); ++i) {
-        fmpq_poly_set_coeff_mpq(flp, (slong)i, poly_vector[i].get_mpq_t());
+        fmpq_t fcurrent_coeff;
+        fmpq_init(fcurrent_coeff);
+        fmpq_set_mpq(fcurrent_coeff, poly_vector[i].get_mpq_t());
+        fmpq_poly_set_coeff_fmpq(flp, (slong)i, fcurrent_coeff);
     }
 }
 
@@ -560,8 +563,11 @@ inline void fmpq_poly2vector(std::vector<mpq_class>& poly_vector, const fmpq_pol
     poly_vector.resize(length);
     for (slong i = 0; i < length; i++) {
         mpq_t current_coeff;
+        fmpq_t fcurrent_coeff;
         mpq_init(current_coeff);
-        fmpq_poly_get_coeff_mpq(current_coeff, flp, (slong)i);
+        fmpq_init(fcurrent_coeff);
+        fmpq_poly_get_coeff_fmpq(fcurrent_coeff, flp, (slong)i);
+        fmpq_get_mpq(current_coeff, fcurrent_coeff);
         poly_vector[i] = mpq_class(current_coeff);
     }
 }
