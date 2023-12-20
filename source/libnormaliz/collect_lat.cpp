@@ -51,9 +51,9 @@ SplitData::SplitData(const string& this_project, const long& level, const size_t
     split_moduli[0] = 1000;
     if(nr_vectors< 1000)
         split_moduli[0] = nr_vectors;
-    max_nr_splits_per_round = 1000;
+    // max_nr_splits_per_round = 1000;
     nr_splits_to_do = split_moduli[0];
-    this_round = 0;
+    // this_round = 0;
     this_refinement = 0;
 }
 
@@ -66,45 +66,23 @@ void SplitData::read_data(const string& this_project){
     if(!split_control.is_open())
         throw BadInputException(name + " does not exist");
 
-    char c;
-    split_control >> ws;
-    c = split_control.peek();
-    bool start_split;
-    if (c != 'r'){  // start split
-        start_split = true;
-    }
-    else{
-        start_split = false;
-        string s;
-        split_control >> s;
-        if(s != "refinement")
-            throw BadInputException("Split data for refinement corrupt");
-    }
+    bool start_split = false;
+    string s;
+    split_control >> s;
+    if(s != "refinement")
+        throw BadInputException("Split data for refinement corrupt");
 
-    split_control >> nr_split_levels;
+    split_control >> this_refinement;
+    if(this_refinement == 0)
+        start_split = true;
+    nr_split_levels = this_refinement + 1;
     this_split_levels.resize(nr_split_levels);
     split_moduli.resize(nr_split_levels);
     this_split_residues.resize(nr_split_levels);
-    split_control >> max_nr_splits_per_round >> nr_splits_to_do;
-    split_control >> this_round >> this_refinement;
-
-    if(nr_split_levels != this_refinement +1){
-        throw BadInputException("Incosistent number of split lavels");
-    }
+    split_control >> nr_splits_to_do;
 
     if(start_split){
-        long nr_splitPatches_all_rounds = 1;
-
-        for(long i = 0; i < nr_split_levels; ++i){
-                split_control >> this_split_levels[i] >> split_moduli[i];
-                nr_splitPatches_all_rounds *= split_moduli[i];
-        }
-
-        if(split_control.fail())
-            throw BadInputException(name + " corrupt");
-
-        if( nr_splits_to_do != nr_splitPatches_all_rounds)
-            throw BadInputException("Numbers of splits for all rounds does not fit");
+        split_control >> this_split_levels[0] >> split_moduli[0];
     }
     else{
         refinement_residues.resize(nr_splits_to_do);
@@ -138,12 +116,9 @@ void SplitData::write_data() const{
 
     string name = project + ".split.data";
     ofstream new_split_control(name.c_str());
-    if(this_refinement > 0){
-        new_split_control << "refinement" << endl;
-    }
-    new_split_control << nr_split_levels << endl;
-    new_split_control << max_nr_splits_per_round << " " << nr_splits_to_do << endl;
-    new_split_control << this_round << " " << this_refinement << endl;
+    new_split_control << "refinement ";
+    new_split_control << this_refinement << " ";
+    new_split_control << nr_splits_to_do << endl;
     if(this_refinement == 0){
         for(size_t i = 0; i < this_split_levels.size(); ++i)
             new_split_control << " " << this_split_levels[i] << " " << split_moduli[i];
@@ -173,6 +148,7 @@ void SplitData::write_data() const{
     new_split_control.close();
 }
 
+/*
 long SplitData::necessary_rounds() const{
 
     long requird_rounds = nr_splits_to_do / max_nr_splits_per_round;
@@ -181,31 +157,40 @@ long SplitData::necessary_rounds() const{
     long rounds_done = this_round +1;
     return requird_rounds - rounds_done;
 }
+*/
 
 
 //selects the split data for the given undex from the full data set
 void SplitData::set_this_split(const long& given_index){
+    /*
     if(given_index >= max_nr_splits_per_round)
         throw NoComputationException("Split index given by -X too large");
-    this_split_index = given_index + this_round * max_nr_splits_per_round;
+    this_split_index = given_index; //  + this_round * max_nr_splits_per_round;
+    */
+    this_split_index = given_index;
     split_index_rounds= this_split_index; // needed in cone for output
     if(this_split_index >= nr_splits_to_do)
         throw NoComputationException("Total split index too large");
 
     long res = this_split_index;
     if(this_refinement == 0){
+        // this_split_levels set already in rad_data
         for(long i = 0; i < nr_split_levels; ++i){
             this_split_residues[i] = res % split_moduli[i];
             res /=  split_moduli[i];
         }
     }
     else{
+        cout << "REF " << refinement_residues;
+        cout << "LEV " << refinement_levels;
+        cout << "DON " << refinement_done_indices;
         this_split_residues = refinement_residues[this_split_index];
         this_split_levels = refinement_levels[this_split_index];
         this_split_done_indices = refinement_done_indices[this_split_index];
     }
 }
 
+/*
 void next_round(const string& project) {
 
     SplitData our_split;
@@ -223,6 +208,7 @@ void next_round(const string& project) {
     if(verbose)
         verboseOutput() << "New round " << our_split.this_round << endl;
 }
+*/
 
 void read_prel_lat_file(ifstream& lat_in, const string& lat_name, size_t& min_return, size_t& done_indices,Matrix<long long>& TotalLat){
 
@@ -333,10 +319,10 @@ void collect_lat(const string& project) {
 
     SplitData our_split;
     our_split.read_data(project);
-    if(our_split.necessary_rounds() > 0)
-        throw BadInputException("Last round not complete. Use --NextRound??");
+    /* if(our_split.necessary_rounds() > 0)
+        throw BadInputException("Last round not complete. Use --NextRound??");*/
     // archive <project>.split.data that was jiust read
-    string command = "cp " + project + ".split.data " + project + "." + to_string(our_split.this_refinement) + "." + to_string(our_split.this_round) + ".split.data";
+    string command = "cp " + project + ".split.data " + project + "." + to_string(our_split.this_refinement)+ ".split.data";
     int dummy = system(command.c_str());
     if(dummy > 0)
         throw NoComputationException("Problem in archiving project.split.data");
@@ -449,13 +435,13 @@ void collect_lat(const string& project) {
         verboseOutput() << "Computation of " + global_project + " NOT complete" << endl;
     SplitData new_split_data = our_split;
     size_t nr_sub_splits = 2;
-    if(our_split.max_nr_splits_per_round/NotDone.size() > 2)
-        nr_sub_splits = our_split.max_nr_splits_per_round/NotDone.size();
+    if(our_split.nr_splits_to_do/NotDone.size() > 2)
+        nr_sub_splits = our_split.nr_splits_to_do/NotDone.size();
     new_split_data.nr_splits_to_do = NotDone.size() * nr_sub_splits;
     new_split_data.nr_split_levels++;
     new_split_data.split_moduli.push_back(nr_sub_splits);
     new_split_data.this_refinement++;
-    new_split_data.this_round = 0;
+    // new_split_data.this_round = 0;
 
     if(verbose)
         verboseOutput() << "Scheduling refinement" << endl;

@@ -48,7 +48,7 @@ public:
     vector<vector<long> > refinement_levels;  // ditto
     vector<vector<long> > refinement_done_indices;  // ditto
 
-    long max_nr_splits_per_round;
+    // long max_nr_splits_per_round;
     long nr_splits_to_do;
     long nr_rounds;
 
@@ -59,7 +59,7 @@ public:
     vector<long> this_split_min_returns;
 
 
-    long this_round;
+    // long this_round;
 
     SplitData();
     SplitData(const string& this_project, const long& level, const size_t& nr_vectors);

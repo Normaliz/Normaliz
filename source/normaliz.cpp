@@ -447,10 +447,10 @@ int process_data(OptionsHandler& options, const string& command_line) {
             return 0;
         }
 
-        if(options.isUseNextRound()){
+        /* if(options.isUseNextRound()){
             next_round(global_project);
             return 0;
-        }
+        }*/
 
         if (options.isUseChunk()) {
             chunk();

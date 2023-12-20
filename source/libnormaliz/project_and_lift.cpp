@@ -1819,8 +1819,9 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         if(single_point_found)
             break;
 
-        if(talkative && verbose && nr_rounds ==1){
+        if((talkative || nr_time_printed <= 10) && verbose && nr_rounds ==1){
             if(nr_points_done_in_this_round > 0 && NrRemainingLP[this_patch] > 0){
+                nr_time_printed++;
                 double time_spent = MeasureTime(time_begin);
                 double expected_time = time_spent*expected_number_of_rounds;
                 if(verbose){
@@ -1874,6 +1875,9 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                 counter++;
             }
             prel_data << "done_indices " << counter << endl;
+            if(verbose){
+                verboseOutput() << endl << "done_indices " << counter << " of " << LatticePoints.size() << endl;
+            }
             auto check = Deg1Points;
             check.sort();
             check.unique();
@@ -2855,6 +2859,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::initialize(const Matrix<IntegerPL>& 
     TotalNrLP = 0;
     min_return_patch = 0;
     NrLP.resize(EmbDim + 1);
+    nr_time_printed = 0;
 
     Congs = Matrix<IntegerRet>(0, EmbDim + 1);
 
@@ -3036,7 +3041,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::read_split_data() {
         verboseOutput() << "split moduli " << our_split.split_moduli;
         verboseOutput() << "split residues " << our_split.this_split_residues;
         verboseOutput() << "done indices " << our_split.this_split_done_indices;
-        verboseOutput() << "refinement " << our_split.this_refinement << " round " << our_split.this_round << endl;
+        verboseOutput() << "refinement " << our_split.this_refinement << endl;
         if(split_refinement >0)
             verboseOutput() << "split residues " << our_split.this_split_min_returns;
     }

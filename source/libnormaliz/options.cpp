@@ -393,10 +393,6 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
             use_collect_lat = true;
             continue;
         }
-        if (LongOption == "NextRound") {
-            use_next_round = true;
-            continue;
-        }
         if (LongOption == "Split") {
             use_split = true;
             continue;

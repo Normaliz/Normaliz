@@ -121,6 +121,8 @@ class ProjectAndLift {
     bool check_simplicity_cand;
     bool check_simplicity_all;
 
+    size_t nr_time_printed;
+
     // data for patching method
     vector<dynamic_bitset> Indicator; // indicaor of nonzero coordinates in inequality
     dynamic_bitset upper_bounds; // indicator of inequalities giving upper boounds
