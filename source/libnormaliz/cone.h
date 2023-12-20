@@ -482,16 +482,22 @@ class Cone {
 
     const vector<Integer>& getSingleLatticePoint();
 
+    const map<dynamic_bitset, int>& getSingularLocus();
+    size_t getCodimSingularLocus();
+
     const map<dynamic_bitset, int>& getFaceLattice();
     vector<size_t> getFVector();
     const vector<dynamic_bitset>& getIncidence();
 
-    const map<dynamic_bitset, int>& getSingularLocus();
-    size_t getCodimSingularLocus();
+    const map<dynamic_bitset, int>& getFaceLatticeOrbits();
+    vector<size_t> getFVectorOrbits();
 
     const map<dynamic_bitset, int>& getDualFaceLattice();
     vector<size_t> getDualFVector();
     const vector<dynamic_bitset>& getDualIncidence();
+
+    const map<dynamic_bitset, int>& getDualFaceLatticeOrbits();
+    vector<size_t> getDualFVectorOrbits();
 
     // the actual grading is Grading/GradingDenom
     vector<Integer> getGrading();
@@ -714,6 +720,8 @@ class Cone {
     size_t number_lattice_points;
     vector<size_t> f_vector;
     vector<size_t> dual_f_vector;
+    vector<size_t> f_vector_orbits;
+    vector<size_t> dual_f_vector_orbits;
 
     vector<dynamic_bitset> Pair;        // for indicator vectors in project-and_lift
     vector<dynamic_bitset> ParaInPair;  // if polytope is a parallelotope
@@ -722,6 +730,8 @@ class Cone {
 
     map<dynamic_bitset, int> FaceLat;
     map<dynamic_bitset, int> DualFaceLat;
+    map<dynamic_bitset, int> FaceLatOrbits;
+    map<dynamic_bitset, int> DualFaceLatOrbits;
     vector<dynamic_bitset> SuppHypInd;  // incidence vectors of the support hyperplanes
     vector<dynamic_bitset> DualSuppHypInd;
 

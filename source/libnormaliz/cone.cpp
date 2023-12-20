@@ -3317,12 +3317,6 @@ const AutomorphismGroup<Integer>& Cone<Integer>::getAutomorphismGroup() {
 }
 
 template <typename Integer>
-const map<dynamic_bitset, int>& Cone<Integer>::getFaceLattice() {
-    compute(ConeProperty::FaceLattice);
-    return FaceLat;
-}
-
-template <typename Integer>
 const map<dynamic_bitset, int>& Cone<Integer>::getSingularLocus() {
     compute(ConeProperty::SingularLocus);
     return SingularLocus;
@@ -3338,6 +3332,12 @@ template <typename Integer>
 const vector<dynamic_bitset>& Cone<Integer>::getIncidence() {
     compute(ConeProperty::Incidence);
     return SuppHypInd;
+}
+
+template <typename Integer>
+const map<dynamic_bitset, int>& Cone<Integer>::getFaceLattice() {
+    compute(ConeProperty::FaceLattice);
+    return FaceLat;
 }
 
 template <typename Integer>
@@ -3362,6 +3362,30 @@ template <typename Integer>
 vector<size_t> Cone<Integer>::getDualFVector() {
     compute(ConeProperty::DualFVector);
     return dual_f_vector;
+}
+
+template <typename Integer>
+const map<dynamic_bitset, int>& Cone<Integer>::getFaceLatticeOrbits() {
+    compute(ConeProperty::FaceLatticeOrbits);
+    return FaceLatOrbits;
+}
+
+template <typename Integer>
+vector<size_t> Cone<Integer>::getFVectorOrbits() {
+    compute(ConeProperty::FVectorOrbits);
+    return f_vector_orbits;
+}
+
+template <typename Integer>
+const map<dynamic_bitset, int>& Cone<Integer>::getDualFaceLatticeOrbits() {
+    compute(ConeProperty::DualFaceLatticeOrbits);
+    return DualFaceLatOrbits;
+}
+
+template <typename Integer>
+vector<size_t> Cone<Integer>::getDualFVectorOrbits() {
+    compute(ConeProperty::DualFVector);
+    return dual_f_vector_orbits;
 }
 
 //---------------------------------------------------------------------------
@@ -6521,10 +6545,18 @@ void Cone<Integer>::setFaceCodimBound(long bound) {
     is_Computed.reset(ConeProperty::FVector);
     is_Computed.reset(ConeProperty::DualFaceLattice);
     is_Computed.reset(ConeProperty::DualFVector);
+    is_Computed.reset(ConeProperty::FaceLatticeOrbits);
+    is_Computed.reset(ConeProperty::FVectorOrbits);
+    is_Computed.reset(ConeProperty::DualFaceLatticeOrbits);
+    is_Computed.reset(ConeProperty::DualFVectorOrbits);
     FaceLat.clear();
     DualFaceLat.clear();
     dual_f_vector.clear();
     f_vector.clear();
+    FaceLatOrbits.clear();
+    DualFaceLatOrbits.clear();
+    dual_f_vector_orbits.clear();
+    f_vector_orbits.clear();
 }
 
 template <typename Integer>
@@ -8852,7 +8884,7 @@ void Cone<Integer>::make_face_lattice_primal(const ConeProperties& ToCompute) {
     BasisChangePointed.convert_to_sublattice(VertOfPolPointed, VerticesOfPolyhedron);
     Matrix<Integer> ExtrRCPointed;
     BasisChangePointed.convert_to_sublattice(ExtrRCPointed, ExtremeRaysRecCone);
-    FaceLattice<Integer> FL(SuppHypPointed, VertOfPolPointed, ExtrRCPointed, inhomogeneous);
+    FaceLattice<Integer> FL(SuppHypPointed, VertOfPolPointed, ExtrRCPointed, inhomogeneous); // swap allowed for inhomogeneous
 
     if (ToCompute.test(ConeProperty::FaceLattice) || ToCompute.test(ConeProperty::FVector) ||
             ToCompute.test(ConeProperty::DualFVector)){
@@ -8875,6 +8907,12 @@ void Cone<Integer>::make_face_lattice_primal(const ConeProperties& ToCompute) {
         FL.compute_orbits(face_codim_bound, verbose, change_integer_type);
     }
 
+    if (ToCompute.test(ConeProperty::FaceLatticeOrbits)) {
+        FL.get(FaceLatOrbits);
+        setComputed(ConeProperty::FaceLatticeOrbits);
+    }
+
+
     if (ToCompute.test(ConeProperty::FaceLattice) || ToCompute.test(ConeProperty::FVector) ||
         ToCompute.test(ConeProperty::DualFVector)) {
         vector<size_t> prel_f_vector = FL.getFVector();
@@ -8887,6 +8925,21 @@ void Cone<Integer>::make_face_lattice_primal(const ConeProperties& ToCompute) {
             for (size_t i = 0; i < prel_f_vector.size(); ++i)
                 dual_f_vector[i] = prel_f_vector[prel_f_vector.size() - 1 - i];
             setComputed(ConeProperty::DualFVector);
+        }
+    }
+
+    if (ToCompute.test(ConeProperty::FaceLatticeOrbits) || ToCompute.test(ConeProperty::FVectorOrbits) ||
+        ToCompute.test(ConeProperty::DualFVectorOrbits)) {
+        vector<size_t> prel_f_vector = FL.getFVector();
+        if (!ToCompute.test(ConeProperty::DualFVectorOrbits)) {
+            f_vector_orbits = prel_f_vector;
+            setComputed(ConeProperty::FVectorOrbits);
+        }
+        else {
+            dual_f_vector_orbits.resize(prel_f_vector.size());
+            for (size_t i = 0; i < prel_f_vector.size(); ++i)
+                dual_f_vector_orbits[i] = prel_f_vector[prel_f_vector.size() - 1 - i];
+            setComputed(ConeProperty::DualFVectorOrbits);
         }
     }
 }
@@ -8935,6 +8988,11 @@ void Cone<Integer>::make_face_lattice_dual(const ConeProperties& ToCompute) {
         FL.compute_orbits(face_codim_bound, verbose, change_integer_type);
     }
 
+    if (ToCompute.test(ConeProperty::DualFaceLatticeOrbits)) {
+        FL.get(DualFaceLatOrbits);
+        setComputed(ConeProperty::DualFaceLatticeOrbits);
+    }
+
 
     if (ToCompute.test(ConeProperty::DualFaceLattice) || ToCompute.test(ConeProperty::DualFVector) ||
         ToCompute.test(ConeProperty::FVector)) {
@@ -8944,10 +9002,25 @@ void Cone<Integer>::make_face_lattice_dual(const ConeProperties& ToCompute) {
             setComputed(ConeProperty::DualFVector);
         }
         else {
-            dual_f_vector.resize(prel_f_vector.size());
+            f_vector.resize(prel_f_vector.size());
             for (size_t i = 0; i < prel_f_vector.size(); ++i)
                 f_vector[i] = prel_f_vector[prel_f_vector.size() - 1 - i];
             setComputed(ConeProperty::FVector);
+        }
+    }
+
+    if (ToCompute.test(ConeProperty::DualFaceLatticeOrbits) || ToCompute.test(ConeProperty::DualFVectorOrbits) ||
+        ToCompute.test(ConeProperty::FVectorOrbits)) {
+        vector<size_t> prel_f_vector = FL.getFVector();
+        if (!ToCompute.test(ConeProperty::FVectorOrbits)) {
+            dual_f_vector_orbits = prel_f_vector;
+            setComputed(ConeProperty::DualFVectorOrbits);
+        }
+        else {
+            f_vector_orbits.resize(prel_f_vector.size());
+            for (size_t i = 0; i < prel_f_vector.size(); ++i)
+                f_vector[i] = prel_f_vector[prel_f_vector.size() - 1 - i];
+            setComputed(ConeProperty::FVectorOrbits);
         }
     }
 }

@@ -836,6 +836,13 @@ void Output<Integer>::write_inv_file() const {
         if (Result->isComputed(ConeProperty::DualFVector)) {
             inv << "vector " << Result->getDualFVector().size() << " dual_f_vector = " << Result->getDualFVector();
         }
+        if (Result->isComputed(ConeProperty::FVectorOrbits)) {
+            inv << "vector " << Result->getFVectorOrbits().size() << " f_vector_orbits = " << Result->getFVectorOrbits();
+        }
+        if (Result->isComputed(ConeProperty::DualFVectorOrbits)) {
+            inv << "vector " << Result->getDualFVectorOrbits().size() << " dual_f_vector_orbits = "
+                     << Result->getDualFVectorOrbits();
+        }
         if (Result->isComputed(ConeProperty::MaximalSubspace)) {
             size_t dim_max_subspace = Result->getDimMaximalSubspace();
             inv << "integer dim_max_subspace = " << dim_max_subspace << endl;
@@ -1301,6 +1308,14 @@ void Output<Integer>::write_files() {
         write_locus("fac", Result->getDualFaceLattice(),"dual");
     }
 
+    if(Result->isComputed(ConeProperty::FaceLatticeOrbits)) {  // write face lattice
+        write_locus("fac", Result->getFaceLatticeOrbits(),"primal_orbits");
+    }
+
+    if (Result->isComputed(ConeProperty::DualFaceLatticeOrbits)) {  // write dual face lattice
+        write_locus("fac", Result->getDualFaceLatticeOrbits(),"dual_orbits");
+    }
+
     if (Result->isComputed(ConeProperty::SingularLocus)) {  // write dual face lattice
         write_locus("sng", Result->getSingularLocus(),"");
     }
@@ -1373,6 +1388,18 @@ void Output<Integer>::write_files() {
             if (Result->getDualFVector()[0] != 1)
                 trunc = " (possibly truncated)";
             out << "dual f-vector" << trunc << ":" << endl << Result->getDualFVector() << endl;
+        }
+        if (Result->isComputed(ConeProperty::FVectorOrbits)) {
+            string trunc = "";
+            if (Result->getFVector()[0] != 1)
+                trunc = " (possibly truncated)";
+            out << "f-vector orbits" << trunc << ":" << endl << Result->getFVectorOrbits() << endl;
+        }
+        if (Result->isComputed(ConeProperty::DualFVectorOrbits)) {
+            string trunc = "";
+            if (Result->getDualFVectorOrbits()[0] != 1)
+                trunc = " (possibly truncated)";
+            out << "dual f-vector orbits" << trunc << ":" << endl << Result->getDualFVectorOrbits() << endl;
         }
         if (Result->isComputed(ConeProperty::ExcludedFaces)) {
             out << Result->getNrExcludedFaces() << " excluded faces" << endl;
