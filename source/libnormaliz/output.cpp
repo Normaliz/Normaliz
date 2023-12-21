@@ -1391,7 +1391,7 @@ void Output<Integer>::write_files() {
         }
         if (Result->isComputed(ConeProperty::FVectorOrbits)) {
             string trunc = "";
-            if (Result->getFVector()[0] != 1)
+            if (Result->getFVectorOrbits()[0] != 1)
                 trunc = " (possibly truncated)";
             out << "f-vector orbits" << trunc << ":" << endl << Result->getFVectorOrbits() << endl;
         }

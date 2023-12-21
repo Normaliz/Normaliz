@@ -3384,7 +3384,7 @@ const map<dynamic_bitset, int>& Cone<Integer>::getDualFaceLatticeOrbits() {
 
 template <typename Integer>
 vector<size_t> Cone<Integer>::getDualFVectorOrbits() {
-    compute(ConeProperty::DualFVector);
+    compute(ConeProperty::DualFVectorOrbits);
     return dual_f_vector_orbits;
 }
 
