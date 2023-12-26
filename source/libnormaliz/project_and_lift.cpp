@@ -1256,6 +1256,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
     auto& CongsRestricted = AllCongsRestricted[coord];
 
     size_t max_nr_per_thread = 1000; //max_nr_new_latt_points_total/ omp_get_max_threads();
+    if(distributed_computation)
+        max_nr_per_thread = 10000; // to avoid very few lattice points at the lowest split level
 
     key_t max_split_level = 0;
     if(is_split_patching){
@@ -1819,7 +1821,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         if(single_point_found)
             break;
 
-        if((talkative || nr_time_printed <= 10) && verbose && nr_rounds ==1){
+        if(((talkative || nr_time_printed <= 10) ||  this_patch == min_return_patch)
+            && verbose && (nr_rounds ==1 || this_patch == min_return_patch) ){
             if(nr_points_done_in_this_round > 0 && NrRemainingLP[this_patch] > 0){
                 nr_time_printed++;
                 double time_spent = MeasureTime(time_begin);
