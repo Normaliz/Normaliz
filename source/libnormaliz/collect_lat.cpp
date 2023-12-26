@@ -152,18 +152,24 @@ void SplitData::write_data() const{
     new_split_control << endl;
 
     for(size_t i = 0; i < nr_splits_to_do; ++i){
+        // cout << "+++ " << i << endl;
         new_split_control << i << " lev ";
         for(size_t j = 0; j < nr_split_levels; ++j)
             new_split_control << refinement_levels[i][j] << " ";
         new_split_control << " res ";
-        for(size_t j = 0; j < nr_split_levels; ++j)
+        // cout << "/// " << i << "  --  " << refinement_residues[i];
+        for(size_t j = 0; j < nr_split_levels; ++j){
             new_split_control << refinement_residues[i][j] << " ";
+        }
         new_split_control << " done ";
         for(size_t j = 0; j < this_refinement; ++j)
             new_split_control << refinement_done_indices[i][j] << " ";
         new_split_control << " pred ";
-       for(size_t j = 0; j < this_refinement; ++j)
+        // cout << "+++ " << i << "  --  " << refinement_predecessors[i];
+        assert(refinement_predecessors[i][0] == refinement_residues[i][0]);
+       for(size_t j = 0; j < this_refinement; ++j){
             new_split_control << refinement_predecessors[i][j] << " ";
+       }
         new_split_control << endl;
     }
 
@@ -332,6 +338,31 @@ void write_lat_file(const Matrix<long long>& LatticePoints) {
     out.close();
 }
 
+string expand_project(const string& project){
+
+    string special_chars = "()[]{},";
+
+    string result;
+    for(size_t i = 0; i < project.size(); ++i){
+
+        char c = project[i];
+
+        if(c == '\\'){
+            result += c;
+            result += project[i+1];
+            continue;
+        }
+        if(special_chars.find(c) != string::npos){
+            result += '\\';
+            result += c;
+            continue;
+        }
+        result += c;
+    }
+
+    return result;
+}
+
 void collect_lat(const string& project) {
 
     string name;
@@ -349,8 +380,9 @@ void collect_lat(const string& project) {
     }
 
     // first we zip the lat files
+    string project_expanded = expand_project(project);
     string zip_command;
-    zip_command = "zip " + project + "." + to_string(our_split.this_refinement) + ".lat.zip " + project + "." + to_string(our_split.this_refinement) + ".*.lat";
+    zip_command = "zip  " + project_expanded + "." + to_string(our_split.this_refinement) + ".lat.zip " + project_expanded + "." + to_string(our_split.this_refinement) + ".*.lat";
     dummy = system(zip_command.c_str());
     assert(dummy == 0);
 
@@ -427,7 +459,7 @@ void collect_lat(const string& project) {
     TotalLat.print(lat_out);
 
     string rm_command;
-    rm_command = "rm " + project + "." + to_string(our_split.this_refinement) + ".*.lat";
+    rm_command = "rm " + project_expanded + "." + to_string(our_split.this_refinement) + ".*.lat";
     dummy = system(rm_command.c_str());
     if(verbose)
         verboseOutput() << "Removing zipped files by " << rm_command << endl;
@@ -480,6 +512,7 @@ void collect_lat(const string& project) {
     new_split_data.refinement_residues.clear();
     new_split_data.refinement_levels.clear();
     new_split_data.refinement_done_indices.clear();
+    new_split_data.refinement_predecessors.clear();
 
     for(size_t spl = 0; spl < NotDone.size(); ++spl){
 
@@ -504,6 +537,7 @@ void collect_lat(const string& project) {
             split_levels =  our_split.refinement_levels[split_index];
             split_done_indices = our_split.refinement_done_indices[split_index];
             split_predecessors = our_split.refinement_predecessors[split_index];
+            assert(split_predecessors[0] == split_residues[0]);
         }
 
         size_t next_split_level = split_levels.back();
@@ -522,6 +556,9 @@ void collect_lat(const string& project) {
             new_split_data.refinement_levels.push_back(split_levels);
             new_split_data.refinement_done_indices.push_back(split_done_indices);
             new_split_data.refinement_predecessors.push_back(split_predecessors);
+            // cout << "*** " << new_split_data.refinement_predecessors.size()-1 << "  --  " <<
+            //         new_split_data.refinement_predecessors.back();
+            assert(new_split_data.refinement_predecessors.back()[0] == new_split_data.refinement_residues.back()[0]);
         }
     }
     new_split_data.write_data();

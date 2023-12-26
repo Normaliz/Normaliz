@@ -496,7 +496,7 @@ int process_data(OptionsHandler& options, const string& command_line) {
         in.open(file_in, ifstream::in);
         if (!in.is_open()) {
             cerr << "error: Failed to open file " << name_in << "." << endl;
-            exit(1);
+            return 1;
         }
 
         string polynomial;
@@ -585,9 +585,9 @@ int process_data(OptionsHandler& options, const string& command_line) {
             exit(7);
     } catch (const TimeBoundException& e) {
         cerr << e.what() << endl;
-        cerr << "Time bound exceeded ... exiting." << endl;
-        cerr << "Creating signal file with suffix exc" << endl;
+        cerr << "Time bound exceeded for " << global_project << " exiting." << endl;
         if(!is_split_patching){
+            cerr << "Creating signal file with suffix exc" << endl;
             string exc_name = options.getProjectName() + ".exc";
             ofstream exc_file(exc_name.c_str());
         }
