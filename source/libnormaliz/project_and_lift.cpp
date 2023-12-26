@@ -1184,11 +1184,23 @@ void select_and_split(list<vector<Integer> >& LatticePoints, const key_t& this_p
 
     size_t nr_left = LatticePoints.size();
     size_t nr_per_split = nr_left / split_modulus;
-    if(nr_left != nr_per_split * split_modulus)
-        nr_per_split++;
+    size_t to_add_one = nr_left % split_modulus;
 
-    size_t start = nr_per_split * split_residue;
-    size_t last = start + nr_per_split;
+    size_t start, last;
+    if(split_residue < to_add_one){
+        start = (nr_per_split + 1) * split_residue;
+        last = start + nr_per_split + 1;
+    }
+    else{
+        size_t new_start = to_add_one * (nr_per_split +1);
+        start = new_start + (split_residue - to_add_one) * nr_per_split;
+        last = start + nr_per_split;
+    }
+
+    if(split_residue + 1 == split_modulus)
+        assert(nr_left == last);
+
+    // cout << "********** " << nr_left << " " << split_residue << " " << nr_per_split << " " << start << " " << last << endl;
 
     size_t i = 0;
     for(auto& p: LatticePoints){
