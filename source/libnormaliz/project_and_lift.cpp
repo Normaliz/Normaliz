@@ -1230,9 +1230,12 @@ void ProjectAndLift<IntegerPL,IntegerRet>::prepare_split(list<vector<IntegerRet>
             long split_modulus = our_split.split_moduli[i];
             long split_residue = our_split.this_split_residues[i];
             size_t done_indices = 0;
+            size_t total_indices = 0;
             if(i >= 1){
                 // cout << "%%% " << our_split.nr_split_levels << " ref " << our_split.this_refinement << " diff " << i + 1 - our_split.this_refinement << endl;
                 done_indices = our_split.this_split_done_indices[i - 1];
+                total_indices = our_split.this_split_total_indices[i - 1];
+                assert(LatticePoints.size() == total_indices);
             }
             select_and_split(LatticePoints, this_patch, split_modulus,split_residue, done_indices, intersection_key);
         }
@@ -1800,6 +1803,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                 prel_data << "lattice_points" << endl;
             }
             prel_data << endl << "min_return " << min_return_patch << endl << endl;
+
+            prel_data << "total_indices " << LatticePoints.size() << endl;
 
             prel_data << "done_indices" << endl;
             prel_data << "0" << endl;

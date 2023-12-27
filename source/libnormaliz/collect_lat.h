@@ -46,6 +46,7 @@ public:
     long this_refinement;
     vector<vector<long> > refinement_residues;  // for each split to record the history of residues leading to it
     vector<vector<long> > refinement_levels;  // ditto
+    vector<vector<long> > refinement_total_indices;  // ditto
     vector<vector<long> > refinement_done_indices;  // ditto
     vector<vector<long> > refinement_predecessors;  // ditto
 
@@ -56,6 +57,7 @@ public:
     long this_split_index; // for the index coming from -X=<...>
     vector<long> this_split_residues; // ditto
     vector<long> this_split_levels;
+    vector<long> this_split_total_indices;
     vector<long> this_split_done_indices;
     vector<long> this_split_min_returns;
 

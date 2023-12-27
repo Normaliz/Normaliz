@@ -88,6 +88,7 @@ void SplitData::read_data(const string& this_project){
         refinement_residues.resize(nr_splits_to_do);
         refinement_levels.resize(nr_splits_to_do);
         refinement_predecessors.resize(nr_splits_to_do);
+        refinement_total_indices.resize(nr_splits_to_do);
         refinement_done_indices.resize(nr_splits_to_do);
         for(long i = 0; i < nr_split_levels; ++i){
             split_control >> split_moduli[i];
@@ -109,6 +110,11 @@ void SplitData::read_data(const string& this_project){
             for(size_t j = 0; j < nr_split_levels; ++j){
                 split_control >> refinement_residues[i][j];
             }
+            refinement_total_indices[i].resize(this_refinement);
+            split_control >> s;
+            assert(s == "total");
+            for(size_t j = 0; j < this_refinement; ++j)
+                split_control >> refinement_total_indices[i][j];
             refinement_done_indices[i].resize(this_refinement);
             split_control >> s;
             assert(s == "done");
@@ -161,6 +167,9 @@ void SplitData::write_data() const{
         for(size_t j = 0; j < nr_split_levels; ++j){
             new_split_control << refinement_residues[i][j] << " ";
         }
+        new_split_control << " total ";
+        for(size_t j = 0; j < this_refinement; ++j)
+            new_split_control << refinement_total_indices[i][j] << " ";
         new_split_control << " done ";
         for(size_t j = 0; j < this_refinement; ++j)
             new_split_control << refinement_done_indices[i][j] << " ";
@@ -211,6 +220,7 @@ void SplitData::set_this_split(const long& given_index){
     else{
         this_split_residues = refinement_residues[this_split_index];
         this_split_levels = refinement_levels[this_split_index];
+        this_split_total_indices = refinement_total_indices[this_split_index];
         this_split_done_indices = refinement_done_indices[this_split_index];
     }
 }
@@ -235,7 +245,7 @@ void next_round(const string& project) {
 }
 */
 
-void read_prel_lat_file(ifstream& lat_in, const string& lat_name, size_t& min_return, size_t& done_indices,Matrix<long long>& TotalLat){
+void read_prel_lat_file(ifstream& lat_in, const string& lat_name, size_t& min_return,  size_t& total_indices, size_t& done_indices,Matrix<long long>& TotalLat){
 
     string s1;
     lat_in >> s1;
@@ -244,6 +254,12 @@ void read_prel_lat_file(ifstream& lat_in, const string& lat_name, size_t& min_re
     }
 
     lat_in >> min_return;
+
+    lat_in >> s1;
+    if(s1 != "total_indices")
+        throw BadInputException("CollectLat failed because of corrupt file " + lat_name);
+
+    lat_in >> total_indices;
 
     // now we simplify the preliminary lat file to make the work in project_and_lift easier
     Matrix<long long> solutions_so_far;
@@ -396,6 +412,7 @@ void collect_lat(const string& project) {
 
     vector<size_t> NotDone; // register the lat files of preliminary stage
     vector<size_t> MinReturnNotDone; // collects their min returns
+    vector<size_t> TotalIndicesNotDone; // collects the indices already done
     vector<size_t> DoneIndicesNotDone; // collects the indices already done
 
     // Now we read what has been compouted in the last refinement
@@ -431,8 +448,10 @@ void collect_lat(const string& project) {
             NotDone.push_back(i);
             size_t min_return;
             size_t done_indices;
-            read_prel_lat_file(lat_in, lat_name, min_return, done_indices, TotalLat);
+            size_t total_indices;
+            read_prel_lat_file(lat_in, lat_name, min_return, total_indices, done_indices, TotalLat);
             MinReturnNotDone.push_back(min_return);
+            TotalIndicesNotDone.push_back(total_indices);
             DoneIndicesNotDone.push_back(done_indices);
             continue; // next lat file
         } // done with preliminray stage
@@ -512,12 +531,14 @@ void collect_lat(const string& project) {
     new_split_data.refinement_residues.clear();
     new_split_data.refinement_levels.clear();
     new_split_data.refinement_done_indices.clear();
+    new_split_data.refinement_total_indices.clear();
     new_split_data.refinement_predecessors.clear();
 
     for(size_t spl = 0; spl < NotDone.size(); ++spl){
 
         vector<long> split_residues;
         vector<long> split_levels;
+        vector<long> split_total_indices;
         vector<long> split_done_indices;
         vector<long> split_predecessors;
 
@@ -535,6 +556,7 @@ void collect_lat(const string& project) {
         else{
             split_residues = our_split.refinement_residues[split_index];
             split_levels =  our_split.refinement_levels[split_index];
+            split_total_indices = our_split.refinement_total_indices[split_index];
             split_done_indices = our_split.refinement_done_indices[split_index];
             split_predecessors = our_split.refinement_predecessors[split_index];
             assert(split_predecessors[0] == split_residues[0]);
@@ -546,6 +568,7 @@ void collect_lat(const string& project) {
 
         // common to all subsplits
         split_levels.push_back(next_split_level);
+        split_total_indices.push_back(TotalIndicesNotDone[spl]);
         split_done_indices.push_back(DoneIndicesNotDone[spl]);
         split_predecessors.push_back(NotDone[spl]);
 
@@ -554,6 +577,7 @@ void collect_lat(const string& project) {
             extended_res.push_back(i); // the new subsplit
             new_split_data.refinement_residues.push_back(extended_res);
             new_split_data.refinement_levels.push_back(split_levels);
+            new_split_data.refinement_total_indices.push_back(split_total_indices);
             new_split_data.refinement_done_indices.push_back(split_done_indices);
             new_split_data.refinement_predecessors.push_back(split_predecessors);
             // cout << "*** " << new_split_data.refinement_predecessors.size()-1 << "  --  " <<
