@@ -136,6 +136,35 @@ int process_data(OptionsHandler& options, const string& command_line);
 
 //---------------------------------------------------------------------------
 
+void set_normaliz_time(){
+
+        GlobalTimeBound = -1.0;
+        GlobalPredictionTimeBound = -1.0;
+        string name_time = "normaliz.time";
+        const char* file_time = name_time.c_str();
+        ifstream in_time;
+        in_time.open(file_time, ifstream::in);
+        if (in_time.is_open()) {
+            double test_input;
+            in_time >> test_input;
+            if(!in_time.fail()){
+                GlobalTimeBound = test_input;
+                if(verbose)
+                    verboseOutput() << "TIME BOUND " << GlobalTimeBound << endl;
+            }
+
+            in_time >> test_input;
+            if(!in_time.fail()){
+                GlobalPredictionTimeBound = test_input;
+                if(verbose)
+                    verboseOutput() << "TIME PREDICTION BOUND " << GlobalPredictionTimeBound << endl;
+            }
+            in_time.close();
+        }
+}
+
+//---------------------------------------------------------------------------
+
 int main(int argc, char* argv[]){
 #ifdef NMZ_GPERF
     ProfilerStart("normaliz.prof");
@@ -145,6 +174,8 @@ int main(int argc, char* argv[]){
 
     // signal handler for interrupt
     signal(SIGINT, &interrupt_signal_handler);
+
+    set_normaliz_time();
 
     vector<string> command_line_items;
     string command_line;
@@ -220,6 +251,12 @@ int main(int argc, char* argv[]){
         else{  // -A set, we do a single file
             number_normaliz_instances = nr_input_files;
         }
+    }
+
+    if(GlobalTimeBound != -1.0){ // all instances get the same time
+        GlobalTimeBound /= number_normaliz_instances;
+            if(verbose)
+                verboseOutput() << "TIME BOUND PER INSTANCE" << GlobalTimeBound << endl;
     }
 
     for(size_t intput_file_index = 0; intput_file_index < nr_input_files; ++intput_file_index){
@@ -428,6 +465,7 @@ InputMap<InputNumberType> extract_additional_input(
     }
     return add_input;
 }
+
 //---------------------------------------------------------------------------
 
 int process_data(OptionsHandler& options, const string& command_line) {
@@ -466,29 +504,7 @@ int process_data(OptionsHandler& options, const string& command_line) {
             is_split_patching = true;
         }
 
-        GlobalTimeBound = -1.0;
-        GlobalPredictionTimeBound = -1.0;
-        string name_time = "normaliz.time";
-        const char* file_time = name_time.c_str();
-        ifstream in_time;
-        in_time.open(file_time, ifstream::in);
-        if (in_time.is_open()) {
-            double test_input;
-            in_time >> test_input;
-            if(!in_time.fail()){
-                GlobalTimeBound = test_input;
-                if(verbose)
-                    verboseOutput() << "TIME BOUND " << GlobalTimeBound << endl;
-            }
 
-            in_time >> test_input;
-            if(!in_time.fail()){
-                GlobalPredictionTimeBound = test_input;
-                if(verbose)
-                    verboseOutput() << "TIME PREDICTION BOUND " << GlobalPredictionTimeBound << endl;
-            }
-            in_time.close();
-        }
 
         string name_in = options.getProjectName() + ".in";
         const char* file_in = name_in.c_str();

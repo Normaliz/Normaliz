@@ -52,11 +52,11 @@ public:
 
     // long max_nr_splits_per_round;
     long nr_splits_to_do;
-    long nr_rounds;
+    // long nr_rounds;
 
     long this_split_index; // for the index coming from -X=<...>
-    vector<long> this_split_residues; // ditto
-    vector<long> this_split_levels;
+    vector<long> this_split_residues; // data depending on this_split_index
+    vector<long> this_split_levels;  // TODO single out as a struct
     vector<long> this_split_total_indices;
     vector<long> this_split_done_indices;
     vector<long> this_split_min_returns;
