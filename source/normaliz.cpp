@@ -175,8 +175,6 @@ int main(int argc, char* argv[]){
     // signal handler for interrupt
     signal(SIGINT, &interrupt_signal_handler);
 
-    set_normaliz_time();
-
     vector<string> command_line_items;
     string command_line;
     for (int i = 1; i < argc; ++i){
@@ -218,6 +216,8 @@ int main(int argc, char* argv[]){
         verboseOutput() << "Command line: " << command_line << endl;
     }
 
+    set_normaliz_time();
+
     vector<string> input_file_names;
 
     if(list_of_input_files){
@@ -253,10 +253,10 @@ int main(int argc, char* argv[]){
         }
     }
 
-    if(GlobalTimeBound != -1.0){ // all instances get the same time
+    if(GlobalTimeBound != -1.0 && number_normaliz_instances > 1){ // all instances get the same time
         GlobalTimeBound /= number_normaliz_instances;
             if(verbose)
-                verboseOutput() << "TIME BOUND PER INSTANCE" << GlobalTimeBound << endl;
+                verboseOutput() << "TIME BOUND PER INSTANCE " << GlobalTimeBound << endl;
     }
 
     for(size_t intput_file_index = 0; intput_file_index < nr_input_files; ++intput_file_index){
