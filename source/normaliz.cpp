@@ -235,31 +235,42 @@ int main(int argc, char* argv[]){
         }
     }
 
-    size_t nr_input_files = input_file_names.size();
+    size_t total_nr_input_files = input_file_names.size();
     if(!list_of_input_files)
-        nr_input_files = 1;
+        total_nr_input_files = 1;
 
-    if(number_normaliz_instances > 0){ // -Z set
+    size_t nr_input_files_this_instance;
+
+    if(number_normaliz_instances > 0){ // -Z set, number_normaliz_instances = value of -Z
         if(input_file_option < 0) // -A not set
             throw BadInputException("-Z set, but no -A.");
+        else{ // both -A and -Z set
+            nr_input_files_this_instance = total_nr_input_files / number_normaliz_instances;
+            if(input_file_option < total_nr_input_files % number_normaliz_instances)
+                nr_input_files_this_instance ++;
+        }
     }
     else{   // -Z not set
-        if(input_file_option < 0){ // -A not set, we do the full list
+        if(input_file_option < 0){ // -A not set, we do the full list, otherwise value of -A
             number_normaliz_instances = 1;
+            nr_input_files_this_instance = total_nr_input_files;
             input_file_option = 0;
         }
         else{  // -A set, we do a single file
-            number_normaliz_instances = nr_input_files;
+            number_normaliz_instances = total_nr_input_files;
+            nr_input_files_this_instance = 1;
         }
     }
 
-    if(GlobalTimeBound != -1.0 && number_normaliz_instances > 1){ // all instances get the same time
-        GlobalTimeBound /= number_normaliz_instances;
+    if(GlobalTimeBound != -1.0 && nr_input_files_this_instance > 1){ // all input_files  get the same time
+        GlobalTimeBound /= nr_input_files_this_instance;
             if(verbose)
-                verboseOutput() << "TIME BOUND PER INSTANCE " << GlobalTimeBound << endl;
+                verboseOutput() << "TIME BOUND PER FILE " << GlobalTimeBound << endl;
     }
 
-    for(size_t intput_file_index = 0; intput_file_index < nr_input_files; ++intput_file_index){
+
+    // main loop over input files
+    for(size_t intput_file_index = 0; intput_file_index < total_nr_input_files; ++intput_file_index){
         OptionsHandler options;
         if(!list_of_input_files){
             options = global_options;
@@ -503,8 +514,6 @@ int process_data(OptionsHandler& options, const string& command_line) {
         if(options.isUseSplit()){
             is_split_patching = true;
         }
-
-
 
         string name_in = options.getProjectName() + ".in";
         const char* file_in = name_in.c_str();

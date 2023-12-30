@@ -1407,10 +1407,10 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
     // One could think about exchanging the order of the loops to get better
     // parallelization. But it is unclear whether this can be achieved.
 
-        struct timeval time_begin;
-        StartTime(time_begin);
+    struct timeval time_begin;
+    StartTime(time_begin);
 
-        size_t nr_rounds = 0;
+    size_t nr_rounds = 0;
 
 
     while (true) {
@@ -1790,31 +1790,33 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         }
         // we write a file that preserves what has been done. First we tecord the lowest patch
         // to which we must return
-        if(NrRemainingLP[this_patch] > 0 && is_split_patching && min_fall_back == 0 && min_return_patch == 0){  // all previous patches were fully done
+        if(NrRemainingLP[this_patch] > 0 && min_fall_back == 0 && min_return_patch == 0){  // all previous patches were fully done
             min_return_patch = this_patch;
-            ofstream prel_data;
-            prel_data.open(lat_file_name, ofstream::app);
-            if(fusion.use_automorphisms){
-                if(check_simplicity_all)
-                    prel_data << "simple_";
-                prel_data << "fusion_rings" << endl;
-            }
-            else{
-                prel_data << "lattice_points" << endl;
-            }
-            prel_data << endl << "min_return " << min_return_patch << endl << endl;
+            if(is_split_patching){
+                ofstream prel_data;
+                prel_data.open(lat_file_name, ofstream::app);
+                if(fusion.use_automorphisms){
+                    if(check_simplicity_all)
+                        prel_data << "simple_";
+                    prel_data << "fusion_rings" << endl;
+                }
+                else{
+                    prel_data << "lattice_points" << endl;
+                }
+                prel_data << endl << "min_return " << min_return_patch << endl << endl;
 
-            prel_data << "total_indices " << LatticePoints.size() << endl;
+                prel_data << "total_indices " << LatticePoints.size() << endl;
 
-            prel_data << "done_indices" << endl;
-            prel_data << "0" << endl;
-            prel_data << "found_solutions" << endl;
-            prel_data << "0" << endl;
-            prel_data << EmbDim << endl;
-            prel_data.close();
+                prel_data << "done_indices" << endl;
+                prel_data << "0" << endl;
+                prel_data << "found_solutions" << endl;
+                prel_data << "0" << endl;
+                prel_data << EmbDim << endl;
+                prel_data.close();
+            }
         }
 
-        if(!last_coord && NewLatticePoints.size() > 0){
+        if(!last_coord && NewLatticePoints.size() > 0){ // we must go up
             if(verbose && !talkative){
                 verboseOutput() << "+" << flush;
                 verb_length++;
@@ -1838,41 +1840,51 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         if(single_point_found)
             break;
 
-        if(((talkative || nr_time_printed <= 10) ||  this_patch == min_return_patch)
-            && verbose && (nr_rounds ==1 || this_patch == min_return_patch) ){
-            if(nr_points_done_in_this_round > 0 && NrRemainingLP[this_patch] > 0){
+        double expected_time = 0; // to make gcc happy
+        double total_expected_time = 0;
+
+        bool time_measured = false;
+
+        if(nr_points_done_in_this_round > 0 && NrRemainingLP[this_patch] > 0){
+            time_measured = true;
+            double time_spent = MeasureTime(time_begin);
+            expected_time = time_spent*expected_number_of_rounds;
+            total_expected_time = time_spent;
+            double factor =1.0;
+            bool found = false;
+            for(size_t i = 0; i <= this_patch; ++i){
+                if(!found && ExpectedNrRounds[i] == 0)
+                    continue;
+                if(!found && ExpectedNrRounds[i] != 0){
+                    found = true;
+                    factor *= ExpectedNrRounds[i];
+                    // cout << i << " --- " << ExpectedNrRounds[i] << " --- " << factor << endl;
+                    continue;
+                }
+                factor *= (ExpectedNrRounds[i] +1);
+                // cout << i << " --- " << ExpectedNrRounds[i] + 1 << " --- " << factor << endl;
+            }
+            total_expected_time *= factor;
+            // total_expected_time += expected_time;
+            total_expected_time += TimeSinceStart() - time_spent;
+
+        }
+
+        if(time_measured){
+            if(((talkative || nr_time_printed <= 10) ||  this_patch == min_return_patch)
+                            && verbose && (nr_rounds ==1 || this_patch == min_return_patch) ){
                 nr_time_printed++;
-                double time_spent = MeasureTime(time_begin);
-                double expected_time = time_spent*expected_number_of_rounds;
                 if(verbose){
                     verboseOutput() << "---------" << endl;
                     verboseOutput() << "expected future time on level  " << LevelPatches[coord] << "  " << expected_time;
-                }
-                double total_expected_time = time_spent;
-                double factor =1.0;
-                bool found = false;
-                for(size_t i = 0; i <= this_patch; ++i){
-                    if(!found && ExpectedNrRounds[i] == 0)
-                        continue;
-                    if(!found && ExpectedNrRounds[i] != 0){
-                        found = true;
-                        factor *= ExpectedNrRounds[i];
-                        // cout << i << " --- " << ExpectedNrRounds[i] << " --- " << factor << endl;
-                        continue;
-                    }
-                    factor *= (ExpectedNrRounds[i] +1);
-                    // cout << i << " --- " << ExpectedNrRounds[i] + 1 << " --- " << factor << endl;
-                }
-                total_expected_time *= factor;
-                // total_expected_time += expected_time;
-                total_expected_time += TimeSinceStart() - time_spent;
-                verboseOutput() << " / total " << total_expected_time << endl;
-
-                if(GlobalPredictionTimeBound > 0 && expected_time > GlobalPredictionTimeBound){
-                        verboseOutput() << "expected time exceeds bound of " << GlobalPredictionTimeBound << " sec" << endl;
-                        throw TimeBoundException("patching");
+                    verboseOutput() << " / total " << total_expected_time << endl;
                 }
             }
+        }
+
+        if(GlobalPredictionTimeBound > 0 && expected_time > GlobalPredictionTimeBound){
+            errorOutput() << "expected time exceeds bound of " << GlobalPredictionTimeBound << " sec" << endl;
+            throw TimeBoundException("patching");
         }
 
         if(nr_points_matched == nr_to_match)

@@ -416,11 +416,7 @@ It can be applied if the multiplicity is computed by signed decomposition. See S
 
 For integrals one can chose either the standard triangulation or signed decomposition. In the latter case \verb|FixedPrecision| is also available.
 
-If one wants to compute multiplicities (or volumes)  with signed decomposition, it is possible to split the most time consuming part of the computation into blocks that can be processed independently of each other. It can be asked for by the option
-\begin{itemize}
-	\itemtt[DistributedComp]
-\end{itemize} 
-Distributed computation is described in Appendix \ref{distr_comp}.
+If one wants to compute multiplicities (or volumes)  with signed decomposition, one can use distributed computation on a HPC. Distributed computation is described in Appendix \ref{distr_comp}.
 
 \subsubsection{Symmetrization}
 
