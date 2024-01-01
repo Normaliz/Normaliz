@@ -161,6 +161,8 @@ class ProjectAndLift {
     Matrix<IntegerPL> DefiningSupps;
 
     vector<double> ExpectedNrRounds;
+    vector<double> TimeToLevel;
+    vector<size_t> NrNodes;
 
     SplitData our_split;
 

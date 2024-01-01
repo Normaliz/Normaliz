@@ -864,6 +864,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::finalize_order(const dynamic_bitset& 
         LevelPatches[InsertionOrderPatches[k]] = k;
 
     ExpectedNrRounds.resize(InsertionOrderPatches.size());
+    TimeToLevel.resize(InsertionOrderPatches.size() +1);
+    NrNodes.resize(InsertionOrderPatches.size() +1, 1);
 
 }
 
@@ -1816,6 +1818,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
             }
         }
 
+        double time_to_ascent = 0;
+
         if(!last_coord && NewLatticePoints.size() > 0){ // we must go up
             if(verbose && !talkative){
                 verboseOutput() << "+" << flush;
@@ -1825,7 +1829,12 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                     verb_length = 0;
                 }
             }
+
+            // ***********************************   ascent to next patch
+            time_to_ascent = MeasureTime(time_begin);
             extend_points_to_next_coord(NewLatticePoints, this_patch + 1);
+            // ****************************************** down from next patch
+
             if(verbose && !talkative){
                 verboseOutput() << "-" << flush;
                 verb_length++;
@@ -1845,10 +1854,22 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
 
         bool time_measured = false;
 
-        if(nr_points_done_in_this_round > 0 && NrRemainingLP[this_patch] > 0){
+        if(nr_points_done_in_this_round > 0 && NrRemainingLP[this_patch] > 0 && nr_rounds == 1){
             time_measured = true;
             double time_spent = MeasureTime(time_begin);
             expected_time = time_spent*expected_number_of_rounds;
+
+            // -------------------------------
+
+            NrNodes[this_patch +1] = NrNodes[this_patch] * expected_number_of_rounds;
+
+            TimeToLevel[this_patch + 1] = NrNodes[this_patch] * time_to_ascent + TimeToLevel[this_patch];
+
+            total_expected_time = TimeToLevel[this_patch] + NrNodes[this_patch] * time_spent + TimeSinceStart();
+
+            // -------------------------
+
+            /*
             total_expected_time = time_spent;
             double factor =1.0;
             bool found = false;
@@ -1867,6 +1888,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
             total_expected_time *= factor;
             // total_expected_time += expected_time;
             total_expected_time += TimeSinceStart() - time_spent;
+            */
 
         }
 

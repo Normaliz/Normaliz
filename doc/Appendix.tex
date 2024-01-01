@@ -3106,25 +3106,26 @@ The patching algorithm (Section \ref{positive_systems}) allows distributed compu
 
 As an example for the whole file structure that we will explain in this section, the directory \verb*|example| contains the file \verb*|bracket_3.zip|. Unzipping it creates a directory \verb*|bracket_3|. To see the full directory structure, unzip the contained zip files.
 
-The scheme that Normaliz uses is again a batch array. As above we assume it is controlled by SLURM. There are is an crucial  constraint set by the system: an upper limit on the wall clock time of a batch job. Normaliz can overcomes the time limit by using \emph{successive refinement}: if a run of the full array does not complete the computation,it creates temporary files whose contents are then read and exploited by the next round.
+The scheme that Normaliz uses is again a batch array. As above we assume it is controlled by SLURM. There is an crucial  constraint set by the system: an upper limit on the wall clock time of a batch job, i.e., a split. Normaliz can overcomes the time limit by using \emph{successive refinement}: if a run of the full array does not complete the computation,it creates temporary files whose contents are then read and exploited by the next round.
 
 We run a  precomputation
 \begin{Verbatim}
 ./normaliz -c <project> --DistributedComp
 \end{Verbatim}
-You can replace \verb*|--DistributedComp| by \verb*|--DCM|, as indicted above. The only purpose is to find the lowest patch level where splitting makes sense. (For small computations such a level may not exist.) You should use the same additional options for \verb*|--DistributedComp| that you want to use for the main computation.
+You can replace \verb*|--DistributedComp| by the abbreviation \verb*|--DCM|, as indicted above. The only purpose is to find the lowest patch level where splitting makes sense. (For small computations such a level may not exist.) You should use the same additional options for \verb*|--DistributedComp| that you want to use for the main computation.
 
 The result of the precomputation is written to the file
 \begin{itemize}
 \itemtta[<project>.split.data]{project>.split.data}
 \end{itemize}
-The default choice of this file is
+Usually this file is
 \begin{Verbatim}
 refinement 0 1000
 <l> 1000
 \end{Verbatim}
 \verb*|refinement 0| indicates the first refinement (counted from $0$).
-\verb|<l>| is the lowest split level for splitting. The number of splits is given by \verb*|1000|. If there are less than $1000$ lattice points at the split level, than it is replaced by their number. It is possible to add this file by hand, especially in order to increase the number of splits.
+\verb|<l>| is the lowest split level for splitting. The number of splits is given by \verb*|1000|. If there are less than $1000$ lattice points at the split level, than 
+\verb*|1000| is replaced by their number. It is possible to add this file by hand, especially in order to increase the number of splits.
 
 We use a job array defined by 
 \begin{Verbatim}
@@ -3171,7 +3172,7 @@ After the refinement has been finished, the lattice points are harvested by runn
 \end{itemize}
 for example
 \begin{Verbatim}
-./normaliz tough --CLL|
+./normaliz tough --CLL
 \end{Verbatim}
 Make sure that all splits have finished before running \verb*|CollectLat|, especiall when splitting is applied to a list if input files as described in Appendix \ref{input_list}.
 
@@ -3183,7 +3184,7 @@ provided all splits could be finished by Normaliz. If at least one \verb|lat| fi
 \begin{itemize}
 	\itemtta[<project>.<f>.lat.so\_far]{project.<f>.lat.so\ ,far}
 \end{itemize}
-Again \verb*|<f>| is the index of the refinement. The \verb*|lat| files are zipped and removed for better overview.
+Again \verb*|<f>| is the index of the refinement. The \verb*|lat| files are zipped and then removed for better overview.
 
 A second task of \verb*|--CollectLat| is the preparation of \verb*|<project>.split.data| for the next refinement. The current version is archived in
 \begin{itemize}
@@ -3212,7 +3213,7 @@ in the Normaliz directory.
 In addition to \verb*|--Split| and \verb*|X=<s>| as above, two more parameters control the run of Normaliz over a list:
 
 \begin{enumerate}
-\item[(1)] if \verb*|--Split| is set, then Normaliz goes over the whole list, and runs the split with index \verb*|<s>| given by \verb*|-X=<s>| for very file in the list.
+\item[(1)] if \verb*|--Split| is set, then Normaliz goes over the whole list, and runs the split with index \verb*|<s>| given by \verb*|-X=<s>| for every file in the list.
 
 \item[(2)] if \verb*|--Split| is not set, then
 
@@ -3254,7 +3255,7 @@ A typical file for case (2):
 time ../normaliz -c InList --List -A=${SLURM_ARRAY_TASK_ID} -Z=100
 \end{Verbatim}
 	
-The operations started by \verb*|DistributedComp| or \verb*|CollectLat| avn also be performed on an input list.
+The operations started by \verb*|DistributedComp| or \verb*|CollectLat| can also be performed on an input list.
 
 The time bound set by \verb*|normaliz.time| is shared by all files in siuch a way that each file gets the same amount of time.
 
