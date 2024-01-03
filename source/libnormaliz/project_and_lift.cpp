@@ -1861,11 +1861,12 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
 
             // -------------------------------
 
-            NrNodes[this_patch +1] = NrNodes[this_patch] * expected_number_of_rounds;
+            if(NrNodes[this_patch + 1] == 1 || this_patch == min_return_patch)
+                NrNodes[this_patch +1] = NrNodes[this_patch] * expected_number_of_rounds;
 
             TimeToLevel[this_patch + 1] = NrNodes[this_patch] * time_to_ascent + TimeToLevel[this_patch];
 
-            total_expected_time = TimeToLevel[this_patch] + NrNodes[this_patch] * time_spent + TimeSinceStart();
+            total_expected_time = TimeToLevel[this_patch] + NrNodes[this_patch + 1] * time_spent + TimeSinceStart();
 
             // -------------------------
 
