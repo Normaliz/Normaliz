@@ -724,8 +724,10 @@ void read_polynomial_constraints(istream& in, vector<string>& polynomial_constra
 
     int nr_constraints;
     in >> nr_constraints;
-    if(in.fail() || nr_constraints<= 0)
+    if(in.fail() || nr_constraints< 0)
         throw BadInputException("Failure in reading number of polynomial constraints!");
+    if(nr_constraints == 0)
+        return;
 
     string equ;
     for(int i = 0; i < nr_constraints; ++i){

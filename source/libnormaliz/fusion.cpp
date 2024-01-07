@@ -27,7 +27,7 @@
 #include "libnormaliz/fusion.h"
 #include "libnormaliz/options.h"
 #include "libnormaliz/vector_operations.h"
-#include "libnormaliz/input.h"
+#include "libnormaliz/list_and_map_operations.h"
 
 namespace libnormaliz{
 using std::vector;
@@ -246,16 +246,31 @@ void FusionData<Integer>::set_options(const ConeProperties& ToCompute, const boo
 }
 
 template <typename Integer>
+void FusionData<Integer>::set_type_and_duality(const vector<key_t>& our_type_coinc, const vector<key_t>& our_duality,
+                              const bool our_connutative, const string& our_full_type){
+
+    fusion_type = our_type_coinc;
+    fusion_rank = fusion_type.size();
+    duality = our_duality;
+    commutative = our_connutative;
+    fusion_type_string = our_full_type;
+    type_and_duality_set = true;
+}
+
+
+template <typename Integer>
 void FusionData<Integer>::read_data(const bool a_priori) {
 
-    string file_name = global_project + ".fusion";
-    ifstream in(file_name);
-    if(in.is_open()){
-        in.close();
-        read_data_from_file();
+    if(!type_and_duality_set){
+        string file_name = global_project + ".fusion";
+        ifstream in(file_name);
+        if(in.is_open()){
+            in.close();
+            read_data_from_file();
+        }
+        if(!type_and_duality_set)
+            data_from_string(global_project);
     }
-    if(!type_and_duality_set)
-        data_from_roject();
 
     set<key_t> subring_base_set;
     subring_base_set.insert(subring_base_key.begin(), subring_base_key.end());
@@ -266,17 +281,17 @@ void FusionData<Integer>::read_data(const bool a_priori) {
 
     if(fusion_type.size() == 0 || fusion_type.size() != duality.size() ||
                 fusion_type[0] != 1 || duality[0] != 0)
-        throw BadInputException("Filename not standard fusion");
+        throw BadInputException("Fusion data corrupt");
 
     fusion_rank = duality.size();
     dynamic_bitset dual_ind(fusion_rank);
     for(size_t i = 0; i < fusion_rank; ++i){
         if(duality[i] >= fusion_rank || fusion_type[i] != fusion_type[duality[i]])
-            throw BadInputException("Filename not standard fusion");
+            throw BadInputException("Fusion data corrupt");
          dual_ind[duality[i]] = 1;
     }
     if(dual_ind.count() != fusion_rank)
-        throw BadInputException("Filename not standard fusion");
+        throw BadInputException("Fusion data corrupt");
 
     if(verbose){
         verboseOutput() << "rank " << fusion_rank << endl;
@@ -300,10 +315,10 @@ void FusionData<Integer>::read_data(const bool a_priori) {
 
 
 template <typename Integer>
-void FusionData<Integer>::data_from_roject() {
+void FusionData<Integer>::data_from_string(const string& our_fusion) {
     if(verbose)
-        verboseOutput() << "Reading fusion data from project " << global_project << endl;
-    string name = pureName(global_project);
+        verboseOutput() << "Reading fusion data from string " << our_fusion << endl;
+    string name = pureName(our_fusion);
     string clean_name;
     for(auto& c: name){
         if(c != ' ')
@@ -313,7 +328,7 @@ void FusionData<Integer>::data_from_roject() {
     char c;
     data >> c;
     if(c !='[')
-        throw BadInputException("Filename not standard fusion");
+        throw BadInputException("String " + our_fusion +" not standard fusion");
     vector<long> type;
     while(true){
         long nr;
@@ -325,12 +340,12 @@ void FusionData<Integer>::data_from_roject() {
         }
         else{
             if(c != ',')
-                throw BadInputException("Filename not standard fusion");
+                throw BadInputException("String " + our_fusion +"not standard fusion");
         }
     }
     data >> c;
     if(c !='[')
-        throw BadInputException("Filename not standard fusion");
+        throw BadInputException("String " + our_fusion +"not standard fusion");
     while(true){
         long nr;
         data >> nr;
@@ -345,7 +360,7 @@ void FusionData<Integer>::data_from_roject() {
         }
         else{
             if(c != ',')
-                throw BadInputException("Filename not standard fusion");
+                throw BadInputException("String " + our_fusion +"not standard fusion");
         }
     }
 
@@ -473,18 +488,18 @@ set<vector<key_t> >  FusionData<Integer>::FrobRec_12(const vector<key_t>& ind_tu
 }
 
 
-/*
-template <typename IntegerPL, typename IntegerRet>
-key_t ProjectAndLift<IntegerPL,IntegerRet>::dual(const key_t i) const{
-    return duality[i];
-}
-*/
-
-
 template <typename Integer>
 key_t FusionData<Integer>::coord(vector<key_t>& ind_tuple){
     set<vector<key_t> > FR = FrobRec(ind_tuple);
     return coord(FR);
+}
+
+template <typename Integer>
+key_t FusionData<Integer>::coord_cone(vector<key_t>& ind_tuple){
+    key_t coord_compute = coord(ind_tuple);
+    if(coord_compute == 0)
+        return nr_coordinates;
+    return coord_compute -1;
 }
 
 template <typename Integer>
@@ -707,6 +722,161 @@ Matrix<Integer> FusionData<Integer>::do_iso_classes(const Matrix<Integer>& LattP
     return work_fusion.do_iso_classes_inner(LattPoints);
 }
 
+template <typename Integer>
+Matrix<Integer> FusionData<Integer>::make_linear_constraints(const vector<Integer>& d){
+
+    make_CoordMap();
+
+    Matrix<Integer> Equ(0, nr_coordinates + 1); // mudst accomodate right hand side in last coordinate
+
+    vector<key_t> indices(3);
+    for(key_t i = 1; i < fusion_rank; ++i){
+        indices[0] = i;
+        for(key_t j = 1; j < fusion_rank; ++j){
+            indices[1] = j;
+            vector<Integer> this_equ(nr_coordinates + 1);
+            this_equ.back() = - d[i]*d[j];
+            if(i == duality[j])
+                this_equ.back() += 1;
+            for(key_t k = 1; k < fusion_rank; ++k){
+                indices[2] = k;
+                this_equ[coord_cone(indices)] += d[k];
+            }
+            Equ.append(this_equ);
+        }
+    }
+
+    Equ.remove_duplicate_and_zero_rows();
+
+    Equ.pretty_print(cout);
+    return Equ;
+}
+
+// factor_1 = factor_1 * factor__2
+template <typename Integer>
+void prod(pair<Integer, vector<key_t> >& factor_1, const pair<Integer, vector<key_t> >& factor_2){
+
+    if(factor_1.first == 0 || factor_2.first == 0){
+        factor_1 = make_pair(0, vector<key_t>(0));
+        return;
+    }
+    factor_1.first *= factor_2.first;
+    factor_1.second.insert(factor_1.second.end(),factor_2.second.begin(), factor_2.second.end());
+    sort(factor_1.second.begin(), factor_1.second.end());
+}
+
+template <typename Integer>
+void add(map<vector<key_t>, Integer>& poly, const pair<Integer, vector<key_t> >& summand){
+
+    // cout << summand.first << "+++++++++++++++" << summand.second;
+
+    if(poly.find(summand.second) != poly.end()){
+        poly[summand.second] += summand.first;
+    }
+    else{
+        poly[summand.second] = summand.first;
+    }
+    // cout << "SSSSSSSSSSSSSS " << poly.size() << endl;
+}
+
+template <typename Integer>
+void subtracct(map<vector<key_t>, Integer>& poly, const pair<Integer, vector<key_t> >& summand){
+    pair<Integer, vector<key_t> > subtrahend = summand;
+    subtrahend.first = -subtrahend.first;
+    add(poly, subtrahend);
+}
+
+template <typename Integer>
+pair<Integer, vector<key_t> >  FusionData<Integer>::term(const key_t& i, const key_t& j, const key_t& k){
+
+    Integer coeff = -1;
+    vector<key_t> exponent;
+    if(k == 0){
+        if(i == duality[j])
+            coeff = 1;
+        else
+            coeff = 0;
+    }
+    if(coeff == -1 && i == 0 ){
+        if(j == k)
+            coeff = 1;
+        else
+            coeff = 0;
+    }
+    if(coeff == -1 && j == 0){
+        if(i == k)
+            coeff = 1;
+        else
+            coeff = 0;
+    }
+    if(coeff == -1){
+        coeff = 1;
+        vector<key_t> indices = {i,j,k};
+        exponent.push_back(coord(indices));
+    }
+
+    return make_pair(coeff, exponent);
+}
+
+template <typename Integer>
+set<map<vector<key_t>, Integer> > FusionData<Integer>::make_associativity_constraints(){
+
+    make_CoordMap();
+
+    // we produce associativity_equations b_i(b_j b_k) = (b_i b_j)b_k
+    // parametrized by thge base vector b_t
+    // if one of i,j,k is 0, no need for it since
+    // the neutral element is automatically "associative"
+
+    set<map<vector<key_t>, Integer> > Polys;
+
+    for(key_t i = 1; i< fusion_rank; ++i){
+        for(key_t j = 1; j < fusion_rank; ++j){
+            for(key_t k = 1; k < fusion_rank; ++k){
+                for(key_t t = 0; t < fusion_rank; ++t){
+                    map<vector<key_t>, Integer> P;
+                    for(key_t s = 0; s < fusion_rank; ++s){ // the poly is a sium over s
+                        pair<Integer, vector<key_t> > t_1 = term(i,j,s);
+                        pair<Integer, vector<key_t> > t_2 = term(s,k,t);
+                        prod(t_1, t_2);
+                        add(P, t_1);
+                        pair<Integer, vector<key_t> > t_3 = term(j,k,s);
+                        pair<Integer, vector<key_t> > t_4 = term(i,s,t);
+                        prod(t_3, t_4);
+                        subtracct(P, t_3);
+                    }
+                    bool nonzero = false;
+                    for(auto& pp: P){
+                        if(pp.second != 0){
+                            // cout << pp.second << " -- " << pp.first;
+                            nonzero = true;
+                        }
+                    }
+                    if(nonzero)
+
+                        Polys.insert(P);
+                }
+
+            }
+
+        }
+
+
+    }
+
+    /*
+    for(auto& q: Polys){
+        cout << "****************" <<endl;
+        for(auto& p: q){
+            cout << p.second << " -- " << p.first;
+        }
+    }
+    cout << "****************" <<endl;
+    cout << "NR POLYS " << Polys.size() << endl;
+    exit(0); */
+
+    return Polys;
+}
 
 //-------------------------------------------------------------------------------
 // helper for fusion rings
@@ -905,6 +1075,95 @@ void post_process_fusion(const vector<string>& command_line_items){
      }
 }
 
+template <typename Integer>
+void make_full_input(InputMap<Integer>& input_data) {
+
+    vector<Integer> full_type = input_data[Type::fusion_type][0];
+    cout << "FULL " << full_type;
+    fusion_type_coinc_from_input = fusion_coincidence_pattern(full_type);
+    cout << "COINC " << fusion_type_coinc_from_input;
+    size_t fusion_rank_from_input = fusion_type_coinc_from_input.size();
+    stringstream for_type;
+    for_type << full_type;
+    fusion_type_from_input = for_type.str();
+    input_data.erase(Type::fusion_type);
+
+    fusion_commutative_from_input = false;
+
+    if(contains(input_data, Type::fusion_duality)){
+        vector<Integer> prel_duality = input_data[Type::fusion_duality][0];
+        cout << "PREL " << prel_duality  << " -- " << prel_duality.size() << " -- " <<  fusion_rank_from_input << endl;
+        if(prel_duality.size() != fusion_rank_from_input || (prel_duality[0] != 0 && prel_duality[0] != -1))
+            throw BadInputException("Fusion duality corrupt");
+        if(prel_duality[0] == -1) {
+            fusion_commutative_from_input = true;
+            prel_duality[0] = 0;
+        }
+        fusion_duality_from_input.resize(fusion_rank_from_input);
+        for(key_t i = 0; i < fusion_rank_from_input; ++i){
+            bool in_range = false;
+            for(long j = 0; j < fusion_rank_from_input; ++j){
+                if(j == convertTo<long>(prel_duality[i])){
+                    fusion_duality_from_input[i] = j;
+                    in_range = true;
+                    break;
+                }
+            }
+            if(!in_range)
+                throw BadInputException("Fusion duality corrupt");
+        }
+        input_data.erase(Type::fusion_duality);
+    }
+    else{
+        fusion_duality_from_input = identity_key(fusion_rank_from_input);
+    }
+
+    FusionData<Integer> OurFusion;
+    OurFusion.set_type_and_duality(fusion_type_coinc_from_input, fusion_duality_from_input,
+                                   fusion_commutative_from_input, fusion_type_from_input);
+    OurFusion.read_data(true); // checks the duality
+
+    Matrix<Integer> Equ = OurFusion.make_linear_constraints(full_type);
+    Matrix<Integer> InEqu = Equ;
+    Integer MinusOne = -1;
+    Equ.scalar_multiplication(MinusOne);
+    InEqu.append(Equ);
+    input_data[Type::inhom_inequalities] = InEqu;
+    input_data[Type::inequalities] = Matrix<Integer>(InEqu.nr_of_columns()-1);
+
+    set<map<vector<key_t>, Integer> > Polys = OurFusion.make_associativity_constraints();
+
+}
+
+template <typename Integer>
+vector<key_t> fusion_coincidence_pattern(const vector<Integer>& v){
+
+    vector<key_t> coinc;
+
+    if(v.size() == 0)
+        return coinc;
+
+    coinc.resize(v.size());
+
+    coinc[0] = 1;
+    key_t last_new = 1;
+    for(key_t i = 0; i < v.size(); ++i){
+        for(key_t j = 0; j < i; ++j){
+            if(v[i] == v[j]){
+                coinc[i] = coinc[j];
+                break;
+            }
+        }
+        if(coinc[i] == 0){
+            last_new++;
+            coinc[i] = last_new;
+        }
+    }
+
+    cout << "COINC " << coinc;
+    return coinc;
+}
+
 template class FusionData<mpz_class>;
 template class FusionData<long long>;
 template class FusionData<long>;
@@ -932,6 +1191,21 @@ template Matrix<mpz_class> fusion_iso_classes(const Matrix<mpz_class>& LattPoint
 #ifdef ENFNORMALIZ
 template Matrix<renf_elem_class> fusion_iso_classes(const Matrix<renf_elem_class>& LattPoints, const ConeProperties& ToCompute, const bool verb);
 #endif
+
+template vector<key_t> fusion_coincidence_pattern(const vector<long>& v);
+template vector<key_t> fusion_coincidence_pattern(const vector<long long>& v);
+template vector<key_t> fusion_coincidence_pattern(const vector<mpz_class>& v);
+#ifdef ENFNORMALIZ
+template vector<key_t> fusion_coincidence_pattern(const vector<renf_elem_class>& v);
+#endif
+
+template void make_full_input(InputMap<long>& input_data);
+template void make_full_input(InputMap<long long>& input_data);
+template void make_full_input(InputMap<mpz_class>& input_data);
+#ifdef ENFNORMALIZ
+template void make_full_input(InputMap<renf_elem_class>& input_data);
+#endif
+
 
 } // namespace
 

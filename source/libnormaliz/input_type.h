@@ -86,6 +86,8 @@ enum InputType {
     // special
     open_facets,
     projection_coordinates,
+    fusion_type,
+    fusion_duality,
     //
     // precomputed data
     //
@@ -320,6 +322,18 @@ inline InputType to_type(const string& type_string) {
         return Type::add_inhom_equations;
     }
 
+    if (type_string == "add_inhom_equations") {
+        return Type::add_inhom_equations;
+    }
+
+    if (type_string == "fusion_type") {
+        return Type::fusion_type;
+    }
+
+    if (type_string == "fusion_duality") {
+        return Type::fusion_duality;
+    }
+
     throw BadInputException("Unknown type \"" + type_string + "\"!");
     return Type::integral_closure;
 }
@@ -340,7 +354,8 @@ inline long type_nr_columns_correction(InputType t) {
 inline bool type_is_vector(InputType type) {
     if (type == Type::grading || type == Type::signs || type == Type::strict_signs || type == Type::dehomogenization ||
         type == Type::offset || type == Type::open_facets || type == Type::projection_coordinates
-        || type == Type::scale || type == Type::rational_offset || type == Type::gb_weight) {
+        || type == Type::scale || type == Type::rational_offset || type == Type::gb_weight
+         || type == Type::fusion_type || type == Type::fusion_duality ) {
         return true;
     }
     return false;

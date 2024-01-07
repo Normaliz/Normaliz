@@ -32,6 +32,7 @@
 
 #include "libnormaliz/general.h"
 #include "libnormaliz/matrix.h"
+#include "libnormaliz/input.h"
 
 namespace libnormaliz {
 using std::vector;
@@ -63,10 +64,13 @@ public:
 
     size_t nr_coordinates;
 
-    vector<key_t> duality;
     size_t fusion_rank;
-    vector<key_t> fusion_type;
+    vector<key_t> fusion_type; // only coincidence pattern
+    string fusion_type_string;
+    vector<key_t> duality;
 
+    void set_type_and_duality(const vector<key_t>& our_type_coinc, const vector<key_t>& our_duality,
+                              const bool our_connutative, const string& our_full_type);
     vector<key_t> subring_base_key;
     vector<vector<key_t> > all_base_keys;
     vector<vector<vector<key_t> > > all_critical_coords_keys;
@@ -83,16 +87,16 @@ public:
     void set_options(const ConeProperties& ToCompute, const bool verb);
     void read_data(const bool a_priori);
     void read_data_from_file();
-    void data_from_roject();
+    void data_from_string(const string& our_fusion);
 
     // coordinates
     void make_CoordMap();
-    key_t dual(const key_t i) const;
     set<vector<key_t> > FrobRec(const vector<key_t>& ind_tuple);
     set<vector<key_t> > FrobRec_6(const vector<key_t>& ind_tuple);
     set<vector<key_t> > FrobRec_12(const vector<key_t>& ind_tuple);
     key_t coord(set<vector<key_t> >& FR);
     key_t coord(vector<key_t>& ind_tuple);
+    key_t coord_cone(vector<key_t>& ind_tuple);
     void make_all_ind_tuples();
 
     // for simplicity check
@@ -110,6 +114,10 @@ public:
     // for automosphisms
     void make_automorphisms();
     vector<Integer> norrmal_form(const vector<Integer> lattice_point);
+
+    Matrix<Integer> make_linear_constraints(const vector<Integer>& d);
+    pair<Integer, vector<key_t> >  term(const key_t& i, const key_t& j, const key_t& k);
+    set<map<vector<key_t>, Integer> > make_associativity_constraints();
 
 };
 
@@ -130,6 +138,12 @@ vector<vector<key_t> > make_all_permutations(const vector<key_t>& v);
 vector<vector<key_t> > make_all_permutations(const vector<key_t>& type, const vector<key_t>& duality);
 
 void post_process_fusion(const vector<string>& command_line_items);
+
+template <typename Integer>
+void make_full_input(InputMap<Integer>& input_data);
+
+template <typename Integer>
+vector<key_t> fusion_coincidence_pattern(const vector<Integer>& v);
 
 }  // end namespace libnormaliz
 

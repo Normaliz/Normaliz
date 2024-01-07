@@ -278,6 +278,8 @@ bool denominator_allowed(InputType input_type) {
         case Type::hilbert_basis_rec_cone:
         case Type::open_facets:
         case Type::monoid:
+        case Type::fusion_type:
+        case Type::fusion_duality:
             return false;
             break;
         default:
@@ -777,6 +779,8 @@ void Cone<Integer>::process_multi_input(const InputMap<Integer>& multi_input_dat
     process_multi_input_inner(multi_input_data);
 }
 
+
+
 template <typename Integer>
 void Cone<Integer>::process_multi_input_inner(InputMap<Integer>& multi_input_data) {
     StartTime();
@@ -803,6 +807,10 @@ void Cone<Integer>::process_multi_input_inner(InputMap<Integer>& multi_input_dat
         AxesScaling = multi_input_data[Type::scale][0];  // only possible with rational_lattice
         setComputed(ConeProperty::AxesScaling);
         rational_lattice_in_input = true;
+    }
+
+    if(contains(multi_input_data, Type::fusion_type)) {
+        make_full_input(multi_input_data);
     }
 
     // NEW: Empty matrices have syntactical influence
