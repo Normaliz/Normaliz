@@ -261,14 +261,11 @@ void FusionData<Integer>::set_type_and_duality(const vector<key_t>& our_type_coi
 template <typename Integer>
 void FusionData<Integer>::read_data(const bool a_priori) {
 
+    if(!type_and_duality_set && fusion_type_coinc_from_input.size() > 0){
+        set_type_and_duality(fusion_type_coinc_from_input, fusion_duality_from_input,
+                                   fusion_commutative_from_input, fusion_type_from_input);
+    }
     if(!type_and_duality_set){
-        string file_name = global_project + ".fusion";
-        ifstream in(file_name);
-        if(in.is_open()){
-            in.close();
-            read_data_from_file();
-        }
-        if(!type_and_duality_set)
             data_from_string(global_project);
     }
 
@@ -368,6 +365,8 @@ void FusionData<Integer>::data_from_string(const string& our_fusion) {
     type_and_duality_set = true;
 }
 
+/*
+
 template <typename Integer>
 void FusionData<Integer>::read_data_from_file() {
 
@@ -443,6 +442,7 @@ void FusionData<Integer>::read_data_from_file() {
 
     type_and_duality_set = true;
 }
+*/
 
 template <typename Integer>
 set<vector<key_t> >  FusionData<Integer>::FrobRec(const vector<key_t>& ind_tuple){
@@ -748,7 +748,7 @@ Matrix<Integer> FusionData<Integer>::make_linear_constraints(const vector<Intege
 
     Equ.remove_duplicate_and_zero_rows();
 
-    Equ.pretty_print(cout);
+    // Equ.pretty_print(cout);
     return Equ;
 }
 
@@ -1076,7 +1076,7 @@ void post_process_fusion(const vector<string>& command_line_items){
 }
 
 template <typename Integer>
-void make_full_input(InputMap<Integer>& input_data) {
+void make_full_input(InputMap<Integer>& input_data, set<map<vector<key_t>, Integer> >& Polys) {
 
     vector<Integer> full_type = input_data[Type::fusion_type][0];
     cout << "FULL " << full_type;
@@ -1131,7 +1131,7 @@ void make_full_input(InputMap<Integer>& input_data) {
     input_data[Type::inhom_inequalities] = InEqu;
     input_data[Type::inequalities] = Matrix<Integer>(InEqu.nr_of_columns()-1);
 
-    set<map<vector<key_t>, Integer> > Polys = OurFusion.make_associativity_constraints();
+    Polys = OurFusion.make_associativity_constraints();
 
 }
 
@@ -1199,11 +1199,11 @@ template vector<key_t> fusion_coincidence_pattern(const vector<mpz_class>& v);
 template vector<key_t> fusion_coincidence_pattern(const vector<renf_elem_class>& v);
 #endif
 
-template void make_full_input(InputMap<long>& input_data);
-template void make_full_input(InputMap<long long>& input_data);
-template void make_full_input(InputMap<mpz_class>& input_data);
+template void make_full_input(InputMap<long>& input_data, set<map<vector<key_t>, long> >& Polys);
+template void make_full_input(InputMap<long long>& input_data, set<map<vector<key_t>, long long> >& Polys);
+template void make_full_input(InputMap<mpz_class>& input_data, set<map<vector<key_t>, mpz_class> >& Polys);
 #ifdef ENFNORMALIZ
-template void make_full_input(InputMap<renf_elem_class>& input_data);
+template void make_full_input(InputMap<renf_elem_class>& input_data, set<map<vector<key_t>, renf_elem_class> >& Polys);
 #endif
 
 

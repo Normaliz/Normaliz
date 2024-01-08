@@ -810,7 +810,13 @@ void Cone<Integer>::process_multi_input_inner(InputMap<Integer>& multi_input_dat
     }
 
     if(contains(multi_input_data, Type::fusion_type)) {
-        make_full_input(multi_input_data);
+        set<map<vector<key_t>, Integer> > Polys;
+        make_full_input(multi_input_data, Polys);
+        // we use the same conventions as the production of PolynomiualWquations
+        // from strings, Polys use input coordinates counting from 1
+        size_t dim_here = multi_input_data[Type::inhom_inequalities][0].size();
+        PolynomialEquations = OurPolynomialSystem<Integer>(Polys, dim_here);
+        PolynomialEquations.shift_coordinates(-1); // now we have cone coordinates
     }
 
     // NEW: Empty matrices have syntactical influence

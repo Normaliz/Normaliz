@@ -65,6 +65,7 @@ public:
     Number evaluate(const vector<Number>& argument) const;
     OurTerm();
     OurTerm(const Number& c, const map<key_t, long>& mon, const dynamic_bitset& supp);
+    OurTerm(const pair<vector<key_t>, Number>& t, size_t dim);
     void shift_coordinates(const int& shift);
     void swap_coordinates(const key_t& first, const key_t& second);
     void cyclic_shift_right(const key_t& col);
@@ -99,6 +100,7 @@ public:
     Number evaluate_restricted(const vector<Number>& argument, const dynamic_bitset& set_of_var) const;
     OurPolynomial();
     OurPolynomial(const string& poly_string, const size_t dim, const bool);
+    OurPolynomial(const map<vector<key_t>, Number>& poly, size_t dim);
     OurPolynomial(const vector<Number>& linear_form);
     key_t get_highest_indet() const;
     void shift_coordinates(const int& shift);
@@ -140,8 +142,9 @@ class OurPolynomialSystem : public std::vector<OurPolynomial<Number> > {
 
 public:
 
-    OurPolynomialSystem(const vector<string>& poly_strings, const size_t dim, const bool verb);
     OurPolynomialSystem();
+    OurPolynomialSystem(const vector<string>& poly_strings, const size_t dim, const bool verb);
+    OurPolynomialSystem(const set<map<vector<key_t>, Number> >& Polys, size_t dim);
     void shift_coordinates(const int& shift);
     void swap_coordinates(const key_t& first, const key_t& second);
     void cyclic_shift_right(const key_t& col);

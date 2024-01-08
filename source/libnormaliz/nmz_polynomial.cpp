@@ -32,6 +32,7 @@
 
 #include "libnormaliz/nmz_polynomial.h"
 #include "libnormaliz/vector_operations.h"
+#include "libnormaliz/list_and_map_operations.h"
 
 namespace libnormaliz {
 
@@ -54,6 +55,17 @@ OurTerm<Number>::OurTerm(const Number& c, const map<key_t, long>& mon, const dyn
     coeff = c;
     monomial = mon;
     support = supp;
+    mon2vars_expos();
+}
+
+
+template<typename Number>
+OurTerm<Number>::OurTerm(const pair<vector<key_t>, Number>& t, size_t dim){
+    coeff = t.second;
+    monomial = count_in_map<key_t, long>(t.first);
+    support = dynamic_bitset(dim);
+    for(auto& m: monomial)
+        support[m.first] = 1;
     mon2vars_expos();
 }
 
@@ -175,11 +187,27 @@ OurPolynomial<Number>::OurPolynomial(){
     vectorized = false;
 }
 
+
+template<typename Number>
+OurPolynomial<Number>::OurPolynomial(const map<vector<key_t>, Number>& poly, size_t dim){
+
+    vectorized = false;
+    support = dynamic_bitset(dim);
+    for(auto& t: poly){
+        pair<vector<key_t>, Number> t_0 = make_pair(t.first, t.second);
+        this->push_back(OurTerm<Number>(t_0,dim));
+        support |= this->back().support;
+    }
+    for(size_t i = 0; i < support.size(); ++i){
+        if(support[i])
+            highest_indet = i;
+    }
+}
+
 template<typename Number>
 OurPolynomial<Number>::OurPolynomial(const vector<Number>& linear_form){
 
     vectorized = false;
-
     for(size_t i = 0; i < linear_form.size(); ++i){
         if(linear_form[i] == 0)
             continue;
@@ -437,6 +465,12 @@ bool OurPolynomialCong<renf_elem_class>::check(const vector<renf_elem_class>& v)
 template<typename Number>
 OurPolynomialSystem<Number>::OurPolynomialSystem(){
 
+}
+
+template<typename Number>
+OurPolynomialSystem<Number>::OurPolynomialSystem(const set<map<vector<key_t>, Number> >& Polys, size_t dim){
+    for(auto& p: Polys)
+        this->push_back(OurPolynomial<Number>(p, dim + 1)); // sme conventions for dim as in making from strings by CoCoA below
 }
 
 template<typename Number>

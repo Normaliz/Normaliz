@@ -140,7 +140,7 @@ vector<vector<key_t> > make_all_permutations(const vector<key_t>& type, const ve
 void post_process_fusion(const vector<string>& command_line_items);
 
 template <typename Integer>
-void make_full_input(InputMap<Integer>& input_data);
+void make_full_input(InputMap<Integer>& input_data, set<map<vector<key_t>, Integer> >& Polys);
 
 template <typename Integer>
 vector<key_t> fusion_coincidence_pattern(const vector<Integer>& v);
