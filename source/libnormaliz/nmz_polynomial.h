@@ -85,7 +85,7 @@ class OurPolynomial : public std::vector<OurTerm<Number> > {
 
 public:
 
-    key_t highest_indet;
+    long highest_indet;  // -1 if support is empty
     dynamic_bitset support;
 
     // for linearization of degree 2 polynomials with +- 1 coeff

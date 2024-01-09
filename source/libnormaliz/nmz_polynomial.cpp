@@ -198,6 +198,7 @@ OurPolynomial<Number>::OurPolynomial(const map<vector<key_t>, Number>& poly, siz
         this->push_back(OurTerm<Number>(t_0,dim));
         support |= this->back().support;
     }
+    highest_indet = -1;
     for(size_t i = 0; i < support.size(); ++i){
         if(support[i])
             highest_indet = i;
@@ -233,7 +234,10 @@ void OurPolynomial<Number>::shift_coordinates(const int& shift){
         M.shift_coordinates(shift);
         support |= M.support;
     }
-    highest_indet +=shift;
+    if(highest_indet >0){
+        highest_indet +=shift;
+        assert(highest_indet >= 0);
+    }
 }
 
 template<typename Number>
@@ -246,6 +250,7 @@ void OurPolynomial<Number>::swap_coordinates(const key_t& first, const key_t& se
     bool temp = support[first];
     support[first] = support[second];
     support[second] = temp;
+    highest_indet = -1;
     for(size_t i = 0; i < support.size(); ++i){
         if(support[i])
             highest_indet = i;
@@ -377,6 +382,7 @@ void OurPolynomial<Number>::cyclic_shift_right(const key_t& col){
         T.cyclic_shift_right(col);
 
     v_cyclic_shift_right(support, col);
+    highest_indet = -1;
     for(size_t i = 0; i < support.size(); ++i){
         if(support[i])
             highest_indet = i;
@@ -389,6 +395,7 @@ void OurPolynomial<Number>::permute_variables(const vector<key_t>& perm){
     for(auto& T: *this)
         T.permute_variables(perm);
     support = v_permute_coordinates(support, perm);
+    highest_indet = -1;
     for(size_t i = 0; i < support.size(); ++i)
         if(support[i])
             highest_indet = i;
@@ -553,7 +560,7 @@ OurPolynomial<Number>::OurPolynomial(const string& poly_string, const size_t dim
     vector<long> v(NumIndets(R));
     BigInt BI_coeff;
     mpz_class mpz_coeff;
-    key_t max_indet = 0;
+    long max_indet = -1;
     support = dynamic_bitset(dim +1);
 
     INTERRUPT_COMPUTATION_BY_EXCEPTION
