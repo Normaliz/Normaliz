@@ -146,6 +146,8 @@ bool setTalkativeDefault(bool v);
 /* methods to set and use the output streams */
 void setVerboseOutput(std::ostream&);
 void setErrorOutput(std::ostream&);
+void set_global_fusion_data();
+void reset_global_fusion_data();
 
 std::ostream& verboseOutput();
 std::ostream& errorOutput();

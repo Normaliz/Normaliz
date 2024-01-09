@@ -259,14 +259,14 @@ void FusionData<Integer>::set_type_and_duality(const vector<key_t>& our_type_coi
 
 
 template <typename Integer>
-void FusionData<Integer>::read_data(const bool a_priori) {
+bool FusionData<Integer>::read_data(const bool a_priori, const bool only_test) {
 
     if(!type_and_duality_set && fusion_type_coinc_from_input.size() > 0){
         set_type_and_duality(fusion_type_coinc_from_input, fusion_duality_from_input,
                                    fusion_commutative_from_input, fusion_type_from_input);
     }
     if(!type_and_duality_set){
-            data_from_string(global_project);
+            data_from_string(global_project, only_test);
     }
 
     set<key_t> subring_base_set;
@@ -277,28 +277,36 @@ void FusionData<Integer>::read_data(const bool a_priori) {
     }
 
     if(fusion_type.size() == 0 || fusion_type.size() != duality.size() ||
-                fusion_type[0] != 1 || duality[0] != 0)
+                fusion_type[0] != 1 || duality[0] != 0){
+        if(only_test)
+            return false;
         throw BadInputException("Fusion data corrupt");
+    }
 
     fusion_rank = duality.size();
     dynamic_bitset dual_ind(fusion_rank);
     for(size_t i = 0; i < fusion_rank; ++i){
-        if(duality[i] >= fusion_rank || fusion_type[i] != fusion_type[duality[i]])
+        if(duality[i] >= fusion_rank || fusion_type[i] != fusion_type[duality[i]]){
+            if(only_test)
+                return false;
             throw BadInputException("Fusion data corrupt");
+        }
          dual_ind[duality[i]] = 1;
     }
-    if(dual_ind.count() != fusion_rank)
+    if(dual_ind.count() != fusion_rank){
+        if(only_test)
+            return false;
         throw BadInputException("Fusion data corrupt");
-
+    }
     if(verbose){
         verboseOutput() << "rank " << fusion_rank << endl;
-        verboseOutput() << "type " << fusion_type;
+        verboseOutput() << "type " << fusion_type_string; // contains \n
         verboseOutput() << "duality " << duality;
         verboseOutput() << "commutative " << commutative << endl;
     }
 
     if(!activated)
-        return;
+        return true;
 
     if((use_automorphisms && a_priori) || (select_iso_classes && !a_priori) )
         make_automorphisms();
@@ -308,11 +316,13 @@ void FusionData<Integer>::read_data(const bool a_priori) {
 
     if(candidate_given && verbose)
         verboseOutput() << "candidate base of subring " << subring_base_key;
+
+    return true;
 }
 
 
 template <typename Integer>
-void FusionData<Integer>::data_from_string(const string& our_fusion) {
+bool FusionData<Integer>::data_from_string(const string& our_fusion, const bool only_test) {
     if(verbose)
         verboseOutput() << "Reading fusion data from string " << our_fusion << endl;
     string name = pureName(our_fusion);
@@ -324,8 +334,11 @@ void FusionData<Integer>::data_from_string(const string& our_fusion) {
     stringstream data(clean_name);
     char c;
     data >> c;
-    if(c !='[')
+    if(c !='['){
+        if(only_test)
+            return false;
         throw BadInputException("String " + our_fusion +" not standard fusion");
+    }
     vector<long> type;
     while(true){
         long nr;
@@ -336,13 +349,20 @@ void FusionData<Integer>::data_from_string(const string& our_fusion) {
             break;
         }
         else{
-            if(c != ',')
-                throw BadInputException("String " + our_fusion +"not standard fusion");
+            if(c != ','){
+                if(only_test)
+                    return false;
+                throw BadInputException("String " + our_fusion +" not standard fusion");
+            }
         }
     }
     data >> c;
-    if(c !='[')
-        throw BadInputException("String " + our_fusion +"not standard fusion");
+    if(c !='['){
+        if(only_test)
+            return false;
+        throw BadInputException("String " + our_fusion +" not standard fusion");
+    }
+
     while(true){
         long nr;
         data >> nr;
@@ -356,13 +376,16 @@ void FusionData<Integer>::data_from_string(const string& our_fusion) {
             break;
         }
         else{
-            if(c != ',')
-                throw BadInputException("String " + our_fusion +"not standard fusion");
+            if(c != ','){
+                if(only_test)
+                    return false;
+                throw BadInputException("String " + our_fusion +" not standard fusion");
+            }
         }
     }
 
-
     type_and_duality_set = true;
+    return true;
 }
 
 /*
@@ -856,12 +879,8 @@ set<map<vector<key_t>, Integer> > FusionData<Integer>::make_associativity_constr
 
                         Polys.insert(P);
                 }
-
             }
-
         }
-
-
     }
 
     /*
@@ -878,6 +897,23 @@ set<map<vector<key_t>, Integer> > FusionData<Integer>::make_associativity_constr
     return Polys;
 }
 
+template <typename Integer>
+void FusionData<Integer>::makeinput_from_fusion_data(InputMap<mpq_class>&  input){
+
+    vector<long> bridge(fusion_type.size());
+    Matrix<mpq_class> TypeInput(1, fusion_type.size());
+    for(size_t i = 0; i< bridge.size(); ++i)
+        bridge[i] = fusion_type[i];
+    convert(TypeInput[0], bridge);
+    for(size_t i = 0; i< bridge.size(); ++i)
+        bridge[i] = duality[i];
+    Matrix<mpq_class> DualityInput(1, fusion_type.size());
+    convert(DualityInput[0], bridge);
+    if(commutative)
+        DualityInput[0][0] = -1;
+    input[Type::fusion_type] = TypeInput;
+    input[Type::fusion_duality] = DualityInput;
+}
 //-------------------------------------------------------------------------------
 // helper for fusion rings
 
@@ -1079,9 +1115,9 @@ template <typename Integer>
 void make_full_input(InputMap<Integer>& input_data, set<map<vector<key_t>, Integer> >& Polys) {
 
     vector<Integer> full_type = input_data[Type::fusion_type][0];
-    cout << "FULL " << full_type;
+    // cout << "FULL " << full_type;
     fusion_type_coinc_from_input = fusion_coincidence_pattern(full_type);
-    cout << "COINC " << fusion_type_coinc_from_input;
+    // cout << "COINC " << fusion_type_coinc_from_input;
     size_t fusion_rank_from_input = fusion_type_coinc_from_input.size();
     stringstream for_type;
     for_type << full_type;
@@ -1092,7 +1128,7 @@ void make_full_input(InputMap<Integer>& input_data, set<map<vector<key_t>, Integ
 
     if(contains(input_data, Type::fusion_duality)){
         vector<Integer> prel_duality = input_data[Type::fusion_duality][0];
-        cout << "PREL " << prel_duality  << " -- " << prel_duality.size() << " -- " <<  fusion_rank_from_input << endl;
+        // cout << "PREL " << prel_duality  << " -- " << prel_duality.size() << " -- " <<  fusion_rank_from_input << endl;
         if(prel_duality.size() != fusion_rank_from_input || (prel_duality[0] != 0 && prel_duality[0] != -1))
             throw BadInputException("Fusion duality corrupt");
         if(prel_duality[0] == -1) {
@@ -1147,8 +1183,8 @@ vector<key_t> fusion_coincidence_pattern(const vector<Integer>& v){
 
     coinc[0] = 1;
     key_t last_new = 1;
-    for(key_t i = 0; i < v.size(); ++i){
-        for(key_t j = 0; j < i; ++j){
+    for(key_t i = 1; i < v.size(); ++i){
+        for(key_t j = 1; j < i; ++j){
             if(v[i] == v[j]){
                 coinc[i] = coinc[j];
                 break;
@@ -1160,9 +1196,23 @@ vector<key_t> fusion_coincidence_pattern(const vector<Integer>& v){
         }
     }
 
-    cout << "COINC " << coinc;
     return coinc;
 }
+
+/*
+template <typename Integer>
+void FusionData<Integer>::set_global_fusion_data(){
+    assert(false);
+}
+
+template <>
+void FusionData<long long>::set_global_fusion_data(){
+    fusion_type_coinc_from_input = fusion_type;
+    fusion_type_from_input = fusion_type_string;
+    fusion_duality_from_input = duality;
+    fusion_commutative_from_input = commutative;
+}
+*/
 
 template class FusionData<mpz_class>;
 template class FusionData<long long>;

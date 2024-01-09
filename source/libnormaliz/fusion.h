@@ -85,9 +85,9 @@ public:
 
     FusionData();
     void set_options(const ConeProperties& ToCompute, const bool verb);
-    void read_data(const bool a_priori);
-    void read_data_from_file();
-    void data_from_string(const string& our_fusion);
+    bool read_data(const bool a_priori, const bool only_test = false);
+    //void read_data_from_file();
+    bool data_from_string(const string& our_fusion, const bool onyl_test);
 
     // coordinates
     void make_CoordMap();
@@ -118,7 +118,8 @@ public:
     Matrix<Integer> make_linear_constraints(const vector<Integer>& d);
     pair<Integer, vector<key_t> >  term(const key_t& i, const key_t& j, const key_t& k);
     set<map<vector<key_t>, Integer> > make_associativity_constraints();
-
+    void makeinput_from_fusion_data(InputMap<mpq_class>&  input);
+    // void set_global_fusion_data();
 };
 
 // helpers
@@ -136,6 +137,8 @@ vector<vector<key_t> > make_all_permutations(size_t n);
 vector<vector<key_t> > collect_coincidence_subset_keys(const vector<key_t>& type);
 vector<vector<key_t> > make_all_permutations(const vector<key_t>& v);
 vector<vector<key_t> > make_all_permutations(const vector<key_t>& type, const vector<key_t>& duality);
+
+void remove_global_fusion_data();
 
 void post_process_fusion(const vector<string>& command_line_items);
 

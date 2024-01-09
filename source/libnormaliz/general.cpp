@@ -244,6 +244,13 @@ void Check_Stop(){
         throw NoComputationException("normaliz stop requested");
 }
 
+void reset_global_fusion_data(){
+    fusion_type_coinc_from_input.clear();
+    fusion_type_from_input.clear();
+    fusion_duality_from_input.clear();
+    fusion_commutative_from_input = false;
+}
+
 unsigned int getVersion()
 {
 #ifdef NMZ_MAKEFILE_CLASSIC

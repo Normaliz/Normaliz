@@ -515,13 +515,19 @@ int process_data(OptionsHandler& options, const string& command_line) {
             is_split_patching = true;
         }
 
+        bool standard_fusion_name = false;
+        reset_global_fusion_data(); // because of list processing
+        FusionData<long long> test_fusion;
         string name_in = options.getProjectName() + ".in";
         const char* file_in = name_in.c_str();
         ifstream in;
         in.open(file_in, ifstream::in);
         if (!in.is_open()) {
-            cerr << "error: Failed to open file " << name_in << "." << endl;
-            return 1;
+            standard_fusion_name = test_fusion.read_data(true, true);
+            if(!standard_fusion_name){
+                cerr << "error: Failed to open file " << name_in << "." << endl;
+                return 1;
+            }
         }
 
         string polynomial;
@@ -534,30 +540,34 @@ int process_data(OptionsHandler& options, const string& command_line) {
         bool renf_read = false;
         renf_class_shared number_field;
 
-        try {
-            input = readNormalizInput<mpq_class>(in, options, num_param_input, poly_param_input,  number_field);
-            if (nmz_interrupted)
-                exit(10);
-        }
+        if(!standard_fusion_name){
+            try {
+                input = readNormalizInput<mpq_class>(in, options, num_param_input, poly_param_input,  number_field);
+                if (nmz_interrupted)
+                    exit(10);
+            }
 #ifdef ENFNORMALIZ
-        catch (const NumberFieldInputException& e) {
-            if (verbose)
-                verboseOutput() << "Input specifies a number field, trying again with number field implementation..." << endl;
+            catch (const NumberFieldInputException& e) {
+                if (verbose)
+                    verboseOutput() << "Input specifies a number field, trying again with number field implementation..." << endl;
 
-            in.close();
-            in.open(file_in, ifstream::in);
-            renf_input = readNormalizInput<renf_elem_class>(in, options, num_param_input, poly_param_input, number_field);
-            if (nmz_interrupted)
-                exit(10);
-            renf_read = true;
-        }
+                in.close();
+                in.open(file_in, ifstream::in);
+                renf_input = readNormalizInput<renf_elem_class>(in, options, num_param_input, poly_param_input, number_field);
+                if (nmz_interrupted)
+                    exit(10);
+                renf_read = true;
+            }
 #else
-        catch (const NumberFieldInputException& e) {
-            throw BadInputException("");
-        }
+            catch (const NumberFieldInputException& e) {
+                throw BadInputException("");
+            }
 #endif
-
-        in.close();
+            in.close();
+        }
+        else{
+            test_fusion.makeinput_from_fusion_data(input);
+        }
 
         if (verbose) {
             // verboseOutput() << "-------------------------------------------------------------" << endl;
@@ -565,7 +575,7 @@ int process_data(OptionsHandler& options, const string& command_line) {
                 verboseOutput() << "Input file: " << options.getProjectName() << endl;
             verboseOutput() << "Compute: ";
             if (options.getToCompute().none())
-                verboseOutput() << "No computation goal set, using defaults given input" << endl;
+                verboseOutput() << "No computation goal set, using defaults for given input" << endl;
             else
                 verboseOutput() << options.getToCompute() << endl;
             for(auto& P: num_param_input)
