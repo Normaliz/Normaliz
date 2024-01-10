@@ -1221,15 +1221,15 @@ void Output<Integer>::write_files() {
 
     if(Result->isComputed(ConeProperty::FusionRings) || Result->isComputed(ConeProperty::SimpleFusionRings)){
         if(Result->isComputed(ConeProperty::FusionRings)){
-            write_fusion_files(name, Result->isComputed(ConeProperty::NonsimpleFusionRings),
-                            Result->isComputed(ConeProperty::SimpleFusionRings), Result->getEmbeddingDim(),
+            write_fusion_files(name, Result->isComputed(ConeProperty::SimpleFusionRings),
+                            Result->isComputed(ConeProperty::NonsimpleFusionRings), Result->getEmbeddingDim(),
                             Result->getSimpleFusionRingsMatrix(), Result->getNonsimpleFusionRingsMatrix(),
                             no_matrices_output);
         }
         else{ // only soimple computed
             Matrix<Integer> Zero;
-            write_fusion_files(name, Result->isComputed(ConeProperty::NonsimpleFusionRings),
-                            Result->isComputed(ConeProperty::SimpleFusionRings), Result->getEmbeddingDim(),
+            write_fusion_files(name, Result->isComputed(ConeProperty::SimpleFusionRings),
+                            Result->isComputed(ConeProperty::NonsimpleFusionRings), Result->getEmbeddingDim(),
                             Result->getSimpleFusionRingsMatrix(), Zero,
                             no_matrices_output);
         }
@@ -1903,7 +1903,7 @@ void Output<Integer>::write_files() {
 
 
 template <typename Integer>
-void write_fusion_files(const string& name, const bool non_simple_fusion_rings, const bool simple_fusion_rings,
+void write_fusion_files(const string& name, const bool simple_fusion_rings, const bool non_simple_fusion_rings,
                                          size_t embdim, const Matrix<Integer>& SimpleFusionRings,
                                          const Matrix<Integer>& NonsimpleFusionRings,
                                          const bool no_matrices_output) {

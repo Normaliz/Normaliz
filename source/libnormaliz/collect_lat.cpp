@@ -501,7 +501,7 @@ void collect_lat(const string& project) {
                 write_fusion_files(global_project, true, true, embdim, SimpleFusionRings, NonsimpleFusionRings, false);
             }
             else{ // only soimple computed
-                write_fusion_files(global_project, false, true, embdim, SimpleFusionRings, NonsimpleFusionRings, false);
+                write_fusion_files(global_project, true, false, embdim, SimpleFusionRings, NonsimpleFusionRings, false);
             }
         }
         if(verbose)
