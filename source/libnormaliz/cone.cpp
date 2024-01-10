@@ -817,6 +817,9 @@ void Cone<Integer>::process_multi_input_inner(InputMap<Integer>& multi_input_dat
         size_t dim_here = multi_input_data[Type::inhom_inequalities][0].size();
         PolynomialEquations = OurPolynomialSystem<Integer>(Polys, dim_here);
         PolynomialEquations.shift_coordinates(-1); // now we have cone coordinates
+
+        is_fusion = true;
+        polynomially_constrained = true;
     }
 
     // NEW: Empty matrices have syntactical influence
@@ -2166,6 +2169,8 @@ void Cone<Integer>::initialize() {
     polytope_in_input = false;
     inequalities_in_input = false;
     rational_lattice_in_input = false;
+
+    is_fusion = false;
 
     positive_orthant = false;
     zero_one = false;
@@ -4496,10 +4501,14 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     if (using_renf<Integer>())
         ToCompute.check_Q_permissible(false);  // before implications!
 
+    ToCompute.check_conflicting_variants();
+
+    if(is_fusion)
+        ToCompute.set_fusion_default();
+
     if(ToCompute.test(ConeProperty::FusionRings) || ToCompute.test(ConeProperty::SimpleFusionRings))
         ToCompute.check_fusion_ring_props();
 
-    ToCompute.check_conflicting_variants();
     ToCompute.set_preconditions(inhomogeneous, using_renf<Integer>());
 
     if (using_renf<Integer>())

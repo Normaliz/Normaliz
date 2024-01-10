@@ -1221,15 +1221,15 @@ void Output<Integer>::write_files() {
 
     if(Result->isComputed(ConeProperty::FusionRings) || Result->isComputed(ConeProperty::SimpleFusionRings)){
         if(Result->isComputed(ConeProperty::FusionRings)){
-            write_fusion_files(name, Result->isComputed(ConeProperty::SimpleFusionRings),
-                            Result->isComputed(ConeProperty::NonsimpleFusionRings), Result->getEmbeddingDim(),
+            write_fusion_files(name, Result->isComputed(ConeProperty::NonsimpleFusionRings),
+                            Result->isComputed(ConeProperty::SimpleFusionRings), Result->getEmbeddingDim(),
                             Result->getSimpleFusionRingsMatrix(), Result->getNonsimpleFusionRingsMatrix(),
                             no_matrices_output);
         }
         else{ // only soimple computed
             Matrix<Integer> Zero;
-            write_fusion_files(name, Result->isComputed(ConeProperty::SimpleFusionRings),
-                            Result->isComputed(ConeProperty::NonsimpleFusionRings), Result->getEmbeddingDim(),
+            write_fusion_files(name, Result->isComputed(ConeProperty::NonsimpleFusionRings),
+                            Result->isComputed(ConeProperty::SimpleFusionRings), Result->getEmbeddingDim(),
                             Result->getSimpleFusionRingsMatrix(), Zero,
                             no_matrices_output);
         }

@@ -400,6 +400,17 @@ size_t ConeProperties::count() const {
     return CPs.count();
 }
 
+void ConeProperties::set_fusion_default() {
+
+    if(CPs.test(ConeProperty::LatticePoints) || CPs.test(ConeProperty::FusionRings)
+        || CPs.test(ConeProperty::SimpleFusionRings) || CPs.test(ConeProperty::NonsimpleFusionRings))
+        return;
+    if(CPs.test(ConeProperty::DefaultMode)){
+        CPs.set(ConeProperty::FusionRings);
+        CPs.reset(ConeProperty::DefaultMode);
+    }
+}
+
 /* add preconditions */
 void ConeProperties::set_preconditions(bool inhomogeneous, bool numberfield) {
 
