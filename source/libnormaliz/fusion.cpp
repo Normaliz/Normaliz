@@ -246,14 +246,21 @@ void FusionData<Integer>::set_options(const ConeProperties& ToCompute, const boo
 }
 
 template <typename Integer>
-void FusionData<Integer>::set_type_and_duality(const vector<key_t>& our_type_coinc, const vector<key_t>& our_duality,
-                              const bool our_connutative, const string& our_full_type){
+void FusionData<Integer>::import_global_data(){
 
-    fusion_type = our_type_coinc;
+    fusion_type = fusion_type_coinc_from_input;
     fusion_rank = fusion_type.size();
-    duality = our_duality;
-    commutative = our_connutative;
-    fusion_type_string = our_full_type;
+    duality = fusion_duality_from_input;
+    commutative = fusion_commutative_from_input;
+    fusion_type_string = fusion_type_from_input;
+    subring_base_key = candidate_subring_from_inout;
+    dynamic_bitset candidate_test = key_to_bitset(subring_base_key, fusion_rank);
+    for(size_t i = 0; i < candidate_test.size(); ++i){
+        if(candidate_test[i] && !candidate_test[duality[i]])
+            throw BadInputException("Candidate subring not closed under duality");
+
+    }
+    candidate_given = (subring_base_key.size() >0);
     type_and_duality_set = true;
 }
 
@@ -262,8 +269,7 @@ template <typename Integer>
 bool FusionData<Integer>::read_data(const bool a_priori, const bool only_test) {
 
     if(!type_and_duality_set && fusion_type_coinc_from_input.size() > 0){
-        set_type_and_duality(fusion_type_coinc_from_input, fusion_duality_from_input,
-                                   fusion_commutative_from_input, fusion_type_from_input);
+        import_global_data();
     }
     if(!type_and_duality_set){
             data_from_string(global_project, only_test);
@@ -304,6 +310,8 @@ bool FusionData<Integer>::read_data(const bool a_priori, const bool only_test) {
         verboseOutput() << "duality " << duality;
         verboseOutput() << "commutative " << commutative << endl;
     }
+    if(candidate_given && verbose)
+        verboseOutput() << "candidate base of subring " << subring_base_key;
 
     if(!activated)
         return true;
@@ -313,9 +321,6 @@ bool FusionData<Integer>::read_data(const bool a_priori, const bool only_test) {
 
     if((check_simplicity && a_priori) || (select_simple && !a_priori) ) // after automorphisms !!
         prepare_simplicity_check();
-
-    if(candidate_given && verbose)
-        verboseOutput() << "candidate base of subring " << subring_base_key;
 
     return true;
 }
@@ -664,8 +669,12 @@ Matrix<Integer> FusionData<Integer>::do_select_simple_inner(const Matrix<Integer
             SimplePoints.append(LattPoints[i]);
     }
 
+    string message = " simple fusion rings found";
+    if(candidate_given)
+        message = "fusion rings not containing candite subring";
+
     if(verbose)
-        verboseOutput() << SimplePoints.nr_of_rows() << " simple fusion rings found" << endl;
+        verboseOutput() << SimplePoints.nr_of_rows() << message << endl;
 
     return SimplePoints;
 }
@@ -945,8 +954,12 @@ void split_into_simple_and_nonsimple(Matrix<Integer>& SimpleFusionRings, Matrix<
     fusion.verbose = false;
     fusion.read_data(false); // falsae = a posteriori
     SimpleFusionRings = fusion.do_select_simple(FusionRings);
+    string message = " simple fusion rings (or: not containing candidate subring)";
+    /* if(candidate_given)
+        message = "fusion rings not containing candite subring"; */
+
     if(verb)
-        verboseOutput() << SimpleFusionRings.nr_of_rows() << " simple fusion rings found" << endl;
+        verboseOutput() << SimpleFusionRings.nr_of_rows() << message << endl;
     set<vector<Integer> > OurSimple;
     for(size_t i = 0; i < SimpleFusionRings.nr_of_rows(); ++i){
         OurSimple.insert(SimpleFusionRings[i]);
@@ -956,8 +969,12 @@ void split_into_simple_and_nonsimple(Matrix<Integer>& SimpleFusionRings, Matrix<
         if(OurSimple.find(FusionRings[i]) == OurSimple.end())
             NonsimpleFusionRings.append(FusionRings[i]);
     }
+    string message_1 = " nonsimple fusion rings (or: containing candidate subring)";
+    /* if(candidate_given)
+        message_1 = "fusion rings containing candite subring";*/
+
     if(verb)
-        verboseOutput() << NonsimpleFusionRings.nr_of_rows() << " nonsimple fusion rings found" << endl;
+        verboseOutput() << NonsimpleFusionRings.nr_of_rows() << message_1 << endl;
 }
 
 template <typename Integer>
@@ -1154,9 +1171,28 @@ void make_full_input(InputMap<Integer>& input_data, set<map<vector<key_t>, Integ
         fusion_duality_from_input = identity_key(fusion_rank_from_input);
     }
 
+    if(contains(input_data, Type::candidate_subring)){
+        dynamic_bitset cand_indicator(input_data[Type::candidate_subring][0].size());
+        if(cand_indicator.size() != full_type.size())
+            throw BadInputException("Candidate subring corrupt");
+        for(size_t i = 0; i < cand_indicator.size(); ++i){
+            if(input_data[Type::candidate_subring][0][i] == 0){
+                continue;
+            }
+            if(input_data[Type::candidate_subring][0][i] == 1){
+                cand_indicator[i] = 1;
+                continue;
+            }
+            throw BadInputException("Candidate subring corrupt");
+        }
+        if(!cand_indicator[0] || cand_indicator.count() <=1 || cand_indicator.count() == full_type.size())
+            throw BadInputException("Candidate subring corrupt");
+        candidate_subring_from_inout = bitset_to_key(cand_indicator);
+        input_data.erase(Type::candidate_subring);
+    }
+
     FusionData<Integer> OurFusion;
-    OurFusion.set_type_and_duality(fusion_type_coinc_from_input, fusion_duality_from_input,
-                                   fusion_commutative_from_input, fusion_type_from_input);
+    OurFusion.import_global_data();
     OurFusion.read_data(true); // checks the duality
 
     Matrix<Integer> Equ = OurFusion.make_linear_constraints(full_type);

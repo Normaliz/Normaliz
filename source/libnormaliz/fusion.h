@@ -69,10 +69,7 @@ public:
     string fusion_type_string;
     vector<key_t> duality;
 
-    void set_type_and_duality(const vector<key_t>& our_type_coinc, const vector<key_t>& our_duality,
-                              const bool our_connutative, const string& our_full_type);
-    vector<key_t> subring_base_key;
-    vector<vector<key_t> > all_base_keys;
+    void import_global_data();
     vector<vector<vector<key_t> > > all_critical_coords_keys;
     vector<vector<key_t> > coords_to_check_key;
     vector<dynamic_bitset> coords_to_check_ind;
@@ -100,7 +97,9 @@ public:
     void make_all_ind_tuples();
 
     // for simplicity check
+    vector<key_t> subring_base_key;
     dynamic_bitset critical_coords(const vector<key_t>& base_key);
+    vector<vector<key_t> > all_base_keys;
     void make_all_base_keys();
     void prepare_simplicity_check();
     Matrix<Integer> do_select_simple_inner(const Matrix<Integer>& LattPoints);
