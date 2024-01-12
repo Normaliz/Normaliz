@@ -253,7 +253,8 @@ void FusionData<Integer>::import_global_data(){
     duality = fusion_duality_from_input;
     commutative = fusion_commutative_from_input;
     fusion_type_string = fusion_type_from_input;
-    subring_base_key = candidate_subring_from_inout;
+
+    subring_base_key = candidate_subring_from_input;
     dynamic_bitset candidate_test = key_to_bitset(subring_base_key, fusion_rank);
     for(size_t i = 0; i < candidate_test.size(); ++i){
         if(candidate_test[i] && !candidate_test[duality[i]])
@@ -784,6 +785,39 @@ Matrix<Integer> FusionData<Integer>::make_linear_constraints(const vector<Intege
     return Equ;
 }
 
+template <typename Integer>
+Matrix<Integer> FusionData<Integer>::make_linear_constraints_partition(const vector<Integer>& d,
+                                                                       const vector<long>& card){
+    make_CoordMap();
+
+    /* cout << "DDDD " << d;
+    cout << "CCCC " << card; */
+
+    Matrix<Integer> Equ(0, nr_coordinates + 1); // mudst accomodate right hand side in last coordinate
+
+    vector<key_t> indices(3);
+    for(key_t i = 1; i < fusion_rank; ++i){
+        indices[0] = i;
+        for(key_t j = 1; j < fusion_rank; ++j){
+            indices[1] = j;
+            vector<Integer> this_equ(nr_coordinates + 1);
+            this_equ.back() = - d[i]*d[j]*card[i]*card[j];
+            if(i == j) // duality is trivial
+                this_equ.back() += card[i];
+            for(key_t k = 1; k < fusion_rank; ++k){
+                indices[2] = k;
+                this_equ[coord_cone(indices)] += d[k];
+            }
+            Equ.append(this_equ);
+        }
+    }
+
+    Equ.remove_duplicate_and_zero_rows();
+
+    // Equ.pretty_print(cout);
+    return Equ;
+}
+
 // factor_1 = factor_1 * factor__2
 template <typename Integer>
 void prod(pair<Integer, vector<key_t> >& factor_1, const pair<Integer, vector<key_t> >& factor_2){
@@ -1187,7 +1221,7 @@ void make_full_input(InputMap<Integer>& input_data, set<map<vector<key_t>, Integ
         }
         if(!cand_indicator[0] || cand_indicator.count() <=1 || cand_indicator.count() == full_type.size())
             throw BadInputException("Candidate subring corrupt");
-        candidate_subring_from_inout = bitset_to_key(cand_indicator);
+        candidate_subring_from_input = bitset_to_key(cand_indicator);
         input_data.erase(Type::candidate_subring);
     }
 
@@ -1205,6 +1239,38 @@ void make_full_input(InputMap<Integer>& input_data, set<map<vector<key_t>, Integ
 
     Polys = OurFusion.make_associativity_constraints();
 
+}
+
+template <typename Integer>
+void make_full_input_partition(InputMap<Integer>& input_data){
+
+    vector<Integer> full_type = input_data[Type::fusion_type_for_partition][0];
+    full_type[0] = 0; // tpo separate the neutral element
+    map<Integer, long> blocks = count_in_map<Integer, long>(full_type);
+    full_type[0] = 1; // restored;
+
+    vector<Integer> d;
+    vector<long> card;
+    for(auto& b: blocks){
+        card.push_back(b.second);
+        d.push_back(b.first);
+    }
+    d[0] = 1; // restored
+
+    FusionData<Integer> partition_fusion;
+    partition_fusion.fusion_type = identity_key(blocks.size());
+    partition_fusion.duality = identity_key(blocks.size());
+    partition_fusion.commutative = true; // doesn't matter since duality = id
+    partition_fusion.fusion_rank = d.size();
+
+    Matrix<Integer> Equ = partition_fusion.make_linear_constraints_partition(d, card);
+    Matrix<Integer> InEqu = Equ;
+    // Equ.pretty_print(cout);
+    Integer MinusOne = -1;
+    Equ.scalar_multiplication(MinusOne);
+    InEqu.append(Equ);
+    input_data[Type::inhom_inequalities] = InEqu;
+    input_data[Type::inequalities] = Matrix<Integer>(InEqu.nr_of_columns()-1);
 }
 
 template <typename Integer>
@@ -1291,6 +1357,14 @@ template void make_full_input(InputMap<mpz_class>& input_data, set<map<vector<ke
 #ifdef ENFNORMALIZ
 template void make_full_input(InputMap<renf_elem_class>& input_data, set<map<vector<key_t>, renf_elem_class> >& Polys);
 #endif
+
+template void make_full_input_partition(InputMap<long>& input_data);
+template void make_full_input_partition(InputMap<long long>& input_data);
+template void make_full_input_partition(InputMap<mpz_class>& input_data);
+#ifdef ENFNORMALIZ
+template void make_full_input_partition(InputMap<renf_elem_class>& input_data);
+#endif
+
 
 
 } // namespace

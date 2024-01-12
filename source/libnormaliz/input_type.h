@@ -88,6 +88,8 @@ enum InputType {
     projection_coordinates,
     fusion_type,
     fusion_duality,
+    candidate_subring,
+    fusion_type_for_partition,
     //
     // precomputed data
     //
@@ -330,8 +332,16 @@ inline InputType to_type(const string& type_string) {
         return Type::fusion_type;
     }
 
+    if (type_string == "fusion_type_for_partition") {
+        return Type::fusion_type_for_partition;
+    }
+
     if (type_string == "fusion_duality") {
         return Type::fusion_duality;
+    }
+
+    if (type_string == "candidate_subring") {
+        return Type::candidate_subring;
     }
 
     throw BadInputException("Unknown type \"" + type_string + "\"!");
@@ -355,7 +365,8 @@ inline bool type_is_vector(InputType type) {
     if (type == Type::grading || type == Type::signs || type == Type::strict_signs || type == Type::dehomogenization ||
         type == Type::offset || type == Type::open_facets || type == Type::projection_coordinates
         || type == Type::scale || type == Type::rational_offset || type == Type::gb_weight
-         || type == Type::fusion_type || type == Type::fusion_duality ) {
+         || type == Type::fusion_type || type == Type::fusion_duality || type == Type::fusion_type_for_partition
+        || type == Type::candidate_subring) {
         return true;
     }
     return false;

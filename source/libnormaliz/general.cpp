@@ -110,7 +110,7 @@ std::vector<key_t> fusion_type_coinc_from_input;
 std::string fusion_type_from_input;
 std::vector<key_t> fusion_duality_from_input;
 bool fusion_commutative_from_input;
-std::vector<key_t> candidate_subring_from_inout;;
+std::vector<key_t> candidate_subring_from_input;;
 // std::vector<key_t> fusion_type_for_partition_from_input;
 
 #ifdef NMZ_EXTENDED_TESTS

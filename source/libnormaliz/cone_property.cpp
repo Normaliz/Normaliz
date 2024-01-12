@@ -411,6 +411,16 @@ void ConeProperties::set_fusion_default() {
     }
 }
 
+void ConeProperties::set_fusion_partition_default() {
+
+    if(CPs.test(ConeProperty::LatticePoints))
+        return;
+    if(CPs.test(ConeProperty::DefaultMode)){
+        CPs.set(ConeProperty::SingleLatticePoint);
+        CPs.reset(ConeProperty::DefaultMode);
+    }
+}
+
 /* add preconditions */
 void ConeProperties::set_preconditions(bool inhomogeneous, bool numberfield) {
 

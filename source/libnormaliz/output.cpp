@@ -166,6 +166,8 @@ void Output<Integer>::setCone(Cone<Integer>& C) {
                 module_generators_name = " module generators";
         }
     }
+    if(Result->isComputed(ConeProperty::SingleLatticePoint))
+        module_generators_name += " (only single lattice point asked for)";
 }
 
 template <typename Number>
@@ -1345,8 +1347,21 @@ void Output<Integer>::write_files() {
             nr_orig_gens = Result->getNrOriginalMonoidGenerators();
             out << nr_orig_gens << " original generators of the toric ring" << endl;
         }
-        if (!homogeneous && Result->isComputed(ConeProperty::NumberLatticePoints) && !Result->isIntHullCone()) {
-            out << Result->getNumberLatticePoints() << module_generators_name << endl;
+        size_t nr_lattice_points = 0;
+        bool print_nr_of_allice_points = false;;
+        if(Result->isComputed(ConeProperty::NumberLatticePoints)){
+            nr_lattice_points = Result->getNumberLatticePoints();
+            print_nr_of_allice_points = true;
+        }
+        else{
+            if(Result->isComputed(ConeProperty::SingleLatticePoint)){
+                print_nr_of_allice_points = true;
+                if (Result->getSingleLatticePoint().size() > 0)
+                    nr_lattice_points = 1;
+            }
+        }
+        if (!homogeneous && print_nr_of_allice_points && !Result->isIntHullCone()) {
+            out << nr_lattice_points << module_generators_name << endl;
         }
         if (Result->isComputed(ConeProperty::HilbertBasis) && !Result->isIntHullCone()) {
             out << Result->getNrHilbertBasis() << " Hilbert basis elements" << of_monoid << endl;

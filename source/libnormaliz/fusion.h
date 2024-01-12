@@ -115,10 +115,13 @@ public:
     vector<Integer> norrmal_form(const vector<Integer> lattice_point);
 
     Matrix<Integer> make_linear_constraints(const vector<Integer>& d);
+    Matrix<Integer> make_linear_constraints_partition(const vector<Integer>& d,
+                                            const vector<long>& card);
     pair<Integer, vector<key_t> >  term(const key_t& i, const key_t& j, const key_t& k);
     set<map<vector<key_t>, Integer> > make_associativity_constraints();
     void makeinput_from_fusion_data(InputMap<mpq_class>&  input);
     // void set_global_fusion_data();
+
 };
 
 // helpers
@@ -143,6 +146,9 @@ void post_process_fusion(const vector<string>& command_line_items);
 
 template <typename Integer>
 void make_full_input(InputMap<Integer>& input_data, set<map<vector<key_t>, Integer> >& Polys);
+
+template <typename Integer>
+void make_full_input_partition(InputMap<Integer>& input_data);
 
 template <typename Integer>
 vector<key_t> fusion_coincidence_pattern(const vector<Integer>& v);

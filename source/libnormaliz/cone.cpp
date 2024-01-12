@@ -821,6 +821,14 @@ void Cone<Integer>::process_multi_input_inner(InputMap<Integer>& multi_input_dat
         is_fusion = true;
         polynomially_constrained = true;
     }
+    if(contains(multi_input_data, Type::fusion_type_for_partition)){
+        if(contains(multi_input_data, Type::fusion_type) || contains(multi_input_data, Type::fusion_duality)
+            || contains(multi_input_data, Type::candidate_subring))
+            throw BadInputException("Illegal combination of input types in connection with fusion");
+        make_full_input_partition(multi_input_data);
+
+        is_fusion_partition = true;
+    }
 
     // NEW: Empty matrices have syntactical influence
     it = multi_input_data.begin();
@@ -2171,6 +2179,7 @@ void Cone<Integer>::initialize() {
     rational_lattice_in_input = false;
 
     is_fusion = false;
+    is_fusion_partition = false;
 
     positive_orthant = false;
     zero_one = false;
@@ -4505,6 +4514,9 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
 
     if(is_fusion)
         ToCompute.set_fusion_default();
+
+    if(is_fusion_partition)
+        ToCompute.set_fusion_partition_default();
 
     if(ToCompute.test(ConeProperty::FusionRings) || ToCompute.test(ConeProperty::SimpleFusionRings))
         ToCompute.check_fusion_ring_props();

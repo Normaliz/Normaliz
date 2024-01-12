@@ -743,6 +743,7 @@ class Cone {
     bool precomputed_support_hyperplanes;
     bool empty_semiopen;
     bool is_fusion; // explicit fusion data input
+    bool is_fusion_partition;
 
     bool input_automorphisms;
 

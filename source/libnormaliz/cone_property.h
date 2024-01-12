@@ -345,6 +345,7 @@ class ConeProperties {
     // void prepare_compute_options(bool inhomogeneous, bool numberfield);
     void check_sanity(bool inhomogeneous);
     void set_fusion_default();
+    void set_fusion_partition_default();
 
     void check_conflicting_variants();
     void check_Q_permissible(bool after_implications);
