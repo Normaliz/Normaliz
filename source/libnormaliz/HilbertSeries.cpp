@@ -42,6 +42,7 @@
 
 #ifdef NMZ_FLINT
 #include "flint/flint.h"
+#include "flint/fmpz.h"
 #include "flint/fmpz_poly.h"
 #endif
 
