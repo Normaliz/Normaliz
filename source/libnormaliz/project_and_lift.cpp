@@ -1830,6 +1830,14 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                 }
             }
 
+            if(NrNodes[this_patch + 1] == 1 || this_patch == min_return_patch)
+                NrNodes[this_patch +1] = NrNodes[this_patch] * (expected_number_of_rounds +1);
+
+            for(size_t i = this_patch + 2; i < NrNodes.size(); ++i)
+                NrNodes[i] = 1;
+
+            // cout << "NrNodes " <<  NrNodes;
+
             // ***********************************   ascent to next patch
             time_to_ascent = MeasureTime(time_begin);
             extend_points_to_next_coord(NewLatticePoints, this_patch + 1);
@@ -1854,6 +1862,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
 
         bool time_measured = false;
 
+
         if(nr_points_done_in_this_round > 0 && NrRemainingLP[this_patch] > 0 && nr_rounds == 1){
             time_measured = true;
             double time_spent = MeasureTime(time_begin);
@@ -1861,12 +1870,14 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
 
             // -------------------------------
 
-            if(NrNodes[this_patch + 1] == 1 || this_patch == min_return_patch)
-                NrNodes[this_patch +1] = NrNodes[this_patch] * expected_number_of_rounds;
-
             TimeToLevel[this_patch + 1] = NrNodes[this_patch] * time_to_ascent + TimeToLevel[this_patch];
 
             total_expected_time = TimeToLevel[this_patch] + NrNodes[this_patch + 1] * time_spent + TimeSinceStart();
+
+            /* cout << "time_to_ascent " << time_to_ascent << endl;
+            cout << "time_spent " << time_spent << endl;
+            cout << "NrNodes " <<  NrNodes;
+            cout << "TimeToLevel " << TimeToLevel; */
 
             // -------------------------
 
