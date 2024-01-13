@@ -267,13 +267,17 @@ void FusionData<Integer>::import_global_data(){
 
 
 template <typename Integer>
-bool FusionData<Integer>::read_data(const bool a_priori, const bool only_test) {
+pair<bool, bool>  FusionData<Integer>::read_data(const bool a_priori, const bool only_test) {
+
+    bool dummy = false;
 
     if(!type_and_duality_set && fusion_type_coinc_from_input.size() > 0){
         import_global_data();
     }
     if(!type_and_duality_set){
-            data_from_string(global_project, only_test);
+            pair<bool, bool> standard_and_partition = data_from_string(global_project, only_test);
+            if(only_test && (!standard_and_partition.first || standard_and_partition.second))
+                return standard_and_partition;
     }
 
     set<key_t> subring_base_set;
@@ -286,7 +290,7 @@ bool FusionData<Integer>::read_data(const bool a_priori, const bool only_test) {
     if(fusion_type.size() == 0 || fusion_type.size() != duality.size() ||
                 fusion_type[0] != 1 || duality[0] != 0){
         if(only_test)
-            return false;
+            return make_pair(false, dummy);
         throw BadInputException("Fusion data corrupt");
     }
 
@@ -295,14 +299,14 @@ bool FusionData<Integer>::read_data(const bool a_priori, const bool only_test) {
     for(size_t i = 0; i < fusion_rank; ++i){
         if(duality[i] >= fusion_rank || fusion_type[i] != fusion_type[duality[i]]){
             if(only_test)
-                return false;
+                return make_pair(false, dummy);
             throw BadInputException("Fusion data corrupt");
         }
          dual_ind[duality[i]] = 1;
     }
     if(dual_ind.count() != fusion_rank){
         if(only_test)
-            return false;
+            return make_pair(false, dummy);
         throw BadInputException("Fusion data corrupt");
     }
     if(verbose){
@@ -315,7 +319,7 @@ bool FusionData<Integer>::read_data(const bool a_priori, const bool only_test) {
         verboseOutput() << "candidate base of subring " << subring_base_key;
 
     if(!activated)
-        return true;
+        return make_pair(true, dummy);
 
     if((use_automorphisms && a_priori) || (select_iso_classes && !a_priori) )
         make_automorphisms();
@@ -323,12 +327,14 @@ bool FusionData<Integer>::read_data(const bool a_priori, const bool only_test) {
     if((check_simplicity && a_priori) || (select_simple && !a_priori) ) // after automorphisms !!
         prepare_simplicity_check();
 
-    return true;
+    return make_pair(true, dummy);
 }
 
 
 template <typename Integer>
-bool FusionData<Integer>::data_from_string(const string& our_fusion, const bool only_test) {
+pair<bool, bool> FusionData<Integer>::data_from_string(const string& our_fusion, const bool only_test) {
+
+    bool dummy = false;
     if(verbose)
         verboseOutput() << "Reading fusion data from string " << our_fusion << endl;
     string name = pureName(our_fusion);
@@ -337,12 +343,38 @@ bool FusionData<Integer>::data_from_string(const string& our_fusion, const bool 
         if(c != ' ')
             clean_name.push_back(c);
     }
+    size_t open_bracket = 0, close_bracket = 0;
+    for(auto& c: clean_name){
+        if(c == '[')
+            open_bracket++;
+        if(c == ']')
+            close_bracket++;
+    }
+    if(clean_name.back() != ']'){
+        if(only_test)
+            return make_pair(false, dummy);
+        throw BadInputException("String " + our_fusion +" not standard fusion");
+    }
+    if(open_bracket != close_bracket){
+        if(only_test)
+            return make_pair(false, dummy);
+        throw BadInputException("String " + our_fusion +" not standard fusion");
+    }
+    if(open_bracket == 0 || open_bracket > 2){
+        if(only_test)
+            return make_pair(false, dummy);
+        throw BadInputException("String " + our_fusion +" not standard fusion");
+    }
+    bool only_partition = false;
+    if(open_bracket == 1)
+        only_partition = true;
+
     stringstream data(clean_name);
     char c;
     data >> c;
     if(c !='['){
         if(only_test)
-            return false;
+            return make_pair(false, dummy);
         throw BadInputException("String " + our_fusion +" not standard fusion");
     }
     vector<long> type;
@@ -357,15 +389,19 @@ bool FusionData<Integer>::data_from_string(const string& our_fusion, const bool 
         else{
             if(c != ','){
                 if(only_test)
-                    return false;
+                    return make_pair(false, dummy);
                 throw BadInputException("String " + our_fusion +" not standard fusion");
             }
         }
     }
+    if(only_partition){
+        return make_pair(true, true);
+
+    }
     data >> c;
     if(c !='['){
         if(only_test)
-            return false;
+            return make_pair(false, dummy);
         throw BadInputException("String " + our_fusion +" not standard fusion");
     }
 
@@ -384,14 +420,14 @@ bool FusionData<Integer>::data_from_string(const string& our_fusion, const bool 
         else{
             if(c != ','){
                 if(only_test)
-                    return false;
+                    return make_pair(false, dummy);
                 throw BadInputException("String " + our_fusion +" not standard fusion");
             }
         }
     }
 
     type_and_duality_set = true;
-    return true;
+    return make_pair(true, false);
 }
 
 /*
@@ -941,7 +977,7 @@ set<map<vector<key_t>, Integer> > FusionData<Integer>::make_associativity_constr
 }
 
 template <typename Integer>
-void FusionData<Integer>::makeinput_from_fusion_data(InputMap<mpq_class>&  input){
+void FusionData<Integer>::make_input_from_fusion_data(InputMap<mpq_class>&  input){
 
     vector<long> bridge(fusion_type.size());
     Matrix<mpq_class> TypeInput(1, fusion_type.size());
@@ -956,6 +992,17 @@ void FusionData<Integer>::makeinput_from_fusion_data(InputMap<mpq_class>&  input
         DualityInput[0][0] = -1;
     input[Type::fusion_type] = TypeInput;
     input[Type::fusion_duality] = DualityInput;
+}
+
+template <typename Integer>
+void FusionData<Integer>::make_partition_input_from_fusion_data(InputMap<mpq_class>&  input){
+
+    vector<long> bridge(fusion_type.size());
+    Matrix<mpq_class> TypeInput(1, fusion_type.size());
+    for(size_t i = 0; i< bridge.size(); ++i)
+        bridge[i] = fusion_type[i];
+    convert(TypeInput[0], bridge);
+    input[Type::fusion_type_for_partition] = TypeInput;
 }
 //-------------------------------------------------------------------------------
 // helper for fusion rings
@@ -1229,6 +1276,8 @@ void make_full_input(InputMap<Integer>& input_data, set<map<vector<key_t>, Integ
     OurFusion.import_global_data();
     OurFusion.read_data(true); // checks the duality
 
+    if(verbose)
+        verboseOutput() << "Making linear constraints for fusion rings" << endl;
     Matrix<Integer> Equ = OurFusion.make_linear_constraints(full_type);
     Matrix<Integer> InEqu = Equ;
     Integer MinusOne = -1;
@@ -1237,6 +1286,8 @@ void make_full_input(InputMap<Integer>& input_data, set<map<vector<key_t>, Integ
     input_data[Type::inhom_inequalities] = InEqu;
     input_data[Type::inequalities] = Matrix<Integer>(InEqu.nr_of_columns()-1);
 
+    if(verbose)
+    verboseOutput() << "Making accociativity constraints for fusion rings" << endl;
     Polys = OurFusion.make_associativity_constraints();
 
 }
@@ -1263,9 +1314,11 @@ void make_full_input_partition(InputMap<Integer>& input_data){
     partition_fusion.commutative = true; // doesn't matter since duality = id
     partition_fusion.fusion_rank = d.size();
 
+    if(verbose)
+        verboseOutput() << "Making linear constraints for partition test of vfusion rings" << endl;
     Matrix<Integer> Equ = partition_fusion.make_linear_constraints_partition(d, card);
     Matrix<Integer> InEqu = Equ;
-    // Equ.pretty_print(cout);
+    Equ.pretty_print(cout);
     Integer MinusOne = -1;
     Equ.scalar_multiplication(MinusOne);
     InEqu.append(Equ);

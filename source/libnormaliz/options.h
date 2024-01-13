@@ -177,6 +177,10 @@ class OptionsHandler {
         return output_dir;
     }
 
+    inline bool get_given_name_contains_in() const {
+        return given_name_contains_in;
+    }
+
     //---------------------------------------------------------------------------
 
    private:
@@ -197,6 +201,7 @@ class OptionsHandler {
     bool no_hilbert_basis_output;
     bool binomials_packed;
     bool use_split;
+    bool given_name_contains_in;
 
     bool ignoreInFileOpt;
 
@@ -234,6 +239,7 @@ inline OptionsHandler::OptionsHandler() {
     no_hilbert_basis_output = false;
     binomials_packed = false;
     use_split = false;
+    given_name_contains_in = false;
 }
 
 template <typename Integer>

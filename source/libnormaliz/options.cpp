@@ -82,6 +82,7 @@ void OptionsHandler::setProjectName(const string& s) {
         size_t found = project_name.rfind(suffix);
         if (found != string::npos) {
             project_name.erase(found);
+            given_name_contains_in = true;
         }
     }
     else {

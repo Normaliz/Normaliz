@@ -82,9 +82,9 @@ public:
 
     FusionData();
     void set_options(const ConeProperties& ToCompute, const bool verb);
-    bool read_data(const bool a_priori, const bool only_test = false);
+    pair<bool, bool> read_data(const bool a_priori, const bool only_test = false);
     //void read_data_from_file();
-    bool data_from_string(const string& our_fusion, const bool onyl_test);
+    pair<bool, bool>  data_from_string(const string& our_fusion, const bool onyl_test);
 
     // coordinates
     void make_CoordMap();
@@ -119,7 +119,8 @@ public:
                                             const vector<long>& card);
     pair<Integer, vector<key_t> >  term(const key_t& i, const key_t& j, const key_t& k);
     set<map<vector<key_t>, Integer> > make_associativity_constraints();
-    void makeinput_from_fusion_data(InputMap<mpq_class>&  input);
+    void make_input_from_fusion_data(InputMap<mpq_class>&  input);
+    void make_partition_input_from_fusion_data(InputMap<mpq_class>&  input);
     // void set_global_fusion_data();
 
 };
