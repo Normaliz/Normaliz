@@ -1220,7 +1220,7 @@ void make_full_input(InputMap<Integer>& input_data, set<map<vector<key_t>, Integ
     stringstream for_type;
     for_type << full_type;
     fusion_type_from_input = for_type.str();
-    input_data.erase(Type::fusion_type);
+
 
     fusion_commutative_from_input = false;
 
@@ -1246,7 +1246,6 @@ void make_full_input(InputMap<Integer>& input_data, set<map<vector<key_t>, Integ
             if(!in_range)
                 throw BadInputException("Fusion duality corrupt");
         }
-        input_data.erase(Type::fusion_duality);
     }
     else{
         fusion_duality_from_input = identity_key(fusion_rank_from_input);
@@ -1269,7 +1268,6 @@ void make_full_input(InputMap<Integer>& input_data, set<map<vector<key_t>, Integ
         if(!cand_indicator[0] || cand_indicator.count() <=1 || cand_indicator.count() == full_type.size())
             throw BadInputException("Candidate subring corrupt");
         candidate_subring_from_input = bitset_to_key(cand_indicator);
-        input_data.erase(Type::candidate_subring);
     }
 
     FusionData<Integer> OurFusion;
@@ -1283,6 +1281,11 @@ void make_full_input(InputMap<Integer>& input_data, set<map<vector<key_t>, Integ
     Integer MinusOne = -1;
     Equ.scalar_multiplication(MinusOne);
     InEqu.append(Equ);
+
+    /* input_data.erase(Type::fusion_type);
+    input_data.erase(Type::fusion_duality);
+    input_data.erase(Type::candidate_subring);*/
+    input_data.clear();
     input_data[Type::inhom_inequalities] = InEqu;
     input_data[Type::inequalities] = Matrix<Integer>(InEqu.nr_of_columns()-1);
 
@@ -1318,10 +1321,13 @@ void make_full_input_partition(InputMap<Integer>& input_data){
         verboseOutput() << "Making linear constraints for partition test of vfusion rings" << endl;
     Matrix<Integer> Equ = partition_fusion.make_linear_constraints_partition(d, card);
     Matrix<Integer> InEqu = Equ;
-    Equ.pretty_print(cout);
+    // Equ.pretty_print(cout);
     Integer MinusOne = -1;
     Equ.scalar_multiplication(MinusOne);
     InEqu.append(Equ);
+
+    //input_data.erase(Type::fusion_type_for_partition);
+    input_data.clear();
     input_data[Type::inhom_inequalities] = InEqu;
     input_data[Type::inequalities] = Matrix<Integer>(InEqu.nr_of_columns()-1);
 }
