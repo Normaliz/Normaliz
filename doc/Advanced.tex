@@ -1996,6 +1996,14 @@ Another input file in \verb|example| is \verb|Stanleydec.in|.
 
 In connection with ``face'', ``lattice'' means a partially ordered set with meet and join. Every face of a polyhedron is the intersection of the facets that contain it, and therefore Normaliz computes all intersections of facets, including the polyhedron itself and the empty set if the intersection of all facets should be empty.
 
+There are three relevant computation goals:
+\begin{itemize}
+	\itemtt[FaceLattice]
+	\itemtt[FVector]
+	\itemtt[Incidence]
+\end{itemize}
+The names are more or less self explanatory and discussed in the following.
+
 The computation of the face lattice or just the f-vector might require very much memory. Therefore one should be careful if the dimension is large or there are many support hyperplanes.
 
 The file \verb|rationalFL.in| contains
@@ -2070,7 +2078,14 @@ with its $2$ vertices and $1$ extreme ray of the recession cone.
 
 \subsubsection{Dual face lattice, f-vector and incidence matrix}
 
-Normaliz can also compute the face lattice of the dual cone. On the primal side this means that the face lattice is built bottom up and each face is represented by the extreme rays it contains. Since this is not possible for unbounded polyhedra, the dual versions are restricted to homogeneous input or inhomogeneous input defining polytopes. One application of the dual version is the computation of faces of low dimension which may be difficult to reach from the top if there are many facets. The numerical \verb|face_codim_bound| now refers to the face codimension on the dual side. For example, if one wants to compute the edges of a polytope from the vertices, \verb|face_codim_bound| must be set to $2$ since the edges define codimension $2$ faces of the dual polytope.
+Normaliz can also compute the face lattice of the dual cone.  The relevant computation goals:
+\begin{itemize}
+	\itemtt[DualFaceLattice]
+	\itemtt[Dual[FVector]
+	\itemtt[DualIncidence]
+\end{itemize}
+
+On the primal side this means that the face lattice is built bottom up and each face is represented by the extreme rays it contains. Since this is not possible for unbounded polyhedra, the dual versions are restricted to homogeneous input or inhomogeneous input defining polytopes. One application of the dual version is the computation of faces of low dimension which may be difficult to reach from the top if there are many facets. The numerical \verb|face_codim_bound| now refers to the face codimension on the dual side. For example, if one wants to compute the edges of a polytope from the vertices, \verb|face_codim_bound| must be set to $2$ since the edges define codimension $2$ faces of the dual polytope.
 
 An example (\verb|cube_3_dual_fac.in|):
 \begin{Verbatim}
@@ -2121,6 +2136,20 @@ dual
 For the cube defined by inhomogeneous input we have $8$ vertices of the polyhedron, $0$ extreme rays of the recession cone and $6$ facets.
 
 Primal and dual versions of face lattice and incidence, respectively, are printed to the same file. Therefore only one of them is allowed.
+
+\subsubsection{Only up to rbits}
+
+There are computation goals that allow to compute (only) the orbits of faces and f-vectors counting the orbits in each dimension:
+\begin{itemize}
+	\itemtt[FaceLatticeOrbits]
+	\itemtt[FVectorOrbits]
+	\itemtt[DualFaceLatticeOrbits]
+	\itemtt[DualFVectorOrbits]
+\end{itemize}
+
+These computation goals require an automorphism group. Since there are several reasonable choices, Normaliz does not btry to guess a type. Note that these are not pure output options. Depending on the size of the automorphism group they may help to extend the range of face lattice computations. Example: \verb*|SubModularConeN4.in|.
+
+In later versions these computation goals may be renamed.
 
 \subsection{Module generators over the original monoid}\label{MinMod}
 

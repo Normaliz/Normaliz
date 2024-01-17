@@ -84,6 +84,7 @@ enum InputType {
     normal_toric_ideal,
     //
     // special
+    //
     open_facets,
     projection_coordinates,
     fusion_type,

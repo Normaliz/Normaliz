@@ -611,7 +611,7 @@ The available input types (from \verb|input_type.h|) are defined as follows:
 \begin{Verbatim}
 namespace Type {
 enum InputType {
-//
+    //
 // homogeneous generators
 //
 polytope,
@@ -620,7 +620,7 @@ subspace,
 cone,
 cone_and_lattice,
 lattice,
-    saturation,
+saturation,
 rational_lattice,
 monoid,
 //
@@ -647,11 +647,12 @@ strict_signs,
 inhom_congruences,
 inhom_excluded_faces,
 //
-// linearforms
+// linear forms
 //
 grading,
 dehomogenization,
-    //
+gb_weight,
+//
 // lattice ideals and friends
 //
 lattice_ideal,
@@ -659,8 +660,13 @@ toric_ideal,
 normal_toric_ideal,
 //
 // special
+//
 open_facets,
 projection_coordinates,
+fusion_type,
+fusion_duality,
+candidate_subring,
+fusion_type_for_partition,
 //
 // precomputed data
 //
@@ -904,12 +910,15 @@ Congruences,
 GroebnerBasis,
 MarkovBasis,
 Representations,
+SimpleFusionRings,
+NonsimpleFusionRings,
+FusionRings,
 END_ENUM_RANGE(LAST_MATRIX),
 
 START_ENUM_RANGE(FIRST_MATRIX_FLOAT),
+ExtremeRaysFloat,
 SuppHypsFloat,
 VerticesFloat,
-ExtremeRaysFloat,
 END_ENUM_RANGE(LAST_MATRIX_FLOAT),
 
 // vector valued
@@ -920,6 +929,7 @@ WitnessNotIntegrallyClosed,
 GeneratorOfInterior,
 CoveringFace,
 AxesScaling,
+SingleLatticePoint,
 END_ENUM_RANGE(LAST_VECTOR),
 
 // integer valued
@@ -1001,10 +1011,10 @@ ProjectCone,
 ConeDecomposition,
 //
 Automorphisms,
-AmbientAutomorphisms,
 CombinatorialAutomorphisms,
 RationalAutomorphisms,
 EuclideanAutomorphisms,
+AmbientAutomorphisms,
 InputAutomorphisms,
 //
 HilbertSeries,
@@ -1015,9 +1025,14 @@ WeightedEhrhartSeries,
 WeightedEhrhartQuasiPolynomial,
 //
 FaceLattice,
+DualFaceLattice,
 FVector,
-Incidence,
 DualFVector,
+FaceLatticeOrbits,  // experimental, may change
+DualFaceLatticeOrbits,  // experimental, may change
+FVectorOrbits,  // experimental, may change
+DualFVectorOrbits,  // experimental, may change
+Incidence,
 DualIncidence,
 SingularLocus,
 //
@@ -1056,21 +1071,33 @@ Descent,
 NoDescent,
 NoGradingDenom,
 GradingIsPositive,
-ExploitAutomsVectors, // not yet implemented
+ExploitAutomsVectors,
 ExploitIsosMult,
 StrictIsoTypeCheck,
 SignedDec,
 NoSignedDec,
 FixedPrecision,
+DistributedComp,
+NoPatching,
+NoCoarseProjection,
+MaxDegRepresentations,
+UseWeightsPatching,
+NoWeights,
+LinearOrderPatches,
+CongOrderPatches,
+MinimizePolyEquations,
 //
 Dynamic,
 Static,
-    //
+//
 WritePreComp,
 // Gröbner Basis
 Lex,
 RevLex,
 DegLex,
+//
+END_ENUM_RANGE(LAST_PROPERTY),
+//
 // ONLY FOR INTERNAL CONTROL
 //
 ...
@@ -1563,14 +1590,14 @@ If the automorphism group has been computed by those options that use extreme ra
 \begin{Verbatim}
 mpz_class  getOrder() const;
 const vector<vector<key_t> >&  getVerticesPerms() const
-const vector<vector<key_t> > getExtremeRaysPerms() const
-const vector<vector<key_t> > getSupportHyperplanesPrms() const
+const vector<vector<key_t> >& getExtremeRaysPerms() const
+const vector<vector<key_t> >& getSupportHyperplanesPrms() const
 
-const vector<vector<key_t> > getVerticesOrbits() const
-const vector<vector<key_t> > geExtremeRaystOrbits() const
-const vector<vector<key_t> > getSupportHyperplanesOrbits() const
+const vector<vector<key_t> >& getVerticesOrbits() const
+const vector<vector<key_t> >& geExtremeRaystOrbits() const
+const vector<vector<key_t> >& getSupportHyperplanesOrbits() const
 \end{Verbatim}
-AQll these functions and the following ones belong to the class \verb|AutomorphismGroup<Integer>|.
+All these functions and the following ones belong to the class \verb|AutomorphismGroup<Integer>|.
 
 ``Perms'' is a shorthand for ``permutations'', and each generator of the automorphism group is represented by the permutation of the extreme rays that it induces. In the permutations, objects are counted from $0$. The reference order of the vectors is the same as in the output files. The entry \verb|[i][j]|| is the index of the object to which the $j$-th object is mapped by the $i$-th generator of the automorphism group.
 
@@ -1661,6 +1688,14 @@ const map<dynamic_bitset,int>& Cone<Integer>::getDualFaceLattice()
 const vector<dynamic_bitset>& Cone<Integer>::getDualIncidence()
 \end{Verbatim}
 
+For the orbit versions we have
+\begin{Verbatim}
+vector<size_t> Cone<Integer>::getFVectorOrbits()
+const map<dynamic_bitset,int>& Cone<Integer>::getFaceLatticerOrbits()
+vector<size_t> Cone<Integer>::getDualFVectorrOrbits()
+const map<dynamic_bitset,int>& Cone<Integer>::getDualFaceLatticerOrbits()
+\end{Verbatim}
+
 \subsubsection{Local properties}
 
 They are properties of localizations. So far we have
@@ -1722,6 +1757,19 @@ If the answer is positive, an excluded face making the semiopen polyhedron empty
 \begin{Verbatim}
 vector<Integer> Cone<Integer>::getCoveringFace() 
 \end{Verbatim}
+
+\subsubsection{Fusion rings}\label{lib_fusion}
+
+See Appendix \ref{fusion_rings}  for the terminology. The following functions are available:
+\begin{Verbatim}
+const vector<vector<Integer> >& Cone<Integer>::getFusionRings()
+size_t Cone<Integer>::getNrFusionRings() 
+const vector<vector<Integer> >& Cone<Integer>::getSimpleFusionRings()
+size_t Cone<Integer>::getNrSimpleFusionRings()
+const vector<vector<Integer> >& Cone<Integer>::getNonsimpleFusionRings()
+size_t Cone<Integer>::getNrNonsimpleFusionRings()
+\end{Verbatim}
+There exist \verb*|Matrix| variants as well.
 
 \subsubsection{Boolean valued results}
 

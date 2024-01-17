@@ -280,7 +280,7 @@ enum Enum {
     SingleLatticePointInternal,
     ConeForMonoid,
     //
-    // ONLY FOR E§XTENDED TESTS
+    // ONLY FOR EXTENDED TESTS
     //
     TestArithOverflowFullCone,
     TestArithOverflowDualMode,

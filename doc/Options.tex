@@ -197,6 +197,14 @@ Section~\ref{FaceLattice} as well. See it also for the dual versions
 	\itemtt[DualIncidence]
 \end{itemize}
 
+For computation of orbits we have
+
+\begin{itemize}
+	\itemtt[FVectorOrbits]
+	\itemtt[FaceLatticeOrbits]
+	\itemtt[DualFVectorOrbits]
+	\itemtt[DualFaceLatticeOrbits]
+\end{itemize}
 
 \subsubsection{Semiopen polyhedra}
 
@@ -314,6 +322,10 @@ Note that Normaliz tries to avoid overflows by intermediate results (even if \ve
 \verb|LongLong| is not a cone property.
 
 \emph{Caveat.}\enspace The overflow check of Normaliz is not an absolute guarantee. The probability that it fails is microscopically small, but failure is not totally excluded. Very critical computations for which one has no other confirmation should be redone in \verb|BigInt|.
+
+\subsubsection{Fusion rings}
+
+See Appendix \ref{fusion_rings}.
 
 \subsection{The choice of algorithmic variants}
 
