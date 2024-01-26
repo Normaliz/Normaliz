@@ -521,21 +521,23 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
                 continue;
             if((Indicator[i] & new_covered).count() == 0)
                 continue;
-            bool can_be_restricted = true;
-            for(size_t j = 0; j< EmbDim; ++j){
-                if(new_covered[j])
-                    continue;
-                if(AllSupps[EmbDim][i][j] > 0){
-                    can_be_restricted = false;
-                    break;
+             if(!using_renf<IntegerPL>()){
+                bool can_be_restricted = true;
+                for(size_t j = 0; j< EmbDim; ++j){
+                    if(new_covered[j])
+                        continue;
+                    if(AllSupps[EmbDim][i][j] > 0){
+                        can_be_restricted = false;
+                        break;
+                    }
                 }
-            }
-            if(can_be_restricted){
-                vector<IntegerRet> inequ;
-                convert(inequ, AllSupps[EmbDim][i]);
-                // cout << "*** " << inequ;
-                ExtraInequalities.append(inequ);
-            }
+                if(can_be_restricted){
+                    vector<IntegerRet> inequ;
+                    convert(inequ, AllSupps[EmbDim][i]);
+                    // cout << "*** " << inequ;
+                    ExtraInequalities.append(inequ);
+                }
+             }
         }
 
         // Collect relevant polynomial constraints
@@ -1093,6 +1095,14 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_latt_points_by_patching() {
         for(auto& n: NrRemainingLP){
                 assert(n == 0);
         }
+    }
+
+    // we stop other splits if this one was successful
+    if(is_split_patching && only_single_point && NrLP[EmbDim] > 0){
+        string name = global_project + ".stop";
+        ofstream stop_file(name);
+        stop_file << " ";
+        stop_file.close();
     }
 }
 
@@ -3137,8 +3147,11 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute(bool all_points, bool liftin
         read_split_data();
     }
 
-    if(fusion_rings_computation)
+    if(fusion_rings_computation){
+        fusion.initialize();
+        fusion.verbose = verbose;
         fusion.read_data(true); // true = a_priori
+    }
     if(fusion.nr_coordinates > 0 && fusion.nr_coordinates != EmbDim -1){
         // cout << "SSSSSSSSSSSSSSSS " << fusion.nr_coordinates << endl;
         throw BadInputException("Wrong number of coordinates in fusion data. Mismatch of duality or commutativity.");

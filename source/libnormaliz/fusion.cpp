@@ -222,6 +222,11 @@ bool FusionData<Integer>::simplicity_check(const vector<vector<key_t> >& subring
 
 template <typename Integer>
 FusionData<Integer>::FusionData(){
+    initialize();
+}
+
+template <typename Integer>
+void FusionData<Integer>::initialize(){
     check_simplicity = false;
     candidate_given = false;
     use_automorphisms = false;
@@ -977,7 +982,41 @@ set<map<vector<key_t>, Integer> > FusionData<Integer>::make_associativity_constr
 }
 
 template <typename Integer>
-void FusionData<Integer>::make_input_from_fusion_data(InputMap<mpq_class>&  input){
+void FusionData<Integer>::do_werite_input_file(InputMap<mpq_class>&  input){
+    string name = global_project + ".in";
+    ofstream out(name);
+    if(!out.is_open())
+        throw BadInputException("Cannot write input file");
+    size_t rank;
+    bool is_partition;
+    if(contains(input, Type::fusion_type)){
+        rank = input[Type::fusion_type].nr_of_columns();
+        is_partition = false;
+    }
+    else{
+        rank = input[Type::fusion_type_for_partition].nr_of_columns();
+        is_partition = true;
+    }
+    out << "amb_space " << rank << endl << endl;
+    if(is_partition){
+        out << "fusion_type_for_partition" << endl;
+        out << input[Type::fusion_type_for_partition][0];
+    }
+    else{
+        out << "fusion_type" << endl;
+        out << input[Type::fusion_type][0];
+        out << endl;
+        out << "fusion_duality" << endl;
+        out << input[Type::fusion_duality][0];
+    }
+    out << endl;
+    out.close();
+    if(libnormaliz::verbose)
+        verboseOutput() << "Wtote " << name << endl;
+}
+
+template <typename Integer>
+void FusionData<Integer>::make_input_from_fusion_data(InputMap<mpq_class>&  input, const bool write_input_file){
 
     vector<long> bridge(fusion_type.size());
     Matrix<mpq_class> TypeInput(1, fusion_type.size());
@@ -992,10 +1031,13 @@ void FusionData<Integer>::make_input_from_fusion_data(InputMap<mpq_class>&  inpu
         DualityInput[0][0] = -1;
     input[Type::fusion_type] = TypeInput;
     input[Type::fusion_duality] = DualityInput;
+    if(write_input_file){
+        do_werite_input_file(input);
+    }
 }
 
 template <typename Integer>
-void FusionData<Integer>::make_partition_input_from_fusion_data(InputMap<mpq_class>&  input){
+void FusionData<Integer>::make_partition_input_from_fusion_data(InputMap<mpq_class>&  input,  const bool write_input_file){
 
     vector<long> bridge(fusion_type.size());
     Matrix<mpq_class> TypeInput(1, fusion_type.size());
@@ -1003,6 +1045,9 @@ void FusionData<Integer>::make_partition_input_from_fusion_data(InputMap<mpq_cla
         bridge[i] = fusion_type[i];
     convert(TypeInput[0], bridge);
     input[Type::fusion_type_for_partition] = TypeInput;
+    if(write_input_file){
+        do_werite_input_file(input);
+    }
 }
 //-------------------------------------------------------------------------------
 // helper for fusion rings
@@ -1318,7 +1363,7 @@ void make_full_input_partition(InputMap<Integer>& input_data){
     partition_fusion.fusion_rank = d.size();
 
     if(verbose)
-        verboseOutput() << "Making linear constraints for partition test of vfusion rings" << endl;
+        verboseOutput() << "Making linear constraints for partition test of fusion rings" << endl;
     Matrix<Integer> Equ = partition_fusion.make_linear_constraints_partition(d, card);
     Matrix<Integer> InEqu = Equ;
     // Equ.pretty_print(cout);

@@ -809,6 +809,10 @@ void Cone<Integer>::process_multi_input_inner(InputMap<Integer>& multi_input_dat
         rational_lattice_in_input = true;
     }
 
+    if(contains(multi_input_data, Type::candidate_subring)) {
+        is_fusion_candidate_subring = true;
+    }
+
     if(contains(multi_input_data, Type::fusion_type)) {
         set<map<vector<key_t>, Integer> > Polys;
         make_full_input(multi_input_data, Polys);
@@ -2180,6 +2184,7 @@ void Cone<Integer>::initialize() {
 
     is_fusion = false;
     is_fusion_partition = false;
+    is_fusion_candidate_subring = false;
 
     positive_orthant = false;
     zero_one = false;
@@ -4412,6 +4417,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         SingleComp.set(ConeProperty::Projection);
         SingleComp.set(ConeProperty::NoCoarseProjection,ToCompute.test(ConeProperty::NoCoarseProjection));
         SingleComp.set(ConeProperty::NoPatching,ToCompute.test(ConeProperty::NoPatching));
+        SingleComp.set(ConeProperty::DistributedComp,ToCompute.test(ConeProperty::DistributedComp));
         compute(SingleComp);
     }
     if(ToCompute.test(ConeProperty::SingleLatticePointInternal)){
@@ -4512,8 +4518,9 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
 
     ToCompute.check_conflicting_variants();
 
-    if(is_fusion)
-        ToCompute.set_fusion_default();
+    if(is_fusion){
+        ToCompute.set_fusion_default(is_fusion_candidate_subring);
+    }
 
     if(is_fusion_partition)
         ToCompute.set_fusion_partition_default();
@@ -7202,6 +7209,11 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
     //
     // ****************************************************************
 
+    if(inhomogeneous){
+        recession_rank = 0;
+        setComputed(ConeProperty::RecessionRank);
+    }
+
     vector<Integer> GradForApprox;
     if (!inhomogeneous)
         GradForApprox = Grading;
@@ -7531,8 +7543,6 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
             module_rank = number_lattice_points;
             setComputed(ConeProperty::ModuleRank);
         }
-        recession_rank = 0;
-        setComputed(ConeProperty::RecessionRank);
 
         if (ToCompute.test(ConeProperty::HilbertBasis) || ToCompute.test(ConeProperty::ModuleGenerators)) {  // we have computed the lattice points and not only counted them
             if(!using_renf<Integer>())
