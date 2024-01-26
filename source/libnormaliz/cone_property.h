@@ -344,7 +344,7 @@ class ConeProperties {
     void set_preconditions(bool inhomogeneous, bool numberfield);  // activate properties which are needed implicitly
     // void prepare_compute_options(bool inhomogeneous, bool numberfield);
     void check_sanity(bool inhomogeneous);
-    void set_fusion_default();
+    void set_fusion_default(const bool has_candidate);
     void set_fusion_partition_default();
 
     void check_conflicting_variants();

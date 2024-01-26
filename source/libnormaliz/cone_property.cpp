@@ -400,13 +400,16 @@ size_t ConeProperties::count() const {
     return CPs.count();
 }
 
-void ConeProperties::set_fusion_default() {
+void ConeProperties::set_fusion_default(const bool has_subring) {
 
     if(CPs.test(ConeProperty::LatticePoints) || CPs.test(ConeProperty::FusionRings)
         || CPs.test(ConeProperty::SimpleFusionRings) || CPs.test(ConeProperty::NonsimpleFusionRings))
         return;
     if(CPs.test(ConeProperty::DefaultMode)){
-        CPs.set(ConeProperty::FusionRings);
+        if(has_subring)
+            CPs.set(ConeProperty::SimpleFusionRings);
+        else
+            CPs.set(ConeProperty::FusionRings);
         CPs.reset(ConeProperty::DefaultMode);
     }
 }
@@ -850,7 +853,10 @@ void ConeProperties::check_Q_permissible(bool after_implications) {
     copy.reset(ConeProperty::SingleLatticePointInternal);
     copy.reset(ConeProperty::NoCoarseProjection);
     copy.reset(ConeProperty::NoPatching);
-
+    copy.reset(ConeProperty::FusionRings);
+    copy.reset(ConeProperty::SimpleFusionRings);
+    copy.reset(ConeProperty::NonsimpleFusionRings);
+;
     if (after_implications) {
         copy.reset(ConeProperty::Multiplicity);
         copy.reset(ConeProperty::Grading);

@@ -87,6 +87,8 @@ Note that \texttt{VerticesFloat} and \texttt{SuppHypsFloat} are not pure output 
 	
 	\itemtt[LatticePoints] is identical to \verb|Deg1Elements| in the homogeneous case, but implies \verb|NoGradingDenom|. In inhomogeneous computations it is a synonym for \verb|HilbertBasis|.
 	
+	\itemtt[SingleLatticePoint] stops the computation once a lattice point has been found. Forces the project-and-lift algorithm.
+	
 	\itemtt[ModuleGeneratorsOverOriginalMonoid, -M] computes a minimal system of generators of the integral closure over the original monoid (see Section~\ref{MinMod}). Requires the existence of original monoid generators.
 \end{itemize}
 
@@ -300,6 +302,10 @@ The remaining ones:
 
 The last three computation goals are not really useful for Normaliz since they will be answered automatically. Note that they may trigger extensive computations.
 
+\subsubsection{Fusion rings}
+
+See Appendix \ref{fusion_rings}.
+
 \subsection{Integer type}\label{Integer}
 
 There is no need to worry about the integer type chosen by Normaliz. All preparatory computations use infinite precision. The main computation is then tried with $64$ bit integers. If it fails, it will be restarted with infinite precision.
@@ -323,9 +329,6 @@ Note that Normaliz tries to avoid overflows by intermediate results (even if \ve
 
 \emph{Caveat.}\enspace The overflow check of Normaliz is not an absolute guarantee. The probability that it fails is microscopically small, but failure is not totally excluded. Very critical computations for which one has no other confirmation should be redone in \verb|BigInt|.
 
-\subsubsection{Fusion rings}
-
-See Appendix \ref{fusion_rings}.
 
 \subsection{The choice of algorithmic variants}
 

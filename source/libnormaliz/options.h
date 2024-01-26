@@ -132,6 +132,9 @@ class OptionsHandler {
         return use_collect_lat;
     }
 
+    inline bool isUseMakeFullInput() const {
+        return use_make_full_input;
+    }
 
     inline bool isUseAddChunks() const {
         return use_add_chunks;
@@ -194,6 +197,7 @@ class OptionsHandler {
     bool use_long_long;
     bool use_chunk;
     bool use_collect_lat;
+    bool use_make_full_input;
     bool use_add_chunks;
     bool no_ext_rays_output;
     bool no_supp_hyps_output;
@@ -239,6 +243,7 @@ inline OptionsHandler::OptionsHandler() {
     no_hilbert_basis_output = false;
     binomials_packed = false;
     use_split = false;
+    use_make_full_input = false;
     given_name_contains_in = false;
 }
 

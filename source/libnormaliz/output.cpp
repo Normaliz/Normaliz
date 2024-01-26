@@ -1967,7 +1967,13 @@ void write_fusion_files(const string& name, const bool simple_fusion_rings, cons
     }
 
     if(embdim > 0){
+
+        vector<Integer> dehom(embdim);
+        dehom.back() = 1;
         out << "Embdiing dimension " << embdim << endl;
+        out << endl;
+        out << "dehomogenization" << endl;
+        out << dehom;
     }
 
     out << endl;

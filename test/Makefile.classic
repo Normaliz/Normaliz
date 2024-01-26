@@ -72,10 +72,12 @@ TEST_FILES_MRK_MRK = $(patsubst %.in,%.mrk.diff,$(wildcard test-mrk/*.in))
 TEST_FILES_GRB = $(patsubst %.in,%.diff,$(wildcard test-grb/*.in))
 TEST_FILES_GRB_GRB = $(patsubst %.in,%.grb.diff,$(wildcard test-grb/*.in))
 
+TEST_FILES_FUS = $(patsubst %.in,%.diff,$(wildcard test-fus/*.in))
+
 TEST_FILES_PATCH = $(patsubst %.in,%.diff,$(wildcard test-patch/*.in))
 
 
-all: tests testv testn test1 testN testq testp testd testh testdefault testd1 testdnn testr1 testM testw testH testpr testdeg testDec testStDec testFac testInc testgen testcst testSpecial testclo testmrk testgrb
+all: tests testv testn test1 testN testq testp testd testh testdefault testd1 testdnn testr1 testM testw testH testpr testdeg testDec testStDec testFac testInc testgen testcst testSpecial testclo testmrk testgrb testfus
 
 ## Don't include testLARGE into all! It requires the optional libraries and runs very long.
 
@@ -100,6 +102,7 @@ testnf: $(TEST_FILES_NF)
 testdegQ: $(TEST_FILES_DEGQ)
 testSpecial: $(TEST_FILES_SPECIAL)
 testLARGE: $(TEST_FILES_LARGE)
+testfus: $(TEST_FILES_FUS)
 
 testH: $(TEST_FILES_HH) $(TEST_FILES_HH_INTHULL)
 testDec: $(TEST_FILES_DEC) $(TEST_FILES_DEC_TRI)
@@ -198,6 +201,8 @@ test-r1/%.out: $(NORMALIZ) test-r1/%.in
 	$(NICE) $(NORMALIZ) $(NORMPARA) -r1 test-r1/$*
 test-LARGE/%.out: $(NORMALIZ) test-LARGE/%.in
 	$(NICE) $(NORMALIZ) $(NORMPARA) -x=16 test-LARGE/$*
+test-fus/%.out: $(NORMALIZ) test-fus/%.in
+	$(NICE) $(NORMALIZ) $(NORMPARA)  test-fus/$*
 
 test-Qdegenerate/%.out: $(NORMALIZ) test-Qdegenerate/%.in
 	$(NICE) $(NORMALIZ) $(NORMPARA) test-Qdegenerate/$*
@@ -295,6 +300,7 @@ distclean: clean
 .PRECIOUS: test-clopt/whow.out
 .PRECIOUS: test-nf/%.out test-nf-hh/%.out  test-nf-hh/%.IntHull.out test-Qdegenerate/%.out
 .PRECIOUS: test-patch/%.out
+.PRECIOUS: test-fus/%.out
 
-.PHONY: all testdefault tests testn test1 testN testw testp testh testd testd1 testdnn testH clean distclean testInt testSpecial testdeg testFac testpatch
+.PHONY: all testdefault tests testn test1 testN testw testp testh testd testd1 testdnn testH clean distclean testInt testSpecial testdeg testFac testpatch testfus
 .PHONY: testnf testnfH testdegQ testAut testnfAut testStDec testInc testLARGE testgen testcst testclo testDec

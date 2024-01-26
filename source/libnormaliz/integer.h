@@ -440,7 +440,7 @@ inline bool try_convert(renf_elem_class& ret, const mpz_class& val) {
 inline bool try_convert(mpz_class& ret, const renf_elem_class& val) {
     renf_elem_class help = val;
     if (!help.is_integer())
-        throw ArithmeticException("field element cannot be converted to integer");
+        throw ArithmeticException(". Field element cannot be converted to integer");
     ret = help.num();
     return true;
 }

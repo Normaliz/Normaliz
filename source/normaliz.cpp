@@ -574,9 +574,12 @@ int process_data(OptionsHandler& options, const string& command_line) {
         }
         else{
             if(!only_partition)
-                test_fusion.make_input_from_fusion_data(input);
+                test_fusion.make_input_from_fusion_data(input, options.isUseMakeFullInput());
             else
-                test_fusion.make_partition_input_from_fusion_data(input);
+                test_fusion.make_partition_input_from_fusion_data(input, options.isUseMakeFullInput());
+
+            if(options.isUseMakeFullInput())
+                return 0;
         }
 
         if (verbose) {

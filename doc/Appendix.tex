@@ -1284,6 +1284,12 @@ size_t Cone<Integer>::getNumberLatticePoints()
 \end{Verbatim}
 There is an important difference between \verb|getNrLatticePoints()| and \verb|getNumberLatticePoints()|: the latter returns the number whenever it is known for some reason. If the number is not known, it forces only the counting of lattice points, not their storage.
 
+If only a single lattice point has been asked for, it can be returned by 
+\begin{Verbatim}
+const vector<Integer>& Cone<Integer>::getSingleLatticePoint()
+\end{Verbatim}
+If the returened vector has size $0$, no lattice point was found.
+
 \subsubsection{Hilbert basis}\label{HB_lib}
 
 In the nonpointed case we need the maximal linear subspace of the cone:
@@ -3309,3 +3315,225 @@ The time bound set by \verb*|normaliz.time| is shared by all files in siuch a wa
 
 \section{Fusion rings}\label{fusion_rings}
 
+The computation of fusion rings is a special case of computing lattice points in a polytope that satisfy polynomials equations. We refer the user to the book \cite{EGNO} for the basic theory and to \cite{ABPP} for our computational approach.
+
+\subsection{The structure of fusion rings}\label{fusion_structure}
+
+A \emph{fusion ring} $R$ is am associative free $\ZZ$-algebra with a fixed $\ZZ$-basis $b_1,\dots,b_r$. One of the basis elements is the multiplicative unit which is always chosen to be $b_1$. The bilinear map $R\times R\to R$ given by the multiplication $(x,x')\mapsto xx'$ is the bilinear extension of the product $(b_i, b_j)\mapsto b_ib_j$ and this product can be written uniquely in the form
+$$
+b_i b_j = \sum_{i=1}^r N_{ij}^k b_k, \qquad N_{ij}^k\in \ZZ.
+$$
+One of the  distinctive features of fusion rings: $N_{ij}^k\ge 0$ for all $i,j,k$. The other is the existence of a \emph{duality}, an involution of the set $\{b_1,\dots,b_r\}$, $b_i\mapsto b_{i*}$ that extends to an aniautomorphism of $R$, and satisfies the condition $N_{ij}^1 = 1$ if $i=j*$, and $N_{ij}^1 = 0$ else.
+
+In total the coefficients $N_{ij}^k$ must satisfy the following conditions (in addition to nonnegativity): for all $i,j,k,t$
+\begin{itemize}
+	\item (Ass) $\sum_s N_{i,j}^s N_{s,k}^t = \sum_s N_{j,k}^s N_{i,s}^t$,		
+	\item (Unit) $N_{1,i}^j = N_{i,1}^j = \delta_{i,j}$,	
+	\item (Auto) $N_{ij}^{k^*} = N_{j^*i^*}^k$,			
+	\item (Dual) $N_{i^*,j}^{1} = N_{ji^*}^{1} = \delta_{i,j}$.					
+\end{itemize}
+
+These conditions imply a very useful identity, called \emph{Frobenius reciprocity}:
+for all $i,j,k$ one has
+$$
+N_{i,j}^k = N_{i^*,k}^j = N_{j,k^*}^{i^*} = N_{j^*, i^*}^{k^*} = N_{k^*, i}^{j^*} = N_{k, j^*}^{i}.
+$$
+Together with the fixed values of $N_{i,j}^k$ with $1\in\{i,j,k\}$ this identity reduced the number of the coefficients that we want to compute to $\sim (r-1)^3/6$. If the commutativity $N_{ij}^k = N_{ji}^k$ is asked for, the $6$-term identity extends to a $12$-term identity since then $N_{ij}^k= N_{ji}^k$ for all $i,j,k$. 
+
+The fundamental property of fusion rings is given by the \emph{Frobenus--Perron theorem}:
+\begin{itemize}
+\item a square matrix with nonnegative integer entries has a nonnegative real eigenvalue;
+\item for the maximum real eigenvalues $d_i$ of the left multiplication by $b_i$, $i=1,\dots,r$, the assignment $b_i \mapsto d_i$, $i=1,\dots,r$ extends to a ring homomorphism $R\to \RR$;
+\item it is the only ring homomorphism $R\to \RR$ that has nonnegative values on $b_1,\dots,b_r$.
+\end{itemize}
+
+By definition $d_1,\dots,d_r$ are algebraic integers. We concentrate on the case in which they belong to $\ZZ$. The task to be solved is the computation of all fusion rings of a given \emph{type} $(d_1,\dots,d_r)$ and a given duality $(1^*,\dots,r^*)$ (possibly with the additional condition that $R$ is commutative).
+
+Given the type $(d_1,\dots,d_r)$ and the duality, we must find all nonnegative solutions to the linear equations
+$$
+N_{ij}^1d_1 +\dots N_{ij}^rd_r = d_id_j, \qquad i,j = 1,\dots,r
+$$
+that reflect the homomorphism condition of the assignment $b_i\mapsto d_i$. Furthermore the associativity condition (Ass) must be satisfied that is given by polynomial equations of degree~$2$.
+
+To set up these equations and to interpret the solutions one must fix coordinates. We do this as follows.  The $N_{ij}^k$ with $1\in \{i,j,k\}$n are inserted inmto the equations with their fixed values $\in \{0,1\}$. Each tuple $(i,j,k)$ with $1\notin \{i,j,k\}$ belongs to a set $FR(i,j,k)$ defined by the $6$-rem identity (or the $12$-term identity). This set is represented by its lexicographic smallest member and the sets are ordered lexicographically by these members.
+
+Examples of input files containing the systems of equations are \verb*|pet.in| and \verb*|baby.in|. \emph{Normaliz can produce the system of equations itself,} and we explain the necessary input types in Section \ref{fusion_input}.
+
+The computation uses the patching variant of project-and-lift (see \ref{positive_systems}). the options that control the insertion order of patches can be applied (see \ref{patch_order}).
+
+\subsection{Input types and computation gaols}\label{fusion_input}
+
+\emph{Note that we count types and dualities from $0$ in the following.}
+
+In order to  produce the system of equations for fusion rings itself, Normaliz provides the input types
+\begin{itemize}
+	\itemtt[fusion\_type] -- the ype of the fusion ring, and
+	\itemtt[fusion\_duality] -- the duality of the fusion ring.
+\end{itemize}
+
+Both are vectors of length \verb*|amb_space|, the fusion rank. If the duality is omitted, Normaliz chooses the identity for it. Example \verb*|bracket_4.in|, using the handy \verb*|amb_space auto|:
+\begin{Verbatim}
+amb_space auto
+fusion_type
+[1,1,2,3,3,6,6,8,8,8,12,12]
+fusion_duality
+[0,1,2,3,4,5,6,7,8,9,11,10]
+\end{Verbatim}
+The $i$-th entry of the duality is $i^*$ for $i=0,...,r-1$. In our case there is only one transposition: $10^*= 11$.
+
+The first entry of the duality vector must be $0$ unless we want to force commutativity. Then it is $-1$.  Example \verb*|bracket_4_comm.in|:
+\begin{Verbatim}
+amb_space auto
+fusion_type
+[1,1,2,3,3,6,6,8,8,8,12,12]
+fusion_duality
+[-1,1,2,3,4,5,6,7,8,9,11,10]
+\end{Verbatim}
+
+It is of course possible to compute all lattice points satisfying the linear and quadratic equations by asking for \verb*|LatticePoints|. But in general the systems has nontrivial automorphisms so that every fusion ring is represented by several isomorphic copies, of which only one is of interest. A further aspect is the distinction between simple and nonsimple fusion rings, where simple means that no proper subset of the basis generates a $\ZZ$-submodule that is a nontrivial fusion ring (to which nthe duality restricts). The computation goals for fusion rings are
+\begin{itemize}
+	\itemtt[FusionRings] -- compute all fusion rings (up to automorphisms),
+	\itemtt[SimpleFusionRings] -- compute all simple fusion rings (up to automorphisms),
+	\itemtt[LatticePoints] -- compute all fusion rings (allowing isomorphic copies).
+\end{itemize}
+The default computation goal is \verb*|FusionRings|. For
+\verb*|bracket_4.in| we get the output file 
+\begin{Verbatim}
+148 fusion rings up to isomorphism
+0 simple fusion rings up to isomorphism
+148 nonsimple fusion rings up to isomorphism
+
+Embdiing dimension 231
+
+dehomogenization
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 ...
+
+***********************************************************************
+
+0 simple fusion rings up to isomorphism:
+
+148 nonsimple fusion rings up to isomorphism:
+0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 1 0 0 0 ...
+...
+\end{Verbatim}
+Note that the input for fusion rings is inhomogeneous.
+
+The computation goals \verb*|FusionRings|  and \verb*|SimpleFusionRings| can also be used for ``full'' input files, provided they have standard names. Moreover, standard names allow the computation of fusion rings without an input file. See Section \ref{virtual_input}.
+
+A further input type is
+\begin{itemize}
+	\itemtt[candidate\_subring]  -- a $0$-$1$-vector of length \verb*|amb_space|.
+\end{itemize}
+It specifies a subset of the basis of the fusion ting that is used for testing simplicity: The entries $1$ mark the basis vectors selected for the candidate subring. 
+This can be useful for very hard computations. However `simple''must then be understood as ``not containing the candidate'' and ``nonsimple''is the opposite. Example \verb*|bracket_3_cand.in|:
+\begin{Verbatim}
+amb_space auto
+
+fusion_type
+[1,1,2,3,3,6,6,8,8,8,12,12]
+
+candidate_subring
+[1,1,0,0,0,0,0,0,0,0,0,0]
+\end{Verbatim}
+If a \verb*|candidate_subring| is given, the default computation goal is changed to \verb*|SingleLatiicePoint|. If another computation goal is set explicitly, then the \verb*|candidate_subring| is disregarded.
+
+Finally one also generate the input file with a system of linear equations that constitutes a necessary condition of fusion rings for the given type: if the ``partition system'' has no solution in nonnegative integers, then there are no fusion rings for the given type, regardless of the duality). See \cite{ABPP}. The input type is
+\begin{itemize}
+	\itemtt[fusion\_type\_for\_partition] -- the type to be tested.
+\end{itemize}
+The default computation goal is \verb*|SingleLatticePoint| since (at present) we are only interested in the solubility. Also \verb*|LatticePoints| is allowed, but beware of potentially very large numbers of solutions. Example \verb*|bracket_3_oartt.in|:
+\begin{Verbatim}
+amb_space auto
+
+fusion_type_for_partition
+[1,1,2,3,3,6,6,8,8,8,12,12]
+\end{Verbatim}
+which yields
+\begin{Verbatim}
+1 module generators (only single lattice point asked for)
+
+embedding dimension = 57
+
+dehomogenization:
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 ...
+
+Lattice point:
+0 0 0 0 0 0 1 0 0 0 0 2 0 0 0 2 0 0 3 0 2 1 ...
+
+***********************************************************************
+\end{Verbatim}
+Note that bthe single lattice point is not uniquely determined. 
+There are $300$ lattice points in the polytope. 
+
+\subsection{Standard names and virtual input files}\label{virtual_input}
+
+Fusion rings can be computed without an input file -- the input file exists ``virtually''. For this variant the project name must contain the fusion type and duality. Such ``standard names'' have the structure
+\begin{Verbatim}
+[<t>][<d>]
+\end{Verbatim}
+where \verb*|<t>| is the type and \verb*|<d>| is the duality. Both are comma separated integer vectors of the same length (the fusion rank). Example:
+\begin{Verbatim}
+[1,1,2,3,3,6,6,8,8,8,12,12][0,1,2,3,4,5,6,7,8,9,11,10]
+\end{Verbatim}
+This standard name can be prefixed by a path which defines the directory where the output file is placed.
+
+Note: if there exists a file \verb*|[<t>][<d>].in| , it is read and evaluated. It is not allowed to be empty. So, if you want to have a real input file, it must contain the same data as an input file whose name is not standard. 
+Commutativity can be forced by starting the duality with \verb*|-1|.
+
+Try
+\begin{Verbatim}
+/path/to/normaliz -c [1,1,2,3,3,6,6,8,8,8,12,12][0,1,2,3,4,5,6,7,8,9,11,10]
+\end{Verbatim}
+to see the computation with virtual input file.
+
+This trick can also be used for partition files where the standard name is only the type. Example:
+\begin{Verbatim}
+[1,1,2,3,3,6,6,8,8,8,12,12]
+\end{Verbatim}
+Try
+\begin{Verbatim}
+/path/to/normaliz -c [1,1,2,3,3,6,6,8,8,8,12,12]
+\end{Verbatim}
+
+If you still have `full'' input files with linear and polynomial equations for fusion rings, you can run them with the computation goals \verb*|FusionRings| or \verb|SimpleFusionRings|. However, the fusion data must be transported by a standard name.
+
+Normaliz can produce a real input file for a standard name by
+\begin{itemize}
+	\itemtta[-{}-MakeFusionInput, -{}-MFI]{MakeFusionInput}
+\end{itemize}
+For example,
+\begin{Verbatim}
+/path/to/normaliz -c [1,1,2,3,3,6,6,8,8,8,12,12] --MFI
+\end{Verbatim}
+will produce \verb*|[1,1,2,3,3,6,6,8,8,8,12,12].in|.
+
+\subsection{Nonintegral fusion rings}
+
+It is possible to compute nonintegral fusion rings. For them the type must be specified by elements from an algebraic number field. At present it must be embedded into $\RR$. In order to define the number field, one needs a real input file. Example \verb*|EH1.in|:
+\begin{Verbatim}
+amb_space auto
+number_field min_poly (5+4*a-5*a^2+a^3) embedding [3 +/- 0.5]
+
+fusion_type
+[1, (a) (a^2 - a - 1) (2*a^2 - 3*a - 4) (3*a^2 - 5*a - 4) (4*a^2 - 7*a - 6)]
+\end{Verbatim}
+it gives the output
+\begin{Verbatim}
+1 fusion rings up to isomorphism
+1 simple fusion rings up to isomorphism
+0 nonsimple fusion rings up to isomorphism
+
+Embdiing dimension 36
+
+dehomogenization
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+
+***********************************************************************
+
+1 simple fusion rings up to isomorphism:
+1 1 0 0 0 1 0 1 0 0 1 1 1 1 2 1 1 1 1 1 1 2 2 3 3 1 2 2 3 3 4 4 5 6 7 1
+
+0 nonsimple fusion rings up to isomorphism:
+\end{Verbatim}
+
+ 	

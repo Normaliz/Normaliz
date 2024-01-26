@@ -69,6 +69,7 @@ public:
     string fusion_type_string;
     vector<key_t> duality;
 
+    void initialize();
     void import_global_data();
     vector<vector<vector<key_t> > > all_critical_coords_keys;
     vector<vector<key_t> > coords_to_check_key;
@@ -119,8 +120,9 @@ public:
                                             const vector<long>& card);
     pair<Integer, vector<key_t> >  term(const key_t& i, const key_t& j, const key_t& k);
     set<map<vector<key_t>, Integer> > make_associativity_constraints();
-    void make_input_from_fusion_data(InputMap<mpq_class>&  input);
-    void make_partition_input_from_fusion_data(InputMap<mpq_class>&  input);
+    void make_input_from_fusion_data(InputMap<mpq_class>&  input, const bool write_input_file);
+    void make_partition_input_from_fusion_data(InputMap<mpq_class>&  input, const bool write_input_file);
+    void do_werite_input_file(InputMap<mpq_class>&  input);
     // void set_global_fusion_data();
 
 };

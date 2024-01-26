@@ -340,6 +340,14 @@ The main advantage is that it does not store the lattice points and therefore ca
 
 \verb|NumberLatticePoints| uses project-and-lift (with floating point if \verb|ProjectionFloat| is set). Therefore don't block it. If the number of lattice points is so large that memory becomes a problem, then the primal and the dual algorithm will most likely not be able to compute them.
 
+\subsubsection{A single lattice oint}\label{single_latt_point}
+
+One can ask for a single lattice point by 
+\begin{itemize}
+	\itemtt [SingleLatticePoint]
+\end{itemize}
+It forces the project-and-lift algorithm. This is useful if one wants to test the solubility of a system of constraints, especially if there might be enormously many solutions in the positive case. In the negative case it does not save time.
+
 \subsection{The bottom decomposition}\label{bottom_dec}
 
 The triangulation size and the determinant sum of the triangulation are critical size parameters in Normaliz computations. Normaliz always tries to order the generators in such a way that the determinant sum is close to the minimum, and on the whole this works out well. The use of the bottom decomposition by \verb|BottomDecomposition, -b| enables Normaliz to compute a triangulation with the optimal determinant sum for the given set of generators, as we will explain in the following.

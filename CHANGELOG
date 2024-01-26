@@ -1,7 +1,12 @@
 # ChangeLog
 
+## [3.10.2]  2024-01-21
 
-## [3.10.0]  2023-06-25
+-- extensive improvements for fusion rings: computation, input and output
+-- extensive improvements of the patching algorithm, algorithms and HPC management
+-- orbit versions of (dual) face lattice and f-vectors
+
+## [3.10.1]  2023-06-25
 
 -- extensive improvements in the patching algorithm for lattice points
 -- weight vectors for Gröbner bases of lattice ideals
