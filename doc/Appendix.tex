@@ -3359,7 +3359,7 @@ To set up these equations and to interpret the solutions one must fix coordinate
 
 Examples of input files containing the systems of equations are \verb*|pet.in| and \verb*|baby.in|. \emph{Normaliz can produce the system of equations itself,} and we explain the necessary input types in Section \ref{fusion_input}.
 
-The computation uses the patching variant of project-and-lift (see \ref{positive_systems}). the options that control the insertion order of patches can be applied (see \ref{patch_order}).
+The computation uses the patching variant of project-and-lift (see \ref{positive_systems}).Tthe options that control the insertion order of patches can be applied (see \ref{patch_order}).
 
 \subsection{Input types and computation gaols}\label{fusion_input}
 
@@ -3441,7 +3441,7 @@ Finally one also generate the input file with a system of linear equations that 
 \begin{itemize}
 	\itemtt[fusion\_type\_for\_partition] -- the type to be tested.
 \end{itemize}
-The default computation goal is \verb*|SingleLatticePoint| since (at present) we are only interested in the solubility. Also \verb*|LatticePoints| is allowed, but beware of potentially very large numbers of solutions. Example \verb*|bracket_3_oartt.in|:
+The default computation goal is \verb*|SingleLatticePoint| since (at present) we are only interested in the solubility. Also \verb*|LatticePoints| is allowed, but beware of potentially very large numbers of solutions. Example \verb*|bracket_3_part.in|:
 \begin{Verbatim}
 amb_space auto
 

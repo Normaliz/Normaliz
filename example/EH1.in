@@ -1,0 +1,5 @@
+amb_space auto
+number_field min_poly (5+4*a-5*a^2+a^3) embedding [3 +/- 0.5]
+
+fusion_type
+[1, (a) (a^2 - a - 1) (2*a^2 - 3*a - 4) (3*a^2 - 5*a - 4) (4*a^2 - 7*a - 6)]

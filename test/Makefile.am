@@ -1567,7 +1567,26 @@ NMZTESTS +=						\
 	test-dec/square2_vert.in			\
 	test-dec/square2_vert.ref			\
 	test-dec/square2_vert.tri.ref			\
-	test-clopt/whow.in
+	test-clopt/whow.in				\
+	test-fus/pet_fus_comm.in			\
+	test-fus/pet_fus_dual.in			\
+	test-fus/pet_fus.in				\
+	test-fus/pet_fus_latt.in			\
+	test-fus/pet_fus_part.in			\
+	test-fus/pet_fus_simple.in			\
+	test-fus/pet_fus_single.in			\
+	test-fus/pet_fus_comm.ref			\
+	test-fus/pet_fus_dual.ref			\
+	test-fus/pet_fus.ref				\
+	test-fus/pet_fus_latt.ref			\
+	test-fus/pet_fus_part.ref			\
+	test-fus/pet_fus_simple.ref			\
+	test-fus/pet_fus_single.ref			\
+	test-Int/[1,5,5,5,6,7,7][0,1,2,3,4,5,6].in	\
+	test-Int/[1,5,5,5,6,7,7][0,1,2,3,4,5,6].ref	\
+	test-Int/[1,5,5,5,6,7,7][-1,1,2,3,4,5,6].in	\
+	test-Int/[1,5,5,5,6,7,7][-1,1,2,3,4,5,6].ref
+
 
 NMZTESTS +=						\
 	test-nf/3x3magicLattPoints.in			\
@@ -1779,9 +1798,9 @@ NMZTESTS +=						\
 	test-patch/M11.ref				\
 	test-patch/pet.in				\
 	test-patch/pet.ref				\
-	test-patch/n8_feas_single.in			\
-	test-patch/n8_feas_single.ref			\
-	test-patch/n8_feas_single_nop.in		\
-	test-patch/n8_feas_single_nop.ref
+	test-/n8_feas_single.in				\
+	test-/n8_feas_single.ref			\
+	test-/n8_feas_single_nop.in			\
+	test-/n8_feas_single_nop.ref
 
 EXTRA_DIST += $(NMZTESTS)

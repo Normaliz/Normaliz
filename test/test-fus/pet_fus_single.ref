@@ -1,6 +1,7 @@
 1 module generators (only single lattice point asked for)
 
 embedding dimension = 57
+rank of recession monoid = 0 (polyhedron is polytope)
 
 dehomogenization:
 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 

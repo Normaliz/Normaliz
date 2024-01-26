@@ -1,0 +1,4 @@
+amb_space auto
+
+fusion_type_for_partition
+[1,1,2,3,3,6,6,8,8,8,12,12]

@@ -127,7 +127,13 @@ EXTRA_DIST =					\
 	lin_bin.in				\
 	normal_toric_ideal.in			\
 	non_toric.in				\
-	poly_equ.in
+	poly_equ.in				\
+	bracket_4.in				\
+	bracket_4_comm.in			\
+	bracket_3_cand.in			\
+	bracket_3_part.in				\
+	EH1.in
+
 
 EXTRA_DIST +=					\
 	600cell-dual.in				\

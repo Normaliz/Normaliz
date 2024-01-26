@@ -1,0 +1,8 @@
+amb_space auto
+
+fusion_type
+[1,1,2,3,3,6,6,8,8,8,12,12]
+
+candidate_subring
+[1,1,0,0,0,0,0,0,0,0,0,0]
+
