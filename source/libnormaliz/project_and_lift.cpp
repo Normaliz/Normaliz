@@ -3147,8 +3147,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute(bool all_points, bool liftin
         read_split_data();
     }
 
-    if(fusion_rings_computation){
-        fusion.initialize();
+    if(fusion_rings_computation){  // note: options for fusion rings already set
         fusion.verbose = verbose;
         fusion.read_data(true); // true = a_priori
     }
