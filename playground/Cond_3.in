@@ -1,0 +1,6 @@
+amb_space 6
+constraints 3 symbolic
+x[1] + x[2] + x[5] > x[3] + x[4] + x[6];
+x[1] + x[3] + x[4] > x[2] + x[5] + x[6];
+x[4] + x[5] + x[6] > x[1] + x[2] + x[3];
+nonnegative

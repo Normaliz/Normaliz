@@ -3252,7 +3252,9 @@ Then the next refinement can be started in the same way as refinement $0$.
 
 in order to have Normaliz run over a list of input files one produces a file containing  their names (and paths relative to the working directory), for instance \verb*|InList| in \verb*|example|:
 \begin{Verbatim}
-	Inhalt...
+example/small
+example/medium
+example/big
 \end{Verbatim}
 That Normaliz is to be run over a list of input files is indicated by the option
 \begin{itemize}
@@ -3260,9 +3262,9 @@ That Normaliz is to be run over a list of input files is indicated by the option
 \end{itemize}
 on the command line. All other options on the command lines are forwarded to the individual files. As a test run
 \begin{Verbatim}
-	./normaliz -c example/InList --List
+	./normaliz -c example/InList --List --LongLong
 \end{Verbatim}
-in the Normaliz directory.
+in the Normaliz directory. Note that the file names in the list must be prefixed with the path from the working directory (in our example the Normaliz directory) to the directory containing the input files 
 
 In addition to \verb*|--Split| and \verb*|X=<s>| as above, two more parameters control the run of Normaliz over a list:
 
@@ -3506,6 +3508,8 @@ For example,
 /path/to/normaliz -c [1,1,2,3,3,6,6,8,8,8,12,12] --MFI
 \end{Verbatim}
 will produce \verb*|[1,1,2,3,3,6,6,8,8,8,12,12].in|.
+
+Virtual input files can be used in lists.
 
 \subsection{Nonintegral fusion rings}
 
