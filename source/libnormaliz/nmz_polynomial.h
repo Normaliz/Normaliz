@@ -28,6 +28,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <set>
 #include <gmpxx.h>
 
 #include "libnormaliz/dynamic_bitset.h"
