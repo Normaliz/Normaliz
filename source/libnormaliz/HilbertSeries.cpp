@@ -42,6 +42,7 @@
 
 #ifdef NMZ_FLINT
 #include "flint/flint.h"
+#include "flint/fmpz.h"
 #include "flint/fmpz_poly.h"
 #endif
 
@@ -72,7 +73,10 @@ void flint_poly(fmpz_poly_t flp, const vector<mpz_class>& nmzp) {
     slong n = (slong)nmzp.size();
     fmpz_poly_fit_length(flp, n);
     for (size_t i = 0; i < nmzp.size(); ++i) {
-        fmpz_poly_set_coeff_mpz(flp, (slong)i, nmzp[i].get_mpz_t());
+        fmpz_t fc;
+        fmpz_init(fc);
+        fmpz_set_mpz(fc, nmzp[i].get_mpz_t());
+        fmpz_poly_set_coeff_fmpz(flp, (slong)i, fc);
     }
 }
 
@@ -80,9 +84,12 @@ void nmz_poly(vector<mpz_class>& nmzp, const fmpz_poly_t flp) {
     size_t n = (size_t)fmpz_poly_length(flp);
     nmzp.resize(n);
     mpz_t c;
+    fmpz_t fc;
     mpz_init(c);
+    fmpz_init(fc);
     for (size_t i = 0; i < nmzp.size(); ++i) {
-        fmpz_poly_get_coeff_mpz(c, flp, i);
+        fmpz_poly_get_coeff_fmpz(fc, flp, i);
+        fmpz_get_mpz(c, fc);
         nmzp[i] = mpz_class(c);
     }
     mpz_clear(c);

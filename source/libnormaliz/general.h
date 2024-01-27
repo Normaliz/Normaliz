@@ -31,6 +31,20 @@
 #include <string>
 #include <vector>
 
+#ifndef _MSC_VER
+#include <sys/time.h>
+#else
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+#include <stdint.h> // portable: uint64_t   MSVC: __int64
+
+// MSVC defines this in winsock2.h!?
+typedef struct timeval {
+    long tv_sec;
+    long tv_usec;
+} timeval;
+#endif
+
 #include <libnormaliz/dynamic_bitset.h>
 
 #ifndef NMZ_MAKEFILE_CLASSIC
