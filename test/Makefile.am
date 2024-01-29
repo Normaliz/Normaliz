@@ -1773,7 +1773,9 @@ NMZTESTS +=						\
 	test-grb/gr_test.grb.ref			\
 	test-grb/3x7.in					\
 	test-grb/3x7.ref				\
-	test-grb/3x7.grb.ref
+	test-grb/3x7.grb.ref				\
+	test-Aut/SubModularConeN4_hom.in		\
+	test-Aut/SubModularConeN4_hom.ref
 
 NMZTESTS +=						\
 	test-patch/A7.in				\

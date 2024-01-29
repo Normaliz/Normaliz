@@ -149,6 +149,9 @@ vector<vector<key_t> > make_permutation_group(const vector<vector<key_t> >& gens
         set<vector<key_t> > new_perms;
         for(auto& p:perm_set){
             for(auto& g: gens){
+
+                INTERRUPT_COMPUTATION_BY_EXCEPTION
+
                 vector<key_t> comp(n);
                 for(size_t i = 0; i < n; ++i){
                     comp[i] = p[g[i]];

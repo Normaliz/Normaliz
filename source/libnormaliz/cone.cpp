@@ -8774,7 +8774,7 @@ void Cone<Integer>::treat_polytope_as_being_hom_defined(ConeProperties ToCompute
         setComputed(ConeProperty::DualFaceLatticeOrbits);
     }
     if (Hom.isComputed(ConeProperty::DualFVectorOrbits)) {
-        dual_f_vector = Hom.dual_f_vector_orbits;
+        dual_f_vector_orbits = Hom.dual_f_vector_orbits;
         setComputed(ConeProperty::DualFVectorOrbits);
     }
     if (Hom.isComputed(ConeProperty::FixedPrecision))

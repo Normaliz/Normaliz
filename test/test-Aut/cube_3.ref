@@ -2,6 +2,9 @@
 0 extreme rays of recession cone
 6 support hyperplanes of polyhedron (homogenized)
 
+dual f-vector orbits:
+1 1 1 1 1 
+
 embedding dimension = 4
 affine dimension of the polyhedron = 3 (maximal)
 rank of recession monoid = 0 (polyhedron is polytope)
