@@ -552,6 +552,7 @@ class Cone {
     size_t getNrOriginalMonoidGenerators();
 
     const Sublattice_Representation<Integer>& getSublattice();
+    Matrix<Integer> getEmbMatrix();
     const HilbertSeries& getHilbertSeries();  // general purpose object
     const HilbertSeries& getEhrhartSeries();  // general purpose object
 

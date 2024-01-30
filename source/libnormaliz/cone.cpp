@@ -2482,6 +2482,11 @@ const Sublattice_Representation<Integer>& Cone<Integer>::getSublattice() {
 }
 
 template <typename Integer>
+Matrix<Integer> Cone<Integer>::getEmbMatrix() {
+    return BasisChange.getEmbeddingMatrix();
+}
+
+template <typename Integer>
 const Sublattice_Representation<Integer>& Cone<Integer>::get_sublattice_internal() {
     if (!isComputed(ConeProperty::Sublattice))
         compute(ConeProperty::Sublattice);
