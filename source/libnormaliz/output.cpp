@@ -1923,7 +1923,7 @@ void write_fusion_files(const string& name, const bool simple_fusion_rings, cons
                                          const Matrix<Integer>& NonsimpleFusionRings,
                                          const bool no_matrices_output) {
 
-     string name_open = name + ".out";  // preparing output files
+    string name_open = name + ".out";  // preparing output files
     const char* file = name_open.c_str();
     ofstream out(file);
     if (out.fail()) {
@@ -1996,6 +1996,15 @@ void write_fusion_files(const string& name, const bool simple_fusion_rings, cons
         out << endl;
     }
     out.close();
+
+    if(write_fusion_mult_tables_from_input){
+        name_open = name + ".ftb";
+        ofstream ftb_out(name_open);
+        Matrix<Integer> AllFusionRings = SimpleFusionRings;
+        AllFusionRings.append(NonsimpleFusionRings);
+        fusion.write_all_mult_tables(AllFusionRings, ftb_out);
+        ftb_out.close();
+    }
 }
 
 #ifndef NMZ_MIC_OFFLOAD  // offload with long is not supported

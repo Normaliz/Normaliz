@@ -61,6 +61,7 @@ public:
 
     bool use_automorphisms;
     bool select_iso_classes;
+    bool write_mult_tables;
 
     size_t nr_coordinates;
 
@@ -96,6 +97,7 @@ public:
     key_t coord(vector<key_t>& ind_tuple);
     key_t coord_cone(vector<key_t>& ind_tuple);
     void make_all_ind_tuples();
+    Integer value(const vector<Integer>& ring, vector<key_t>& ind_tuple);
 
     // for simplicity check
     vector<key_t> subring_base_key;
@@ -125,6 +127,9 @@ public:
     void do_werite_input_file(InputMap<mpq_class>&  input);
     // void set_global_fusion_data();
 
+    void write_all_mult_tables(const Matrix<Integer>& rings, ostream& table_out);
+    vector<Matrix<Integer> > make_all_mult_tables(const vector<Integer>& ring);
+    Matrix<Integer> mult_table(const vector<Integer>& ring, const size_t i);
 };
 
 // helpers

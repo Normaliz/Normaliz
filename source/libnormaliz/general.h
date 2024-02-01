@@ -160,8 +160,6 @@ bool setTalkativeDefault(bool v);
 /* methods to set and use the output streams */
 void setVerboseOutput(std::ostream&);
 void setErrorOutput(std::ostream&);
-void set_global_fusion_data();
-void reset_global_fusion_data();
 
 std::ostream& verboseOutput();
 std::ostream& errorOutput();
@@ -201,12 +199,16 @@ NORMALIZ_DLL_EXPORT extern size_t verb_length; // helps in verrbose output
 NORMALIZ_DLL_EXPORT extern std::string global_project;
 NORMALIZ_DLL_EXPORT extern std::string lat_file_name;
 
+// The following hold data read from the input file, used inside fusion.cpp
 NORMALIZ_DLL_EXPORT extern std::vector<key_t> fusion_type_coinc_from_input;
 NORMALIZ_DLL_EXPORT extern std::string fusion_type_from_input;
 NORMALIZ_DLL_EXPORT extern std::vector<key_t> fusion_duality_from_input;
 NORMALIZ_DLL_EXPORT extern std::vector<key_t> candidate_subring_from_input;
 NORMALIZ_DLL_EXPORT extern std::vector<key_t> fusion_type_for_partition_from_input;
 NORMALIZ_DLL_EXPORT extern bool fusion_commutative_from_input;
+NORMALIZ_DLL_EXPORT extern bool write_fusion_mult_tables_from_input;
+void set_global_fusion_data();
+void reset_global_fusion_data();
 
 
 } /* end namespace libnormaliz */

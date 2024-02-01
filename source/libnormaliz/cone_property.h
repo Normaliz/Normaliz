@@ -209,6 +209,8 @@ enum Enum {
     Sublattice,
     //
     ClassGroup,
+    //
+    FusionMultTables,
     END_ENUM_RANGE(LAST_COMPLEX_STRUCTURE),
 
     //

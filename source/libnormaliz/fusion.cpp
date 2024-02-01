@@ -236,6 +236,7 @@ void FusionData<Integer>::initialize(){
     type_and_duality_set =false;
     commutative = false;
     nr_coordinates = 0;
+    write_mult_tables = false;
 }
 
 template <typename Integer>
@@ -555,6 +556,36 @@ set<vector<key_t> >  FusionData<Integer>::FrobRec_12(const vector<key_t>& ind_tu
     for(auto& t: G)
         F.insert(t);
     return F;
+}
+
+template <typename Integer>
+Integer FusionData<Integer>::value(const vector<Integer>& ring, vector<key_t>& ind_tuple){
+
+    key_t i,j,k;
+    i =ind_tuple[0];
+    j = ind_tuple[1];
+    k = ind_tuple[2];
+
+    if(i == 0){
+        if(j == k)
+            return 1;
+        else
+            return 0;
+    }
+    if(j == 0){
+        if(i == k)
+            return 1;
+        else
+            return 0;
+    }
+    if(k == 0){
+        if(duality[i] == j)
+            return 1;
+        else
+            return 0;
+    }
+
+    return ring[coord_cone(ind_tuple)];
 }
 
 
@@ -1048,6 +1079,62 @@ void FusionData<Integer>::make_partition_input_from_fusion_data(InputMap<mpq_cla
     if(write_input_file){
         do_werite_input_file(input);
     }
+}
+
+template <typename Integer>
+Matrix<Integer> FusionData<Integer>::mult_table(const vector<Integer>& ring, const size_t i){
+
+    Matrix<Integer> Table(fusion_rank, fusion_rank);
+    vector<key_t> ind_tuple(3);
+    for(key_t k = 0; k < fusion_rank; k++){
+        for(size_t j= 0; j < fusion_rank; j++){
+            ind_tuple[0] = i;
+            ind_tuple[1] = j;
+            ind_tuple[2] = k;
+            Table[k][j] = value(ring, ind_tuple);
+        }
+    }
+    // Table.debug_print();
+    return Table;
+}
+
+
+template <typename Integer>
+vector<Matrix<Integer> > FusionData<Integer>::make_all_mult_tables(const vector<Integer>& ring){
+
+    vector<Matrix<Integer> > Tables;
+
+    for(size_t i = 0; i <fusion_rank; ++i){
+        Tables.push_back(mult_table(ring, i));
+    }
+    return Tables;
+}
+
+template <typename Integer>
+void FusionData<Integer>::write_all_mult_tables(const Matrix<Integer>& rings, ostream& table_out){
+
+    make_CoordMap();
+    table_out << "[" << endl;
+    for(size_t kk = 0; kk < rings.nr_of_rows(); kk++){
+        table_out << "  [" << endl;
+        vector<Matrix<Integer> > Tables = make_all_mult_tables(rings[kk]); // for a fixed ring
+        for(auto& table: Tables){
+            table_out << "    [" << endl;
+            for(size_t jj = 0; jj < table.nr_of_rows(); ++jj){
+                table_out << "      [";
+                for(size_t mm = 0; mm < table.nr_of_rows(); ++mm){
+                    table_out << table[jj][mm];
+                    if(mm < table.nr_of_rows() - 1)
+                        table_out << ",";
+                    else
+                        table_out << "]," << endl;
+                }
+            }
+            table_out << "    ]," << endl;
+        }
+        table_out << "  ]," << endl;
+    }
+    table_out << "]" << endl;
 }
 //-------------------------------------------------------------------------------
 // helper for fusion rings
