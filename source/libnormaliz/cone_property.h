@@ -210,7 +210,7 @@ enum Enum {
     //
     ClassGroup,
     //
-    FusionMultTables,
+    FusionData,
     END_ENUM_RANGE(LAST_COMPLEX_STRUCTURE),
 
     //

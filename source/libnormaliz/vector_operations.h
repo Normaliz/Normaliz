@@ -58,6 +58,40 @@ std::ostream& operator<<(std::ostream& out, const vector<T>& vec) {
     return out;
 }
 
+/*
+ *
+ * NOT O:K.
+ *
+template <typename T>
+void do_print_vector(vector<T>& vec, std::ostream out, int level, int max_level){
+    string indent;
+    for(size_t i = 0; i < max_level - level; ++i)
+        indent += "  ";
+    out << indent << "[" << std::endl;
+    if(level == 0){
+        for(site_t k = 0; k < vec.size(); ++k){
+            out << vec[k];
+            if(k < vec.size() -1)
+                out << ",";
+        }
+    }
+    if(level > 0){
+        for(size_t j = 0; j < vec.size(); ++j){
+            do_print_vector(vec[j], level - 1, max_level);
+            out << indent << "]";
+            if(j < vec.size() -1)
+                out << ",";
+            out << std::endl;
+        }
+    }
+
+}
+
+void print_vector(vector<T>& vec, std::ostream out, int lavel){
+    do_print_vector(vec, out, level, level);
+}
+*/
+
 //---------------------------------------------------------------------------
 //          Prototypes for vector_operations.cpp
 //---------------------------------------------------------------------------

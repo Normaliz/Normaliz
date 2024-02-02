@@ -7454,8 +7454,8 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
             ToCompute.reset(ConeProperty::ModuleGenerators);
             is_Computed.reset(ConeProperty::ModuleGenerators);
             ToCompute.reset(ConeProperty::HilbertBasis);
-            write_fusion_mult_tables_from_input = ToCompute.test(ConeProperty::FusionMultTables);
-            ToCompute.reset(ConeProperty::FusionMultTables);
+            write_fusion_mult_tables_from_input = ToCompute.test(ConeProperty::FusionData);
+            ToCompute.reset(ConeProperty::FusionData);
         }
         if(ToCompute.test(ConeProperty::FusionRings)){
             FusionRings = ModuleGenerators;
