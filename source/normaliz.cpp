@@ -518,7 +518,7 @@ int process_data(OptionsHandler& options, const string& command_line) {
         bool standard_fusion_name = false;
         bool only_partition;
         reset_global_fusion_data(); // because of list processing
-        FusionData<long long> test_fusion;
+        FusionComp<long long> test_fusion;
         string name_in = options.getProjectName() + ".in";
         const char* file_in = name_in.c_str();
         ifstream in;

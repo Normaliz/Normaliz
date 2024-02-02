@@ -177,7 +177,7 @@ vector<vector<key_t> > collect_coincidence_subset_keys(const vector<key_t>& type
 // meaning "not sinmple"
 
 template <typename Integer>
-void FusionData<Integer>::make_automorphisms(){
+void FusionComp<Integer>::make_automorphisms(){
 
     make_CoordMap();
 
@@ -199,7 +199,7 @@ void FusionData<Integer>::make_automorphisms(){
 
 
 template <typename Integer>
-bool FusionData<Integer>::simplicity_check(const vector<key_t>& subring, const vector<Integer>& sol){
+bool FusionComp<Integer>::simplicity_check(const vector<key_t>& subring, const vector<Integer>& sol){
 
     for(auto& c: subring){
         if(sol[c] != 0)
@@ -210,7 +210,7 @@ bool FusionData<Integer>::simplicity_check(const vector<key_t>& subring, const v
 
 // checks whether sol is contained in one of the "subrings". If so "false" is returned.
 template <typename Integer>
-bool FusionData<Integer>::simplicity_check(const vector<vector<key_t> >& subrings, const vector<Integer>& sol){
+bool FusionComp<Integer>::simplicity_check(const vector<vector<key_t> >& subrings, const vector<Integer>& sol){
 
     for(auto& sub: subrings){
         if(!simplicity_check(sub, sol)){
@@ -221,12 +221,12 @@ bool FusionData<Integer>::simplicity_check(const vector<vector<key_t> >& subring
 }
 
 template <typename Integer>
-FusionData<Integer>::FusionData(){
+FusionComp<Integer>::FusionComp(){
     initialize();
 }
 
 template <typename Integer>
-void FusionData<Integer>::initialize(){
+void FusionComp<Integer>::initialize(){
     check_simplicity = false;
     candidate_given = false;
     use_automorphisms = false;
@@ -239,7 +239,7 @@ void FusionData<Integer>::initialize(){
 }
 
 template <typename Integer>
-void FusionData<Integer>::set_options(const ConeProperties& ToCompute, const bool verb){
+void FusionComp<Integer>::set_options(const ConeProperties& ToCompute, const bool verb){
 
     verbose = verb;
     check_simplicity= ToCompute.test(ConeProperty::SimpleFusionRings);
@@ -251,7 +251,7 @@ void FusionData<Integer>::set_options(const ConeProperties& ToCompute, const boo
 }
 
 template <typename Integer>
-void FusionData<Integer>::import_global_data(){
+void FusionComp<Integer>::import_global_data(){
 
     fusion_type = fusion_type_coinc_from_input;
     fusion_rank = fusion_type.size();
@@ -272,7 +272,7 @@ void FusionData<Integer>::import_global_data(){
 
 
 template <typename Integer>
-pair<bool, bool>  FusionData<Integer>::read_data(const bool a_priori, const bool only_test) {
+pair<bool, bool>  FusionComp<Integer>::read_data(const bool a_priori, const bool only_test) {
 
     bool dummy = false;
 
@@ -337,7 +337,7 @@ pair<bool, bool>  FusionData<Integer>::read_data(const bool a_priori, const bool
 
 
 template <typename Integer>
-pair<bool, bool> FusionData<Integer>::data_from_string(const string& our_fusion, const bool only_test) {
+pair<bool, bool> FusionComp<Integer>::data_from_string(const string& our_fusion, const bool only_test) {
 
     bool dummy = false;
     if(verbose)
@@ -438,7 +438,7 @@ pair<bool, bool> FusionData<Integer>::data_from_string(const string& our_fusion,
 /*
 
 template <typename Integer>
-void FusionData<Integer>::read_data_from_file() {
+void FusionComp<Integer>::read_data_from_file() {
 
     string file_name = global_project + ".fusion";
     ifstream in(file_name);
@@ -515,7 +515,7 @@ void FusionData<Integer>::read_data_from_file() {
 */
 
 template <typename Integer>
-set<vector<key_t> >  FusionData<Integer>::FrobRec(const vector<key_t>& ind_tuple){
+set<vector<key_t> >  FusionComp<Integer>::FrobRec(const vector<key_t>& ind_tuple){
     if(commutative)
         return FrobRec_12(ind_tuple);
     else
@@ -524,7 +524,7 @@ set<vector<key_t> >  FusionData<Integer>::FrobRec(const vector<key_t>& ind_tuple
 
 
 template <typename Integer>
-set<vector<key_t> >  FusionData<Integer>::FrobRec_6(const vector<key_t>& ind_tuple){
+set<vector<key_t> >  FusionComp<Integer>::FrobRec_6(const vector<key_t>& ind_tuple){
 
     assert(ind_tuple.size() == 3);
     key_t i,j,k;
@@ -544,7 +544,7 @@ set<vector<key_t> >  FusionData<Integer>::FrobRec_6(const vector<key_t>& ind_tup
 }
 
 template <typename Integer>
-set<vector<key_t> >  FusionData<Integer>::FrobRec_12(const vector<key_t>& ind_tuple){
+set<vector<key_t> >  FusionComp<Integer>::FrobRec_12(const vector<key_t>& ind_tuple){
 
     set< vector<key_t> > F = FrobRec_6(ind_tuple);
     vector<key_t> comm_tuple(3);
@@ -558,7 +558,7 @@ set<vector<key_t> >  FusionData<Integer>::FrobRec_12(const vector<key_t>& ind_tu
 }
 
 template <typename Integer>
-Integer FusionData<Integer>::value(const vector<Integer>& ring, vector<key_t>& ind_tuple){
+Integer FusionComp<Integer>::value(const vector<Integer>& ring, vector<key_t>& ind_tuple){
 
     key_t i,j,k;
     i =ind_tuple[0];
@@ -589,13 +589,13 @@ Integer FusionData<Integer>::value(const vector<Integer>& ring, vector<key_t>& i
 
 
 template <typename Integer>
-key_t FusionData<Integer>::coord(vector<key_t>& ind_tuple){
+key_t FusionComp<Integer>::coord(vector<key_t>& ind_tuple){
     set<vector<key_t> > FR = FrobRec(ind_tuple);
     return coord(FR);
 }
 
 template <typename Integer>
-key_t FusionData<Integer>::coord_cone(vector<key_t>& ind_tuple){
+key_t FusionComp<Integer>::coord_cone(vector<key_t>& ind_tuple){
     key_t coord_compute = coord(ind_tuple);
     if(coord_compute == 0)
         return nr_coordinates;
@@ -603,7 +603,7 @@ key_t FusionData<Integer>::coord_cone(vector<key_t>& ind_tuple){
 }
 
 template <typename Integer>
-key_t FusionData<Integer>::coord(set<vector<key_t> >& FR){
+key_t FusionComp<Integer>::coord(set<vector<key_t> >& FR){
     return CoordMap[FR];
 }
 
@@ -611,7 +611,7 @@ key_t FusionData<Integer>::coord(set<vector<key_t> >& FR){
 // makes the critical coordinates for the simplicity check
 // bse_key is the vector of bases (by keys) of the potential subrings
 template <typename Integer>
-dynamic_bitset FusionData<Integer>::critical_coords(const vector<key_t>& base_key){
+dynamic_bitset FusionComp<Integer>::critical_coords(const vector<key_t>& base_key){
     set<key_t> cand_set;
     cand_set.insert(base_key.begin(), base_key.end());
 
@@ -628,7 +628,7 @@ dynamic_bitset FusionData<Integer>::critical_coords(const vector<key_t>& base_ke
 }
 
 template <typename Integer>
-void FusionData<Integer>::make_all_ind_tuples(){
+void FusionComp<Integer>::make_all_ind_tuples(){
     for(key_t i = 1; i < fusion_rank; ++i){
         for(key_t j = 1; j < fusion_rank; ++j){
             for(key_t k = 1; k < fusion_rank; ++k){
@@ -640,7 +640,7 @@ void FusionData<Integer>::make_all_ind_tuples(){
 }
 
 template <typename Integer>
-void FusionData<Integer>::make_CoordMap(){
+void FusionComp<Integer>::make_CoordMap(){
 
     if(CoordMap.size() > 0)
         return;
@@ -665,7 +665,7 @@ void FusionData<Integer>::make_CoordMap(){
 }
 
 template <typename Integer>
-void  FusionData<Integer>::make_all_base_keys(){
+void  FusionComp<Integer>::make_all_base_keys(){
 
     vector<dynamic_bitset> all_subsets = make_all_subsets(fusion_rank -1);
     for(auto& sub: all_subsets){
@@ -688,7 +688,7 @@ void  FusionData<Integer>::make_all_base_keys(){
 }
 
 template <typename Integer>
-bool FusionData<Integer>::automs_compatible(const vector<key_t>& cand ) const{
+bool FusionComp<Integer>::automs_compatible(const vector<key_t>& cand ) const{
 
     for(auto& aa: Automorphisms){
         dynamic_bitset cand_ind = key_to_bitset(cand, Automorphisms.begin()->size());
@@ -701,7 +701,7 @@ bool FusionData<Integer>::automs_compatible(const vector<key_t>& cand ) const{
 }
 
 template <typename Integer>
-void FusionData<Integer>::prepare_simplicity_check(){
+void FusionComp<Integer>::prepare_simplicity_check(){
     make_CoordMap();
     /* for(auto& t: all_ind_tuples){
         cout << coord(t) << " --- " <<t;
@@ -724,7 +724,7 @@ void FusionData<Integer>::prepare_simplicity_check(){
 }
 
 template <typename Integer>
-Matrix<Integer> FusionData<Integer>::do_select_simple_inner(const Matrix<Integer>& LattPoints){
+Matrix<Integer> FusionComp<Integer>::do_select_simple_inner(const Matrix<Integer>& LattPoints){
         prepare_simplicity_check();
     if(nr_coordinates != LattPoints.nr_of_columns() - 1)
         throw BadInputException("Wrong number of coordinates in fusion data. Mismatch of duality or commutativity.");
@@ -755,17 +755,17 @@ Matrix<Integer> FusionData<Integer>::do_select_simple_inner(const Matrix<Integer
 // We work with final format (last coordinate is homogenizing)
 // This function protects *this
 template <typename Integer>
-Matrix<Integer> FusionData<Integer>::do_select_simple(const Matrix<Integer>& LattPoints) const {
+Matrix<Integer> FusionComp<Integer>::do_select_simple(const Matrix<Integer>& LattPoints) const {
 
     if(LattPoints.nr_of_rows() == 0 || !select_simple)
         return LattPoints;
 
-    FusionData<Integer> work_fusion = *this;
+    FusionComp<Integer> work_fusion = *this;
     return work_fusion.do_select_simple_inner(LattPoints);
 }
 
 template <typename Integer>
-Matrix<Integer> FusionData<Integer>::do_iso_classes_inner(const Matrix<Integer>& LattPoints){
+Matrix<Integer> FusionComp<Integer>::do_iso_classes_inner(const Matrix<Integer>& LattPoints){
 
    if(nr_coordinates != LattPoints.nr_of_columns() - 1)
         throw BadInputException("Wrong number of coordinates in fusion data. Mismatch of duality or commutativity.");
@@ -816,18 +816,18 @@ Matrix<Integer> FusionData<Integer>::do_iso_classes_inner(const Matrix<Integer>&
 // We work with final format (last coordinate is homogenizing)
 // This function protects *this
 template <typename Integer>
-Matrix<Integer> FusionData<Integer>::do_iso_classes(const Matrix<Integer>& LattPoints)const {
+Matrix<Integer> FusionComp<Integer>::do_iso_classes(const Matrix<Integer>& LattPoints)const {
 
     if(LattPoints.nr_of_rows() == 0 || !select_iso_classes)
         return LattPoints;
 
-    FusionData<Integer> work_fusion = *this;
+    FusionComp<Integer> work_fusion = *this;
 
     return work_fusion.do_iso_classes_inner(LattPoints);
 }
 
 template <typename Integer>
-Matrix<Integer> FusionData<Integer>::make_linear_constraints(const vector<Integer>& d){
+Matrix<Integer> FusionComp<Integer>::make_linear_constraints(const vector<Integer>& d){
 
     make_CoordMap();
 
@@ -857,7 +857,7 @@ Matrix<Integer> FusionData<Integer>::make_linear_constraints(const vector<Intege
 }
 
 template <typename Integer>
-Matrix<Integer> FusionData<Integer>::make_linear_constraints_partition(const vector<Integer>& d,
+Matrix<Integer> FusionComp<Integer>::make_linear_constraints_partition(const vector<Integer>& d,
                                                                        const vector<long>& card){
     make_CoordMap();
 
@@ -924,7 +924,7 @@ void subtracct(map<vector<key_t>, Integer>& poly, const pair<Integer, vector<key
 }
 
 template <typename Integer>
-pair<Integer, vector<key_t> >  FusionData<Integer>::term(const key_t& i, const key_t& j, const key_t& k){
+pair<Integer, vector<key_t> >  FusionComp<Integer>::term(const key_t& i, const key_t& j, const key_t& k){
 
     Integer coeff = -1;
     vector<key_t> exponent;
@@ -956,7 +956,7 @@ pair<Integer, vector<key_t> >  FusionData<Integer>::term(const key_t& i, const k
 }
 
 template <typename Integer>
-set<map<vector<key_t>, Integer> > FusionData<Integer>::make_associativity_constraints(){
+set<map<vector<key_t>, Integer> > FusionComp<Integer>::make_associativity_constraints(){
 
     make_CoordMap();
 
@@ -1012,7 +1012,7 @@ set<map<vector<key_t>, Integer> > FusionData<Integer>::make_associativity_constr
 }
 
 template <typename Integer>
-void FusionData<Integer>::do_werite_input_file(InputMap<mpq_class>&  input){
+void FusionComp<Integer>::do_werite_input_file(InputMap<mpq_class>&  input){
     string name = global_project + ".in";
     ofstream out(name);
     if(!out.is_open())
@@ -1046,7 +1046,7 @@ void FusionData<Integer>::do_werite_input_file(InputMap<mpq_class>&  input){
 }
 
 template <typename Integer>
-void FusionData<Integer>::make_input_from_fusion_data(InputMap<mpq_class>&  input, const bool write_input_file){
+void FusionComp<Integer>::make_input_from_fusion_data(InputMap<mpq_class>&  input, const bool write_input_file){
 
     vector<long> bridge(fusion_type.size());
     Matrix<mpq_class> TypeInput(1, fusion_type.size());
@@ -1067,7 +1067,7 @@ void FusionData<Integer>::make_input_from_fusion_data(InputMap<mpq_class>&  inpu
 }
 
 template <typename Integer>
-void FusionData<Integer>::make_partition_input_from_fusion_data(InputMap<mpq_class>&  input,  const bool write_input_file){
+void FusionComp<Integer>::make_partition_input_from_fusion_data(InputMap<mpq_class>&  input,  const bool write_input_file){
 
     vector<long> bridge(fusion_type.size());
     Matrix<mpq_class> TypeInput(1, fusion_type.size());
@@ -1081,7 +1081,7 @@ void FusionData<Integer>::make_partition_input_from_fusion_data(InputMap<mpq_cla
 }
 
 template <typename Integer>
-Matrix<Integer> FusionData<Integer>::data_table(const vector<Integer>& ring, const size_t i){
+Matrix<Integer> FusionComp<Integer>::data_table(const vector<Integer>& ring, const size_t i){
 
     Matrix<Integer> Table(fusion_rank, fusion_rank);
 
@@ -1098,7 +1098,7 @@ Matrix<Integer> FusionData<Integer>::data_table(const vector<Integer>& ring, con
 
 
 template <typename Integer>
-vector<Matrix<Integer> > FusionData<Integer>::make_all_data_tables(const vector<Integer>& ring){
+vector<Matrix<Integer> > FusionComp<Integer>::make_all_data_tables(const vector<Integer>& ring){
 
     vector<Matrix<Integer> > Tables;
 
@@ -1109,7 +1109,7 @@ vector<Matrix<Integer> > FusionData<Integer>::make_all_data_tables(const vector<
 }
 
 template <typename Integer>
-void FusionData<Integer>::tables_for_all_rings(const Matrix<Integer>& rings){
+void FusionComp<Integer>::tables_for_all_rings(const Matrix<Integer>& rings){
 
     make_CoordMap();
 
@@ -1119,7 +1119,7 @@ void FusionData<Integer>::tables_for_all_rings(const Matrix<Integer>& rings){
 }
 
 template <typename Integer>
-void FusionData<Integer>::write_all_data_tables(const Matrix<Integer>& rings, ostream& table_out){
+void FusionComp<Integer>::write_all_data_tables(const Matrix<Integer>& rings, ostream& table_out){
 
     tables_for_all_rings(rings);
 
@@ -1159,7 +1159,7 @@ void FusionData<Integer>::write_all_data_tables(const Matrix<Integer>& rings, os
 template <typename Integer>
 Matrix<Integer> select_simple(const Matrix<Integer>& LattPoints, const ConeProperties& ToCompute, const bool verb){
 
-    FusionData<Integer> fusion;
+    FusionComp<Integer> fusion;
     fusion.set_options(ToCompute, verb);
     fusion.read_data(false); // falsae = a posteriori
     return fusion.do_select_simple(LattPoints);
@@ -1177,7 +1177,7 @@ void split_into_simple_and_nonsimple(Matrix<Integer>& SimpleFusionRings, Matrix<
         return;
     }
 
-    FusionData<Integer> fusion;
+    FusionComp<Integer> fusion;
     fusion.select_simple = true;
     fusion.activated = true;
     fusion.verbose = false;
@@ -1209,7 +1209,7 @@ void split_into_simple_and_nonsimple(Matrix<Integer>& SimpleFusionRings, Matrix<
 template <typename Integer>
 Matrix<Integer> fusion_iso_classes(const Matrix<Integer>& LattPoints, const ConeProperties& ToCompute, const bool verb){
 
-    FusionData<Integer> fusion;
+    FusionComp<Integer> fusion;
     fusion.set_options(ToCompute, verb);
     fusion.read_data(false); // falsae = a posteriori
     return fusion.do_iso_classes(LattPoints);
@@ -1418,7 +1418,7 @@ void make_full_input(InputMap<Integer>& input_data, set<map<vector<key_t>, Integ
         candidate_subring_from_input = bitset_to_key(cand_indicator);
     }
 
-    FusionData<Integer> OurFusion;
+    FusionComp<Integer> OurFusion;
     OurFusion.import_global_data();
     OurFusion.read_data(true); // checks the duality
 
@@ -1459,7 +1459,7 @@ void make_full_input_partition(InputMap<Integer>& input_data){
     }
     d[0] = 1; // restored
 
-    FusionData<Integer> partition_fusion;
+    FusionComp<Integer> partition_fusion;
     partition_fusion.fusion_type = identity_key(blocks.size());
     partition_fusion.duality = identity_key(blocks.size());
     partition_fusion.commutative = true; // doesn't matter since duality = id
@@ -1510,12 +1510,12 @@ vector<key_t> fusion_coincidence_pattern(const vector<Integer>& v){
 
 /*
 template <typename Integer>
-void FusionData<Integer>::set_global_fusion_data(){
+void FusionComp<Integer>::set_global_fusion_data(){
     assert(false);
 }
 
 template <>
-void FusionData<long long>::set_global_fusion_data(){
+void FusionComp<long long>::set_global_fusion_data(){
     fusion_type_coinc_from_input = fusion_type;
     fusion_type_from_input = fusion_type_string;
     fusion_duality_from_input = duality;
@@ -1523,11 +1523,11 @@ void FusionData<long long>::set_global_fusion_data(){
 }
 */
 
-template class FusionData<mpz_class>;
-template class FusionData<long long>;
-template class FusionData<long>;
+template class FusionComp<mpz_class>;
+template class FusionComp<long long>;
+template class FusionComp<long>;
 #ifdef ENFNORMALIZ
-template class FusionData<renf_elem_class>;
+template class FusionComp<renf_elem_class>;
 #endif
 
 template Matrix<long> select_simple(const Matrix<long>& LattPoints, const ConeProperties& ToCompute, const bool verb);

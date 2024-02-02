@@ -42,7 +42,7 @@ using std::set;
 using std::ifstream;
 
 template <typename Integer>
-class FusionData    {
+class FusionComp    {
     template <typename, typename>
     friend class ProjectAndLift;
 
@@ -84,7 +84,7 @@ public:
 
     vector<vector<Matrix<Integer> > > AllTables;
 
-    FusionData();
+    FusionComp();
     void set_options(const ConeProperties& ToCompute, const bool verb);
     pair<bool, bool> read_data(const bool a_priori, const bool only_test = false);
     //void read_data_from_file();

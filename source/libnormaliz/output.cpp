@@ -1930,7 +1930,7 @@ void write_fusion_files(const string& name, const bool simple_fusion_rings, cons
         throw BadInputException("Cannot write to output file. Typo in directory name?");
     }
 
-    FusionData<Integer> fusion;
+    FusionComp<Integer> fusion;
     fusion.read_data(false);
 
     string simple_fusion_text, nonsimple_fusion_text;

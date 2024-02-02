@@ -255,7 +255,7 @@ class ProjectAndLift {
 
     size_t getNumberLatticePoints() const;
 
-    FusionData<IntegerRet> fusion;
+    FusionComp<IntegerRet> fusion;
     void read_subring_data();
 
     void setOptions(const ConeProperties& ToCompute, const bool primitive, const bool our_verbose);
