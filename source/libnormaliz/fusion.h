@@ -82,6 +82,8 @@ public:
     vector<vector<key_t> > Automorphisms;
     vector<dynamic_bitset> Orbits;
 
+    vector<vector<Matrix<Integer> > > AllTables;
+
     FusionData();
     void set_options(const ConeProperties& ToCompute, const bool verb);
     pair<bool, bool> read_data(const bool a_priori, const bool only_test = false);
@@ -127,9 +129,10 @@ public:
     void do_werite_input_file(InputMap<mpq_class>&  input);
     // void set_global_fusion_data();
 
-    void write_all_mult_tables(const Matrix<Integer>& rings, ostream& table_out);
-    vector<Matrix<Integer> > make_all_mult_tables(const vector<Integer>& ring);
-    Matrix<Integer> mult_table(const vector<Integer>& ring, const size_t i);
+    void write_all_data_tables(const Matrix<Integer>& rings, ostream& table_out);
+    void tables_for_all_rings(const Matrix<Integer>& rings);
+    vector<Matrix<Integer> > make_all_data_tables(const vector<Integer>& ring);
+    Matrix<Integer> data_table(const vector<Integer>& ring, const size_t i);
 };
 
 // helpers

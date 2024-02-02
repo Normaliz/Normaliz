@@ -236,7 +236,6 @@ void FusionData<Integer>::initialize(){
     type_and_duality_set =false;
     commutative = false;
     nr_coordinates = 0;
-    write_mult_tables = false;
 }
 
 template <typename Integer>
@@ -1082,16 +1081,15 @@ void FusionData<Integer>::make_partition_input_from_fusion_data(InputMap<mpq_cla
 }
 
 template <typename Integer>
-Matrix<Integer> FusionData<Integer>::mult_table(const vector<Integer>& ring, const size_t i){
+Matrix<Integer> FusionData<Integer>::data_table(const vector<Integer>& ring, const size_t i){
 
     Matrix<Integer> Table(fusion_rank, fusion_rank);
-    vector<key_t> ind_tuple(3);
+
     for(key_t k = 0; k < fusion_rank; k++){
-        for(size_t j= 0; j < fusion_rank; j++){
-            ind_tuple[0] = i;
-            ind_tuple[1] = j;
-            ind_tuple[2] = k;
-            Table[k][j] = value(ring, ind_tuple);
+        for(key_t j= 0; j < fusion_rank; j++){
+            key_t ii = i;
+            vector<key_t>ind_tuple = {ii, j, k};
+            Table[j][k] = value(ring, ind_tuple);
         }
     }
     // Table.debug_print();
@@ -1100,29 +1098,41 @@ Matrix<Integer> FusionData<Integer>::mult_table(const vector<Integer>& ring, con
 
 
 template <typename Integer>
-vector<Matrix<Integer> > FusionData<Integer>::make_all_mult_tables(const vector<Integer>& ring){
+vector<Matrix<Integer> > FusionData<Integer>::make_all_data_tables(const vector<Integer>& ring){
 
     vector<Matrix<Integer> > Tables;
 
     for(size_t i = 0; i <fusion_rank; ++i){
-        Tables.push_back(mult_table(ring, i));
+        Tables.push_back(data_table(ring, i));
     }
     return Tables;
 }
 
 template <typename Integer>
-void FusionData<Integer>::write_all_mult_tables(const Matrix<Integer>& rings, ostream& table_out){
+void FusionData<Integer>::tables_for_all_rings(const Matrix<Integer>& rings){
 
     make_CoordMap();
+
+    vector<vector<Matrix<Integer> > > AllTables;
+    for(size_t i = 0; i < rings.nr_of_rows(); ++i)
+        AllTables.push_back(make_all_data_tables(rings[i]));
+}
+
+template <typename Integer>
+void FusionData<Integer>::write_all_data_tables(const Matrix<Integer>& rings, ostream& table_out){
+
+    tables_for_all_rings(rings);
+
     table_out << "[" << endl;
     for(size_t kk = 0; kk < rings.nr_of_rows(); kk++){
         table_out << "  [" << endl;
-        vector<Matrix<Integer> > Tables = make_all_mult_tables(rings[kk]); // for a fixed ring
-        for(auto& table: Tables){
+        vector<Matrix<Integer> > Tables = AllTables[kk]; // for a fixed ring
+        for(size_t nn = 0; nn < Tables.size(); ++nn){
+            Matrix<Integer> table = Tables[nn];
             table_out << "    [" << endl;
             for(size_t jj = 0; jj < table.nr_of_rows(); ++jj){
                 table_out << "      [";
-                for(size_t mm = 0; mm < table.nr_of_rows(); ++mm){
+                for(size_t mm = 0; mm < table.nr_of_columns(); ++mm){
                     table_out << table[jj][mm];
                     if(mm < table.nr_of_rows() - 1)
                         table_out << ",";
@@ -1130,9 +1140,15 @@ void FusionData<Integer>::write_all_mult_tables(const Matrix<Integer>& rings, os
                         table_out << "]," << endl;
                 }
             }
-            table_out << "    ]," << endl;
+            if(nn == Tables.size() - 1)
+                table_out << "    ]" << endl;
+            else
+                table_out << "    ]," << endl;
         }
-        table_out << "  ]," << endl;
+        if(kk == rings.nr_of_rows() -1)
+            table_out << "  ]" << endl;
+        else
+            table_out << "  ]," << endl;
     }
     table_out << "]" << endl;
 }

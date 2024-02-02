@@ -1998,11 +1998,11 @@ void write_fusion_files(const string& name, const bool simple_fusion_rings, cons
     out.close();
 
     if(write_fusion_mult_tables_from_input){
-        name_open = name + ".ftb";
+        name_open = name + ".fus";
         ofstream ftb_out(name_open);
         Matrix<Integer> AllFusionRings = SimpleFusionRings;
         AllFusionRings.append(NonsimpleFusionRings);
-        fusion.write_all_mult_tables(AllFusionRings, ftb_out);
+        fusion.write_all_data_tables(AllFusionRings, ftb_out);
         ftb_out.close();
     }
 }
