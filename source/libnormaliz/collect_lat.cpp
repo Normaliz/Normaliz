@@ -497,11 +497,13 @@ void collect_lat(const string& project) {
             Matrix<long long> NonsimpleFusionRings;
             size_t embdim = TotalLat.nr_of_columns();
             if(lat_type == "fusion_rings"){
-                split_into_simple_and_nonsimple(SimpleFusionRings, NonsimpleFusionRings, TotalLat, verbose);
-                write_fusion_files(global_project, true, true, embdim, SimpleFusionRings, NonsimpleFusionRings, false);
+                FusionBasic blabla;
+                split_into_simple_and_nonsimple(blabla, SimpleFusionRings, NonsimpleFusionRings, TotalLat, verbose);
+                write_fusion_files(blabla, global_project, true, true, embdim, SimpleFusionRings, NonsimpleFusionRings, false);
             }
             else{ // only soimple computed
-                write_fusion_files(global_project, true, false, embdim, SimpleFusionRings, NonsimpleFusionRings, false);
+                FusionBasic blabla;
+                write_fusion_files(blabla, global_project, true, false, embdim, SimpleFusionRings, NonsimpleFusionRings, false);
             }
         }
         if(verbose)

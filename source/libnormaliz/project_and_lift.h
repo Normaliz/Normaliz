@@ -259,6 +259,7 @@ class ProjectAndLift {
     void read_subring_data();
 
     void setOptions(const ConeProperties& ToCompute, const bool primitive, const bool our_verbose);
+    void setFusion(const FusionBasic& FC);
 };
 
 

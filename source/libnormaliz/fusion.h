@@ -32,7 +32,7 @@
 
 #include "libnormaliz/general.h"
 #include "libnormaliz/matrix.h"
-#include "libnormaliz/input.h"
+#include "libnormaliz/input_type.h"
 
 namespace libnormaliz {
 using std::vector;
@@ -40,6 +40,33 @@ using std::map;
 using std::list;
 using std::set;
 using std::ifstream;
+using std::pair;
+
+class FusionBasic {
+
+public:
+
+    bool commutative;
+    bool candidate_given;
+    bool type_and_duality_set;
+
+    size_t fusion_rank;
+    vector<key_t> fusion_type;
+    string fusion_type_string;
+    vector<key_t> duality;
+    vector<key_t> subring_base_key;
+
+    // pair<bool, bool> read_data(const bool only_test);
+
+    FusionBasic();
+
+    template <typename Integer>
+    void read_data_from_input(InputMap<Integer>& input_data);
+
+    pair<bool, bool> data_from_string(const string& our_fusion, const bool only_test);
+
+    void do_write_input_file(InputMap<mpq_class>&  input) const;
+};
 
 template <typename Integer>
 class FusionComp    {
@@ -85,10 +112,10 @@ public:
     vector<vector<Matrix<Integer> > > AllTables;
 
     FusionComp();
+    FusionComp(const FusionBasic&);
+
     void set_options(const ConeProperties& ToCompute, const bool verb);
-    pair<bool, bool> read_data(const bool a_priori, const bool only_test = false);
     //void read_data_from_file();
-    pair<bool, bool>  data_from_string(const string& our_fusion, const bool onyl_test);
 
     // coordinates
     void make_CoordMap();
@@ -124,15 +151,14 @@ public:
                                             const vector<long>& card);
     pair<Integer, vector<key_t> >  term(const key_t& i, const key_t& j, const key_t& k);
     set<map<vector<key_t>, Integer> > make_associativity_constraints();
-    void make_input_from_fusion_data(InputMap<mpq_class>&  input, const bool write_input_file);
-    void make_partition_input_from_fusion_data(InputMap<mpq_class>&  input, const bool write_input_file);
-    void do_werite_input_file(InputMap<mpq_class>&  input);
     // void set_global_fusion_data();
 
     void write_all_data_tables(const Matrix<Integer>& rings, ostream& table_out);
     void tables_for_all_rings(const Matrix<Integer>& rings);
     vector<Matrix<Integer> > make_all_data_tables(const vector<Integer>& ring);
     Matrix<Integer> data_table(const vector<Integer>& ring, const size_t i);
+
+    pair<bool, bool> read_data(const bool a_priori, const bool only_test = false);
 };
 
 // helpers
@@ -143,7 +169,15 @@ template <typename Integer>
 Matrix<Integer> fusion_iso_classes(const Matrix<Integer>& LattPoints, const ConeProperties& ToCompute, const bool verb);
 //void select_simple_fusion_rings();
 template <typename Integer>
-void split_into_simple_and_nonsimple(Matrix<Integer>& SimpleFusionRings, Matrix<Integer>& NonsimpleFusionRings, const Matrix<Integer>& FusionRings, bool verb);
+void split_into_simple_and_nonsimple(const FusionBasic& basic, Matrix<Integer>& SimpleFusionRings, Matrix<Integer>& NonsimpleFusionRings, const Matrix<Integer>& FusionRings, bool verb);
+
+template <typename Integer>
+void make_full_input(const FusionBasic& FusionInput, InputMap<Integer>& input_data, set<map<vector<key_t>, Integer> >& Polys);
+template <typename Integer>
+void make_full_input_partition(InputMap<Integer>& input_data);
+
+void make_input_from_fusion_data(const FusionBasic& FusionInput, InputMap<mpq_class>&  input, const bool write_input_file);
+void make_partition_input_from_fusion_data(const FusionBasic& FusionInput, InputMap<mpq_class>&  input, const bool write_input_file);
 
 vector<dynamic_bitset> make_all_subsets(const size_t card);
 vector<vector<key_t> > make_all_permutations(size_t n);
@@ -156,14 +190,111 @@ void remove_global_fusion_data();
 void post_process_fusion(const vector<string>& command_line_items);
 
 template <typename Integer>
-void make_full_input(InputMap<Integer>& input_data, set<map<vector<key_t>, Integer> >& Polys);
-
-template <typename Integer>
-void make_full_input_partition(InputMap<Integer>& input_data);
-
-template <typename Integer>
 vector<key_t> fusion_coincidence_pattern(const vector<Integer>& v);
 
+template <typename Integer>
+void FusionBasic::read_data_from_input(InputMap<Integer>& input_data){
+
+    vector<Integer> full_type = input_data[Type::fusion_type][0];
+    // cout << "FULL " << full_type;
+    fusion_type = fusion_coincidence_pattern(full_type);
+    // cout << "COINC " << fusion_type_coinc_from_input;
+    fusion_rank = full_type.size();
+    stringstream for_type;
+    for_type << full_type;
+    fusion_type_string = for_type.str();
+
+    commutative = false;
+    if(contains(input_data, Type::fusion_duality)){
+        vector<Integer> prel_duality = input_data[Type::fusion_duality][0];
+        std::cout << "PREL " << prel_duality;
+        // cout << "PREL " << prel_duality  << " -- " << prel_duality.size() << " -- " <<  fusion_rank_from_input << endl;
+        if(prel_duality.size() != fusion_rank || (prel_duality[0] != 0 && prel_duality[0] != -1))
+            throw BadInputException("Fusion duality corrupt");
+        if(prel_duality[0] == -1) {
+            commutative = true;
+            prel_duality[0] = 0;
+        }
+
+        std::cout << "PREL PRTEL " << prel_duality;
+        duality.resize(fusion_rank);
+        for(key_t i = 0; i < fusion_rank; ++i){
+            bool in_range = false;
+            for(long j = 0; j < fusion_rank; ++j){  // conversion by counting
+                if(convertTo<Integer>(j) == prel_duality[i]){
+                    duality[i] = j;
+                    in_range = true;
+                    break;
+                }
+            }
+            if(!in_range)
+                throw BadInputException("Fusion duality out of range");
+        }
+        if(key_to_bitset(duality, fusion_rank).count() != fusion_rank)
+            throw BadInputException("Fusion duality has repeated entries");
+    }
+    else{
+        duality = identity_key(fusion_rank);
+    }
+
+    if(contains(input_data, Type::candidate_subring)){
+        dynamic_bitset cand_indicator(input_data[Type::candidate_subring][0].size());
+        if(cand_indicator.size() != fusion_rank)
+            throw BadInputException("Candidate subring has wrong size");
+        for(size_t i = 0; i < cand_indicator.size(); ++i){
+            if(input_data[Type::candidate_subring][0][i] == 0){
+                continue;
+            }
+            if(input_data[Type::candidate_subring][0][i] == 1){
+                cand_indicator[i] = 1;
+                continue;
+            }
+            throw BadInputException("Candidate subring not 0-1");
+        }
+        if(!cand_indicator[0] || cand_indicator.count() <=1 || cand_indicator.count() == full_type.size())
+            throw BadInputException("Candidate subring corrupt");
+        for(size_t i = 0; i < cand_indicator.size(); ++i){
+            if(cand_indicator[i] && !cand_indicator[duality[i]])
+                throw BadInputException("Candidate subring not closed iunder duality");
+        }
+        subring_base_key = bitset_to_key(cand_indicator);
+    }
+
+    type_and_duality_set = true;
+}
+
+template <typename Integer>
+void make_full_input(FusionBasic& FusionInput, InputMap<Integer>& input_data, set<map<vector<key_t>, Integer> >& Polys) {
+
+    FusionInput.read_data_from_input(input_data);
+    FusionComp<Integer> OurFusion(FusionInput);
+
+    vector<Integer> full_type = input_data[Type::fusion_type][0];
+    if(verbose)
+        verboseOutput() << "Making linear constraints for fusion rings" << endl;
+    Matrix<Integer> Equ = OurFusion.make_linear_constraints(full_type);
+    Matrix<Integer> InEqu = Equ;
+    Integer MinusOne = -1;
+    Equ.scalar_multiplication(MinusOne);
+    InEqu.append(Equ);
+
+    /* input_data.erase(Type::fusion_type);
+    input_data.erase(Type::fusion_duality);
+    input_data.erase(Type::candidate_subring);*/
+    input_data.clear();
+    input_data[Type::inhom_inequalities] = InEqu;
+    input_data[Type::inequalities] = Matrix<Integer>(InEqu.nr_of_columns()-1);
+
+    if(verbose)
+    verboseOutput() << "Making accociativity constraints for fusion rings" << endl;
+    Polys = OurFusion.make_associativity_constraints();
+
+}
+
+
+
 }  // end namespace libnormaliz
+
+
 
 #endif /* FUSION_H_ */

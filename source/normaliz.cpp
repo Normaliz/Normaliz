@@ -518,7 +518,7 @@ int process_data(OptionsHandler& options, const string& command_line) {
         bool standard_fusion_name = false;
         bool only_partition;
         reset_global_fusion_data(); // because of list processing
-        FusionComp<long long> test_fusion;
+        FusionBasic test_fusion;
         string name_in = options.getProjectName() + ".in";
         const char* file_in = name_in.c_str();
         ifstream in;
@@ -528,7 +528,7 @@ int process_data(OptionsHandler& options, const string& command_line) {
                 cerr << "error: Failed to open file " << name_in << "." << endl;
                 return 1;
             }
-            pair<bool, bool> result = test_fusion.read_data(true, true);
+            pair<bool, bool> result = test_fusion.data_from_string(global_project, true);
             standard_fusion_name = result.first;
             only_partition = result.second;
             if(!standard_fusion_name){
@@ -574,9 +574,9 @@ int process_data(OptionsHandler& options, const string& command_line) {
         }
         else{
             if(!only_partition)
-                test_fusion.make_input_from_fusion_data(input, options.isUseMakeFullInput());
+                make_input_from_fusion_data(test_fusion, input, options.isUseMakeFullInput());
             else
-                test_fusion.make_partition_input_from_fusion_data(input, options.isUseMakeFullInput());
+                make_partition_input_from_fusion_data(test_fusion, input, options.isUseMakeFullInput());
 
             if(options.isUseMakeFullInput())
                 return 0;

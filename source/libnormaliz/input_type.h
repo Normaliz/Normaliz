@@ -26,12 +26,15 @@
 
 #include <iostream>
 #include <string>
+#include <map>
 
 #include "libnormaliz/general.h"
+#include "libnormaliz/matrix.h"
 
 namespace libnormaliz {
 
 using std::string;
+using std::map;
 
 namespace Type {
 enum InputType {
@@ -120,6 +123,12 @@ enum InputType {
 }  // end namespace Type
 
 using Type::InputType;
+
+template <typename Number>
+using InputMap = map<InputType, Matrix<Number> >;
+
+template <typename Number>
+using InputMapVV = map<InputType, vector<vector<Number> > >;
 
 /* converts a string to an InputType
  * throws an BadInputException if the string cannot be converted */

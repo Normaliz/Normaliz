@@ -815,7 +815,7 @@ void Cone<Integer>::process_multi_input_inner(InputMap<Integer>& multi_input_dat
 
     if(contains(multi_input_data, Type::fusion_type)) {
         set<map<vector<key_t>, Integer> > Polys;
-        make_full_input(multi_input_data, Polys);
+        make_full_input(FusionBasicCone, multi_input_data, Polys);
         // we use the same conventions as the production of PolynomiualWquations
         // from strings, Polys use input coordinates counting from 1
         size_t dim_here = multi_input_data[Type::inhom_inequalities][0].size();
@@ -2935,6 +2935,10 @@ size_t Cone<Integer>::getNrSimpleFusionRings() {
     return SimpleFusionRings.nr_of_rows();
 }
 
+template <typename Integer>
+const FusionBasic& Cone<Integer>::getFusionBasicCone(){
+    return FusionBasicCone;
+}
 
 // Nonsimple fusion rings cannot be computed separately
 template <typename Integer>
@@ -7459,7 +7463,7 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
         }
         if(ToCompute.test(ConeProperty::FusionRings)){
             FusionRings = ModuleGenerators;
-            split_into_simple_and_nonsimple(SimpleFusionRings, NonsimpleFusionRings, FusionRings, verbose);
+            split_into_simple_and_nonsimple(FusionBasicCone,SimpleFusionRings,  NonsimpleFusionRings, FusionRings, verbose);
             setComputed(ConeProperty::FusionRings);
             setComputed(ConeProperty::SimpleFusionRings);
             setComputed(ConeProperty::NonsimpleFusionRings);

@@ -214,7 +214,7 @@ void reset_global_fusion_data();
 } /* end namespace libnormaliz */
 
 #include <libnormaliz/normaliz_exception.h>
-#include <libnormaliz/input_type.h>
+// #include <libnormaliz/input_type.h>
 #include <libnormaliz/cone_property.h>
 #include <libnormaliz/integer.h>
 

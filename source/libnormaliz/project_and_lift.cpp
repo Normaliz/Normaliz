@@ -105,11 +105,6 @@ void coarsen_this_cong(const vector<nmz_float>& cong, const size_t k, set<vector
 
 //--------------------------------------------------------------------
 
-// functions for fusion rings
-
-
-//--------------------------------------------------------------------
-
 template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL,IntegerRet>::add_congruences_from_equations() {
 
@@ -3147,10 +3142,6 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute(bool all_points, bool liftin
         read_split_data();
     }
 
-    if(fusion_rings_computation){  // note: options for fusion rings already set
-        fusion.verbose = verbose;
-        fusion.read_data(true); // true = a_priori
-    }
     if(fusion.nr_coordinates > 0 && fusion.nr_coordinates != EmbDim -1){
         // cout << "SSSSSSSSSSSSSSSS " << fusion.nr_coordinates << endl;
         throw BadInputException("Wrong number of coordinates in fusion data. Mismatch of duality or commutativity.");
@@ -3294,6 +3285,13 @@ void ProjectAndLift<IntegerPL, IntegerRet>::get_h_vectors(vector<num_t>& pos, ve
 }
 
 //---------------------------------------------------------------------------
+template <typename IntegerPL, typename IntegerRet>
+void ProjectAndLift<IntegerPL, IntegerRet>::setFusion(const FusionBasic& FC){
+    fusion = FusionComp<IntegerRet>(FC);
+}
+
+
+//---------------------------------------------------------------------------
 // For projection of cones
 template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL, IntegerRet>::putSuppsAndEqus(Matrix<IntegerPL>& SuppsRet,
@@ -3318,7 +3316,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::setOptions(const ConeProperties& ToC
 
     if(ToCompute.test(ConeProperty::FusionRings) || ToCompute.test(ConeProperty::SimpleFusionRings)){
         fusion_rings_computation = true;
-        fusion.set_options(ToCompute, verbose);
+        fusion.set_options(ToCompute, our_verbose);
     }
 
     if(primitive){
@@ -3405,6 +3403,7 @@ void project_and_lift(Cone<renf_elem_class>&  C, const ConeProperties& ToCompute
     ProjectAndLift<renf_elem_class, mpz_class> PL;
     PL = ProjectAndLift<renf_elem_class, mpz_class>(Supps, Ind, rank);
 
+    PL.setFusion(C.getFusionBasicCone());
     PL.setOptions(ToCompute, primitive, C.getVerbose());
 
     PL.set_grading_denom(1);
@@ -3520,6 +3519,7 @@ void project_and_lift(Cone<Integer>&  C, const ConeProperties& ToCompute,
                 convert(CongsMI, Congs);
                 PL.set_congruences(CongsMI);
 
+                PL.setFusion(C.getFusionBasicCone());
                 PL.setOptions(ToCompute, primitive, C.getVerbose());
 
                 PL.set_grading_denom(GDMI);
@@ -3574,6 +3574,7 @@ void project_and_lift(Cone<Integer>&  C, const ConeProperties& ToCompute,
                 PL = ProjectAndLift<Integer, Integer>(Supps, C.getPair(), C.getParaInPair(), rank);
             PL.set_congruences(Congs);
 
+            PL.setFusion(C.getFusionBasicCone());
             PL.setOptions(ToCompute, primitive, C.getVerbose());
 
             PL.set_grading_denom(C.getGradingDenomRaw());

@@ -28,6 +28,7 @@
 #include "libnormaliz/options.h"
 #include "libnormaliz/vector_operations.h"
 #include "libnormaliz/list_and_map_operations.h"
+#include "libnormaliz/input.h"
 
 namespace libnormaliz{
 using std::vector;
@@ -172,172 +173,20 @@ vector<vector<key_t> > collect_coincidence_subset_keys(const vector<key_t>& type
     return coincidence_keys;
 }
 
+//--------------------------------------------------------------
+//
+// FusionBasic
+//
+//
 
-// checks whether sol is contained in the "subring". If so, "false" is returned,
-// meaning "not sinmple"
-
-template <typename Integer>
-void FusionComp<Integer>::make_automorphisms(){
-
-    make_CoordMap();
-
-    auto type_automs = make_all_permutations(fusion_type,duality);
-
-    for(auto& p: type_automs){
-        vector<key_t> coord_perm(1); // must start with 0 !!!!
-        for(auto& t: selected_ind_tuples){
-            vector<key_t> image;
-            for(auto& c: t)
-                image.push_back(p[c]);
-            coord_perm.push_back(coord(image));
-        }
-        Automorphisms.push_back(coord_perm);
-    }
-    if(verbose)
-        verboseOutput() << "Automorphism group of order " << Automorphisms.size() << " computed" << endl;
-}
-
-
-template <typename Integer>
-bool FusionComp<Integer>::simplicity_check(const vector<key_t>& subring, const vector<Integer>& sol){
-
-    for(auto& c: subring){
-        if(sol[c] != 0)
-            return true;
-    }
-    return false;
-}
-
-// checks whether sol is contained in one of the "subrings". If so "false" is returned.
-template <typename Integer>
-bool FusionComp<Integer>::simplicity_check(const vector<vector<key_t> >& subrings, const vector<Integer>& sol){
-
-    for(auto& sub: subrings){
-        if(!simplicity_check(sub, sol)){
-            return false;
-        }
-    }
-    return true;
-}
-
-template <typename Integer>
-FusionComp<Integer>::FusionComp(){
-    initialize();
-}
-
-template <typename Integer>
-void FusionComp<Integer>::initialize(){
-    check_simplicity = false;
-    candidate_given = false;
-    use_automorphisms = false;
-    // select_iso_classes = false;
-    verbose = false;
-    activated = false;
-    type_and_duality_set =false;
+FusionBasic::FusionBasic(){
     commutative = false;
-    nr_coordinates = 0;
+    candidate_given = false;
+    fusion_rank = 0;
+    type_and_duality_set = false;
 }
 
-template <typename Integer>
-void FusionComp<Integer>::set_options(const ConeProperties& ToCompute, const bool verb){
-
-    verbose = verb;
-    check_simplicity= ToCompute.test(ConeProperty::SimpleFusionRings);
-    // select_simple = ToCompute.test(ConeProperty::SelectSimple);
-    use_automorphisms = ToCompute.test(ConeProperty::FusionRings) || ToCompute.test(ConeProperty::SimpleFusionRings);
-    // select_iso_classes = ToCompute.test(ConeProperty::FusionIsoClasses);
-    if(check_simplicity || use_automorphisms)
-        activated = true;
-}
-
-template <typename Integer>
-void FusionComp<Integer>::import_global_data(){
-
-    fusion_type = fusion_type_coinc_from_input;
-    fusion_rank = fusion_type.size();
-    duality = fusion_duality_from_input;
-    commutative = fusion_commutative_from_input;
-    fusion_type_string = fusion_type_from_input;
-
-    subring_base_key = candidate_subring_from_input;
-    dynamic_bitset candidate_test = key_to_bitset(subring_base_key, fusion_rank);
-    for(size_t i = 0; i < candidate_test.size(); ++i){
-        if(candidate_test[i] && !candidate_test[duality[i]])
-            throw BadInputException("Candidate subring not closed under duality");
-
-    }
-    candidate_given = (subring_base_key.size() >0);
-    type_and_duality_set = true;
-}
-
-
-template <typename Integer>
-pair<bool, bool>  FusionComp<Integer>::read_data(const bool a_priori, const bool only_test) {
-
-    bool dummy = false;
-
-    if(!type_and_duality_set && fusion_type_coinc_from_input.size() > 0){
-        import_global_data();
-    }
-    if(!type_and_duality_set){
-            pair<bool, bool> standard_and_partition = data_from_string(global_project, only_test);
-            if(only_test && (!standard_and_partition.first || standard_and_partition.second))
-                return standard_and_partition;
-    }
-
-    set<key_t> subring_base_set;
-    subring_base_set.insert(subring_base_key.begin(), subring_base_key.end());
-    for(auto& kk: subring_base_key){
-        if(subring_base_set.find(duality[kk]) == subring_base_set.end())
-            throw BadInputException("Subring base not closed under duality");
-    }
-
-    if(fusion_type.size() == 0 || fusion_type.size() != duality.size() ||
-                fusion_type[0] != 1 || duality[0] != 0){
-        if(only_test)
-            return make_pair(false, dummy);
-        throw BadInputException("Fusion data corrupt");
-    }
-
-    fusion_rank = duality.size();
-    dynamic_bitset dual_ind(fusion_rank);
-    for(size_t i = 0; i < fusion_rank; ++i){
-        if(duality[i] >= fusion_rank || fusion_type[i] != fusion_type[duality[i]]){
-            if(only_test)
-                return make_pair(false, dummy);
-            throw BadInputException("Fusion data corrupt");
-        }
-         dual_ind[duality[i]] = 1;
-    }
-    if(dual_ind.count() != fusion_rank){
-        if(only_test)
-            return make_pair(false, dummy);
-        throw BadInputException("Fusion data corrupt");
-    }
-    if(verbose){
-        verboseOutput() << "rank " << fusion_rank << endl;
-        verboseOutput() << "type " << fusion_type_string; // contains \n
-        verboseOutput() << "duality " << duality;
-        verboseOutput() << "commutative " << commutative << endl;
-    }
-    if(candidate_given && verbose)
-        verboseOutput() << "candidate base of subring " << subring_base_key;
-
-    if(!activated)
-        return make_pair(true, dummy);
-
-    if((use_automorphisms && a_priori) || (select_iso_classes && !a_priori) )
-        make_automorphisms();
-
-    if((check_simplicity && a_priori) || (select_simple && !a_priori) ) // after automorphisms !!
-        prepare_simplicity_check();
-
-    return make_pair(true, dummy);
-}
-
-
-template <typename Integer>
-pair<bool, bool> FusionComp<Integer>::data_from_string(const string& our_fusion, const bool only_test) {
+pair<bool, bool> FusionBasic::data_from_string(const string& our_fusion, const bool only_test) {
 
     bool dummy = false;
     if(verbose)
@@ -434,6 +283,193 @@ pair<bool, bool> FusionComp<Integer>::data_from_string(const string& our_fusion,
     type_and_duality_set = true;
     return make_pair(true, false);
 }
+
+
+//--------------------------------------------------------------
+
+
+// checks whether sol is contained in the "subring". If so, "false" is returned,
+// meaning "not sinmple"
+
+template <typename Integer>
+void FusionComp<Integer>::make_automorphisms(){
+
+    make_CoordMap();
+
+    auto type_automs = make_all_permutations(fusion_type,duality);
+
+    for(auto& p: type_automs){
+        vector<key_t> coord_perm(1); // must start with 0 !!!!
+        for(auto& t: selected_ind_tuples){
+            vector<key_t> image;
+            for(auto& c: t)
+                image.push_back(p[c]);
+            coord_perm.push_back(coord(image));
+        }
+        Automorphisms.push_back(coord_perm);
+    }
+    if(verbose)
+        verboseOutput() << "Automorphism group of order " << Automorphisms.size() << " computed" << endl;
+}
+
+
+template <typename Integer>
+bool FusionComp<Integer>::simplicity_check(const vector<key_t>& subring, const vector<Integer>& sol){
+
+    for(auto& c: subring){
+        if(sol[c] != 0)
+            return true;
+    }
+    return false;
+}
+
+// checks whether sol is contained in one of the "subrings". If so "false" is returned.
+template <typename Integer>
+bool FusionComp<Integer>::simplicity_check(const vector<vector<key_t> >& subrings, const vector<Integer>& sol){
+
+    for(auto& sub: subrings){
+        if(!simplicity_check(sub, sol)){
+            return false;
+        }
+    }
+    return true;
+}
+
+template <typename Integer>
+FusionComp<Integer>::FusionComp(){
+    initialize();
+}
+
+template <typename Integer>
+FusionComp<Integer>::FusionComp(const FusionBasic& basic){
+    initialize();
+    fusion_rank = basic.fusion_rank;
+    commutative = basic.commutative;
+    candidate_given = basic.candidate_given;
+    fusion_type = basic.fusion_type;
+    fusion_type_string = basic.fusion_type_string;
+    duality = basic.duality;
+    subring_base_key = basic.subring_base_key;
+    type_and_duality_set = basic.type_and_duality_set;
+}
+
+template <typename Integer>
+void FusionComp<Integer>::initialize(){
+    check_simplicity = false;
+    candidate_given = false;
+    use_automorphisms = false;
+    // select_iso_classes = false;
+    verbose = false;
+    activated = false;
+    type_and_duality_set =false;
+    commutative = false;
+    nr_coordinates = 0;
+}
+
+template <typename Integer>
+void FusionComp<Integer>::set_options(const ConeProperties& ToCompute, const bool verb){
+
+    verbose = verb;
+    check_simplicity= ToCompute.test(ConeProperty::SimpleFusionRings);
+    // select_simple = ToCompute.test(ConeProperty::SelectSimple);
+    use_automorphisms = ToCompute.test(ConeProperty::FusionRings) || ToCompute.test(ConeProperty::SimpleFusionRings);
+    // select_iso_classes = ToCompute.test(ConeProperty::FusionIsoClasses);
+    if(check_simplicity || use_automorphisms)
+        activated = true;
+    if(check_simplicity)
+        prepare_simplicity_check();
+    if(use_automorphisms)
+        make_automorphisms();
+}
+
+template <typename Integer>
+void FusionComp<Integer>::import_global_data(){
+
+    fusion_type = fusion_type_coinc_from_input;
+    fusion_rank = fusion_type.size();
+    duality = fusion_duality_from_input;
+    commutative = fusion_commutative_from_input;
+    fusion_type_string = fusion_type_from_input;
+
+    subring_base_key = candidate_subring_from_input;
+    dynamic_bitset candidate_test = key_to_bitset(subring_base_key, fusion_rank);
+    for(size_t i = 0; i < candidate_test.size(); ++i){
+        if(candidate_test[i] && !candidate_test[duality[i]])
+            throw BadInputException("Candidate subring not closed under duality");
+
+    }
+    candidate_given = (subring_base_key.size() >0);
+    type_and_duality_set = true;
+}
+
+
+template <typename Integer>
+pair<bool, bool>  FusionComp<Integer>::read_data(const bool a_priori, const bool only_test) {
+
+    bool dummy = false;
+
+    if(!type_and_duality_set && fusion_type_coinc_from_input.size() > 0){
+        import_global_data();
+    }
+    if(!type_and_duality_set){
+        FusionBasic basic;
+        pair<bool, bool> standard_and_partition = basic.data_from_string(global_project, only_test);
+        if(only_test && (!standard_and_partition.first || standard_and_partition.second))
+            return standard_and_partition;
+    }
+
+    set<key_t> subring_base_set;
+    subring_base_set.insert(subring_base_key.begin(), subring_base_key.end());
+    for(auto& kk: subring_base_key){
+        if(subring_base_set.find(duality[kk]) == subring_base_set.end())
+            throw BadInputException("Subring base not closed under duality");
+    }
+
+    if(fusion_type.size() == 0 || fusion_type.size() != duality.size() ||
+                fusion_type[0] != 1 || duality[0] != 0){
+        if(only_test)
+            return make_pair(false, dummy);
+        throw BadInputException("Fusion data corrupt");
+    }
+
+    fusion_rank = duality.size();
+    dynamic_bitset dual_ind(fusion_rank);
+    for(size_t i = 0; i < fusion_rank; ++i){
+        if(duality[i] >= fusion_rank || fusion_type[i] != fusion_type[duality[i]]){
+            if(only_test)
+                return make_pair(false, dummy);
+            throw BadInputException("Fusion data corrupt");
+        }
+         dual_ind[duality[i]] = 1;
+    }
+    if(dual_ind.count() != fusion_rank){
+        if(only_test)
+            return make_pair(false, dummy);
+        throw BadInputException("Fusion data corrupt");
+    }
+    if(verbose){
+        verboseOutput() << "rank " << fusion_rank << endl;
+        verboseOutput() << "type " << fusion_type_string; // contains \n
+        verboseOutput() << "duality " << duality;
+        verboseOutput() << "commutative " << commutative << endl;
+    }
+    if(candidate_given && verbose)
+        verboseOutput() << "candidate base of subring " << subring_base_key;
+
+    if(!activated)
+        return make_pair(true, dummy);
+
+    if((use_automorphisms && a_priori) || (select_iso_classes && !a_priori) )
+        make_automorphisms();
+
+    if((check_simplicity && a_priori) || (select_simple && !a_priori) ) // after automorphisms !!
+        prepare_simplicity_check();
+
+    return make_pair(true, dummy);
+}
+
+
+
 
 /*
 
@@ -1011,8 +1047,8 @@ set<map<vector<key_t>, Integer> > FusionComp<Integer>::make_associativity_constr
     return Polys;
 }
 
-template <typename Integer>
-void FusionComp<Integer>::do_werite_input_file(InputMap<mpq_class>&  input){
+
+void FusionBasic::do_write_input_file(InputMap<mpq_class>&  input) const{
     string name = global_project + ".in";
     ofstream out(name);
     if(!out.is_open())
@@ -1045,38 +1081,36 @@ void FusionComp<Integer>::do_werite_input_file(InputMap<mpq_class>&  input){
         verboseOutput() << "Wtote " << name << endl;
 }
 
-template <typename Integer>
-void FusionComp<Integer>::make_input_from_fusion_data(InputMap<mpq_class>&  input, const bool write_input_file){
+void make_input_from_fusion_data(const FusionBasic& FusionInput, InputMap<mpq_class>&  input, const bool write_input_file){
 
-    vector<long> bridge(fusion_type.size());
-    Matrix<mpq_class> TypeInput(1, fusion_type.size());
+    vector<long> bridge(FusionInput.fusion_type.size());
+    Matrix<mpq_class> TypeInput(1, FusionInput.fusion_type.size());
     for(size_t i = 0; i< bridge.size(); ++i)
-        bridge[i] = fusion_type[i];
+        bridge[i] = FusionInput.fusion_type[i];
     convert(TypeInput[0], bridge);
     for(size_t i = 0; i< bridge.size(); ++i)
-        bridge[i] = duality[i];
-    Matrix<mpq_class> DualityInput(1, fusion_type.size());
+        bridge[i] = FusionInput.duality[i];
+    Matrix<mpq_class> DualityInput(1, FusionInput.fusion_type.size());
     convert(DualityInput[0], bridge);
-    if(commutative)
+    if(FusionInput.commutative)
         DualityInput[0][0] = -1;
     input[Type::fusion_type] = TypeInput;
     input[Type::fusion_duality] = DualityInput;
     if(write_input_file){
-        do_werite_input_file(input);
+        FusionInput.do_write_input_file(input);
     }
 }
 
-template <typename Integer>
-void FusionComp<Integer>::make_partition_input_from_fusion_data(InputMap<mpq_class>&  input,  const bool write_input_file){
+void make_partition_input_from_fusion_data(const FusionBasic& FusionInput,InputMap<mpq_class>&  input,  const bool write_input_file){
 
-    vector<long> bridge(fusion_type.size());
-    Matrix<mpq_class> TypeInput(1, fusion_type.size());
+    vector<long> bridge(FusionInput.fusion_type.size());
+    Matrix<mpq_class> TypeInput(1, FusionInput.fusion_type.size());
     for(size_t i = 0; i< bridge.size(); ++i)
-        bridge[i] = fusion_type[i];
+        bridge[i] = FusionInput.fusion_type[i];
     convert(TypeInput[0], bridge);
     input[Type::fusion_type_for_partition] = TypeInput;
     if(write_input_file){
-        do_werite_input_file(input);
+        FusionInput.do_write_input_file(input);
     }
 }
 
@@ -1166,7 +1200,7 @@ Matrix<Integer> select_simple(const Matrix<Integer>& LattPoints, const ConePrope
 }
 
 template <typename Integer>
-void split_into_simple_and_nonsimple(Matrix<Integer>& SimpleFusionRings, Matrix<Integer>& NonsimpleFusionRings, const Matrix<Integer>& FusionRings, bool verb){
+void split_into_simple_and_nonsimple(const FusionBasic& basic, Matrix<Integer>& SimpleFusionRings, Matrix<Integer>& NonsimpleFusionRings, const Matrix<Integer>& FusionRings, bool verb){
 
     if(verb)
         verboseOutput() << "Splitting fusion rings into simple and nonsimple" << endl;
@@ -1177,11 +1211,11 @@ void split_into_simple_and_nonsimple(Matrix<Integer>& SimpleFusionRings, Matrix<
         return;
     }
 
-    FusionComp<Integer> fusion;
+    FusionComp<Integer> fusion(basic);
     fusion.select_simple = true;
     fusion.activated = true;
     fusion.verbose = false;
-    fusion.read_data(false); // falsae = a posteriori
+    fusion.prepare_simplicity_check();
     SimpleFusionRings = fusion.do_select_simple(FusionRings);
     string message = " simple fusion rings (or: not containing candidate subring)";
     /* if(candidate_given)
@@ -1307,10 +1341,11 @@ void post_process_fusion_file(const vector<string>& command_line_items,string ou
     size_t embdim = LattPoints.nr_of_columns();
 
     Matrix<long long> SimpleFusionRings, NonsimpleFusionRings;
-    split_into_simple_and_nonsimple(SimpleFusionRings, NonsimpleFusionRings, LattPoints, verbose);
+    FusionBasic blabla;
+    split_into_simple_and_nonsimple(blabla, SimpleFusionRings, NonsimpleFusionRings, LattPoints, verbose);
 
     string name = global_project + ".fusion";
-    write_fusion_files(name, non_simple_fusion_rings, true, embdim,
+    write_fusion_files(blabla, name, non_simple_fusion_rings, true, embdim,
                             SimpleFusionRings, NonsimpleFusionRings,false);
 }
 
@@ -1357,91 +1392,17 @@ void post_process_fusion(const vector<string>& command_line_items){
      }
 }
 
-template <typename Integer>
-void make_full_input(InputMap<Integer>& input_data, set<map<vector<key_t>, Integer> >& Polys) {
+/*
+pair<bool, bool>  FusionBasic::read_data() {
 
-    vector<Integer> full_type = input_data[Type::fusion_type][0];
-    // cout << "FULL " << full_type;
-    fusion_type_coinc_from_input = fusion_coincidence_pattern(full_type);
-    // cout << "COINC " << fusion_type_coinc_from_input;
-    size_t fusion_rank_from_input = fusion_type_coinc_from_input.size();
-    stringstream for_type;
-    for_type << full_type;
-    fusion_type_from_input = for_type.str();
+    auto dummy = make_pair(true,true);
 
-
-    fusion_commutative_from_input = false;
-
-    if(contains(input_data, Type::fusion_duality)){
-        vector<Integer> prel_duality = input_data[Type::fusion_duality][0];
-        // cout << "PREL " << prel_duality  << " -- " << prel_duality.size() << " -- " <<  fusion_rank_from_input << endl;
-        if(prel_duality.size() != fusion_rank_from_input || (prel_duality[0] != 0 && prel_duality[0] != -1))
-            throw BadInputException("Fusion duality corrupt");
-        if(prel_duality[0] == -1) {
-            fusion_commutative_from_input = true;
-            prel_duality[0] = 0;
-        }
-        fusion_duality_from_input.resize(fusion_rank_from_input);
-        for(key_t i = 0; i < fusion_rank_from_input; ++i){
-            bool in_range = false;
-            for(long j = 0; j < fusion_rank_from_input; ++j){
-                if(j == convertTo<long>(prel_duality[i])){
-                    fusion_duality_from_input[i] = j;
-                    in_range = true;
-                    break;
-                }
-            }
-            if(!in_range)
-                throw BadInputException("Fusion duality corrupt");
-        }
-    }
-    else{
-        fusion_duality_from_input = identity_key(fusion_rank_from_input);
-    }
-
-    if(contains(input_data, Type::candidate_subring)){
-        dynamic_bitset cand_indicator(input_data[Type::candidate_subring][0].size());
-        if(cand_indicator.size() != full_type.size())
-            throw BadInputException("Candidate subring corrupt");
-        for(size_t i = 0; i < cand_indicator.size(); ++i){
-            if(input_data[Type::candidate_subring][0][i] == 0){
-                continue;
-            }
-            if(input_data[Type::candidate_subring][0][i] == 1){
-                cand_indicator[i] = 1;
-                continue;
-            }
-            throw BadInputException("Candidate subring corrupt");
-        }
-        if(!cand_indicator[0] || cand_indicator.count() <=1 || cand_indicator.count() == full_type.size())
-            throw BadInputException("Candidate subring corrupt");
-        candidate_subring_from_input = bitset_to_key(cand_indicator);
-    }
-
-    FusionComp<Integer> OurFusion;
-    OurFusion.import_global_data();
-    OurFusion.read_data(true); // checks the duality
-
-    if(verbose)
-        verboseOutput() << "Making linear constraints for fusion rings" << endl;
-    Matrix<Integer> Equ = OurFusion.make_linear_constraints(full_type);
-    Matrix<Integer> InEqu = Equ;
-    Integer MinusOne = -1;
-    Equ.scalar_multiplication(MinusOne);
-    InEqu.append(Equ);
-
-    /* input_data.erase(Type::fusion_type);
-    input_data.erase(Type::fusion_duality);
-    input_data.erase(Type::candidate_subring);*/
-    input_data.clear();
-    input_data[Type::inhom_inequalities] = InEqu;
-    input_data[Type::inequalities] = Matrix<Integer>(InEqu.nr_of_columns()-1);
-
-    if(verbose)
-    verboseOutput() << "Making accociativity constraints for fusion rings" << endl;
-    Polys = OurFusion.make_associativity_constraints();
-
+    return dummy;
 }
+*/
+
+
+
 
 template <typename Integer>
 void make_full_input_partition(InputMap<Integer>& input_data){
@@ -1530,6 +1491,15 @@ template class FusionComp<long>;
 template class FusionComp<renf_elem_class>;
 #endif
 
+/*
+template class FusionBasic<mpz_class>;
+template class FusionBasic<long long>;
+template class FusionBasic<long>;
+#ifdef ENFNORMALIZ
+template class FusionBasic<renf_elem_class>;
+#endif
+*/
+
 template Matrix<long> select_simple(const Matrix<long>& LattPoints, const ConeProperties& ToCompute, const bool verb);
 template Matrix<long long> select_simple(const Matrix<long long>& LattPoints, const ConeProperties& ToCompute, const bool verb);
 template Matrix<mpz_class> select_simple(const Matrix<mpz_class>& LattPoints, const ConeProperties& ToCompute, const bool verb);
@@ -1537,11 +1507,11 @@ template Matrix<mpz_class> select_simple(const Matrix<mpz_class>& LattPoints, co
 template Matrix<renf_elem_class> select_simple(const Matrix<renf_elem_class>& LattPoints, const ConeProperties& ToCompute, const bool verb);
 #endif
 
-template void split_into_simple_and_nonsimple(Matrix<long long>& SimpleFusionRings, Matrix<long long>& NonsimpleFusionRings, const Matrix<long long>& FusionRings, bool verb);
-template void split_into_simple_and_nonsimple(Matrix<long>& SimpleFusionRings, Matrix<long>& NonsimpleFusionRings, const Matrix<long>& FusionRings, bool verb);
-template void split_into_simple_and_nonsimple(Matrix<mpz_class>& SimpleFusionRings, Matrix<mpz_class>& NonsimpleFusionRings, const Matrix<mpz_class>& FusionRings, bool verb);
+template void split_into_simple_and_nonsimple(const FusionBasic& basic, Matrix<long long>& SimpleFusionRings, Matrix<long long>& NonsimpleFusionRings, const Matrix<long long>& FusionRings, bool verb);
+template void split_into_simple_and_nonsimple(const FusionBasic& basic, Matrix<long>& SimpleFusionRings, Matrix<long>& NonsimpleFusionRings, const Matrix<long>& FusionRings, bool verb);
+template void split_into_simple_and_nonsimple(const FusionBasic& basic, Matrix<mpz_class>& SimpleFusionRings, Matrix<mpz_class>& NonsimpleFusionRings, const Matrix<mpz_class>& FusionRings, bool verb);
 #ifdef ENFNORMALIZ
-template void split_into_simple_and_nonsimple(Matrix<renf_elem_class>& SimpleFusionRings, Matrix<renf_elem_class>& NonsimpleFusionRings, const Matrix<renf_elem_class>& FusionRings, bool verb);
+template void split_into_simple_and_nonsimple(const FusionBasic& basic, Matrix<renf_elem_class>& SimpleFusionRings, Matrix<renf_elem_class>& NonsimpleFusionRings, const Matrix<renf_elem_class>& FusionRings, bool verb);
 #endif
 
 template Matrix<long> fusion_iso_classes(const Matrix<long>& LattPoints, const ConeProperties& ToCompute, const bool verb);
@@ -1558,12 +1528,14 @@ template vector<key_t> fusion_coincidence_pattern(const vector<mpz_class>& v);
 template vector<key_t> fusion_coincidence_pattern(const vector<renf_elem_class>& v);
 #endif
 
-template void make_full_input(InputMap<long>& input_data, set<map<vector<key_t>, long> >& Polys);
-template void make_full_input(InputMap<long long>& input_data, set<map<vector<key_t>, long long> >& Polys);
-template void make_full_input(InputMap<mpz_class>& input_data, set<map<vector<key_t>, mpz_class> >& Polys);
+/*
+template void make_full_input<long>(const FusionBasic& FusionInput, InputMap<long>& input_data, set<map<vector<key_t>, long> >& Polys);
+template void make_full_input<long long>(const FusionBasic& FusionInput, InputMap<long long>& input_data, set<map<vector<key_t>, long long> >& Polys);
+template void make_full_input<mpz_class>(const FusionBasic& FusionInput, InputMap<mpz_class>& input_data, set<map<vector<key_t>, mpz_class> >& Polys);
 #ifdef ENFNORMALIZ
-template void make_full_input(InputMap<renf_elem_class>& input_data, set<map<vector<key_t>, renf_elem_class> >& Polys);
+template void make_full_input<renf_elem_class>(const FusionBasic& FusionInput, InputMap<renf_elem_class>& input_data, set<map<vector<key_t>, renf_elem_class> >& Polys);
 #endif
+*/
 
 template void make_full_input_partition(InputMap<long>& input_data);
 template void make_full_input_partition(InputMap<long long>& input_data);
@@ -1571,6 +1543,7 @@ template void make_full_input_partition(InputMap<mpz_class>& input_data);
 #ifdef ENFNORMALIZ
 template void make_full_input_partition(InputMap<renf_elem_class>& input_data);
 #endif
+
 
 
 
