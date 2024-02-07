@@ -192,6 +192,7 @@ void post_process_fusion(const vector<string>& command_line_items);
 template <typename Integer>
 vector<key_t> fusion_coincidence_pattern(const vector<Integer>& v);
 
+// Note: the following routine must work for renf_elem_class
 template <typename Integer>
 void FusionBasic::read_data_from_input(InputMap<Integer>& input_data){
 
@@ -207,7 +208,6 @@ void FusionBasic::read_data_from_input(InputMap<Integer>& input_data){
     commutative = false;
     if(contains(input_data, Type::fusion_duality)){
         vector<Integer> prel_duality = input_data[Type::fusion_duality][0];
-        std::cout << "PREL " << prel_duality;
         // cout << "PREL " << prel_duality  << " -- " << prel_duality.size() << " -- " <<  fusion_rank_from_input << endl;
         if(prel_duality.size() != fusion_rank || (prel_duality[0] != 0 && prel_duality[0] != -1))
             throw BadInputException("Fusion duality corrupt");
@@ -215,8 +215,6 @@ void FusionBasic::read_data_from_input(InputMap<Integer>& input_data){
             commutative = true;
             prel_duality[0] = 0;
         }
-
-        std::cout << "PREL PRTEL " << prel_duality;
         duality.resize(fusion_rank);
         for(key_t i = 0; i < fusion_rank; ++i){
             bool in_range = false;
@@ -291,7 +289,19 @@ void make_full_input(FusionBasic& FusionInput, InputMap<Integer>& input_data, se
 
 }
 
-
+template<typename Integer>
+bool check_duality(vector<Integer> test_duality){
+    if(test_duality[0] != 0 && test_duality[0] != -1)
+        return false;
+    test_duality[0] = 0;
+    for(Integer i = 0; i< test_duality.size(); ++i){
+        if(test_duality[i] < 0 || test_duality[i] >= test_duality.size())
+            return true;
+        if(test_duality[test_duality[i]] != i)
+            return false;
+    }
+    return true;
+}
 
 }  // end namespace libnormaliz
 

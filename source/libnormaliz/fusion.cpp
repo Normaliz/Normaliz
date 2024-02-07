@@ -37,7 +37,6 @@ using std::list;
 using std::ifstream;
 using std::ofstream;
 
-
 vector<dynamic_bitset> make_all_subsets(const size_t card){
 
     if(card == 0){
@@ -186,6 +185,9 @@ FusionBasic::FusionBasic(){
     type_and_duality_set = false;
 }
 
+
+// Note: test_only = false produces data ready for FusionComp (coincidence, commutative)
+// test_only = true copies the type and the duality 1-1
 pair<bool, bool> FusionBasic::data_from_string(const string& our_fusion, const bool only_test) {
 
     bool dummy = false;
@@ -231,11 +233,16 @@ pair<bool, bool> FusionBasic::data_from_string(const string& our_fusion, const b
             return make_pair(false, dummy);
         throw BadInputException("String " + our_fusion +" not standard fusion");
     }
-    vector<long> type;
+    vector<long> type_input;
     while(true){
         long nr;
         data >> nr;
-        fusion_type.push_back(nr);
+        if(nr < 1){
+            if(only_test)
+                return make_pair(false, dummy);
+            throw BadInputException("String " + our_fusion +" not standard fusion");
+        }
+        type_input.push_back(nr);
         data >> c;
         if(c == ']'){
             break;
@@ -247,11 +254,30 @@ pair<bool, bool> FusionBasic::data_from_string(const string& our_fusion, const b
                 throw BadInputException("String " + our_fusion +" not standard fusion");
             }
         }
-    }
-    if(only_partition){
-        return make_pair(true, true);
 
     }
+    if(type_input[0] != 1){
+        if(only_test)
+            return make_pair(false, dummy);
+        throw BadInputException("String " + our_fusion +" not standard fusion");
+    }
+    fusion_rank = type_input.size();
+    stringstream for_type;
+    for_type << type_input;
+    fusion_type_string = for_type.str();
+    if(!only_test)
+        fusion_type = fusion_coincidence_pattern(type_input);
+    else{ // we have checked positivity
+        fusion_type.resize(fusion_rank);
+        for(size_t i = 0; i < fusion_rank; ++i)
+            fusion_type[i] = type_input[i];
+    }
+
+    if(only_partition){
+        return make_pair(true, true);
+    }
+
+    vector<long> duality_input;
     data >> c;
     if(c !='['){
         if(only_test)
@@ -266,7 +292,7 @@ pair<bool, bool> FusionBasic::data_from_string(const string& our_fusion, const b
             commutative = true;
             nr = 0;
         }
-        duality.push_back(nr);
+        duality_input.push_back(nr);
         data >> c;
         if(c == ']'){
             break;
@@ -280,7 +306,22 @@ pair<bool, bool> FusionBasic::data_from_string(const string& our_fusion, const b
         }
     }
 
-    type_and_duality_set = true;
+    if(!check_duality(duality_input)){
+        if(only_test)
+            return make_pair(false, dummy);
+        throw BadInputException("String " + our_fusion +" not standard fusion");
+    };
+
+    if(!only_test){
+        if(duality_input[0] == -1)
+            commutative = false,
+        duality_input[0] = 0;
+        duality.resize(fusion_rank);
+        for(key_t i = 0; i< fusion_rank; ++i){
+            duality[i] = duality_input[i];
+        }
+        type_and_duality_set = true;
+    }
     return make_pair(true, false);
 }
 
@@ -296,6 +337,10 @@ void FusionComp<Integer>::make_automorphisms(){
 
     make_CoordMap();
 
+    /* cout <<  "Coord " << CoordMap.size() << endl;
+    cout << "Type " << fusion_type << endl;
+    cout << "duality " << duality;*/
+
     auto type_automs = make_all_permutations(fusion_type,duality);
 
     for(auto& p: type_automs){
@@ -309,7 +354,7 @@ void FusionComp<Integer>::make_automorphisms(){
         Automorphisms.push_back(coord_perm);
     }
     if(verbose)
-        verboseOutput() << "Automorphism group of order " << Automorphisms.size() << " computed" << endl;
+        verboseOutput() << "Fusion data automorphism group of order " << Automorphisms.size() << " computed" << endl;
 }
 
 
@@ -380,6 +425,7 @@ void FusionComp<Integer>::set_options(const ConeProperties& ToCompute, const boo
         prepare_simplicity_check();
     if(use_automorphisms)
         make_automorphisms();
+    // cout << Automorphisms;
 }
 
 template <typename Integer>
@@ -568,6 +614,7 @@ set<vector<key_t> >  FusionComp<Integer>::FrobRec_6(const vector<key_t>& ind_tup
     j = ind_tuple[1];
     k = ind_tuple[2];
     set< vector<key_t> > F;
+    // cout << "FR "<< duality;
     F = {
             {i,j,k},
             {duality[i],k,j},
@@ -682,6 +729,7 @@ void FusionComp<Integer>::make_CoordMap(){
         return;
 
     make_all_ind_tuples();
+    // cout << "ind_tuples " << all_ind_tuples.size() << endl;
 
     key_t val = 1;  // coordinate 0 is the homogenizing one
     for(auto& ind_tuple: all_ind_tuples){
@@ -1212,6 +1260,7 @@ void split_into_simple_and_nonsimple(const FusionBasic& basic, Matrix<Integer>& 
     }
 
     FusionComp<Integer> fusion(basic);
+    // cout << fusion.fusion_rank << endl;
     fusion.select_simple = true;
     fusion.activated = true;
     fusion.verbose = false;

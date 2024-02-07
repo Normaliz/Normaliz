@@ -1628,6 +1628,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                             r = 0;
                         for(size_t i = 0; i < CoveredKey.size(); ++i){
                             key_t image = Automorphisms[Automs[*pp]][CoveredKey[i]];
+                            // cout << "image " << image << " --- " << covered.size() << endl;
                             if(covered[image]){
                                 key_t inverse_image = CoveredKeyInverse[image];
                                 restricted_conjugate[inverse_image] = restricted[i];
@@ -3288,6 +3289,15 @@ void ProjectAndLift<IntegerPL, IntegerRet>::get_h_vectors(vector<num_t>& pos, ve
 template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL, IntegerRet>::setFusion(const FusionBasic& FC){
     fusion = FusionComp<IntegerRet>(FC);
+    /*
+    if(fusion.fusion_type.size() == 0){
+        FusionBasic basic;
+        basic.data_from_string(global_project,false); // We want the final data
+        fusion = FusionComp<IntegerRet>(basic);
+    }
+    if(fusion.fusion_type.size() == 0)
+        throw BadInputException("Fusion rings asked for, but fusion data not available");
+    */
 }
 
 
@@ -3313,6 +3323,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::putSuppsAndEqus(Matrix<IntegerPL>& S
 
 template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL, IntegerRet>::setOptions(const ConeProperties& ToCompute, const bool primitive, const bool our_verbose){
+
 
     if(ToCompute.test(ConeProperty::FusionRings) || ToCompute.test(ConeProperty::SimpleFusionRings)){
         fusion_rings_computation = true;

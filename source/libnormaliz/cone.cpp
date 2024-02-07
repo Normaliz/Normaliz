@@ -4522,6 +4522,12 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
 
     ToCompute.check_conflicting_variants();
 
+    if(!is_fusion &&(ToCompute.test(ConeProperty::FusionRings) || ToCompute.test(ConeProperty::SimpleFusionRings))){
+        if(verbose)
+            verboseOutput() << "Trying to get fusion data from file name" << endl;
+        FusionBasicCone.data_from_string(global_project, false);
+    }
+
     if(is_fusion){
         ToCompute.set_fusion_default(is_fusion_candidate_subring);
     }

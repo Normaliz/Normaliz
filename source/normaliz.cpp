@@ -528,7 +528,7 @@ int process_data(OptionsHandler& options, const string& command_line) {
                 cerr << "error: Failed to open file " << name_in << "." << endl;
                 return 1;
             }
-            pair<bool, bool> result = test_fusion.data_from_string(global_project, true);
+            pair<bool, bool> result = test_fusion.data_from_string(global_project, false);
             standard_fusion_name = result.first;
             only_partition = result.second;
             if(!standard_fusion_name){
