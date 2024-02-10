@@ -185,6 +185,72 @@ FusionBasic::FusionBasic(){
     type_and_duality_set = false;
 }
 
+void  FusionBasic::data_from_mpq_input(ifstream& cone_in){
+    InputMap<mpq_class> input;
+    map<NumParam::Param, long> num_param_input;
+    map<PolyParam::Param, vector<string> > poly_param_input;
+    OptionsHandler options;
+    renf_class_shared number_field;
+    input = readNormalizInput<mpq_class>(cone_in, options, num_param_input, poly_param_input,  number_field);
+    read_data_from_input<mpq_class>(input);
+}
+
+#ifdef ENFNORMALIZ
+void  FusionBasic::data_from_renf_input(ifstream& cone_in){
+    InputMap<renf_elem_class> input;
+    map<NumParam::Param, long> num_param_input;
+    map<PolyParam::Param, vector<string> > poly_param_input;
+    OptionsHandler options;
+    renf_class_shared number_field;
+    input = readNormalizInput<renf_elem_class>(cone_in, options, num_param_input, poly_param_input,  number_field);
+    read_data_from_input<renf_elem_class>(input);
+}
+#endif
+
+
+void  FusionBasic::data_from_file(const string& file_name){
+    bool number_field_input = false;
+    ifstream cone_in(file_name);
+    string test;
+    while (cone_in.good()) {
+        cone_in >> test;
+        // cout << test << endl;
+        if (test == "number_field") {
+            number_field_input = true;
+            break;
+        }
+    }
+    cone_in.close();
+    cone_in.open(file_name.c_str(), ifstream::in);
+
+#ifndef ENFNORMALIZ
+    if(number_field_input)
+        throw BadInputException("Number field input only possible with e-antic");
+#else
+    if(number_field_input){
+        data_from_renf_input(cone_in);
+        return;
+    }
+#endif
+    data_from_mpq_input(cone_in);
+}
+
+
+void  FusionBasic::data_from_file_or_string(const string& our_fusion){
+
+    string file_name = our_fusion;
+    if(file_name.size() < 3 || file_name.substr(file_name.size()-2,3) != ".in"){
+        file_name += ".in";
+    }
+    ifstream cone_in(file_name);
+
+    if(cone_in.is_open()){
+        cone_in.close();
+        data_from_file(file_name);
+    }
+    else
+        data_from_string(our_fusion, false);
+}
 
 // Note: test_only = false produces data ready for FusionComp (coincidence, commutative)
 // test_only = true copies the type and the duality 1-1
@@ -328,10 +394,6 @@ pair<bool, bool> FusionBasic::data_from_string(const string& our_fusion, const b
 
 //--------------------------------------------------------------
 
-
-// checks whether sol is contained in the "subring". If so, "false" is returned,
-// meaning "not sinmple"
-
 template <typename Integer>
 void FusionComp<Integer>::make_automorphisms(){
 
@@ -358,6 +420,10 @@ void FusionComp<Integer>::make_automorphisms(){
 }
 
 
+
+
+// checks whether sol is contained in the "subring". If so, "false" is returned,
+// meaning "not sinmple"
 template <typename Integer>
 bool FusionComp<Integer>::simplicity_check(const vector<key_t>& subring, const vector<Integer>& sol){
 
@@ -428,6 +494,7 @@ void FusionComp<Integer>::set_options(const ConeProperties& ToCompute, const boo
     // cout << Automorphisms;
 }
 
+/*
 template <typename Integer>
 void FusionComp<Integer>::import_global_data(){
 
@@ -447,8 +514,9 @@ void FusionComp<Integer>::import_global_data(){
     candidate_given = (subring_base_key.size() >0);
     type_and_duality_set = true;
 }
+*/
 
-
+/*
 template <typename Integer>
 pair<bool, bool>  FusionComp<Integer>::read_data(const bool a_priori, const bool only_test) {
 
@@ -514,7 +582,7 @@ pair<bool, bool>  FusionComp<Integer>::read_data(const bool a_priori, const bool
     return make_pair(true, dummy);
 }
 
-
+*/
 
 
 /*
@@ -1174,7 +1242,7 @@ Matrix<Integer> FusionComp<Integer>::data_table(const vector<Integer>& ring, con
             Table[j][k] = value(ring, ind_tuple);
         }
     }
-    // Table.debug_print();
+    // Table.debug_print('+');
     return Table;
 }
 
@@ -1186,6 +1254,7 @@ vector<Matrix<Integer> > FusionComp<Integer>::make_all_data_tables(const vector<
 
     for(size_t i = 0; i <fusion_rank; ++i){
         Tables.push_back(data_table(ring, i));
+        //Tables.back().debug_print('+');
     }
     return Tables;
 }
@@ -1195,7 +1264,7 @@ void FusionComp<Integer>::tables_for_all_rings(const Matrix<Integer>& rings){
 
     make_CoordMap();
 
-    vector<vector<Matrix<Integer> > > AllTables;
+    // vector<vector<Matrix<Integer> > > AllTables;
     for(size_t i = 0; i < rings.nr_of_rows(); ++i)
         AllTables.push_back(make_all_data_tables(rings[i]));
 }
@@ -1237,15 +1306,17 @@ void FusionComp<Integer>::write_all_data_tables(const Matrix<Integer>& rings, os
 //-------------------------------------------------------------------------------
 // helper for fusion rings
 
+
 // bridge to cone
 template <typename Integer>
 Matrix<Integer> select_simple(const Matrix<Integer>& LattPoints, const ConeProperties& ToCompute, const bool verb){
 
     FusionComp<Integer> fusion;
     fusion.set_options(ToCompute, verb);
-    fusion.read_data(false); // falsae = a posteriori
+    // fusion.read_data(false); // falsae = a posteriori
     return fusion.do_select_simple(LattPoints);
 }
+
 
 template <typename Integer>
 void split_into_simple_and_nonsimple(const FusionBasic& basic, Matrix<Integer>& SimpleFusionRings, Matrix<Integer>& NonsimpleFusionRings, const Matrix<Integer>& FusionRings, bool verb){
@@ -1289,6 +1360,7 @@ void split_into_simple_and_nonsimple(const FusionBasic& basic, Matrix<Integer>& 
         verboseOutput() << NonsimpleFusionRings.nr_of_rows() << message_1 << endl;
 }
 
+/*
 template <typename Integer>
 Matrix<Integer> fusion_iso_classes(const Matrix<Integer>& LattPoints, const ConeProperties& ToCompute, const bool verb){
 
@@ -1297,6 +1369,7 @@ Matrix<Integer> fusion_iso_classes(const Matrix<Integer>& LattPoints, const Cone
     fusion.read_data(false); // falsae = a posteriori
     return fusion.do_iso_classes(LattPoints);
 }
+*/
 
 Matrix<long long> extract_latt_points_from_out(ifstream& in_out){
 
@@ -1563,12 +1636,14 @@ template void split_into_simple_and_nonsimple(const FusionBasic& basic, Matrix<m
 template void split_into_simple_and_nonsimple(const FusionBasic& basic, Matrix<renf_elem_class>& SimpleFusionRings, Matrix<renf_elem_class>& NonsimpleFusionRings, const Matrix<renf_elem_class>& FusionRings, bool verb);
 #endif
 
+/*
 template Matrix<long> fusion_iso_classes(const Matrix<long>& LattPoints, const ConeProperties& ToCompute, const bool verb);
 template Matrix<long long> fusion_iso_classes(const Matrix<long long>& LattPoints, const ConeProperties& ToCompute, const bool verb);
 template Matrix<mpz_class> fusion_iso_classes(const Matrix<mpz_class>& LattPoints, const ConeProperties& ToCompute, const bool verb);
 #ifdef ENFNORMALIZ
 template Matrix<renf_elem_class> fusion_iso_classes(const Matrix<renf_elem_class>& LattPoints, const ConeProperties& ToCompute, const bool verb);
 #endif
+*/
 
 template vector<key_t> fusion_coincidence_pattern(const vector<long>& v);
 template vector<key_t> fusion_coincidence_pattern(const vector<long long>& v);

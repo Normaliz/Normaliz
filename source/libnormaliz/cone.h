@@ -424,8 +424,7 @@ class Cone {
     const vector<vector<Integer> >& getNonsimpleFusionRings();
     size_t getNrNonsimpleFusionRings();
 
-    const vector<vector<Matrix<Integer> > >& getFusionTablesMatrix();
-    const vector<vector<vector<vector<Integer> > > >& getFusionTables();
+    const vector<vector<Matrix<Integer> > >& getFusionDataMatrix();
 
     const FusionBasic& getFusionBasicCone();
 
@@ -705,7 +704,7 @@ class Cone {
     Matrix<Integer> FusionRings;
     Matrix<Integer> SimpleFusionRings;
     Matrix<Integer> NonsimpleFusionRings;
-    vector<vector<Matrix<Integer> > > FusionTables;
+    vector<vector<Matrix<Integer> > > FusionTables; // to avoid the name FusionData
 
     HilbertSeries HSeries;
     HilbertSeries EhrSeries;

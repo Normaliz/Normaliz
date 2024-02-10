@@ -63,6 +63,11 @@ public:
     template <typename Integer>
     void read_data_from_input(InputMap<Integer>& input_data);
 
+    void  data_from_renf_input(ifstream& cone_in);
+    void  data_from_mpq_input(ifstream& cone_in);
+    void  data_from_file_or_string(const string& our_fusion);
+    void  data_from_file(const string& file_name);
+
     pair<bool, bool> data_from_string(const string& our_fusion, const bool only_test);
 
     void do_write_input_file(InputMap<mpq_class>&  input) const;

@@ -23,6 +23,7 @@ nobase_include_HEADERS = \
   libnormaliz/cone.h \
   libnormaliz/descent.h \
   libnormaliz/dynamic_bitset.h \
+  libnormaliz/fusion.h \
   libnormaliz/general.h \
   libnormaliz/HilbertSeries.h \
   libnormaliz/input.h \
@@ -86,7 +87,6 @@ noinst_HEADERS = \
   libnormaliz/cone_dual_mode.h \
   libnormaliz/face_lattice.h \
   libnormaliz/full_cone.h \
-  libnormaliz/fusion.h \
   libnormaliz/lattice_ideal.h \
   libnormaliz/nmz_hash.h \
   libnormaliz/offload_handler.h \

@@ -3287,7 +3287,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::get_h_vectors(vector<num_t>& pos, ve
 
 //---------------------------------------------------------------------------
 template <typename IntegerPL, typename IntegerRet>
-void ProjectAndLift<IntegerPL, IntegerRet>::setFusion(const FusionBasic& FC){
+void ProjectAndLift<IntegerPL, IntegerRet>::setFusion(const  FusionBasic& FC){
     fusion = FusionComp<IntegerRet>(FC);
     /*
     if(fusion.fusion_type.size() == 0){

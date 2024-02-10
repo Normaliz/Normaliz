@@ -29,6 +29,7 @@
 #include "libnormaliz/cone.h"
 #include "libnormaliz/descent.h"
 #include "libnormaliz/dynamic_bitset.h"
+#include "libnormaliz/fusion.h"
 #include "libnormaliz/general.h"
 #include "libnormaliz/HilbertSeries.h"
 #include "libnormaliz/input_type.h"

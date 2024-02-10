@@ -2940,6 +2940,12 @@ const FusionBasic& Cone<Integer>::getFusionBasicCone(){
     return FusionBasicCone;
 }
 
+template <typename Integer>
+const vector<vector<Matrix<Integer> > >& Cone<Integer>::getFusionDataMatrix(){
+    compute(ConeProperty::FusionData);
+    return FusionTables;
+}
+
 // Nonsimple fusion rings cannot be computed separately
 template <typename Integer>
 const Matrix<Integer>& Cone<Integer>::getNonsimpleFusionRingsMatrix() {
@@ -4522,6 +4528,8 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
 
     ToCompute.check_conflicting_variants();
 
+    // Note: the situation that the following lines take care of can
+    // only arise with a traditional input file -- so no dager if called via libnormaliz
     if(!is_fusion &&(ToCompute.test(ConeProperty::FusionRings) || ToCompute.test(ConeProperty::SimpleFusionRings))){
         if(verbose)
             verboseOutput() << "Trying to get fusion data from file name" << endl;
@@ -7464,7 +7472,14 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
             ToCompute.reset(ConeProperty::ModuleGenerators);
             is_Computed.reset(ConeProperty::ModuleGenerators);
             ToCompute.reset(ConeProperty::HilbertBasis);
-            write_fusion_mult_tables_from_input = ToCompute.test(ConeProperty::FusionData);
+            // we make the FusionData here only if in library mode
+            // if normaliz is run, write_fusion_mult_tables_from_inpu = true
+            // and we make teh tables in output
+            if(ToCompute.test(ConeProperty::FusionData) && !write_fusion_mult_tables_from_input){
+                FusionComp<Integer> our_fusion(FusionBasicCone);
+                our_fusion.tables_for_all_rings(ModuleGenerators);
+                swap(FusionTables, our_fusion.AllTables);
+            }
             ToCompute.reset(ConeProperty::FusionData);
         }
         if(ToCompute.test(ConeProperty::FusionRings)){
