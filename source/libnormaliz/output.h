@@ -168,7 +168,7 @@ class Output {
 // class end *****************************************************************
 
 template <typename Integer>
-void write_fusion_files(const string& name, const bool non_simple_fusion_rings, const bool simple_fusion_rings,
+void write_fusion_files(const FusionBasic basic, const string& name, const bool non_simple_fusion_rings, const bool simple_fusion_rings,
                                          size_t embdim, const Matrix<Integer>& SimpleFusionRings,
                                          const Matrix<Integer>& NonSimpleFusionRings,
                                          const bool no_matrices_output);

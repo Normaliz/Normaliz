@@ -1223,14 +1223,14 @@ void Output<Integer>::write_files() {
 
     if(Result->isComputed(ConeProperty::FusionRings) || Result->isComputed(ConeProperty::SimpleFusionRings)){
         if(Result->isComputed(ConeProperty::FusionRings)){
-            write_fusion_files(name, Result->isComputed(ConeProperty::SimpleFusionRings),
+            write_fusion_files(Result->getFusionBasicCone(), name, Result->isComputed(ConeProperty::SimpleFusionRings),
                             Result->isComputed(ConeProperty::NonsimpleFusionRings), Result->getEmbeddingDim(),
                             Result->getSimpleFusionRingsMatrix(), Result->getNonsimpleFusionRingsMatrix(),
                             no_matrices_output);
         }
         else{ // only soimple computed
             Matrix<Integer> Zero;
-            write_fusion_files(name, Result->isComputed(ConeProperty::SimpleFusionRings),
+            write_fusion_files(Result->getFusionBasicCone(),name, Result->isComputed(ConeProperty::SimpleFusionRings),
                             Result->isComputed(ConeProperty::NonsimpleFusionRings), Result->getEmbeddingDim(),
                             Result->getSimpleFusionRingsMatrix(), Zero,
                             no_matrices_output);
@@ -1918,20 +1918,20 @@ void Output<Integer>::write_files() {
 
 
 template <typename Integer>
-void write_fusion_files(const string& name, const bool simple_fusion_rings, const bool non_simple_fusion_rings,
-                                         size_t embdim, const Matrix<Integer>& SimpleFusionRings,
-                                         const Matrix<Integer>& NonsimpleFusionRings,
-                                         const bool no_matrices_output) {
+void write_fusion_files(const FusionBasic fusion_basic, const string& name, const bool simple_fusion_rings,
+                        const bool non_simple_fusion_rings,
+                        size_t embdim, const Matrix<Integer>& SimpleFusionRings,
+                        const Matrix<Integer>& NonsimpleFusionRings,
+                        const bool no_matrices_output) {
 
-     string name_open = name + ".out";  // preparing output files
+    string name_open = name + ".out";  // preparing output files
     const char* file = name_open.c_str();
     ofstream out(file);
     if (out.fail()) {
         throw BadInputException("Cannot write to output file. Typo in directory name?");
     }
 
-    FusionData<Integer> fusion;
-    fusion.read_data(false);
+    FusionComp<Integer> fusion(fusion_basic);
 
     string simple_fusion_text, nonsimple_fusion_text;
 
@@ -1996,6 +1996,16 @@ void write_fusion_files(const string& name, const bool simple_fusion_rings, cons
         out << endl;
     }
     out.close();
+
+    if(write_fusion_mult_tables_from_input){
+        name_open = name + ".fus";
+        ofstream ftb_out(name_open);
+        Matrix<Integer> AllFusionRings = SimpleFusionRings;
+        if(NonsimpleFusionRings.nr_of_rows() > 0)
+            AllFusionRings.append(NonsimpleFusionRings);
+        fusion.write_all_data_tables(AllFusionRings, ftb_out);
+        ftb_out.close();
+    }
 }
 
 #ifndef NMZ_MIC_OFFLOAD  // offload with long is not supported
@@ -2008,25 +2018,28 @@ template class Output<mpz_class>;
 template class Output<renf_elem_class>;
 #endif
 
-template void write_fusion_files(const string& name, const bool non_simple_fusion_rings, const bool simple_fusion_rings,
-                                         size_t embdim, const Matrix<long long>& SimpleFusionRings,
-                                         const Matrix<long long>& NonSimpleFusionRings,
-                                         const bool no_matrices_output);
+template void write_fusion_files(const FusionBasic fusion_basic, const string& name, const bool non_simple_fusion_rings,
+                                 const bool simple_fusion_rings,
+                                 size_t embdim, const Matrix<long long>& SimpleFusionRings,
+                                 const Matrix<long long>& NonSimpleFusionRings,
+                                 const bool no_matrices_output);
 
-template void write_fusion_files(const string& name, const bool non_simple_fusion_rings, const bool simple_fusion_rings,
-                                         size_t embdim, const Matrix<long>& SimpleFusionRings,
-                                         const Matrix<long>& NonSimpleFusionRings,
-                                         const bool no_matrices_output);
+template void write_fusion_files(const FusionBasic fusion_basic, const string& name, const bool non_simple_fusion_rings,
+                                 const bool simple_fusion_rings,
+                                 size_t embdim, const Matrix<long>& SimpleFusionRings,
+                                 const Matrix<long>& NonSimpleFusionRings,
+                                 const bool no_matrices_output);
 
-template void write_fusion_files(const string& name, const bool non_simple_fusion_rings, const bool simple_fusion_rings,
-                                         size_t embdim, const Matrix<mpz_class>& SimpleFusionRings,
-                                         const Matrix<mpz_class>& NonSimpleFusionRings,
-                                         const bool no_matrices_output);
+template void write_fusion_files(const FusionBasic fusion_basic, const string& name, const bool non_simple_fusion_rings,
+                                 const bool simple_fusion_rings,
+                                 size_t embdim, const Matrix<mpz_class>& SimpleFusionRings,
+                                 const Matrix<mpz_class>& NonSimpleFusionRings,
+                                 const bool no_matrices_output);
 #ifdef ENFNORMALIZ
-template void write_fusion_files(const string& name, const bool non_simple_fusion_rings,
-                                                 const bool simple_fusion_rings,size_t embdim,
-                                                 const Matrix<renf_elem_class>& SimpleFusionRings,
-                                                 const Matrix<renf_elem_class>& NonSimpleFusionRings,
-                                                 const bool no_matrices_output);
+template void write_fusion_files(const FusionBasic fusion_basic, const string& name, const bool non_simple_fusion_rings,
+                                 const bool simple_fusion_rings,size_t embdim,
+                                 const Matrix<renf_elem_class>& SimpleFusionRings,
+                                 const Matrix<renf_elem_class>& NonSimpleFusionRings,
+                                 const bool no_matrices_output);
 #endif
 }  // namespace libnormaliz

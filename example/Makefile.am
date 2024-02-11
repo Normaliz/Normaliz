@@ -134,7 +134,8 @@ EXTRA_DIST =					\
 	bracket_3_part.in			\
 	EH1.in					\
 	InList					\
-	SubModularConeN4_hom.in
+	SubModularConeN4_hom.in			\
+	pet_new.in
 
 EXTRA_DIST +=					\
 	600cell-dual.in				\

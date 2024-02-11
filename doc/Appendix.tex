@@ -3212,7 +3212,7 @@ gives the number \verb*|<s>|, an index transferred to Normaliz. Example:
 
 The index $s$ is used to identify the data produced by this split. It is
 \begin{itemize}
-\itemtta[<project>.<f>.<s>.lat]{project>.<f>.<s>.lat}
+\itemtta[<project>.<f>.<s>.lat]{project.f>.<s>.lat}
 \end{itemize}
 where \verb|<f>| is the index of the current refinement. 
 
@@ -3325,7 +3325,7 @@ A \emph{fusion ring} $R$ is am associative free $\ZZ$-algebra with a fixed $\ZZ$
 $$
 b_i b_j = \sum_{i=1}^r N_{ij}^k b_k, \qquad N_{ij}^k\in \ZZ.
 $$
-One of the  distinctive features of fusion rings: $N_{ij}^k\ge 0$ for all $i,j,k$. The other is the existence of a \emph{duality}, an involution of the set $\{b_1,\dots,b_r\}$, $b_i\mapsto b_{i*}$ that extends to an aniautomorphism of $R$, and satisfies the condition $N_{ij}^1 = 1$ if $i=j*$, and $N_{ij}^1 = 0$ else.
+One of the  distinctive features of fusion rings: $N_{ij}^k\ge 0$ for all $i,j,k$. The other is the existence of a \emph{duality}, an involution of the set $\{b_1,\dots,b_r\}$, $b_i\mapsto b_{i*}$ that extends to an antiautomorphism of $R$, and satisfies the condition $N_{ij}^1 = 1$ if $i=j*$, and $N_{ij}^1 = 0$ else.
 
 In total the coefficients $N_{ij}^k$ must satisfy the following conditions (in addition to nonnegativity): for all $i,j,k,t$
 \begin{itemize}
@@ -3408,17 +3408,17 @@ The default computation goal is \verb*|FusionRings|. For
 Embdiing dimension 231
 
 dehomogenization
-0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 ...
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 ... 0 0 0 0 0 1
 
 ***********************************************************************
 
 0 simple fusion rings up to isomorphism:
 
 148 nonsimple fusion rings up to isomorphism:
-0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 1 0 0 0 ...
+0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 1 0 0 0 ... 1 3 3 1 1 1
 ...
 \end{Verbatim}
-Note that the input for fusion rings is inhomogeneous.
+Note that the input for fusion rings is inhomogeneous. So the last one is the homogenizing coordinate.
 
 The computation goals \verb*|FusionRings|  and \verb*|SimpleFusionRings| can also be used for ``full'' input files, provided they have standard names. Moreover, standard names allow the computation of fusion rings without an input file. See Section \ref{virtual_input}.
 
@@ -3464,7 +3464,7 @@ Lattice point:
 
 ***********************************************************************
 \end{Verbatim}
-Note that bthe single lattice point is not uniquely determined. 
+Note that the single lattice point is not uniquely determined. 
 There are $300$ lattice points in the polytope. 
 
 \subsection{Standard names and virtual input files}\label{virtual_input}
@@ -3539,5 +3539,46 @@ dehomogenization
 
 0 nonsimple fusion rings up to isomorphism:
 \end{Verbatim}
+
+\subsection{Full fusion data}
+
+The output for fusion rings shown in the previous section is the short form that uses Frobenius reciprocity, (Dual)  and (Unit). However, Normaliz can also provide the fusion data $(N_{ij}^k)$ in full form. For a  single fusion ring it is a list of Matrices $M_i$. The matrix $M_i$ contains the numbers $N_{ij}^k$ where $j$ is the row index and $k$ is the column index. ()The transpose is the matrix of left multiplication by the basis element $b_i$.)
+The option
+\begin{itemize}
+	\itemtt[FusionData]
+\end{itemize}
+asks for the additional output file
+\begin{itemize}
+	\itemtta[<project>.fus]{project.fus}
+\end{itemize}
+It contains a list of lists, one inner list for every computed fusion ring. As an example we take \verb*|pet_new.in| that produces $2$ fusion rings. The usual output file is\verb*|pet_new.out|:
+\begin{Verbatim}
+...
+2 simple fusion rings up to isomorphism:
+1 1 0 0 1 1 0 0 1 1 1 1 1 1 1 1 1 1  ...  1 1 2 1 2 1 2 2 1 1
+1 1 0 0 1 1 0 0 1 1 1 1 1 1 1 1 1 1 ... 1 1 1 2 1 2 2 1 3 0 1
+...
+\end{Verbatim}
+With the option \verb*|FusionData| in \verb*|pet_new.in| we run
+\begin{Verbatim}
+./normaliz -c example/pet_new
+\end{Verbatim}
+and  get the additional file \verb*|pet_new.fus| (with comments \verb|<--- ...|):
+\begin{Verbatim}
+[      <--------------  start of list of fusion rings 
+  [    <--------------  fusion ring 1
+    [  <--------------  matrix 1
+      [1,0,0,0,0,0,0],  <---- row 1
+      [0,1,0,0,0,0,0],
+      ...
+      [0,0,0,0,0,0,1]  <---- last row
+    ], <--------------  end of matrix 1
+    ...
+  ],   <------------- end of fusion ruing 1     
+  ...
+ ]     <------------- end of outer list
+\end{Verbatim}
+
+
 
  	

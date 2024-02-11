@@ -321,6 +321,7 @@ void ConeProperties::check_fusion_ring_props() const{
     ConeProperties copy(*this);
     copy.reset(ConeProperty::FusionRings);
     copy.reset(ConeProperty::SimpleFusionRings);
+    copy.reset(ConeProperty::FusionData);
     copy.reset(ConeProperty::LatticePoints);
     copy.reset(ConeProperty::LinearOrderPatches);
     copy.reset(ConeProperty::CongOrderPatches);
@@ -403,7 +404,8 @@ size_t ConeProperties::count() const {
 void ConeProperties::set_fusion_default(const bool has_subring) {
 
     if(CPs.test(ConeProperty::LatticePoints) || CPs.test(ConeProperty::FusionRings)
-        || CPs.test(ConeProperty::SimpleFusionRings) || CPs.test(ConeProperty::NonsimpleFusionRings))
+        || CPs.test(ConeProperty::SimpleFusionRings) || CPs.test(ConeProperty::NonsimpleFusionRings)
+         || CPs.test(ConeProperty::FusionData) )
         return;
     if(CPs.test(ConeProperty::DefaultMode)){
         if(has_subring)
@@ -432,8 +434,12 @@ void ConeProperties::set_preconditions(bool inhomogeneous, bool numberfield) {
         CPs.reset(ConeProperty::NonsimpleFusionRings);
     }
 
+    if(CPs.test(ConeProperty::FusionData) && !CPs.test(ConeProperty::SimpleFusionRings)){
+        CPs.set(ConeProperty::FusionRings);
+    }
+
     if(CPs.test(ConeProperty::FusionRings) || CPs.test(ConeProperty::SimpleFusionRings))
-        CPs.set(ConeProperty::LatticePoints);
+        CPs.set(ConeProperty::LatticePoints); // LatticePoints will be disabled later
 
     if(CPs.test(ConeProperty::GroebnerBasis) ||
                 CPs.test(ConeProperty::MarkovBasis)){
@@ -772,6 +778,7 @@ void ConeProperties::check_compatibility_with_polynomial_constraints(bool inhomo
     wanted.reset(ConeProperty::DistributedComp);
     wanted.reset(ConeProperty::FusionRings);
     wanted.reset(ConeProperty::SimpleFusionRings);
+    wanted.reset(ConeProperty::FusionData);
     wanted.reset(ConeProperty::NonsimpleFusionRings);
     if(inhomogeneous)
         wanted.reset(ConeProperty::HilbertBasis);
@@ -856,6 +863,7 @@ void ConeProperties::check_Q_permissible(bool after_implications) {
     copy.reset(ConeProperty::FusionRings);
     copy.reset(ConeProperty::SimpleFusionRings);
     copy.reset(ConeProperty::NonsimpleFusionRings);
+    copy.reset(ConeProperty::FusionData);
 ;
     if (after_implications) {
         copy.reset(ConeProperty::Multiplicity);
@@ -1138,9 +1146,10 @@ vector<string> initializeCPN() {
     CPN.at(ConeProperty::FusionRings) = "FusionRings";
     CPN.at(ConeProperty::SimpleFusionRings) = "SimpleFusionRings";
     CPN.at(ConeProperty::NonsimpleFusionRings) = "NonsimpleFusionRings";
+    CPN.at(ConeProperty::FusionData) = "FusionData";
 
     // detect changes in size of Enum, to remember to update CPN!
-    static_assert(ConeProperty::EnumSize == 159, "ConeProperties Enum size does not fit! Update cone_property.cpp!");
+    static_assert(ConeProperty::EnumSize == 160, "ConeProperties Enum size does not fit! Update cone_property.cpp!");
     // assert all fields contain an non-empty string
     for (size_t i = 0; i < ConeProperty::EnumSize; i++) {
         // bstd::cout << "iii " << i << "  " << CPN.at(i) << endl;

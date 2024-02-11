@@ -21,6 +21,7 @@ Normaliz is a open source tool for computations in affine monoids, vector config
 - generalized (or weighted) Ehrhart series and Lebesgue integrals of - polynomials over rational polytopes
 - minimal systems of generators and Hilbert series of general affine monoids
 - Markov and Gröbner bases of lattice and toric ideals
+- Special interface and function for fusion rings (NEW)
 
 Normaliz offers the API libnormaliz that allows the user to access Normaliz computations from any C++ program.
 

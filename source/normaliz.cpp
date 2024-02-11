@@ -182,6 +182,7 @@ int main(int argc, char* argv[]){
         command_line_items.push_back(string(argv[i]));
     }
 
+/*
     for(auto& s: command_line_items){
         if(s == "--PostProcessFusion"){
             try{
@@ -194,6 +195,7 @@ int main(int argc, char* argv[]){
             exit(0);
         }
     }
+*/
 
 
     string global_command_line = command_line;
@@ -358,6 +360,9 @@ void compute_and_output(OptionsHandler& options,
     MyCone.setRenf(number_field);
     MyCone.setProjectName(options.getProjectName());
     try {
+        write_fusion_mult_tables_from_input = false;
+        if(options.getToCompute().test(ConeProperty::FusionData))
+            write_fusion_mult_tables_from_input = true;
         MyCone.compute(options.getToCompute());
         if (add_input.size() > 0) {
             ConeProperties AddInputOptions;
@@ -488,10 +493,12 @@ int process_data(OptionsHandler& options, const string& command_line) {
 
         global_project = options.getProjectName();
 
-
         Check_Stop(); // check whether stop file has been set
 
         if(options.isUseCollectLat()){
+            write_fusion_mult_tables_from_input = false;
+            if(options.getToCompute().test(ConeProperty::FusionData))
+                write_fusion_mult_tables_from_input = true;
             collect_lat(global_project);
             return 0;
         }
@@ -517,8 +524,8 @@ int process_data(OptionsHandler& options, const string& command_line) {
 
         bool standard_fusion_name = false;
         bool only_partition;
-        reset_global_fusion_data(); // because of list processing
-        FusionData<long long> test_fusion;
+        // reset_global_fusion_data(); // because of list processing
+        FusionBasic test_fusion;
         string name_in = options.getProjectName() + ".in";
         const char* file_in = name_in.c_str();
         ifstream in;
@@ -528,7 +535,7 @@ int process_data(OptionsHandler& options, const string& command_line) {
                 cerr << "error: Failed to open file " << name_in << "." << endl;
                 return 1;
             }
-            pair<bool, bool> result = test_fusion.read_data(true, true);
+            pair<bool, bool> result = test_fusion.data_from_string(global_project, false);
             standard_fusion_name = result.first;
             only_partition = result.second;
             if(!standard_fusion_name){
@@ -574,9 +581,9 @@ int process_data(OptionsHandler& options, const string& command_line) {
         }
         else{
             if(!only_partition)
-                test_fusion.make_input_from_fusion_data(input, options.isUseMakeFullInput());
+                make_input_from_fusion_data(test_fusion, input, options.isUseMakeFullInput());
             else
-                test_fusion.make_partition_input_from_fusion_data(input, options.isUseMakeFullInput());
+                make_partition_input_from_fusion_data(test_fusion, input, options.isUseMakeFullInput());
 
             if(options.isUseMakeFullInput())
                 return 0;

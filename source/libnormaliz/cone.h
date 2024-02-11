@@ -39,17 +39,12 @@
 #include <libnormaliz/HilbertSeries.h>
 #include "libnormaliz/dynamic_bitset.h"
 #include "libnormaliz/nmz_polynomial.h"
+#include "libnormaliz/fusion.h"
 
 namespace libnormaliz {
 using std::map;
 using std::pair;
 using std::vector;
-
-template <typename Number>
-using InputMap = map<InputType, Matrix<Number> >;
-
-template <typename Number>
-using InputMapVV = map<InputType, vector<vector<Number> > >;
 
 
 template <typename Integer>
@@ -429,6 +424,10 @@ class Cone {
     const vector<vector<Integer> >& getNonsimpleFusionRings();
     size_t getNrNonsimpleFusionRings();
 
+    const vector<vector<Matrix<Integer> > >& getFusionDataMatrix();
+
+    const FusionBasic& getFusionBasicCone();
+
     const Matrix<Integer>& getMaximalSubspaceMatrix();
     const vector<vector<Integer> >& getMaximalSubspace();
     size_t getDimMaximalSubspace();
@@ -706,6 +705,7 @@ class Cone {
     Matrix<Integer> FusionRings;
     Matrix<Integer> SimpleFusionRings;
     Matrix<Integer> NonsimpleFusionRings;
+    vector<vector<Matrix<Integer> > > FusionTables; // to avoid the name FusionData
 
     HilbertSeries HSeries;
     HilbertSeries EhrSeries;
@@ -737,6 +737,8 @@ class Cone {
     vector<dynamic_bitset> DualSuppHypInd;
 
     map<dynamic_bitset, int> SingularLocus;
+
+    FusionBasic FusionBasicCone;
 
     bool pointed;
     bool inhomogeneous;

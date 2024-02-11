@@ -815,7 +815,7 @@ void Cone<Integer>::process_multi_input_inner(InputMap<Integer>& multi_input_dat
 
     if(contains(multi_input_data, Type::fusion_type)) {
         set<map<vector<key_t>, Integer> > Polys;
-        make_full_input(multi_input_data, Polys);
+        make_full_input(FusionBasicCone, multi_input_data, Polys);
         // we use the same conventions as the production of PolynomiualWquations
         // from strings, Polys use input coordinates counting from 1
         size_t dim_here = multi_input_data[Type::inhom_inequalities][0].size();
@@ -2940,6 +2940,16 @@ size_t Cone<Integer>::getNrSimpleFusionRings() {
     return SimpleFusionRings.nr_of_rows();
 }
 
+template <typename Integer>
+const FusionBasic& Cone<Integer>::getFusionBasicCone(){
+    return FusionBasicCone;
+}
+
+template <typename Integer>
+const vector<vector<Matrix<Integer> > >& Cone<Integer>::getFusionDataMatrix(){
+    compute(ConeProperty::FusionData);
+    return FusionTables;
+}
 
 // Nonsimple fusion rings cannot be computed separately
 template <typename Integer>
@@ -4522,6 +4532,14 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         ToCompute.check_Q_permissible(false);  // before implications!
 
     ToCompute.check_conflicting_variants();
+
+    // Note: the situation that the following lines take care of can
+    // only arise with a traditional input file -- so no dager if called via libnormaliz
+    if(!is_fusion &&(ToCompute.test(ConeProperty::FusionRings) || ToCompute.test(ConeProperty::SimpleFusionRings))){
+        if(verbose)
+            verboseOutput() << "Trying to get fusion data from file name" << endl;
+        FusionBasicCone.data_from_string(global_project, false);
+    }
 
     if(is_fusion){
         ToCompute.set_fusion_default(is_fusion_candidate_subring);
@@ -7459,10 +7477,19 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
             ToCompute.reset(ConeProperty::ModuleGenerators);
             is_Computed.reset(ConeProperty::ModuleGenerators);
             ToCompute.reset(ConeProperty::HilbertBasis);
+            // we make the FusionData here only if in library mode
+            // if normaliz is run, write_fusion_mult_tables_from_inpu = true
+            // and we make teh tables in output
+            if(ToCompute.test(ConeProperty::FusionData) && !write_fusion_mult_tables_from_input){
+                FusionComp<Integer> our_fusion(FusionBasicCone);
+                our_fusion.tables_for_all_rings(ModuleGenerators);
+                swap(FusionTables, our_fusion.AllTables);
+            }
+            ToCompute.reset(ConeProperty::FusionData);
         }
         if(ToCompute.test(ConeProperty::FusionRings)){
             FusionRings = ModuleGenerators;
-            split_into_simple_and_nonsimple(SimpleFusionRings, NonsimpleFusionRings, FusionRings, verbose);
+            split_into_simple_and_nonsimple(FusionBasicCone,SimpleFusionRings,  NonsimpleFusionRings, FusionRings, verbose);
             setComputed(ConeProperty::FusionRings);
             setComputed(ConeProperty::SimpleFusionRings);
             setComputed(ConeProperty::NonsimpleFusionRings);

@@ -1,6 +1,6 @@
 # ChangeLog
 
-## [3.10.2]  2024-01-21
+## [3.10.2]  2024-02-20
 
 -- extensive improvements for fusion rings: computation, input and output
 -- extensive improvements of the patching variant of project-and-lift, algorithms and HPC management
