@@ -1039,6 +1039,8 @@ SingularLocus,
 Sublattice,
 //
 ClassGroup,
+    //
+FusionData,
 END_ENUM_RANGE(LAST_COMPLEX_STRUCTURE),
 
 //
@@ -1776,6 +1778,11 @@ const vector<vector<Integer> >& Cone<Integer>::getNonsimpleFusionRings()
 size_t Cone<Integer>::getNrNonsimpleFusionRings()
 \end{Verbatim}
 There exist \verb*|Matrix| variants as well.
+
+One can also retrieve the full fusion data:
+\begin{Verbatim}
+const vector<vector<Matrix<Integer> > >& Cone<Integer>::getFusionDataMatrix()
+\end{Verbatim}
 
 \subsubsection{Boolean valued results}
 

@@ -330,6 +330,8 @@ pair<bool, bool> FusionBasic::data_from_string(const string& our_fusion, const b
     fusion_rank = type_input.size();
     stringstream for_type;
     for_type << type_input;
+    fusion_type_from_command = type_input;
+    // cout << "RRRRRRRRRRRRRR " << fusion_type_from_command;
     fusion_type_string = for_type.str();
     if(!only_test)
         fusion_type = fusion_coincidence_pattern(type_input);
@@ -1199,14 +1201,13 @@ void FusionBasic::do_write_input_file(InputMap<mpq_class>&  input) const{
 
 void make_input_from_fusion_data(const FusionBasic& FusionInput, InputMap<mpq_class>&  input, const bool write_input_file){
 
-    vector<long> bridge(FusionInput.fusion_type.size());
-    Matrix<mpq_class> TypeInput(1, FusionInput.fusion_type.size());
-    for(size_t i = 0; i< bridge.size(); ++i)
-        bridge[i] = FusionInput.fusion_type[i];
-    convert(TypeInput[0], bridge);
+    Matrix<mpq_class> TypeInput(1, FusionInput.fusion_rank);
+    // cout << "TTTTTTT " << FusionInput.fusion_type_from_command;
+    convert(TypeInput[0], FusionInput.fusion_type_from_command);
+    vector<long> bridge(FusionInput.fusion_rank);
     for(size_t i = 0; i< bridge.size(); ++i)
         bridge[i] = FusionInput.duality[i];
-    Matrix<mpq_class> DualityInput(1, FusionInput.fusion_type.size());
+    Matrix<mpq_class> DualityInput(1, FusionInput.fusion_rank);
     convert(DualityInput[0], bridge);
     if(FusionInput.commutative)
         DualityInput[0][0] = -1;
@@ -1219,11 +1220,9 @@ void make_input_from_fusion_data(const FusionBasic& FusionInput, InputMap<mpq_cl
 
 void make_partition_input_from_fusion_data(const FusionBasic& FusionInput,InputMap<mpq_class>&  input,  const bool write_input_file){
 
-    vector<long> bridge(FusionInput.fusion_type.size());
-    Matrix<mpq_class> TypeInput(1, FusionInput.fusion_type.size());
-    for(size_t i = 0; i< bridge.size(); ++i)
-        bridge[i] = FusionInput.fusion_type[i];
-    convert(TypeInput[0], bridge);
+    Matrix<mpq_class> TypeInput(1, FusionInput.fusion_rank);
+    cout << "TTTTTTT " << FusionInput.fusion_type_from_command;
+    convert(TypeInput[0], FusionInput.fusion_type_from_command);
     input[Type::fusion_type_for_partition] = TypeInput;
     if(write_input_file){
         FusionInput.do_write_input_file(input);

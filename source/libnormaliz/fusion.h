@@ -52,6 +52,7 @@ public:
 
     size_t fusion_rank;
     vector<key_t> fusion_type;
+    vector<long> fusion_type_from_command;
     string fusion_type_string;
     vector<key_t> duality;
     vector<key_t> subring_base_key;

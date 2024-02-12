@@ -3020,7 +3020,7 @@ void Full_Cone<Integer>::build_cone() {
         }
 
         find_and_evaluate_start_simplex();
-        if(!is_pyramid){
+        /*if(!is_pyramid){
             auto l = Facets.begin();
             for (size_t j = 0 ; j < Facets.size(); j++) {
                 bool is_final_hyp = true;
@@ -3038,7 +3038,7 @@ void Full_Cone<Integer>::build_cone() {
             if(verbose)
                 verboseOutput()  << "FINAL HYPS " << FinalHyps.nr_of_rows() << endl;
              FinalHyps.print(global_project,"fin_hyps");
-        }
+        }*/
 
     }
 
@@ -3215,7 +3215,7 @@ void Full_Cone<Integer>::build_cone() {
 
         //we try to find the already computed facets of the full cone
         // first navigate to first new preliminary faxet
-        if(!is_pyramid){
+        /*if(!is_pyramid){
             bool a_new_one = false;
             l = Facets.begin();
             for (size_t j = 0; j < old_nr_supp_hyps; j++, l++);
@@ -3240,7 +3240,7 @@ void Full_Cone<Integer>::build_cone() {
             if(a_new_one){
                     FinalHyps.print(global_project,"fin_hyps");
             }
-        }
+        }*/
 
         // removing the negative hyperplanes if necessary
         if (do_all_hyperplanes || i != last_to_be_inserted) {
