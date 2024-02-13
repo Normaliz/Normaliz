@@ -4548,7 +4548,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     if(is_fusion_partition)
         ToCompute.set_fusion_partition_default();
 
-    if(ToCompute.test(ConeProperty::FusionRings) || ToCompute.test(ConeProperty::SimpleFusionRings))
+    if(ToCompute.test(ConeProperty::FusionRings) || ToCompute.test(ConeProperty::SimpleFusionRings) || is_fusion)
         ToCompute.check_fusion_ring_props();
 
     ToCompute.set_preconditions(inhomogeneous, using_renf<Integer>());
@@ -4707,8 +4707,9 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         LEAVE_CONE return ConeProperties();
     }
 
-    // if (!using_renf<Integer>())                      // lattice points in algebraic polytopes will be computed later
-        try_approximation_or_projection(ToCompute);  // by compute_lattice_points_in_polytope
+    try_approximation_or_projection(ToCompute);
+
+    make_fusion_data(ToCompute);
 
     ToCompute.reset(is_Computed);
     if (ToCompute.goals().none()) {
@@ -4795,8 +4796,6 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         find_witness(ToCompute);
     }
 
-    //if (using_renf<Integer>())  // done here because not computed in full_cone
-    //     compute_lattice_points_in_polytope(ToCompute);
     ToCompute.reset(is_Computed);  // already computed
 
     if (precomputed_extreme_rays && inhomogeneous)
@@ -7060,6 +7059,27 @@ void Cone<Integer>::give_data_of_approximated_cone_to(Full_Cone<IntegerFC>& FC) 
 
 //---------------------------------------------------------------------------
 template <typename Integer>
+void Cone<Integer>::make_fusion_data(ConeProperties& ToCompute){
+
+    if(!ToCompute.test(ConeProperty::FusionData) || isComputed(ConeProperty::FusionData))
+        return;
+
+    // we make the FusionData here only if in library mode
+    // if normaliz is run, write_fusion_mult_tables_from_input = true
+    // and we make the tables in output
+    if(write_fusion_mult_tables_from_input){
+        setComputed(ConeProperty::FusionData);
+        return;
+    }
+
+    FusionComp<Integer> our_fusion(FusionBasicCone);
+    our_fusion.tables_for_all_rings(ModuleGenerators);
+    swap(FusionTables, our_fusion.AllTables);
+    setComputed(ConeProperty::FusionData);
+}
+
+//---------------------------------------------------------------------------
+template <typename Integer>
 void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
 
     if(dim <= 1) //we apply another method
@@ -7083,7 +7103,8 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
         return;
 
     if (inhomogeneous && (!ToCompute.test(ConeProperty::ModuleGenerators) && !ToCompute.test(ConeProperty::HilbertBasis) &&
-                          !ToCompute.test(ConeProperty::NumberLatticePoints)&& !ToCompute.test(ConeProperty::SingleLatticePoint)) )
+                          !ToCompute.test(ConeProperty::NumberLatticePoints)&& !ToCompute.test(ConeProperty::SingleLatticePoint) &&
+                          !ToCompute.test(ConeProperty::FusionRings) &&!ToCompute.test(ConeProperty::SimpleFusionRings) ) )
         return;
 
     bool primitive = false;
@@ -7477,15 +7498,6 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
             ToCompute.reset(ConeProperty::ModuleGenerators);
             is_Computed.reset(ConeProperty::ModuleGenerators);
             ToCompute.reset(ConeProperty::HilbertBasis);
-            // we make the FusionData here only if in library mode
-            // if normaliz is run, write_fusion_mult_tables_from_inpu = true
-            // and we make teh tables in output
-            if(ToCompute.test(ConeProperty::FusionData) && !write_fusion_mult_tables_from_input){
-                FusionComp<Integer> our_fusion(FusionBasicCone);
-                our_fusion.tables_for_all_rings(ModuleGenerators);
-                swap(FusionTables, our_fusion.AllTables);
-            }
-            ToCompute.reset(ConeProperty::FusionData);
         }
         if(ToCompute.test(ConeProperty::FusionRings)){
             FusionRings = ModuleGenerators;

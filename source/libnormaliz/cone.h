@@ -857,6 +857,7 @@ class Cone {
 
     void try_symmetrization(ConeProperties& ToCompute);
     void try_approximation_or_projection(ConeProperties& ToCompute);
+    void make_fusion_data(ConeProperties& ToCompute);
 
     void try_Hilbert_Series_from_lattice_points(const ConeProperties& ToCompute);
 

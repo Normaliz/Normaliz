@@ -323,12 +323,16 @@ void ConeProperties::check_fusion_ring_props() const{
     copy.reset(ConeProperty::SimpleFusionRings);
     copy.reset(ConeProperty::FusionData);
     copy.reset(ConeProperty::LatticePoints);
+    copy.reset(ConeProperty::SingleLatticePointInternal);
+    copy.reset(ConeProperty::SingleLatticePoint);
     copy.reset(ConeProperty::LinearOrderPatches);
     copy.reset(ConeProperty::CongOrderPatches);
     copy.reset(ConeProperty::UseWeightsPatching);
     copy.reset(ConeProperty::NoWeights);
     copy.reset(ConeProperty::NoGradingDenom);
     copy.reset(ConeProperty::DistributedComp);
+    copy.reset(ConeProperty::Projection);
+
     if (copy.any()) {
         errorOutput() << copy << endl;
         throw BadInputException("Cone Property in last line not allowed for fusion rings");
@@ -438,8 +442,8 @@ void ConeProperties::set_preconditions(bool inhomogeneous, bool numberfield) {
         CPs.set(ConeProperty::FusionRings);
     }
 
-    if(CPs.test(ConeProperty::FusionRings) || CPs.test(ConeProperty::SimpleFusionRings))
-        CPs.set(ConeProperty::LatticePoints); // LatticePoints will be disabled later
+    // if(CPs.test(ConeProperty::FusionRings) || CPs.test(ConeProperty::SimpleFusionRings))
+    //    CPs.set(ConeProperty::LatticePoints); // LatticePoints will be disabled later
 
     if(CPs.test(ConeProperty::GroebnerBasis) ||
                 CPs.test(ConeProperty::MarkovBasis)){

@@ -1221,7 +1221,7 @@ void make_input_from_fusion_data(const FusionBasic& FusionInput, InputMap<mpq_cl
 void make_partition_input_from_fusion_data(const FusionBasic& FusionInput,InputMap<mpq_class>&  input,  const bool write_input_file){
 
     Matrix<mpq_class> TypeInput(1, FusionInput.fusion_rank);
-    cout << "TTTTTTT " << FusionInput.fusion_type_from_command;
+    // cout << "TTTTTTT " << FusionInput.fusion_type_from_command;
     convert(TypeInput[0], FusionInput.fusion_type_from_command);
     input[Type::fusion_type_for_partition] = TypeInput;
     if(write_input_file){
