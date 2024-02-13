@@ -119,7 +119,6 @@ public:
 
     FusionComp();
     FusionComp(const FusionBasic&);
-
     void set_options(const ConeProperties& ToCompute, const bool verb);
     //void read_data_from_file();
 
@@ -163,8 +162,6 @@ public:
     void tables_for_all_rings(const Matrix<Integer>& rings);
     vector<Matrix<Integer> > make_all_data_tables(const vector<Integer>& ring);
     Matrix<Integer> data_table(const vector<Integer>& ring, const size_t i);
-
-    pair<bool, bool> read_data(const bool a_priori, const bool only_test = false);
 };
 
 // helpers

@@ -1306,6 +1306,79 @@ void FusionComp<Integer>::write_all_data_tables(const Matrix<Integer>& rings, os
     }
     table_out << "]" << endl;
 }
+
+template <typename Integer>
+Matrix<Integer> FusionData<Integer>::data_table(const vector<Integer>& ring, const size_t i){
+
+    Matrix<Integer> Table(fusion_rank, fusion_rank);
+
+    for(key_t k = 0; k < fusion_rank; k++){
+        for(key_t j= 0; j < fusion_rank; j++){
+            key_t ii = i;
+            vector<key_t>ind_tuple = {ii, j, k};
+            Table[j][k] = value(ring, ind_tuple);
+        }
+    }
+    // Table.debug_print();
+    return Table;
+}
+
+
+template <typename Integer>
+vector<Matrix<Integer> > FusionData<Integer>::make_all_data_tables(const vector<Integer>& ring){
+
+    vector<Matrix<Integer> > Tables;
+
+    for(size_t i = 0; i <fusion_rank; ++i){
+        Tables.push_back(data_table(ring, i));
+    }
+    return Tables;
+}
+
+template <typename Integer>
+void FusionData<Integer>::tables_for_all_rings(const Matrix<Integer>& rings){
+
+    make_CoordMap();
+
+    vector<vector<Matrix<Integer> > > AllTables;
+    for(size_t i = 0; i < rings.nr_of_rows(); ++i)
+        AllTables.push_back(make_all_data_tables(rings[i]));
+}
+
+template <typename Integer>
+void FusionData<Integer>::write_all_data_tables(const Matrix<Integer>& rings, ostream& table_out){
+
+    tables_for_all_rings(rings);
+
+    table_out << "[" << endl;
+    for(size_t kk = 0; kk < rings.nr_of_rows(); kk++){
+        table_out << "  [" << endl;
+        vector<Matrix<Integer> > Tables = AllTables[kk]; // for a fixed ring
+        for(size_t nn = 0; nn < Tables.size(); ++nn){
+            Matrix<Integer> table = Tables[nn];
+            table_out << "    [" << endl;
+            for(size_t jj = 0; jj < table.nr_of_rows(); ++jj){
+                table_out << "      [";
+                for(size_t mm = 0; mm < table.nr_of_columns(); ++mm){
+                    table_out << table[jj][mm];
+                    if(mm < table.nr_of_rows() - 1)
+                        table_out << ",";
+                    else
+                        table_out << "]," << endl;
+                }
+            }
+            if(nn == Tables.size() - 1)
+                table_out << "    ]" << endl;
+            else
+                table_out << "    ]," << endl;
+        }
+        if(kk == rings.nr_of_rows() -1)
+            table_out << "  ]" << endl;
+        else
+            table_out << "  ]," << endl;
+    }
+    table_out << "]" << endl;
+}
 //-------------------------------------------------------------------------------
 // helper for fusion rings
 
