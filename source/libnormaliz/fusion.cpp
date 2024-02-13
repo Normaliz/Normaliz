@@ -1307,8 +1307,9 @@ void FusionComp<Integer>::write_all_data_tables(const Matrix<Integer>& rings, os
     table_out << "]" << endl;
 }
 
+/*
 template <typename Integer>
-Matrix<Integer> FusionData<Integer>::data_table(const vector<Integer>& ring, const size_t i){
+Matrix<Integer> FusionComp<Integer>::data_table(const vector<Integer>& ring, const size_t i){
 
     Matrix<Integer> Table(fusion_rank, fusion_rank);
 
@@ -1325,7 +1326,7 @@ Matrix<Integer> FusionData<Integer>::data_table(const vector<Integer>& ring, con
 
 
 template <typename Integer>
-vector<Matrix<Integer> > FusionData<Integer>::make_all_data_tables(const vector<Integer>& ring){
+vector<Matrix<Integer> > FusionComp<Integer>::make_all_data_tables(const vector<Integer>& ring){
 
     vector<Matrix<Integer> > Tables;
 
@@ -1336,7 +1337,7 @@ vector<Matrix<Integer> > FusionData<Integer>::make_all_data_tables(const vector<
 }
 
 template <typename Integer>
-void FusionData<Integer>::tables_for_all_rings(const Matrix<Integer>& rings){
+void FusionComp<Integer>::tables_for_all_rings(const Matrix<Integer>& rings){
 
     make_CoordMap();
 
@@ -1346,7 +1347,7 @@ void FusionData<Integer>::tables_for_all_rings(const Matrix<Integer>& rings){
 }
 
 template <typename Integer>
-void FusionData<Integer>::write_all_data_tables(const Matrix<Integer>& rings, ostream& table_out){
+void FusionComp<Integer>::write_all_data_tables(const Matrix<Integer>& rings, ostream& table_out){
 
     tables_for_all_rings(rings);
 
@@ -1379,6 +1380,7 @@ void FusionData<Integer>::write_all_data_tables(const Matrix<Integer>& rings, os
     }
     table_out << "]" << endl;
 }
+*/
 //-------------------------------------------------------------------------------
 // helper for fusion rings
 
