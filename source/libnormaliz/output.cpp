@@ -152,7 +152,7 @@ void Output<Integer>::setCone(Cone<Integer>& C) {
             monoid_or_cone = "cone";
         of_polyhedron = " of polyhedron (homogenized)";
 
-        if ((Result->isComputed(ConeProperty::ModuleGenerators) || Result->isComputed(ConeProperty::NumberLatticePoints)) &&
+        if ((Result->isComputed(ConeProperty::ModuleGenerators) || Result->isComputed(ConeProperty::NumberLatticePoints) || Result->isComputed(ConeProperty::SingleLatticePoint)) &&
             Result->getRecessionRank() == 0) {
             if (!using_renf<Integer>())
                 module_generators_name = " lattice points in polytope (module generators)" + polynomial_constraints;
@@ -166,7 +166,7 @@ void Output<Integer>::setCone(Cone<Integer>& C) {
                 module_generators_name = " module generators";
         }
     }
-    if(Result->isComputed(ConeProperty::SingleLatticePoint))
+    if(Result->isComputed(ConeProperty::SingleLatticePoint) && !Result->isComputed(ConeProperty::NumberLatticePoints))
         module_generators_name += " (only single lattice point asked for)";
 }
 

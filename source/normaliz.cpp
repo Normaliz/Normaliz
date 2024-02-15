@@ -218,13 +218,14 @@ int main(int argc, char* argv[]){
         verboseOutput() << "Command line: " << command_line << endl;
     }
 
-   /*  Matrix<long long> FFT(1,4);
+    /*Matrix<long long> FFT(1,4);
     FFT[0] = {1,1,2,2};
     Cone<long long> TT(Type::fusion_type, FFT);
-    TT.compute(ConeProperty::FusionRings);
+    // TT.compute(ConeProperty::FusionRings);
     vector<vector<Matrix<long long> > > BB = TT.getFusionDataMatrix();
     BB[0][0].debug_print();
-    cout << "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ " << endl;*/
+    cout << "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ " << endl;
+    exit(0);*/
 
     /*Matrix<long long> CC(3,3);
     CC[0] = {2,0,1};

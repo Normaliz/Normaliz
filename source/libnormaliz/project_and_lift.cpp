@@ -2614,6 +2614,8 @@ void ProjectAndLift<IntegerPL, IntegerRet>::collect_results(list<vector<IntegerR
     }
 }
 
+size_t our_counter = 0;
+
 ///---------------------------------------------------------------------------
 template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL, IntegerRet>::lift_points_to_this_dim(list<vector<IntegerRet> >& Deg1Proj) {
@@ -2742,6 +2744,10 @@ void ProjectAndLift<IntegerPL, IntegerRet>::lift_points_to_this_dim(list<vector<
                             }
 
                             if (dim == EmbDim) {
+                                /*if(our_counter % 1000 == 0)
+                                    cout << "Counter LP " << our_counter << endl;
+#pragma omp atomic
+                                our_counter++;*/
                                 finalize_latt_point(NewPoint, tn);
                             }
                             else{
