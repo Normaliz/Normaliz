@@ -41,12 +41,10 @@ EXTRA_DIST += install_scripts_opt/install_nmz_cocoa.sh
 # EXTRA_DIST += install_scripts_opt/install_nmz_cocoa_old.sh
 EXTRA_DIST += install_scripts_opt/install_nmz_flint.sh
 EXTRA_DIST += install_scripts_opt/install_nmz_mpfr.sh
-EXTRA_DIST += install_scripts_opt/install_nmz_arb.sh
 EXTRA_DIST += install_scripts_opt/install_nmz_hash-library.sh
 EXTRA_DIST += install_scripts_opt/install_nmz_nauty.sh
 EXTRA_DIST += install_scripts_opt/install_nmz_e-antic.sh
 EXTRA_DIST += install_scripts_opt/install_eantic_with_prerequisites.sh
-EXTRA_DIST += install_scripts_opt/install_nmz_antic.sh
 
 EXTRA_DIST += install_scripts_opt/cocoa_patches/eterms.h
 EXTRA_DIST += install_scripts_opt/cocoa_patches/SignalWatcher.C
