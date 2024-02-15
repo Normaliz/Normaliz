@@ -9,10 +9,10 @@ file contains additional information.
 
 For rational polyhedra:
 
-CoCoALib, https://cocoa.dima.unige.it/cocoa/cocoalib, version 0.99800
-MPFR,  https://www.mpfr.org/, version 4.1.0
-Flint, https://flintlib.org/, version 2.9.0
-nauty, https://users.cecs.anu.edu.au/~bdm/nauty/, version 2.7r3
+CoCoALib, https://cocoa.dima.unige.it/cocoa/cocoalib, version 0.99818
+MPFR,  https://www.mpfr.org/, version 4.2.1
+Flint, https://flintlib.org/, version 3.0.1
+nauty, https://users.cecs.anu.edu.au/~bdm/nauty/, version 2_8_8
 
 nauty should be configured with --enable-tls.
 
@@ -22,9 +22,9 @@ hash-library, https://create.stephan-brumme.com/hash-library/, version 8
 For algebraic polyhedra additionally:
 
 MPFR and Flint as above
-arb, https://arblib.org/, version 2.23.0
-antic, https://github.com/wbhart/antic/, version 0.2.5
-e-antic, https://github.com/flatsurf/e-antic, version 1.2.1
+e-antic, https://github.com/flatsurf/e-antic, version 2.0.2
+
+Note: arb and antic are now contained in Flint.
 
 *********************
 ****   SCRIPTS   ****
@@ -205,6 +205,8 @@ Installs Normaliz in "local" (including libnormaliz.a and the necessary header f
 ************************************
 **** Compilation for MS Windows ****
 ************************************
+
+--- The auxiliary packages have not yet been updated ---
 
 UNDER CONSTRUCTION
 

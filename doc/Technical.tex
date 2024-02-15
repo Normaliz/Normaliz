@@ -244,7 +244,7 @@ CoCoALib is downloaded and compiled as described above.
 
 If you want to use a preinstalled version of CoCoALib: for parallelization it must be configured as
 \begin{Verbatim}
-./configure --threadsafe-hack --no-boost 
+./configure --threadsafe-hack --only-cocoalib
 \end{Verbatim}
 
 \subsubsection{nauty}
@@ -278,16 +278,12 @@ install_scripts_opt/install_nmz_flint.sh
 
 The basic classes for algebraic polyhedra are defined in the package
 \begin{itemize}
-	\item[] e-antic by V.~Delecroix (\url{https://github.com/flatsurf/e-antic}).
+	\item[] e-antic by V.~Delecroix and J. Rüth (\url{https://github.com/flatsurf/e-antic}).
 \end{itemize}
 In its turn it is based on
 \begin{arab}
-	\item Flint maintained by W.~B.~Hart (\url{https://www.flintlib.org/}),
-	\item antic by W.~B.~Hart, (\url{https://github.com/wbhart/antic}),
-	\item arb by F.~Johansson (\url{https://arblib.org/}).
+	\item[] Flint maintained by F. Johansson (\url{https://www.flintlib.org/}),
 \end{arab}
-
-The dependence on antic and arb is only through e-antic.
 
 For Normaliz it is useless to install any of them separately (except Flint, see above). Again, if you don't want to use the ready-made install scripts for Normaliz as a whole, you can install e-antic and its prerequisites separately by
 \begin{Verbatim}
