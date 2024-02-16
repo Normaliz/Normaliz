@@ -44,9 +44,9 @@ fi
 
 if [[ $BUILDSYSTEM == *static* ]]; then
     CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --disable-shared"
-    if [[ $BUILDSYSTEM == *eantic* ]]; then
-      sed -ie s/-leanticxx\ -leantic/-leanticxx\ -leantic\ -lantic\ -larb/g configure.ac
-    fi
+    ## if [[ $BUILDSYSTEM == *eantic* ]]; then
+    ##  sed -ie s/-leanticxx\ -leantic/-leanticxx\ -leantic\ -lantic\ -larb/g configure.ac
+    ## fi
 fi
 
 
