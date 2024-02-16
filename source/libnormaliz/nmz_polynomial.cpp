@@ -576,7 +576,7 @@ OurPolynomial<Number>::OurPolynomial(const string& poly_string, const size_t dim
 
         exponents(v, PP(mon));  // this function gives the exponent vector back as v
         T.support = v_support(v);
-        for(key_t i = 0; i < v.size(); ++i){
+        for(long i = 0; i < v.size(); ++i){
             if(v[i] != 0){
                 if(i > max_indet)
                     max_indet = i;

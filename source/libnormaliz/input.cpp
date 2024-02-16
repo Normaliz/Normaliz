@@ -1079,6 +1079,10 @@ InputMap<Number> readNormalizInput(istream& in,
                     convert_equations = true;
                     continue;
                 }
+                if (type_string == "list_polynomials") {
+                    polynomial_verbose = true;
+                    continue;
+                }
                 if(type_string == "parallel_threads"){
 
                     long nr_threads;
