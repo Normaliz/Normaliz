@@ -379,7 +379,7 @@ string expand_project(const string& project){
     return result;
 }
 
-void collect_lat(const string& project) {
+void collect_lat(const string& project, const long given_nr_subsplits) {
 
     string name;
 
@@ -517,11 +517,18 @@ void collect_lat(const string& project) {
         verboseOutput() << "Computation of " + global_project + " NOT complete" << endl;
     SplitData new_split_data = our_split;
     size_t nr_sub_splits = 2; // the minimum
-    size_t splits_next_round = 1000; // we allow 1000 splits in the next round
-    if(our_split.nr_splits_to_do > splits_next_round)
-        splits_next_round = our_split.nr_splits_to_do;
-    if(splits_next_round/NotDone.size() > 2)
-        nr_sub_splits = splits_next_round/NotDone.size();
+    if(given_nr_subsplits != -1){
+        if(given_nr_subsplits < 2)
+            throw BadInputException("Number of subsplits must be >= 2");
+        nr_sub_splits = given_nr_subsplits;
+    }
+    else{
+        size_t splits_next_round = 1000; // we allow 1000 splits in the next round
+        if(our_split.nr_splits_to_do > splits_next_round)
+            splits_next_round = our_split.nr_splits_to_do;
+        if(splits_next_round/NotDone.size() > 2)
+            nr_sub_splits = splits_next_round/NotDone.size();
+    }
     new_split_data.nr_splits_to_do = NotDone.size() * nr_sub_splits;
     new_split_data.nr_split_levels++;
     new_split_data.split_moduli.push_back(nr_sub_splits);

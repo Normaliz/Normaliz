@@ -394,6 +394,10 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
             use_collect_lat = true;
             continue;
         }
+        if (LongOption == "SaveLocalSolutions" || LongOption == "SLS") {
+            use_save_local_solutions = true;
+            continue;
+        }
         if (LongOption == "MakeFusionInput" || LongOption == "MFI") {
             use_make_full_input = true;
             continue;

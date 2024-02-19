@@ -62,7 +62,7 @@ void printHeader() {
 #endif
     cout << "                                                       \\...|" << endl;
     cout << "     (C) The Normaliz Team, University of Osnabrueck    \\..|" << endl;
-    cout << "                    November  2023                       \\.|" << endl;
+    cout << "                    February  2024                       \\.|" << endl;
     cout << "                                                          \\|" << endl;
     string optional_packages = package_string();
     if (optional_packages.size() > 0) {
@@ -108,8 +108,11 @@ void printHelp(char* command) {
     // cout << endl;
     cout << "      Automorphisms, EuclideanAutomorphisms, RationalA..., CombinatorialA..." << endl;
     cout << "      EhrhartSeries, LatticePoints, NumberLatticePoints" << endl;
-    cout << "      FaceLattice, FVector, Incidence" << endl;
+    cout << "      FaceLattice, FVector (also with Orbits)" << endl;
+    cout << "      DualFaceLattice, DualFVector (also with Orbits)" << endl;
+    cout << "      Incidence, DualIncidence" << endl;
     cout << "      MasrkovBasis, GroebnerBasis, Lex, DegLex, RevLex" << endl;
+    cout << "      FusionRings, SimpleFusionRings" << endl;
 
     cout << endl;
     cout << "Output and execution:" << endl;
@@ -516,11 +519,16 @@ int process_data(OptionsHandler& options, const string& command_line) {
         Check_Stop(); // check whether stop file has been set
 
         if(options.isUseCollectLat()){
+            // cout << "PPPPPPPPPPPPPPPP " << split_index_option << endl;
             write_fusion_mult_tables_from_input = false;
             if(options.getToCompute().test(ConeProperty::FusionData))
                 write_fusion_mult_tables_from_input = true;
-            collect_lat(global_project);
+            collect_lat(global_project, split_index_option);
             return 0;
+        }
+
+        if(options.isUseSaveLocalSolutions()){
+            save_local_solutions = true;
         }
 
         /* if(options.isUseNextRound()){

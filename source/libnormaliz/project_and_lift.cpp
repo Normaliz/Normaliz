@@ -37,12 +37,20 @@ using std::pair;
 
 void write_control_file(const size_t split_level, const size_t nr_vectors){
 
-        if(verbose)
-            verboseOutput() << "split_level " << split_level << endl;
+    if(verbose)
+        verboseOutput() << "split_level " << split_level << endl;
 
-        SplitData def_split(global_project, split_level, nr_vectors);
-        def_split.write_data();
-        throw NoComputationException("No output with DistribitedComp for patching");
+    SplitData def_split(global_project, split_level, nr_vectors);
+    def_split.write_data();
+}
+
+template <typename Integer>
+void write_local_solutions(const size_t split_level, const Matrix<Integer>& Sols){
+    if(verbose)
+        verboseOutput() << "writing local solutions" << endl;
+    string file_name = global_project;
+    file_name += "." + to_string(split_level);
+    Sols.print(file_name, "sls");
 }
 
 template <typename Integer>
@@ -1767,7 +1775,9 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
 
        if(NrRemainingLP[this_patch] > 0 && distributed_computation){
            write_control_file(this_patch, LatticePoints.size());
-           return;
+           if(save_local_solutions)
+               write_local_solutions(this_patch, LocalSolutions);
+            throw NoComputationException("No output with DistribitedComp for patching");
        }
 
        if(min_fall_back == 0 && NrRemainingLP[this_patch] == 0){

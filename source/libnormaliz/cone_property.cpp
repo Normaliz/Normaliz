@@ -181,6 +181,7 @@ ConeProperties all_options() {
     ret.set(ConeProperty::LinearOrderPatches);
     ret.set(ConeProperty::CongOrderPatches);
     ret.set(ConeProperty::MinimizePolyEquations);
+    ret.set(ConeProperty::DistributedComp);
     return ret;
 }
 

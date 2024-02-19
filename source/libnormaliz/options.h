@@ -131,6 +131,9 @@ class OptionsHandler {
     inline bool isUseCollectLat() const {
         return use_collect_lat;
     }
+    inline bool isUseSaveLocalSolutions() const {
+        return use_save_local_solutions;
+    }
 
     inline bool isUseMakeFullInput() const {
         return use_make_full_input;
@@ -197,6 +200,7 @@ class OptionsHandler {
     bool use_long_long;
     bool use_chunk;
     bool use_collect_lat;
+    bool use_save_local_solutions;
     bool use_make_full_input;
     bool use_add_chunks;
     bool no_ext_rays_output;
@@ -234,6 +238,7 @@ inline OptionsHandler::OptionsHandler() {
     use_long_long = false;
     use_chunk = false;
     use_collect_lat = false;
+    use_save_local_solutions = false;
     use_add_chunks = false;
     ignoreInFileOpt = false;
     nr_threads = 0;

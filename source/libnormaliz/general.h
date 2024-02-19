@@ -181,15 +181,12 @@ void Check_Stop();
 NORMALIZ_DLL_EXPORT extern double GlobalTimeBound;
 NORMALIZ_DLL_EXPORT extern double GlobalPredictionTimeBound;
 
-/*
-NORMALIZ_DLL_EXPORT extern std::vector<long> split_patches;
-NORMALIZ_DLL_EXPORT extern std::vector<long> split_moduli;
-NORMALIZ_DLL_EXPORT extern std::vector<long> split_residues;
-*/
+
 NORMALIZ_DLL_EXPORT extern long split_index_option; // transports <n> of -X=<n>
 NORMALIZ_DLL_EXPORT extern long split_index_rounds; // transports the split index option after adding the rounds
 NORMALIZ_DLL_EXPORT extern long split_refinement; // transports the refinement of the split
 NORMALIZ_DLL_EXPORT extern bool is_split_patching; // indicates that we are computing a split
+NORMALIZ_DLL_EXPORT extern bool save_local_solutions; // indicates that local solutions are to be stored in distributed computation
 
 NORMALIZ_DLL_EXPORT extern bool list_of_input_files; // true if processing list of input files
 NORMALIZ_DLL_EXPORT extern long number_normaliz_instances; // for distribution of input files to several instances of normaliz

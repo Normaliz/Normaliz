@@ -75,7 +75,7 @@ public:
     long necessary_rounds() const;
 };
 
-void collect_lat(const string& project);
+void collect_lat(const string& project, const long given_nr_subsplits);
 
 void next_round(const string& project);
 

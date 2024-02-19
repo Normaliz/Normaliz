@@ -61,6 +61,7 @@ const int default_thread_limit = 8;
 int thread_limit = default_thread_limit;
 bool parallelization_set = false;
 bool no_output_on_interrupt = false;
+bool save_local_solutions = false;
 
 // bool test_arithmetic_overflow = false;
 // long overflow_test_modulus = 15401;
