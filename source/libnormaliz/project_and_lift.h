@@ -105,6 +105,7 @@ class ProjectAndLift {
     bool cong_order_patches;
     bool first_solution_printed;
     bool fusion_rings_computation;
+    bool saved_local_solutions;
 
     bool system_unsolvable;
 
@@ -159,6 +160,8 @@ class ProjectAndLift {
     vector<dynamic_bitset> CongIndicator; // stores supports of congruences
     Matrix<double> WeightOfCoord;
     Matrix<IntegerPL> DefiningSupps;
+
+    Matrix<IntegerRet> SavedLocalSolutions;
 
     vector<double> ExpectedNrRounds;
     vector<double> TimeToLevel;

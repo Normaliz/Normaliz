@@ -126,7 +126,7 @@
 
 \def\ttt{\texttt}
 
-\def\version{3.10.1}
+\def\version{3.10.2}
 \def\NmzDir{normaliz-\version}
 
 \def\ContLine#1{\hyperref[#1]{\large #1}\\[6pt]}
@@ -215,6 +215,13 @@ For a deeper understanding one must note the following. The output depends to so
 \end{enumerate}
 For the computation, inhomogeneous input is homogenized, and the polyhedron and the affine lattice are selected by the \emph{dehomogenization}. The computation is inhomogeneous if a dehomogenization is defined. Polytopes, i.e., bounded polyhedra, can be defined by homogeneous input if one adds a grading, or, as expected, by inhomogeneous input. These two approaches are almost equivalent.
 
+Topics not covered by his short reference:
+\begin{enumerate}
+\item The use of high performance clusters for the computation of volumes by signed decomposition or the patching variant of project-and lift for lattice points. See Appendix G of the Normaliz manual. 
+
+\item the input types and computation goals for fusion rings. See Appendix H of the Normaliz manual. 
+\end{enumerate}
+
 \TopIndex
 
 
@@ -275,6 +282,8 @@ There are 3 categories of input:
 	\item Affine monoids defined by generators.
 	
 	\item Binomial ideals saerving as lattice and toric iodeals. 
+	
+	\item Fusion rings. See Appendix H of the Normaliz manual.
 \end{enumerate}
 
 
@@ -371,8 +380,8 @@ Examples:
 
 \begin{Verbatim}
 amb_space 3     amb_space 3         amb_space 3        amb_space auto
-grading        grading sparse     grading            grading
-0 0 1          3:1;               unit_vector 3      [0, 0,1] 
+grading         grading sparse      grading            grading
+0 0 1           3:1;                unit_vector 3      [0, 0,1] 
 \end{Verbatim}
 
  
@@ -543,7 +552,7 @@ If there are no cone generators or inequalities, Normaliz automatically assumes 
 	$$
 	Examples:
 	\begin{Verbatim}
-	1 0 2 = 5     1 0 -2 >= 6     1 2 3 ~ 5 (12) 
+	1 0 2 = 5        1 0 -2 >= 6        1 2 3 ~ 5 (12) 
 	\end{Verbatim}
 	
 	\example{ChF\_8\_1024}, \example{CondorcetRange}
@@ -737,15 +746,8 @@ The probability that Normaliz does not notice an overflow in 64 bit computations
 \SubSectStart{Computation goals}
 \index{computation goals}
 
-Most computation goals include \verb|Sublattice| and \verb|SupportHyperplanes|, and there are many implications between them. 
-If you are in doubt whether your desired data will be computed, add an explicit computation goal.
+Depending on the input Normaliz chooses default computation goals and algorithmic variants. Most computation goals include \verb|Sublattice| and \verb|SupportHyperplanes|. If you are in doubt whether your desired data will be computed, add an explicit computation goal.
 
-If the user does not specify any computation goal, Normaliz tries to compute the following:
-\begin{arab}
-	\item certain computations based on the dual algorithm;
-	\item \verb|Projection| or \verb|ProjectionFloat| applied to parallelotopes;
-	\item computations done completely by symmetrization or signed decomposition.
-\end{arab}
 
 Computation gaols by themes:\bigskip
 
@@ -1036,6 +1038,8 @@ All computation goals and algorithmic variants can be given as long options on t
 	Normaliz in which Normaliz writes additional
 	information about its current activities to the
 	standard output.
+	
+	\itemtt[{-}{-}talk] gives more terminal output. At present only implemented for the patching variant of project-and-lift for lattice points.
 	
 	\itemtt[--list\_polynomials] lists the input polynomials on the terminal for easier debugging. Can be part of the input file without \verb|--|.
 	

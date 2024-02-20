@@ -1248,6 +1248,17 @@ void ProjectAndLift<IntegerPL,IntegerRet>::prepare_split(list<vector<IntegerRet>
     const size_t coord = InsertionOrderPatches[this_patch];
     auto& intersection_key = AllIntersections_key[coord];
 
+    if(this_patch == our_split.this_split_levels[0]){
+        string file_name = global_project + "." + to_string(this_patch) + ".sls";
+        ifstream sls(file_name);
+        if(sls.is_open()){
+            saved_local_solutions = true;
+            sls.close();
+            SavedLocalSolutions = readMatrix<IntegerRet>(file_name);
+            cout << "SAVED SAVED " << SavedLocalSolutions.nr_of_rows() << endl;
+        }
+    }
+
     for(size_t i = 0; i < our_split.nr_split_levels; ++i){
         // cout << "ii " << i << " done_indices " << our_split.this_split_done_indices;
         if(this_patch == our_split.this_split_levels[i]){
@@ -1372,10 +1383,16 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
     full_coords_ind.flip();
 
     // Now we extend the "new" intersection coordinates by the local system
-    LocalPL. set_startList(start_list);
-    LocalPL.lift_points_to_this_dim(start_list); // computes the extensions
     Matrix<IntegerRet> LocalSolutionsNow(0, intersection_key.size() + new_coords_key.size());
-    LocalPL.put_eg1Points_into(LocalSolutionsNow);
+    if(saved_local_solutions){
+        saved_local_solutions = false;
+        swap(SavedLocalSolutions, LocalSolutionsNow);
+    }
+    else{
+        LocalPL. set_startList(start_list);
+        LocalPL.lift_points_to_this_dim(start_list); // computes the extensions
+        LocalPL.put_eg1Points_into(LocalSolutionsNow);
+    }
     size_t nr_old_solutions = LocalSolutions.nr_of_rows();
     size_t nr_new_solutions = LocalSolutionsNow.nr_of_rows();
     if(nr_old_solutions == 0)
@@ -2964,6 +2981,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::initialize(const Matrix<IntegerPL>& 
     distributed_computation = false;
     check_simplicity_all = false;
     check_simplicity_cand = false;
+    saved_local_solutions = false;
     TotalNrLP = 0;
     min_return_patch = 0;
     NrLP.resize(EmbDim + 1);
