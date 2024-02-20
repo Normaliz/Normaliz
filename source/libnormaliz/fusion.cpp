@@ -1004,7 +1004,88 @@ Matrix<Integer> FusionComp<Integer>::make_linear_constraints(const vector<Intege
         }
     }
 
+    Integer Total_FPdim = 0;
+    size_t half_at = 0;
+    for(auto& c: d)
+        Total_FPdim += c*c;
+    cout << "Total FPdim " << Total_FPdim << endl;
+    Integer test = 0;
+    bool potentially_graded = true;
+    if(d[1] > 1)
+        potentially_graded = false;
+    if(d.size() >= 3 && d[2] == 1)
+        potentially_graded = false;
+    if(potentially_graded){
+        for(size_t i = 0; i < d.size(); ++i){
+            test += d[i] * d[i];
+            if(2 * test > Total_FPdim){
+                potentially_graded = false;
+                break;
+            }
+            if(2 * test== Total_FPdim){
+                half_at = i;
+                break;
+            }
+        }
+    }
+
+    Matrix<Integer> GradEqu(0, nr_coordinates + 1);
+
+    cout << "half at " << half_at << endl;
+
+    long counter = 0;
+
+    // potentially_graded = false;
+
+    if(potentially_graded){
+
+        for(key_t i = 1; i < fusion_rank; ++i){
+            indices[0] = i;
+            for(key_t j = 1; j < fusion_rank; ++j){
+                indices[1] = j;
+                for(key_t k = 1; k < fusion_rank; k++){
+                    indices[2] = k;
+                    bool add_equ = false;
+                    // multiplication inside neutral component
+                    if((i <= half_at && j <= half_at)
+                                && k > half_at){
+                        add_equ = true;
+                    }
+                    // multiplication of non-neutral comp by neutral comp from left or right
+                    if( ( (i <= half_at && j> half_at) || (i > half_at && j<= half_at) )
+                                && k <= half_at){
+                        add_equ = true;
+                    }
+                    // multiplication of non-neutral component by itself
+                    if((i >  half_at && j > half_at) && k > half_at){
+                        add_equ = true;
+                    }
+                    if(add_equ){
+                        // cout << coord(indices) << " --- " << coord_cone(indices) << " ---- " << indices;
+                        counter++;
+                        vector<Integer> this_equ(nr_coordinates + 1);
+                        this_equ[coord_cone(indices)] = 1;
+                        assert(coord_cone(indices) < nr_coordinates + 1);
+                        GradEqu.append(this_equ);
+                    }
+                }
+            }
+        }
+    }
+
+    cout << "CCCCC " << counter << endl;
+
+    GradEqu.remove_duplicate_and_zero_rows();
+
+    cout << "Zero coords " << GradEqu.nr_of_rows() << " of " << GradEqu.nr_of_columns() << endl;
+
+    vector<Integer> test_v(GradEqu.nr_of_columns());
+    test_v.back() = 1;
+    for(size_t kkn = 0; kkn < GradEqu.nr_of_rows(); ++kkn)
+        if(test_v == GradEqu[kkn])
+            assert(false);
     Equ.remove_duplicate_and_zero_rows();
+    Equ.append(GradEqu);
 
     // Equ.pretty_print(cout);
     return Equ;

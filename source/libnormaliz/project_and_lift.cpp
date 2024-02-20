@@ -420,6 +420,11 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
         vector<key_t> LocalKey = bitset_to_key(AllPatches[coord]);
         Matrix<IntegerPL> LocalSuppsRaw; // could be avoided, only for convenience
         LocalSuppsRaw = AllSupps[EmbDim].submatrix(relevant_supps_now);
+        /* vector<IntegerPL> test_v(EmbDim);
+        test_v[0] = -1;
+        for(size_t kkn = 0; kkn < LocalSuppsRaw.nr_of_rows(); ++kkn)
+            if(test_v == LocalSuppsRaw[kkn])
+                assert(false);*/
         // LocalSuppsRaw.debug_print('+');
         // convert(LocalSuppsRaw, AllSupps[EmbDim].submatrix(relevant_supps_now));
         // Matrix<IntegerPL> Localsupps = LocalSuppsRaw.transpose().submatrix(LocalKey).transpose(); // select columns
@@ -464,11 +469,16 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
 
         // Now we can set up the local project-and-lift
         vector<dynamic_bitset> DummyInd;
+        LocalSuppsReordered.remove_duplicate_and_zero_rows();
         ProjectAndLift<IntegerPL, IntegerRet> PL(LocalSuppsReordered, DummyInd, 0); // 0 is dummy
+        //if(coord < 15)
+        //    LocalSuppsReordered.debug_print('~');
         PL.set_LLL(false);
         PL.set_primitive();
         PL.set_verbose(false);
         PL.set_congruences(LocalCongsReordered);
+        //if(coord < 15)
+        //   LocalCongsReordered.debug_print('#');
         PL.compute_projections_primitive(LocalKey.size());
         // cout << "In local PLs" << endl;
         PL.add_congruences_from_equations();
@@ -1262,6 +1272,15 @@ void ProjectAndLift<IntegerPL,IntegerRet>::prepare_split(list<vector<IntegerRet>
 template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vector<IntegerRet> >& LatticePoints, const key_t this_patch) {
 
+    /* if(LatticePoints.size() == 1){
+        for(size_t i = 0; i < LatticePoints.front().size(); ++i){
+            cout << i << " --- " << LatticePoints.front()[i];
+            if(LatticePoints.front()[i] != 0)
+                cout << "!!!!!!!!!";
+            cout << endl;
+        }
+    }*/
+
     const size_t coord = InsertionOrderPatches[this_patch]; // the coord marking this patch
 
     // for easier access and simpler code
@@ -1368,6 +1387,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
             // verbose_0 = "Local solutions total " + to_string(LocalSolutions.nr_of_rows()) + " new " < to_string(nr_new_solutions);
             verboseOutput() << "--" << endl;
             verboseOutput() << "Local solutions total " << LocalSolutions.nr_of_rows() << " new " << nr_new_solutions << endl;
+            // LocalSolutions.debug_print('+');
     }
 
     // Next the newly computed extensions are registered

@@ -252,7 +252,7 @@ and normaliz.exe. (Unfortunately, autotools builds of normaliz.exe do not produc
 a working normaliz.exe.)
 
 Except for CoCoA we use the official releases. For CoCoA we download a pre-release version
-of CoCoALib-0.99719 rom https://github.com/Normaliz/Normaliz/releases/tag/v3.9.2
+of CoCoALib-0.99710 rom https://github.com/Normaliz/Normaliz/releases/tag/v3.9.2
 that is then patched by the files in install_scripts/cocoa_patches.
 (configure has been modified by adding -fpermissive and -Wconversion to CXXFLAGS.)
 

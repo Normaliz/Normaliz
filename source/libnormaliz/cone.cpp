@@ -7366,6 +7366,7 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
             else
                 Equs = Equations;
             Equs.cyclic_shift_right(GradingCoordinate);
+
             Congs = CongOri;
             Congs.cyclic_shift_right(GradingCoordinate);
             if (GradingOnPolytope.size() > 0)
