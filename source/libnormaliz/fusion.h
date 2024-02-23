@@ -47,6 +47,7 @@ class FusionBasic {
 public:
 
     bool commutative;
+    bool Z_2_graded;
     bool candidate_given;
     bool type_and_duality_set;
 
@@ -69,7 +70,7 @@ public:
     void  data_from_file_or_string(const string& our_fusion);
     void  data_from_file(const string& file_name);
 
-    pair<bool, bool> data_from_string(const string& our_fusion, const bool only_test);
+    pair<bool, bool> data_from_string(const string& our_fusion, const bool return_on_failure);
 
     void do_write_input_file(InputMap<mpq_class>&  input) const;
 };
@@ -87,6 +88,7 @@ public:
     bool verbose;
 
     bool commutative;
+    bool Z_2_graded;
 
     bool check_simplicity;
     bool select_simple;
@@ -102,6 +104,8 @@ public:
     vector<key_t> fusion_type; // only coincidence pattern
     string fusion_type_string;
     vector<key_t> duality;
+
+    long half_at; // temporarily used for ZZ_2-gradings
 
     void initialize();
     void import_global_data();
@@ -157,6 +161,9 @@ public:
     pair<Integer, vector<key_t> >  term(const key_t& i, const key_t& j, const key_t& k);
     set<map<vector<key_t>, Integer> > make_associativity_constraints();
     // void set_global_fusion_data();
+
+    void find_grading(const vector<Integer>& d);
+    Matrix<Integer> make_add_constraints_for_grading(const vector<Integer>& d);
 
     void write_all_data_tables(const Matrix<Integer>& rings, ostream& table_out);
     void tables_for_all_rings(const Matrix<Integer>& rings);
@@ -227,11 +234,17 @@ void FusionBasic::read_data_from_input(InputMap<Integer>& input_data){
     commutative = false;
     if(contains(input_data, Type::fusion_duality)){
         vector<Integer> prel_duality = input_data[Type::fusion_duality][0];
-        // cout << "PREL " << prel_duality  << " -- " << prel_duality.size() << " -- " <<  fusion_rank_from_input << endl;
-        if(prel_duality.size() != fusion_rank || (prel_duality[0] != 0 && prel_duality[0] != -1))
+        // std::cout << "PREL " << prel_duality; //" -- " << prel_duality.size() << " -- " <<  fusion_rank_from_input << endl;
+        if(prel_duality.size() != fusion_rank || (prel_duality[0] != 0 && prel_duality[0] != -1 && prel_duality[0] != -2 && prel_duality[0] != -3))
             throw BadInputException("Fusion duality corrupt");
-        if(prel_duality[0] == -1) {
+        if(prel_duality[0] == -1 || prel_duality[0] == -3) {
             commutative = true;
+            if(prel_duality[0] == -3)
+                Z_2_graded = true;
+            prel_duality[0] = 0;
+        }
+        if(prel_duality[0] == -2) {
+            Z_2_graded = true;
             prel_duality[0] = 0;
         }
         duality.resize(fusion_rank);

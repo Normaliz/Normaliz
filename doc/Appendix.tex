@@ -3187,28 +3187,46 @@ to sum the partial multiplicities in the files \verb|<project>.mult.<n>| The res
 
 The patching algorithm (Section \ref{positive_systems}) allows distributed computation, designed for computation on a high performance cluster (HPC). The parts into which the computation is distributed are called \emph{splits} in the following.
 
-As an example for the whole file structure that we will explain in this section, the directory \verb*|example| contains the file \verb*|bracket_3.zip|. Unzipping it creates a directory \verb*|bracket_3|. To see the full directory structure, unzip the contained zip files.
+As an example for the whole file structure that we will explain in this section, the directory \verb*|example| contains the file \verb*|split_demo.zip|. Unzipping it creates a directory \verb*|split_demo|. To see the full directory structure, unzip the contained zip files.
 
 The scheme that Normaliz uses is again a batch array. As above we assume it is controlled by SLURM. There is an crucial  constraint set by the system: an upper limit on the wall clock time of a batch job, i.e., a split. Normaliz can overcomes the time limit by using \emph{successive refinement}: if a run of the full array does not complete the computation,it creates temporary files whose contents are then read and exploited by the next round.
 
-We run a  precomputation
-\begin{Verbatim}
-./normaliz -c <project> --DistributedComp
-\end{Verbatim}
-You can replace \verb*|--DistributedComp| by the abbreviation \verb*|--DCM|, as indicted above. The only purpose is to find the lowest patch level where splitting makes sense. (For small computations such a level may not exist.) You should use the same additional options for \verb*|--DistributedComp| that you want to use for the main computation.
-
-The result of the precomputation is written to the file
+The precomputation is again started by
 \begin{itemize}
-\itemtta[<project>.split.data]{project>.split.data}
+\itemtt[DistributedComp, -{}-DCM] 
 \end{itemize}
-Usually this file is
+It allows the parameter
+\begin{itemize}
+\itemtt[-X=<s>]	
+\end{itemize}
+where \verb*|<s>| is the number of desired splits. The default value is $1000$, unless the maximum possible number of splits is smaller. 
+
+ The only purpose is to find the lowest patch level where splitting makes sense. (For small computations such a level may not exist.) You should use the same additional options for \verb*|--DistributedComp| that you want to use for the main computation.
+ 
+ The result of the precomputation is written to the file
+ \begin{itemize}
+ 	\itemtta[<project>.split.data]{project>.split.data}
+ \end{itemize}
+ Usually this file is
+ \begin{Verbatim}
+ 	refinement 0 <s>
+ 	<l> <s>
+ \end{Verbatim}
+ \verb*|<l>| is the split level, \verb*|<s>| the number of splits. \verb*|refinement 0| indicates the first refinement (counted from $0$).
+
+An precomputation option that can be added is
+\begin{itemize}
+\itemtt[SaveLocalSolutions, -{}-SLS] 
+\end{itemize}
+It is useful in situations in which the computation of the ``local solutions'' of the patches takes very long so that it becomes inefficient or even impossible to have them done by every split. For our toy example the precomputation was done by
 \begin{Verbatim}
-refinement 0 1000
-<l> 1000
+./normaliz example/split_demo/split_ex.in -c -x=1 --DCM --SLS -X=3
 \end{Verbatim}
-\verb*|refinement 0| indicates the first refinement (counted from $0$).
-\verb|<l>| is the lowest split level for splitting. The number of splits is given by \verb*|1000|. If there are less than $1000$ lattice points at the split level, than 
-\verb*|1000| is replaced by their number. It is possible to add this file by hand, especially in order to increase the number of splits.
+This writes a series of files
+\begin{itemize}
+\itemtta[<project>.<l>.sls]{project.l.sl}
+\end{itemize}
+where \verb*|<l>| varies from $0$ to the split level.
 
 We use a job array defined by 
 \begin{Verbatim}
@@ -3257,7 +3275,11 @@ for example
 \begin{Verbatim}
 ./normaliz tough --CLL
 \end{Verbatim}
-Make sure that all splits have finished before running \verb*|CollectLat|, especiall when splitting is applied to a list if input files as described in Appendix \ref{input_list}.
+Make sure that all splits have finished before running \verb*|CollectLat|, especiall when splitting is applied to a list if input files as described in Appendix \ref{input_list}. A third role of \verb*|-X|:
+\begin{itemize}
+	\itemtt[-X=<s>]	
+\end{itemize}
+With \verb*|--CollectLat| it can be used to set the number of subsplits if further refinement is necessary.
 
 The total list of lattice points is written to
 \begin{itemize}
@@ -3274,6 +3296,8 @@ A second task of \verb*|--CollectLat| is the preparation of \verb*|<project>.spl
 \itemtta[<project>.<f>.split.data]{project.f.split.data}
 \end{itemize}
 Then the next refinement can be started in the same way as refinement $0$.
+
+
 
 
 

@@ -105,7 +105,7 @@ class ProjectAndLift {
     bool cong_order_patches;
     bool first_solution_printed;
     bool fusion_rings_computation;
-    bool saved_local_solutions;
+    bool stored_local_solutions;
 
     bool system_unsolvable;
 
@@ -216,6 +216,8 @@ class ProjectAndLift {
 
     void prepare_split(list<vector<IntegerRet> >& LatticePoints, const key_t& this_patch);
     void read_split_data();
+
+    bool import_local_solutions(const key_t& this_patch);
 
     // void make_LLL_coordinates();
 

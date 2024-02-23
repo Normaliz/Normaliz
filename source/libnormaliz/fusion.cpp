@@ -180,6 +180,7 @@ vector<vector<key_t> > collect_coincidence_subset_keys(const vector<key_t>& type
 
 FusionBasic::FusionBasic(){
     commutative = false;
+    Z_2_graded = false;
     candidate_given = false;
     fusion_rank = 0;
     type_and_duality_set = false;
@@ -254,11 +255,11 @@ void  FusionBasic::data_from_file_or_string(const string& our_fusion){
 
 // Note: test_only = false produces data ready for FusionComp (coincidence, commutative)
 // test_only = true copies the type and the duality 1-1
-pair<bool, bool> FusionBasic::data_from_string(const string& our_fusion, const bool only_test) {
+pair<bool, bool> FusionBasic::data_from_string(const string& our_fusion, const bool return_on_failure) {
 
     bool dummy = false;
     if(verbose)
-        verboseOutput() << "Reading fusion data from string " << our_fusion << endl;
+        verboseOutput() << "Trying to read fusion data from string " << our_fusion << endl;
     string name = pureName(our_fusion);
     string clean_name;
     for(auto& c: name){
@@ -273,17 +274,17 @@ pair<bool, bool> FusionBasic::data_from_string(const string& our_fusion, const b
             close_bracket++;
     }
     if(clean_name.back() != ']'){
-        if(only_test)
+        if(return_on_failure)
             return make_pair(false, dummy);
         throw BadInputException("String " + our_fusion +" not standard fusion");
     }
     if(open_bracket != close_bracket){
-        if(only_test)
+        if(return_on_failure)
             return make_pair(false, dummy);
         throw BadInputException("String " + our_fusion +" not standard fusion");
     }
     if(open_bracket == 0 || open_bracket > 2){
-        if(only_test)
+        if(return_on_failure)
             return make_pair(false, dummy);
         throw BadInputException("String " + our_fusion +" not standard fusion");
     }
@@ -295,7 +296,7 @@ pair<bool, bool> FusionBasic::data_from_string(const string& our_fusion, const b
     char c;
     data >> c;
     if(c !='['){
-        if(only_test)
+        if(return_on_failure)
             return make_pair(false, dummy);
         throw BadInputException("String " + our_fusion +" not standard fusion");
     }
@@ -304,7 +305,7 @@ pair<bool, bool> FusionBasic::data_from_string(const string& our_fusion, const b
         long nr;
         data >> nr;
         if(nr < 1){
-            if(only_test)
+            if(return_on_failure)
                 return make_pair(false, dummy);
             throw BadInputException("String " + our_fusion +" not standard fusion");
         }
@@ -315,7 +316,7 @@ pair<bool, bool> FusionBasic::data_from_string(const string& our_fusion, const b
         }
         else{
             if(c != ','){
-                if(only_test)
+                if(return_on_failure)
                     return make_pair(false, dummy);
                 throw BadInputException("String " + our_fusion +" not standard fusion");
             }
@@ -323,7 +324,7 @@ pair<bool, bool> FusionBasic::data_from_string(const string& our_fusion, const b
 
     }
     if(type_input[0] != 1){
-        if(only_test)
+        if(return_on_failure)
             return make_pair(false, dummy);
         throw BadInputException("String " + our_fusion +" not standard fusion");
     }
@@ -333,7 +334,7 @@ pair<bool, bool> FusionBasic::data_from_string(const string& our_fusion, const b
     fusion_type_from_command = type_input;
     // cout << "RRRRRRRRRRRRRR " << fusion_type_from_command;
     fusion_type_string = for_type.str();
-    if(!only_test)
+    if(!return_on_failure)
         fusion_type = fusion_coincidence_pattern(type_input);
     else{ // we have checked positivity
         fusion_type.resize(fusion_rank);
@@ -348,7 +349,7 @@ pair<bool, bool> FusionBasic::data_from_string(const string& our_fusion, const b
     vector<long> duality_input;
     data >> c;
     if(c !='['){
-        if(only_test)
+        if(return_on_failure)
             return make_pair(false, dummy);
         throw BadInputException("String " + our_fusion +" not standard fusion");
     }
@@ -356,9 +357,15 @@ pair<bool, bool> FusionBasic::data_from_string(const string& our_fusion, const b
     while(true){
         long nr;
         data >> nr;
-        if(nr == -1){
+        if(nr == -1 || nr == -3){
             commutative = true;
+            if(nr == -3)
+                Z_2_graded = true;
             nr = 0;
+        }
+        if(nr == -2){
+           Z_2_graded = true;
+           nr = 0;
         }
         duality_input.push_back(nr);
         data >> c;
@@ -367,7 +374,7 @@ pair<bool, bool> FusionBasic::data_from_string(const string& our_fusion, const b
         }
         else{
             if(c != ','){
-                if(only_test)
+                if(return_on_failure)
                     return make_pair(false, dummy);
                 throw BadInputException("String " + our_fusion +" not standard fusion");
             }
@@ -375,21 +382,16 @@ pair<bool, bool> FusionBasic::data_from_string(const string& our_fusion, const b
     }
 
     if(!check_duality(duality_input, type_input)){
-        if(only_test)
+        if(return_on_failure)
             return make_pair(false, dummy);
         throw BadInputException("String " + our_fusion +": duality does not fit type");
     };
 
-    if(!only_test){
-        if(duality_input[0] == -1)
-            commutative = false,
-        duality_input[0] = 0;
-        duality.resize(fusion_rank);
-        for(key_t i = 0; i< fusion_rank; ++i){
-            duality[i] = duality_input[i];
-        }
-        type_and_duality_set = true;
+    duality.resize(fusion_rank);
+    for(key_t i = 0; i< fusion_rank; ++i){
+        duality[i] = duality_input[i];
     }
+    type_and_duality_set = true;
     return make_pair(true, false);
 }
 
@@ -458,6 +460,7 @@ FusionComp<Integer>::FusionComp(const FusionBasic& basic){
     initialize();
     fusion_rank = basic.fusion_rank;
     commutative = basic.commutative;
+    Z_2_graded = basic.Z_2_graded;
     candidate_given = basic.candidate_given;
     fusion_type = basic.fusion_type;
     fusion_type_string = basic.fusion_type_string;
@@ -476,6 +479,7 @@ void FusionComp<Integer>::initialize(){
     activated = false;
     type_and_duality_set =false;
     commutative = false;
+    Z_2_graded = false;
     nr_coordinates = 0;
 }
 
@@ -495,176 +499,6 @@ void FusionComp<Integer>::set_options(const ConeProperties& ToCompute, const boo
         make_automorphisms();
     // cout << Automorphisms;
 }
-
-/*
-template <typename Integer>
-void FusionComp<Integer>::import_global_data(){
-
-    fusion_type = fusion_type_coinc_from_input;
-    fusion_rank = fusion_type.size();
-    duality = fusion_duality_from_input;
-    commutative = fusion_commutative_from_input;
-    fusion_type_string = fusion_type_from_input;
-
-    subring_base_key = candidate_subring_from_input;
-    dynamic_bitset candidate_test = key_to_bitset(subring_base_key, fusion_rank);
-    for(size_t i = 0; i < candidate_test.size(); ++i){
-        if(candidate_test[i] && !candidate_test[duality[i]])
-            throw BadInputException("Candidate subring not closed under duality");
-
-    }
-    candidate_given = (subring_base_key.size() >0);
-    type_and_duality_set = true;
-}
-*/
-
-/*
-template <typename Integer>
-pair<bool, bool>  FusionComp<Integer>::read_data(const bool a_priori, const bool only_test) {
-
-    bool dummy = false;
-
-    if(!type_and_duality_set && fusion_type_coinc_from_input.size() > 0){
-        import_global_data();
-    }
-    if(!type_and_duality_set){
-        FusionBasic basic;
-        pair<bool, bool> standard_and_partition = basic.data_from_string(global_project, only_test);
-        if(only_test && (!standard_and_partition.first || standard_and_partition.second))
-            return standard_and_partition;
-    }
-
-    set<key_t> subring_base_set;
-    subring_base_set.insert(subring_base_key.begin(), subring_base_key.end());
-    for(auto& kk: subring_base_key){
-        if(subring_base_set.find(duality[kk]) == subring_base_set.end())
-            throw BadInputException("Subring base not closed under duality");
-    }
-
-    if(fusion_type.size() == 0 || fusion_type.size() != duality.size() ||
-                fusion_type[0] != 1 || duality[0] != 0){
-        if(only_test)
-            return make_pair(false, dummy);
-        throw BadInputException("Fusion data corrupt");
-    }
-
-    fusion_rank = duality.size();
-    dynamic_bitset dual_ind(fusion_rank);
-    for(size_t i = 0; i < fusion_rank; ++i){
-        if(duality[i] >= fusion_rank || fusion_type[i] != fusion_type[duality[i]]){
-            if(only_test)
-                return make_pair(false, dummy);
-            throw BadInputException("Fusion data corrupt");
-        }
-         dual_ind[duality[i]] = 1;
-    }
-    if(dual_ind.count() != fusion_rank){
-        if(only_test)
-            return make_pair(false, dummy);
-        throw BadInputException("Fusion data corrupt");
-    }
-    if(verbose){
-        verboseOutput() << "rank " << fusion_rank << endl;
-        verboseOutput() << "type " << fusion_type_string; // contains \n
-        verboseOutput() << "duality " << duality;
-        verboseOutput() << "commutative " << commutative << endl;
-    }
-    if(candidate_given && verbose)
-        verboseOutput() << "candidate base of subring " << subring_base_key;
-
-    if(!activated)
-        return make_pair(true, dummy);
-
-    if((use_automorphisms && a_priori) || (select_iso_classes && !a_priori) )
-        make_automorphisms();
-
-    if((check_simplicity && a_priori) || (select_simple && !a_priori) ) // after automorphisms !!
-        prepare_simplicity_check();
-
-    return make_pair(true, dummy);
-}
-
-*/
-
-
-/*
-
-template <typename Integer>
-void FusionComp<Integer>::read_data_from_file() {
-
-    string file_name = global_project + ".fusion";
-    ifstream in(file_name);
-
-    fusion_rank = 0;
-
-    string s;
-
-    size_t duality_count = 0;
-
-    while(true){
-        in >> ws;
-        int c = in.peek();
-        if (c == EOF) {
-            break;
-        }
-        in >> s;
-
-        if(s == "rank"){
-            in >> fusion_rank;
-            if(fusion_rank == 0)
-                throw BadInputException("Fusion rank must be > 0");
-            duality = identity_key(fusion_rank);
-            continue;
-        }
-
-        if(s == "type"){
-            if(fusion_rank == 0)
-                throw BadInputException("Need fusion rank before reading type");
-            if(fusion_type.size() > 0)
-                throw BadInputException("Only one fusion type allowed.");
-            fusion_type.resize(fusion_rank);
-            for(auto& b: fusion_type)
-                in >> b;
-            continue;
-        }
-        if(s == "duality"){
-            if(fusion_rank == 0)
-                throw BadInputException("Need fusion rank before reading duality");
-            if(duality_count > 0)
-                throw BadInputException("Only one duality input allowed.");
-            duality_count++;
-            size_t nr_transpositions;
-            in >> nr_transpositions;
-            for(size_t i = 0; i < nr_transpositions; ++i){
-                key_t k,j;
-                in >> k >> j;
-                duality[k] = j;
-                duality[j] = k;
-            }
-            continue;
-        }
-        if(s == "subring"){
-        size_t rank_candidate;
-            in >> rank_candidate;
-            subring_base_key.resize(rank_candidate);
-            for(size_t i = 0; i< rank_candidate; ++i)
-                in >> subring_base_key[i];
-            candidate_given = true;
-            continue;
-        }
-        if(s == "commutative"){
-            commutative = true;
-            continue;
-        }
-        throw BadInputException("Illegal fusion keyword " + s);
-    }
-
-    if( (fusion_type.size() == 0) )
-        throw BadInputException("No type in fusion file");
-
-    type_and_duality_set = true;
-}
-*/
 
 template <typename Integer>
 set<vector<key_t> >  FusionComp<Integer>::FrobRec(const vector<key_t>& ind_tuple){
@@ -981,31 +815,11 @@ Matrix<Integer> FusionComp<Integer>::do_iso_classes(const Matrix<Integer>& LattP
 }
 
 template <typename Integer>
-Matrix<Integer> FusionComp<Integer>::make_linear_constraints(const vector<Integer>& d){
+void FusionComp<Integer>::find_grading(const vector<Integer>& d){
 
-    make_CoordMap();
-
-    Matrix<Integer> Equ(0, nr_coordinates + 1); // mudst accomodate right hand side in last coordinate
-
-    vector<key_t> indices(3);
-    for(key_t i = 1; i < fusion_rank; ++i){
-        indices[0] = i;
-        for(key_t j = 1; j < fusion_rank; ++j){
-            indices[1] = j;
-            vector<Integer> this_equ(nr_coordinates + 1);
-            this_equ.back() = - d[i]*d[j];
-            if(i == duality[j])
-                this_equ.back() += 1;
-            for(key_t k = 1; k < fusion_rank; ++k){
-                indices[2] = k;
-                this_equ[coord_cone(indices)] += d[k];
-            }
-            Equ.append(this_equ);
-        }
-    }
 
     Integer Total_FPdim = 0;
-    size_t half_at = 0;
+    half_at = -1;
     for(auto& c: d)
         Total_FPdim += c*c;
     cout << "Total FPdim " << Total_FPdim << endl;
@@ -1029,49 +843,54 @@ Matrix<Integer> FusionComp<Integer>::make_linear_constraints(const vector<Intege
         }
     }
 
-    Matrix<Integer> GradEqu(0, nr_coordinates + 1);
+    if(!potentially_graded)
+        throw BadInputException("Could not find required grading");
 
     cout << "half at " << half_at << endl;
 
+}
+
+template <typename Integer>
+Matrix<Integer> FusionComp<Integer>::make_add_constraints_for_grading(const vector<Integer>& d){
+
     long counter = 0;
 
-    // potentially_graded = false;
+    Matrix<Integer> GradEqu(0, nr_coordinates + 1);
+    vector<key_t> indices(3);
 
-    if(potentially_graded){
-
-        for(key_t i = 1; i < fusion_rank; ++i){
-            indices[0] = i;
-            for(key_t j = 1; j < fusion_rank; ++j){
-                indices[1] = j;
-                for(key_t k = 1; k < fusion_rank; k++){
-                    indices[2] = k;
-                    bool add_equ = false;
-                    // multiplication inside neutral component
-                    if((i <= half_at && j <= half_at)
-                                && k > half_at){
-                        add_equ = true;
-                    }
-                    // multiplication of non-neutral comp by neutral comp from left or right
-                    if( ( (i <= half_at && j> half_at) || (i > half_at && j<= half_at) )
-                                && k <= half_at){
-                        add_equ = true;
-                    }
-                    // multiplication of non-neutral component by itself
-                    if((i >  half_at && j > half_at) && k > half_at){
-                        add_equ = true;
-                    }
-                    if(add_equ){
-                        // cout << coord(indices) << " --- " << coord_cone(indices) << " ---- " << indices;
-                        counter++;
-                        vector<Integer> this_equ(nr_coordinates + 1);
-                        this_equ[coord_cone(indices)] = 1;
-                        assert(coord_cone(indices) < nr_coordinates + 1);
-                        GradEqu.append(this_equ);
-                    }
+    for(key_t i = 1; i < fusion_rank; ++i){
+        indices[0] = i;
+        for(key_t j = 1; j < fusion_rank; ++j){
+            indices[1] = j;
+            for(key_t k = 1; k < fusion_rank; k++){
+                indices[2] = k;
+                bool add_equ = false;
+                // multiplication inside neutral component
+                if((i <= half_at && j <= half_at)
+                            && k > half_at){
+                    add_equ = true;
+                }
+                // multiplication of non-neutral comp by neutral comp from left or right
+                if( ( (i <= half_at && j> half_at) || (i > half_at && j<= half_at) )
+                            && k <= half_at){
+                    add_equ = true;
+                }
+                // multiplication of non-neutral component by itself
+                if((i >  half_at && j > half_at) && k > half_at){
+                    add_equ = true;
+                }
+                if(add_equ){
+                    // cout << coord(indices) << " --- " << coord_cone(indices) << " ---- " << indices;
+                    counter++;
+                    vector<Integer> this_equ(nr_coordinates + 1);
+                    this_equ[coord_cone(indices)] = 1;
+                    assert(coord_cone(indices) < nr_coordinates + 1);
+                    GradEqu.append(this_equ);
                 }
             }
         }
     }
+
 
     cout << "CCCCC " << counter << endl;
 
@@ -1079,11 +898,51 @@ Matrix<Integer> FusionComp<Integer>::make_linear_constraints(const vector<Intege
 
     cout << "Zero coords " << GradEqu.nr_of_rows() << " of " << GradEqu.nr_of_columns() << endl;
 
+    /*
     vector<Integer> test_v(GradEqu.nr_of_columns());
     test_v.back() = 1;
     for(size_t kkn = 0; kkn < GradEqu.nr_of_rows(); ++kkn)
         if(test_v == GradEqu[kkn])
             assert(false);
+    */
+    return GradEqu;
+}
+
+
+template <typename Integer>
+Matrix<Integer> FusionComp<Integer>::make_linear_constraints(const vector<Integer>& d){
+
+    make_CoordMap();
+
+    Matrix<Integer> Equ(0, nr_coordinates + 1); // mudst accomodate right hand side in last coordinate
+
+    vector<key_t> indices(3);
+    for(key_t i = 1; i < fusion_rank; ++i){
+        indices[0] = i;
+        for(key_t j = 1; j < fusion_rank; ++j){
+            indices[1] = j;
+            vector<Integer> this_equ(nr_coordinates + 1);
+            this_equ.back() = - d[i]*d[j];
+            if(i == duality[j])
+                this_equ.back() += 1;
+            for(key_t k = 1; k < fusion_rank; ++k){
+                indices[2] = k;
+                this_equ[coord_cone(indices)] += d[k];
+            }
+            Equ.append(this_equ);
+        }
+    }
+
+    Matrix<Integer> GradEqu(0, nr_coordinates + 1);
+    if(Z_2_graded){
+
+        find_grading(d);
+        GradEqu = make_add_constraints_for_grading(d);
+
+    }
+
+
+
     Equ.remove_duplicate_and_zero_rows();
     Equ.append(GradEqu);
 
@@ -1282,6 +1141,8 @@ void FusionBasic::do_write_input_file(InputMap<mpq_class>&  input) const{
 
 void make_input_from_fusion_data(const FusionBasic& FusionInput, InputMap<mpq_class>&  input, const bool write_input_file){
 
+    cout << "FFFFFFFFFFF " << FusionInput.duality;
+
     Matrix<mpq_class> TypeInput(1, FusionInput.fusion_rank);
     // cout << "TTTTTTT " << FusionInput.fusion_type_from_command;
     convert(TypeInput[0], FusionInput.fusion_type_from_command);
@@ -1292,6 +1153,8 @@ void make_input_from_fusion_data(const FusionBasic& FusionInput, InputMap<mpq_cl
     convert(DualityInput[0], bridge);
     if(FusionInput.commutative)
         DualityInput[0][0] = -1;
+    if(FusionInput.Z_2_graded)
+        DualityInput[0][0] -= 2;
     input[Type::fusion_type] = TypeInput;
     input[Type::fusion_duality] = DualityInput;
     if(write_input_file){

@@ -48,8 +48,14 @@ SplitData::SplitData(const string& this_project, const long& level, const size_t
     this_split_levels.resize(nr_split_levels);
     this_split_levels[0] = level;
     split_moduli.resize(nr_split_levels);
-    split_moduli[0] = 1000;
-    if(nr_vectors< 1000)
+    if(split_index_option > -1){
+        split_moduli[0] = split_index_option;
+        if(split_moduli[0] < 2)
+            throw BadInputException("Given number of sgplits must be > 1");
+    }
+    else
+        split_moduli[0] = 1000;
+    if(nr_vectors< split_moduli[0])
         split_moduli[0] = nr_vectors;
     // max_nr_splits_per_round = 1000;
     nr_splits_to_do = split_moduli[0];

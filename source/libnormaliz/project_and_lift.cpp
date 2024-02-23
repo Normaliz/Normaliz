@@ -45,12 +45,12 @@ void write_control_file(const size_t split_level, const size_t nr_vectors){
 }
 
 template <typename Integer>
-void write_local_solutions(const size_t split_level, const Matrix<Integer>& Sols){
-    if(verbose)
-        verboseOutput() << "writing local solutions" << endl;
+void write_local_solutions(const size_t level, const Matrix<Integer>& Sols){
     string file_name = global_project;
-    file_name += "." + to_string(split_level);
+    file_name += "." + to_string(level);
     Sols.print(file_name, "sls");
+    if(verbose)
+        verboseOutput() << Sols.nr_of_rows() << " local solutions stored on level " << level << endl;
 }
 
 template <typename Integer>
@@ -1243,21 +1243,29 @@ void select_and_split(list<vector<Integer> >& LatticePoints, const key_t& this_p
 //--------------------------------------------------------------------------
 
 template <typename IntegerPL, typename IntegerRet>
+bool ProjectAndLift<IntegerPL,IntegerRet>::import_local_solutions(const key_t& this_patch){
+
+    bool read_local_solutions = false;
+
+    string file_name = global_project + "." + to_string(this_patch) + ".sls";
+    ifstream sls(file_name);
+    if(sls.is_open()){
+        read_local_solutions = true;
+        sls.close();
+        SavedLocalSolutions = readMatrix<IntegerRet>(file_name);
+        if(verbose)
+         verboseOutput() <<  SavedLocalSolutions.nr_of_rows() << "local solutionms read on level " << this_patch << endl;
+    }
+    return read_local_solutions;
+}
+
+//--------------------------------------------------------------------------
+
+template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL,IntegerRet>::prepare_split(list<vector<IntegerRet> >& LatticePoints, const key_t& this_patch){
 
     const size_t coord = InsertionOrderPatches[this_patch];
     auto& intersection_key = AllIntersections_key[coord];
-
-    if(this_patch == our_split.this_split_levels[0]){
-        string file_name = global_project + "." + to_string(this_patch) + ".sls";
-        ifstream sls(file_name);
-        if(sls.is_open()){
-            saved_local_solutions = true;
-            sls.close();
-            SavedLocalSolutions = readMatrix<IntegerRet>(file_name);
-            cout << "SAVED SAVED " << SavedLocalSolutions.nr_of_rows() << endl;
-        }
-    }
 
     for(size_t i = 0; i < our_split.nr_split_levels; ++i){
         // cout << "ii " << i << " done_indices " << our_split.this_split_done_indices;
@@ -1384,14 +1392,17 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
 
     // Now we extend the "new" intersection coordinates by the local system
     Matrix<IntegerRet> LocalSolutionsNow(0, intersection_key.size() + new_coords_key.size());
-    if(saved_local_solutions){
-        saved_local_solutions = false;
-        swap(SavedLocalSolutions, LocalSolutionsNow);
+    if(stored_local_solutions){
+        stored_local_solutions = import_local_solutions(this_patch);
+        if(stored_local_solutions)
+            swap(SavedLocalSolutions, LocalSolutionsNow);
     }
-    else{
+    if(!stored_local_solutions){
         LocalPL. set_startList(start_list);
         LocalPL.lift_points_to_this_dim(start_list); // computes the extensions
         LocalPL.put_eg1Points_into(LocalSolutionsNow);
+        if(save_local_solutions)
+               write_local_solutions(this_patch, LocalSolutionsNow);
     }
     size_t nr_old_solutions = LocalSolutions.nr_of_rows();
     size_t nr_new_solutions = LocalSolutionsNow.nr_of_rows();
@@ -1812,8 +1823,6 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
 
        if(NrRemainingLP[this_patch] > 0 && distributed_computation){
            write_control_file(this_patch, LatticePoints.size());
-           if(save_local_solutions)
-               write_local_solutions(this_patch, LocalSolutions);
             throw NoComputationException("No output with DistribitedComp for patching");
        }
 
@@ -2981,7 +2990,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::initialize(const Matrix<IntegerPL>& 
     distributed_computation = false;
     check_simplicity_all = false;
     check_simplicity_cand = false;
-    saved_local_solutions = false;
+    stored_local_solutions = false;
     TotalNrLP = 0;
     min_return_patch = 0;
     NrLP.resize(EmbDim + 1);
@@ -3195,6 +3204,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute(bool all_points, bool liftin
 
     if(is_split_patching){
         read_split_data();
+        stored_local_solutions = true; // will of course be tested
     }
 
     if(fusion.nr_coordinates > 0 && fusion.nr_coordinates != EmbDim -1){
