@@ -193,7 +193,7 @@ vector<dynamic_bitset> make_all_subsets(const size_t card);
 vector<vector<key_t> > make_all_permutations(size_t n);
 vector<vector<key_t> > collect_coincidence_subset_keys(const vector<key_t>& type);
 vector<vector<key_t> > make_all_permutations(const vector<key_t>& v);
-vector<vector<key_t> > make_all_permutations(const vector<key_t>& type, const vector<key_t>& duality);
+vector<vector<key_t> > make_all_permutations(const vector<key_t>& type, const vector<key_t>& duality, const long& half_at);
 
 // void remove_global_fusion_data();
 
@@ -263,9 +263,7 @@ void FusionBasic::read_data_from_input(InputMap<Integer>& input_data){
         if(key_to_bitset(duality, fusion_rank).count() != fusion_rank)
             throw BadInputException("Fusion duality has repeated entries");
         if(!check_duality<key_t>(duality, fusion_type))
-            throw BadInputException("Fusion does not fit type");
-
-
+            throw BadInputException("Fusion duality does not fit type");
     }
     else{
         duality = identity_key(fusion_rank);

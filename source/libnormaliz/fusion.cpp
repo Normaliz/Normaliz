@@ -101,7 +101,7 @@ vector<vector<key_t> > super_impose(const vector<vector<key_t> >& set_1, const v
     return total;
 }
 
-vector<vector<key_t> > make_all_permutations(const vector<key_t>& type,const vector<key_t>& duality){
+vector<vector<key_t> > make_all_permutations(const vector<key_t>& type,const vector<key_t>& duality, const long& half_at){
 
     auto type_1 = type;
     type_1[0] = 0; // to single out the unit
@@ -147,7 +147,34 @@ vector<vector<key_t> > make_all_permutations(const vector<key_t>& type,const vec
         if(comp)
             Compatible.push_back(p);
     }
-    return Compatible;
+    AllFullPerms.clear();
+
+    if(half_at < 0) // no Z2-grading
+        return Compatible;
+
+    bool disjoint_FPdim = true;
+    for(long i = 0; i <= half_at; ++i)
+        for(long j = half_at + 1; j < type.size(); ++j)
+            if(type[i] == type[j])
+                disjoint_FPdim = false;
+
+    if(disjoint_FPdim)  // automs respect grading automatically
+        return Compatible;
+
+    vector<vector<key_t> > Compatible_Z2grading;
+    for(auto& p: Compatible){
+        bool comp = true;
+        for(long i = 0; i <= half_at; ++i){
+            if(p[i] > half_at){
+                comp = false;
+                break;
+            }
+        }
+        if(comp)
+            Compatible_Z2grading.push_back(p);
+    }
+
+    return Compatible_Z2grading;
 }
 
 vector<vector<key_t> > collect_coincidence_subset_keys(const vector<key_t>& type){
@@ -407,7 +434,7 @@ void FusionComp<Integer>::make_automorphisms(){
     cout << "Type " << fusion_type << endl;
     cout << "duality " << duality;*/
 
-    auto type_automs = make_all_permutations(fusion_type,duality);
+    auto type_automs = make_all_permutations(fusion_type,duality, half_at);
 
     for(auto& p: type_automs){
         vector<key_t> coord_perm(1); // must start with 0 !!!!
@@ -822,7 +849,7 @@ void FusionComp<Integer>::find_grading(const vector<Integer>& d){
     half_at = -1;
     for(auto& c: d)
         Total_FPdim += c*c;
-    cout << "Total FPdim " << Total_FPdim << endl;
+    // cout << "Total FPdim " << Total_FPdim << endl;
     Integer test = 0;
     bool potentially_graded = true;
     if(d[1] > 1)
@@ -846,14 +873,28 @@ void FusionComp<Integer>::find_grading(const vector<Integer>& d){
     if(!potentially_graded)
         throw BadInputException("Could not find required grading");
 
-    cout << "half at " << half_at << endl;
+    for(size_t i = 0; i < duality.size(); ++i){
+        if(i <= half_at && duality[i] > half_at)
+         throw BadInputException("Duality not compatible with grading");
+    }
 
+    if(libnormaliz::verbose){
+        vector<Integer> triv_comp;
+        for(size_t i = 0; i <= half_at; ++i)
+            triv_comp.push_back(d[i]);
+        vector<Integer> other_comp;
+        for(size_t i = half_at +1 ; i < d.size(); ++i)
+            other_comp.push_back(d[i]);
+        verboseOutput() << "ZZ_2 grading " << endl;
+        verboseOutput() << "Neutral compinent " << triv_comp;
+        verboseOutput() << "Swecond compinent " << other_comp;
+    }
 }
 
 template <typename Integer>
 Matrix<Integer> FusionComp<Integer>::make_add_constraints_for_grading(const vector<Integer>& d){
 
-    long counter = 0;
+   //  long counter = 0;
 
     Matrix<Integer> GradEqu(0, nr_coordinates + 1);
     vector<key_t> indices(3);
@@ -881,7 +922,7 @@ Matrix<Integer> FusionComp<Integer>::make_add_constraints_for_grading(const vect
                 }
                 if(add_equ){
                     // cout << coord(indices) << " --- " << coord_cone(indices) << " ---- " << indices;
-                    counter++;
+                    // counter++;
                     vector<Integer> this_equ(nr_coordinates + 1);
                     this_equ[coord_cone(indices)] = 1;
                     assert(coord_cone(indices) < nr_coordinates + 1);
@@ -892,11 +933,9 @@ Matrix<Integer> FusionComp<Integer>::make_add_constraints_for_grading(const vect
     }
 
 
-    cout << "CCCCC " << counter << endl;
-
+    // cout << "CCCCC " << counter << endl;
     GradEqu.remove_duplicate_and_zero_rows();
-
-    cout << "Zero coords " << GradEqu.nr_of_rows() << " of " << GradEqu.nr_of_columns() << endl;
+    // cout << "Zero coords " << GradEqu.nr_of_rows() << " of " << GradEqu.nr_of_columns() << endl;
 
     /*
     vector<Integer> test_v(GradEqu.nr_of_columns());
@@ -1140,8 +1179,6 @@ void FusionBasic::do_write_input_file(InputMap<mpq_class>&  input) const{
 }
 
 void make_input_from_fusion_data(const FusionBasic& FusionInput, InputMap<mpq_class>&  input, const bool write_input_file){
-
-    cout << "FFFFFFFFFFF " << FusionInput.duality;
 
     Matrix<mpq_class> TypeInput(1, FusionInput.fusion_rank);
     // cout << "TTTTTTT " << FusionInput.fusion_type_from_command;
