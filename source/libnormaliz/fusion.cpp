@@ -507,6 +507,7 @@ void FusionComp<Integer>::initialize(){
     type_and_duality_set =false;
     commutative = false;
     Z_2_graded = false;
+    half_at = -1;
     nr_coordinates = 0;
 }
 
@@ -973,6 +974,7 @@ Matrix<Integer> FusionComp<Integer>::make_linear_constraints(const vector<Intege
     }
 
     Matrix<Integer> GradEqu(0, nr_coordinates + 1);
+    half_at = -1;
     if(Z_2_graded){
 
         find_grading(d);
