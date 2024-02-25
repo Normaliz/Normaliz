@@ -360,12 +360,9 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
         }
         if (LongOption == "verbose") {
             verbose = true;  // global verbose
-#ifdef NMZ_DEVELOP
-            talkative = true;
-#endif
             continue;
         }
-        if (LongOption == "talkative") {
+        if (LongOption == "talkative" || LongOption == "talk") {
             talkative = true;  // global talkative
             verbose = true;    // global verbose
             continue;
