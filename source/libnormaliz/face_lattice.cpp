@@ -208,7 +208,7 @@ dynamic_bitset FaceLattice<Integer>::normal_form(const dynamic_bitset& arg, cons
 
 
 template <typename Integer>
-void FaceLattice<Integer>::compute(const long face_codim_bound, const bool verbose, bool change_integer_type) {
+void FaceLattice<Integer>::compute(const long face_codim_bound, const bool verbose, bool change_integer_type, const bool only_f_vector) {
     bool bound_codim = false;
     if (face_codim_bound >= 0)
         bound_codim = true;
@@ -315,6 +315,8 @@ void FaceLattice<Integer>::compute(const long face_codim_bound, const bool verbo
 
 #pragma omp parallel
         {
+            Matrix<Integer> Test(0,dim);
+            Matrix<MachineInteger> Test_MI(0,dim);
             size_t Fpos = 0;
             auto F = WorkFaces.begin();
             list<pair<dynamic_bitset, FaceInfo> > FreeFaces, Faces;  // FreeFaces for mempory recycling
@@ -487,13 +489,15 @@ void FaceLattice<Integer>::compute(const long face_codim_bound, const bool verbo
                             vector<bool> selection = bitset_to_bool(Containing);
                             if (change_integer_type) {
                                 try {
-                                    codim_of_face = SuppHyps_MI.submatrix(selection).rank();
+                                    codim_of_face = Test_MI.rank_submatrix(SuppHyps_MI, bitset_to_key(Containing));
+                                    // codim_of_face = SuppHyps_MI.submatrix(selection).rank();
                                 } catch (const ArithmeticException& e) {
                                     change_integer_type = false;
                                 }
                             }
                             if (!change_integer_type)
-                                codim_of_face = SuppHyps.submatrix(selection).rank();
+                                codim_of_face = Test.rank_submatrix(SuppHyps, bitset_to_key(Containing));
+                                // codim_of_face = SuppHyps.submatrix(selection).rank();
 
                             if (codim_of_face > codimension_so_far) {
                                 Fac->second.max_subset = false;
@@ -555,9 +559,10 @@ void FaceLattice<Integer>::compute(const long face_codim_bound, const bool verbo
         if (!(tmp_exception == 0))
             std::rethrow_exception(tmp_exception);
 
-        // if (ToCompute.test(ConeProperty::FaceLattice))
-        for (auto H = WorkFaces.begin(); H != WorkFaces.end(); ++H)
-            FaceLat[H->first] = static_cast<int>(codimension_so_far - 1);
+        if (!only_f_vector){
+            for (auto H = WorkFaces.begin(); H != WorkFaces.end(); ++H)
+                FaceLat[H->first] = static_cast<int>(codimension_so_far - 1);
+        }
         WorkFaces.clear();
         if (NewFaces.empty())
             break;
@@ -590,7 +595,7 @@ void FaceLattice<Integer>::compute(const long face_codim_bound, const bool verbo
 }
 
 template <typename Integer>
-void FaceLattice<Integer>::compute_orbits(const long face_codim_bound, const bool verbose, bool change_integer_type) {
+void FaceLattice<Integer>::compute_orbits(const long face_codim_bound, const bool verbose, bool change_integer_type, const bool only_f_vector) {
     bool bound_codim = false;
     if (face_codim_bound >= 0)
         bound_codim = true;
@@ -664,6 +669,8 @@ void FaceLattice<Integer>::compute_orbits(const long face_codim_bound, const boo
 
 #pragma omp parallel
         {
+            Matrix<Integer> Test(0,dim);
+            Matrix<MachineInteger> Test_MI(0,dim);
             size_t Fpos = 0;
             auto F = WorkFaces.begin();
             list<pair<dynamic_bitset, FaceInfo> > FreeFaces, Faces, NormalForms;  // FreeFaces for mempory recycling
@@ -775,13 +782,16 @@ void FaceLattice<Integer>::compute_orbits(const long face_codim_bound, const boo
 
                            if (change_integer_type) {
                                 try {
-                                    codim_of_face = dim -ExtremeRays_MI.submatrix(selection).rank();
+                                    codim_of_face = dim - Test_MI.rank_submatrix(ExtremeRays_MI, selection);
+                                    // codim_of_face = dim -ExtremeRays_MI.submatrix(selection).rank();
                                 } catch (const ArithmeticException& e) {
                                     change_integer_type = false;
                                 }
                             }
-                            if (!change_integer_type)
-                                codim_of_face = dim - ExtremeRays.submatrix(selection).rank();
+                            if (!change_integer_type){
+                                codim_of_face = dim - Test.rank_submatrix(ExtremeRays, selection);
+                                // codim_of_face = dim - ExtremeRays.submatrix(selection).rank();
+                            }
 
                             if(codim_of_face > codimension_so_far)
                                 continue;
@@ -811,13 +821,16 @@ void FaceLattice<Integer>::compute_orbits(const long face_codim_bound, const boo
                             vector<key_t> selection = bitset_to_key(Containing);
                             if (change_integer_type) {
                                 try {
-                                    codim_of_face = SuppHyps_MI.submatrix(selection).rank();
+                                    codim_of_face = Test_MI.rank_submatrix(SuppHyps_MI, selection);
+                                    // codim_of_face = SuppHyps_MI.submatrix(selection).rank();
                                 } catch (const ArithmeticException& e) {
                                     change_integer_type = false;
                                 }
                             }
-                            if (!change_integer_type)
-                                codim_of_face = SuppHyps.submatrix(selection).rank();
+                            if (!change_integer_type){
+                                codim_of_face = Test.rank_submatrix(SuppHyps, selection);
+                                // codim_of_face = SuppHyps.submatrix(selection).rank();
+                            }
 
                             if(codim_of_face > codimension_so_far)
                                 continue;
@@ -840,9 +853,10 @@ void FaceLattice<Integer>::compute_orbits(const long face_codim_bound, const boo
         if (!(tmp_exception == 0))
             std::rethrow_exception(tmp_exception);
 
-        // if (ToCompute.test(ConeProperty::FaceLattice))
-        for (auto H = WorkFaces.begin(); H != WorkFaces.end(); ++H)
-            FaceLat[*H] = static_cast<int>(codimension_so_far - 1);
+        if (!only_f_vector){
+            for (auto H = WorkFaces.begin(); H != WorkFaces.end(); ++H)
+                FaceLat[*H] = static_cast<int>(codimension_so_far - 1);
+        }
         WorkFaces.clear();
         if (NewFaces.empty())
             break;

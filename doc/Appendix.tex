@@ -2821,7 +2821,7 @@ For an algebraic polyhedron we must define the real embedded number field over w
 -1  1 1
 0  3 1
 >>> A.NumberFieldData()
-('a^2 - 2', '[1.414213562373095048801688724209698078569671875376948073176679738 +/- 3.57e-64]')
+('a^2 - 2', '[1.414213562373095048801...8073176679738 +/- 3.57e-64]')
 >>> A.GetFieldGeneratorName()
 'a'
 \end{Verbatim}
@@ -3167,15 +3167,15 @@ On a cluster system one uses a script to start a job array where our number \ver
 #SBATCH --job-name="CondEffPlur"
 #SBATCH --comment="CondEffPlur"
 #SBATCH --time=24:00:00
-#SBATCH --ntasks=8
-#SBATCH --threads-per-core=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=8
 #SBATCH --mem=15000
 #SBATCH --array=0-359%100
 
 # each job will see a different ${SLURM_ARRAY_TASK_ID}
 ../run_single.sh CondEffPlur ${SLURM_ARRAY_TASK_ID}
 \end{Verbatim}
-In this example \verb|<n>| runs from 0 to 359, and 100 jobs can be processed simultaneously.
+In this example \verb|<n>| runs from 0 to 359, and 100 jobs can be processed simultaneously. The number $8$ in \verb|#SBATCH --cpus-per-task=8| corresponds to the number of threads Normaliz is using for internal parallelization. 
 
 Finally, execute 
 \begin{Verbatim}
@@ -3189,7 +3189,9 @@ The patching algorithm (Section \ref{positive_systems}) allows distributed compu
 
 As an example for the whole file structure that we will explain in this section, the directory \verb*|example| contains the file \verb*|split_demo.zip|. Unzipping it creates a directory \verb*|split_demo|. To see the full directory structure, unzip the contained zip files.
 
-The scheme that Normaliz uses is again a batch array. As above we assume it is controlled by SLURM. There is an crucial  constraint set by the system: an upper limit on the wall clock time of a batch job, i.e., a split. Normaliz can overcomes the time limit by using \emph{successive refinement}: if a run of the full array does not complete the computation,it creates temporary files whose contents are then read and exploited by the next round.
+The scheme that Normaliz uses is again a batch array. As above we assume it is controlled by SLURM. There is a crucial  constraint set by the system: an upper limit on the wall clock time of a batch job, i.e., a split. Normaliz can overcome the time limit by using \emph{successive refinement}: if a run of the full array does not complete the computation,it creates temporary files whose contents are then read and exploited by the next refinement.
+
+\subsubsection{Precomputation}
 
 The precomputation is again started by
 \begin{itemize}
@@ -3201,20 +3203,20 @@ It allows the parameter
 \end{itemize}
 where \verb*|<s>| is the number of desired splits. The default value is $1000$, unless the maximum possible number of splits is smaller. 
 
- The only purpose is to find the lowest patch level where splitting makes sense. (For small computations such a level may not exist.) You should use the same additional options for \verb*|--DistributedComp| that you want to use for the main computation.
+ The only purpose is to find the lowest patch level where splitting makes sense. (For small computations such a level may not exist.) You should use the same additional options for \verb*|DistributedComp| that you want to use for the main computation.
  
  The result of the precomputation is written to the file
  \begin{itemize}
  	\itemtta[<project>.split.data]{project>.split.data}
  \end{itemize}
- Usually this file is
+The start version is
  \begin{Verbatim}
- 	refinement 0 <s>
- 	<l> <s>
+ refinement 0 <s>
+ <l> <s>
  \end{Verbatim}
- \verb*|<l>| is the split level, \verb*|<s>| the number of splits. \verb*|refinement 0| indicates the first refinement (counted from $0$).
+ \verb*|<l>| is the split level, \verb*|<s>| the number of splits. \verb*|refinement 0| indicates the first refinement (counted from $0$). Later on this file is used to transfer information to the next refinement.
 
-An precomputation option that can be added is
+A precomputation option that can be added is
 \begin{itemize}
 \itemtt[SaveLocalSolutions, -{}-SLS] 
 \end{itemize}
@@ -3228,21 +3230,23 @@ This writes a series of files
 \end{itemize}
 where \verb*|<l>| varies from $0$ to the split level.
 
+\subsubsection {Running a refinement}
+
 We use a job array defined by 
 \begin{Verbatim}
 #!/bin/sh
-#SBATCH --job-name="tough"
-#SBATCH --comment="tough"
-#SBATCH --time=24:00:00
-#SBATCH --ntasks=8
-#SBATCH --threads-per-core=1
-#SBATCH --mem=50000
+#SBATCH --job-name="SplitList"
+#SBATCH --comment="SplitList"
+#SBATCH --time=36:00:00
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=4
+#SBATCH --mem=20000
 #SBATCH --array=0-999
 
 # each job will see a different ${SLURM_ARRAY_TASK_ID}
-time ../normaliz -c tough --Split -X=${SLURM_ARRAY_TASK_ID}
+time ../normaliz -c -x=4 InList --List --Split -X=${SLURM_ARRAY_TASK_ID} --UWP --FusionRings
 \end{Verbatim}
-for the input file \verb*|tough.in|. The range \verb*|0-999| fits the number of $1000$ splits. It may be necessary to change the range.
+for the  list \verb*|InList| of input files (see Appendix \ref{input_list}). The range \verb*|0-999| fits the number of $1000$ splits. It may be necessary to change the range. The number $4$ in \verb|#SBATCH --cpus-per-task=4| corresponds to \verb*|-x=4|.
 
 We need the option
 \begin{itemize}
@@ -3281,7 +3285,7 @@ Make sure that all splits have finished before running \verb*|CollectLat|, espec
 \end{itemize}
 With \verb*|--CollectLat| it can be used to set the number of subsplits if further refinement is necessary.
 
-The total list of lattice points is written to
+The If all jobs have completed their tasks, total list of lattice points is written to
 \begin{itemize}
 	\itemtta[<project>.out]{project.out}
 \end{itemize}
@@ -3296,9 +3300,6 @@ A second task of \verb*|--CollectLat| is the preparation of \verb*|<project>.spl
 \itemtta[<project>.<f>.split.data]{project.f.split.data}
 \end{itemize}
 Then the next refinement can be started in the same way as refinement $0$.
-
-
-
 
 
 \section{Lists of input files}\label{input_list}
@@ -3319,7 +3320,7 @@ on the command line. All other options on the command lines are forwarded to the
 \end{Verbatim}
 in the Normaliz directory. Note that the file names in the list must be prefixed with the path from the working directory (in our example the Normaliz directory) to the directory containing the input files 
 
-In addition to \verb*|--Split| and \verb*|X=<s>| as above, two more parameters control the run of Normaliz over a list:
+In addition to \verb*|--Split| and \verb*|X=<s>| as in Appendix \ref{DistPatch}, two more parameters control the run of Normaliz over a list:
 
 \begin{enumerate}
 \item[(1)] if \verb*|--Split| is set, then Normaliz goes over the whole list, and runs the split with index \verb*|<s>| given by \verb*|-X=<s>| for every file in the list.

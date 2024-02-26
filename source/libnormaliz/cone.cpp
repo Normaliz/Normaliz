@@ -8986,7 +8986,8 @@ void Cone<Integer>::make_face_lattice_primal(const ConeProperties& ToCompute) {
 
     if (ToCompute.test(ConeProperty::FaceLattice) || ToCompute.test(ConeProperty::FVector) ||
             ToCompute.test(ConeProperty::DualFVector)){
-        FL.compute(face_codim_bound, verbose, change_integer_type);
+        bool only_f_vector = !ToCompute.test(ConeProperty::FaceLattice);
+        FL.compute(face_codim_bound, verbose, change_integer_type, only_f_vector);
     }
 
     if (ToCompute.test(ConeProperty::Incidence)) {
@@ -9000,9 +9001,10 @@ void Cone<Integer>::make_face_lattice_primal(const ConeProperties& ToCompute) {
 
     if (ToCompute.test(ConeProperty::FaceLatticeOrbits) || ToCompute.test(ConeProperty::FVectorOrbits) ||
             ToCompute.test(ConeProperty::DualFVectorOrbits)){
+        bool only_f_vector = !ToCompute.test(ConeProperty::FaceLatticeOrbits);
         FL.set_supphyp_permutations(Automs.getSupportHyperplanesPerms(), verbose);
         FL.set_extray_permutations(Automs.getExtremeRaysPerms(), verbose);
-        FL.compute_orbits(face_codim_bound, verbose, change_integer_type);
+        FL.compute_orbits(face_codim_bound, verbose, change_integer_type, only_f_vector);
     }
 
     if (ToCompute.test(ConeProperty::FaceLatticeOrbits)) {
@@ -9067,8 +9069,10 @@ void Cone<Integer>::make_face_lattice_dual(const ConeProperties& ToCompute) {
     FaceLattice<Integer> FL(SuppHypPointed, VertOfPolPointed, ExtrRCPointed, inhomogeneous);
 
     if (ToCompute.test(ConeProperty::DualFaceLattice) || ToCompute.test(ConeProperty::DualFVector) ||
-        ToCompute.test(ConeProperty::FVector))
-        FL.compute(face_codim_bound, verbose, change_integer_type);
+            ToCompute.test(ConeProperty::FVector)){
+        bool only_f_vector = !ToCompute.test(ConeProperty::DualFaceLattice);
+        FL.compute(face_codim_bound, verbose, change_integer_type, only_f_vector);
+    }
 
     if (ToCompute.test(ConeProperty::DualIncidence)) {
         FL.get(DualSuppHypInd);
@@ -9083,7 +9087,8 @@ void Cone<Integer>::make_face_lattice_dual(const ConeProperties& ToCompute) {
             ToCompute.test(ConeProperty::FVectorOrbits)){
         FL.set_supphyp_permutations(Automs.getExtremeRaysPerms(), verbose);
         FL.set_extray_permutations(Automs.getSupportHyperplanesPerms(), verbose);
-        FL.compute_orbits(face_codim_bound, verbose, change_integer_type);
+        bool only_f_vector = !ToCompute.test(ConeProperty::DualFaceLatticeOrbits);
+        FL.compute_orbits(face_codim_bound, verbose, change_integer_type, only_f_vector);
     }
 
     if (ToCompute.test(ConeProperty::DualFaceLatticeOrbits)) {
