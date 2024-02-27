@@ -130,12 +130,15 @@ EXTRA_DIST =					\
 	poly_equ.in				\
 	bracket_4.in				\
 	bracket_4_comm.in			\
+	bracket_4_comm_z2.in			\
+	bracket_4_z2.in				\
 	bracket_3_cand.in			\
 	bracket_3_part.in			\
 	EH1.in					\
 	InList					\
 	SubModularConeN4_hom.in			\
-	pet_new.in
+	pet_new.in				\
+	split_demo.zip
 
 EXTRA_DIST +=					\
 	600cell-dual.in				\
