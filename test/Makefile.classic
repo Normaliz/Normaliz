@@ -207,7 +207,7 @@ test-fus/%.out: $(NORMALIZ) test-fus/%.in
 test-Qdegenerate/%.out: $(NORMALIZ) test-Qdegenerate/%.in
 	$(NICE) $(NORMALIZ) $(NORMPARA) test-Qdegenerate/$*
 test-nf/%.out: $(NORMALIZ) test-nf/%.in
-	$(NICE) $(NORMALIZ) $(NORMPARA) -sc test-nf/$* > /dev/null
+	$(NICE) $(NORMALIZ) $(NORMPARA) -c test-nf/$* > /dev/null
 test-nf-hh/%.out test-nf-hh/%.IntHull.out: $(NORMALIZ) test-nf-hh/%.in
 	$(NICE) $(NORMALIZ) $(NORMPARA) -H test-nf-hh/$*
 

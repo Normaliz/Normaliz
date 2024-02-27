@@ -115,7 +115,7 @@ else
     endif
   else
     CXXFLAGS += -DENFNORMALIZ -DNMZ_FLINT
-    EANTICFLAGS = -leanticxx -leantic -larb -lantic $(FLINTLIB) $(MPFRLIB)
+    EANTICFLAGS = -leanticxx -leantic  $(FLINTLIB) $(MPFRLIB)
   endif ## EANTIC
 endif ## NAKED
 

@@ -2,9 +2,10 @@ amb_space auto
 
 number_field min_poly (a^2 - 5) embedding [2 +/- 1]
 
-inequalities 
+inequalities
 [ [(a) 0 1];
 [ 0, (1/2*a+1), 0],
 [-1,  (-a+1/2), 0]]
 
 IsPointed
+SupportHyperplanes
