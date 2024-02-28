@@ -1970,7 +1970,7 @@ void write_fusion_files(const FusionBasic fusion_basic, const string& name, cons
 
         vector<Integer> dehom(embdim);
         dehom.back() = 1;
-        out << "Embdiing dimension " << embdim << endl;
+        out << "Embeddiing dimension " << embdim << endl;
         out << endl;
         out << "dehomogenization" << endl;
         out << dehom;
