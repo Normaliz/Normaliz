@@ -16,7 +16,7 @@ Normaliz is a open source tool for computations in affine monoids, vector config
 - lattice points of polytopes and (unbounded) polyhedra
 - automorphism groups (euclidean, integral, rational/algebraic, combinatorial)
 - face lattices and f-vectors
-- Euclidean and lattice normalized volumes of polytopes
+- euclidean and lattice normalized volumes of polytopes
 - Hilbert (or Ehrhart) series and (quasi) polynomials under Z-gradings (for example, for rational polytopes)
 - generalized (or weighted) Ehrhart series and Lebesgue integrals of - polynomials over rational polytopes
 - minimal systems of generators and Hilbert series of general affine monoids
