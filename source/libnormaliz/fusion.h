@@ -300,10 +300,7 @@ void make_full_input(FusionBasic& FusionInput, InputMap<Integer>& input_data, se
 
     FusionInput.read_data_from_input(input_data);
     FusionComp<Integer> OurFusion(FusionInput);
-
     vector<Integer> full_type = input_data[Type::fusion_type][0];
-    if(verbose)
-        verboseOutput() << "Making linear constraints for fusion rings" << endl;
     Matrix<Integer> Equ = OurFusion.make_linear_constraints(full_type);
     Matrix<Integer> InEqu = Equ;
     Integer MinusOne = -1;
@@ -317,8 +314,6 @@ void make_full_input(FusionBasic& FusionInput, InputMap<Integer>& input_data, se
     input_data[Type::inhom_inequalities] = InEqu;
     input_data[Type::inequalities] = Matrix<Integer>(InEqu.nr_of_columns()-1);
 
-    if(verbose)
-    verboseOutput() << "Making accociativity constraints for fusion rings" << endl;
     Polys = OurFusion.make_associativity_constraints();
 
 }

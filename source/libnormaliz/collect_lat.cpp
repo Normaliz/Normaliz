@@ -347,7 +347,7 @@ void write_lat_file(const Matrix<long long>& LatticePoints) {
     size_t embdim = LatticePoints.nr_of_columns();
 
     if(embdim > 0){
-        out << "Embeddiing dimension " << embdim << endl;
+        out << "Embedding dimension " << embdim << endl;
     }
 
     out << endl;

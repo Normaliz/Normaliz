@@ -952,6 +952,10 @@ Matrix<Integer> FusionComp<Integer>::make_add_constraints_for_grading(const vect
 template <typename Integer>
 Matrix<Integer> FusionComp<Integer>::make_linear_constraints(const vector<Integer>& d){
 
+    if(libnormaliz::verbose)
+        verboseOutput() << "Making linear constraints for fusion rings" << endl;
+
+
     make_CoordMap();
 
     Matrix<Integer> Equ(0, nr_coordinates + 1); // mudst accomodate right hand side in last coordinate
@@ -985,6 +989,8 @@ Matrix<Integer> FusionComp<Integer>::make_linear_constraints(const vector<Intege
 
 
     Equ.remove_duplicate_and_zero_rows();
+    if(libnormaliz::verbose)
+        verboseOutput() << "Made " << Equ.nr_of_rows() << " inhom linear equations in " << Equ.nr_of_columns() -1 << " unknowns " << endl;
     Equ.append(GradEqu);
 
     // Equ.pretty_print(cout);
@@ -998,6 +1004,9 @@ Matrix<Integer> FusionComp<Integer>::make_linear_constraints_partition(const vec
 
     /* cout << "DDDD " << d;
     cout << "CCCC " << card; */
+
+    if(libnormaliz::verbose)
+        verboseOutput() << "Making linear constraints for fusion rings partition" << endl;
 
     Matrix<Integer> Equ(0, nr_coordinates + 1); // mudst accomodate right hand side in last coordinate
 
@@ -1019,6 +1028,8 @@ Matrix<Integer> FusionComp<Integer>::make_linear_constraints_partition(const vec
     }
 
     Equ.remove_duplicate_and_zero_rows();
+    if(libnormaliz::verbose)
+        verboseOutput() << "Made " << Equ.nr_of_rows() << " inhom linear equations in " << Equ.nr_of_columns() -1 << " unknowns " << endl;
 
     // Equ.pretty_print(cout);
     return Equ;
@@ -1093,6 +1104,10 @@ pair<Integer, vector<key_t> >  FusionComp<Integer>::term(const key_t& i, const k
 template <typename Integer>
 set<map<vector<key_t>, Integer> > FusionComp<Integer>::make_associativity_constraints(){
 
+
+    if(libnormaliz::verbose)
+        verboseOutput() << "Making accociativity constraints for fusion rings" << endl;
+
     make_CoordMap();
 
     // we produce associativity_equations b_i(b_j b_k) = (b_i b_j)b_k
@@ -1142,6 +1157,9 @@ set<map<vector<key_t>, Integer> > FusionComp<Integer>::make_associativity_constr
     cout << "****************" <<endl;
     cout << "NR POLYS " << Polys.size() << endl;
     exit(0); */
+
+    if(libnormaliz::verbose)
+        verboseOutput() << "Made " << Polys.size() << " accociativity constraints for fusion rings" << endl;
 
     return Polys;
 }
@@ -1609,8 +1627,6 @@ void make_full_input_partition(InputMap<Integer>& input_data){
     partition_fusion.commutative = true; // doesn't matter since duality = id
     partition_fusion.fusion_rank = d.size();
 
-    if(verbose)
-        verboseOutput() << "Making linear constraints for partition test of fusion rings" << endl;
     Matrix<Integer> Equ = partition_fusion.make_linear_constraints_partition(d, card);
     Matrix<Integer> InEqu = Equ;
     // Equ.pretty_print(cout);
