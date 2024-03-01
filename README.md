@@ -14,6 +14,7 @@ Normaliz is a open source tool for computations in affine monoids, vector config
 - Hilbert bases of rational, not necessarily pointed cones
 - normalizations of affine monoids
 - lattice points of polytopes and (unbounded) polyhedra
+- lattice points of polytopes satisfying polynomial constraints
 - automorphism groups (euclidean, integral, rational/algebraic, combinatorial)
 - face lattices and f-vectors
 - euclidean and lattice normalized volumes of polytopes
@@ -91,7 +92,7 @@ The Python package [`PyNormaliz`](https://github.com/Normaliz/PyNormaliz) by Seb
 ## Optional packages
 For its basic functionality Normaliz needs only GMP. Parallelization is based on OpenMP. For the computation of integrals [CoCoALib](http://cocoa.dima.unige.it) is used.
 
-For algebraic polyhedra Normaliz needs [Flint](https://www.flintlib.org/), [arb](https://arblib.org/), [antic](https://github.com/wbhart/antic/) and [e-antic](https://github.com/flatsurf/e-antic)
+For algebraic polyhedra Normaliz needs [Flint](https://www.flintlib.org/) and [e-antic](https://github.com/flatsurf/e-antic)
 
 The computation of automorphism groups uses [nauty](https://users.cecs.anu.edu.au/~bdm/nauty).
 

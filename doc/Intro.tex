@@ -51,6 +51,8 @@ rational polytopes.
 
 For algebraic polyhedra Normaliz realizes the computation goals above that make sense without the finite generation of the monoid of lattice points in a cone: convex hull and vertex enumeration for all algebraic polyhedra, and, for polytopes, lattice points, volumes and triangulations.
 
+Lattice points in polytopes can be constrained by polynomial equations and inequalities. This necessary for fusion rings for which Normaliz provides input types and special computation goals.
+
 The computation goals of Normaliz can be set by the user. In particular, they can be restricted to subtasks, such as the lattice points in a polytope or the leading coefficient of the Hilbert (quasi)polynomial.
 
 Performance data of Normaliz can be found in~\cite{BruVol}, \cite{BI2}, \cite{BIS} and~\cite{BIS2}.
@@ -61,7 +63,7 @@ Performance data of Normaliz can be found in~\cite{BruVol}, \cite{BI2}, \cite{BI
 
 Executables for Normaliz are provided for Mac~OS, Linux and MS~Windows. If the executables prepared cannot be run on your system, then you can compile Normaliz yourself (see Section~\ref{Compile}). The statically linked Linux binaries provided by us can be run in the Linux subsystem of MS~Windows~10. A Docker image of Normaliz is available.
 
-Normaliz is written in C++, and should be compilable on every system that has a GCC compatible compiler. It uses the standard package GMP (see Section~\ref{Compile}). The parallelization is based on OpenMP. CoCoALib~\cite{CoCoA} and Flint~\cite{Flint} are optional packages. The computation of algebraic polytopes is based on e-antic~\cite{e-antic}, antic~\cite{antic} and arb~\cite{arb}.
+Normaliz is written in C++, and should be compilable on every system that has a GCC compatible compiler. It uses the standard package GMP (see Section~\ref{Compile}). The parallelization is based on OpenMP. CoCoALib~\cite{CoCoA}, Flint~\cite{Flint} and HashLibrary \cite{has} are optional packages. The computation of algebraic polytopes is based on e-antic~\cite{e-antic}.
 
 Normaliz consists of two parts: the front end ``normaliz'' for input and output and the C++ library ``libnormaliz'' that does the computations.
 
@@ -87,7 +89,7 @@ Furthermore, Normaliz is used by B.~Burton's system
 Normaliz does not have its own interactive shell. We recommend the access via PyNormaliz, GAP or SageMath for interactive use. \textsc{PyNormaliz} is documented in Appendix~\ref{PyNormaliz}.
 
 
-\subsection{Major changes relative to version~3.8.10}
+\subsection{Major changes relative since version~3.9.0}
 
 In~3.9.0:
 

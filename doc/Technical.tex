@@ -236,7 +236,7 @@ It is \emph{not} removed by the script so that you can use it for further \ttt{m
 
 \subsubsection{CoCoALib}
 
-Normaliz can be built without CoCoALib, which is however necessary for the computation of integrals and weighted Ehrhart series and, hence, for symmetrization. If you don't want to use the scripts in Section~\ref{stroke}, but nevertheless want to compile Normaliz with CoCoALib, install CoCoALib first by navigating to the Normaliz directory and typing the command
+Normaliz can be built without CoCoALib \cite{CoCoA}, which is however necessary for the computation of integrals and weighted Ehrhart series and, hence, for symmetrization. If you don't want to use the scripts in Section~\ref{stroke}, but nevertheless want to compile Normaliz with CoCoALib, install CoCoALib first by navigating to the Normaliz directory and typing the command
 \begin{Verbatim}
 install_scripts_opt/install_nmz_cocoa.sh
 \end{Verbatim}
@@ -249,7 +249,7 @@ If you want to use a preinstalled version of CoCoALib: for parallelization it mu
 
 \subsubsection{nauty}
 
-Normaliz can be built without nauty, which is however necessary for the computation of automorphism groups. If you don't want to use the scripts in Section~\ref{stroke}, but nevertheless want to compile Normaliz with nauty, install nauty first by navigating to the Normaliz directory and typing the command
+Normaliz can be built without nauty \cite{nauty}, which is however necessary for the computation of automorphism groups. If you don't want to use the scripts in Section~\ref{stroke}, but nevertheless want to compile Normaliz with nauty, install nauty first by navigating to the Normaliz directory and typing the command
 \begin{Verbatim}
 install_scripts_opt/install_nmz_nauty.sh
 \end{Verbatim}
@@ -260,14 +260,14 @@ You can or course use a preinstalled version of nauty.
 We thank Brendan McKay for his help in the integration of nauty to Normaliz.
 
 \subsubsection{Hash library}
-for the computation of SHA256 hash values Normaliz uses by Stephan Brumme:
+for the computation of SHA256 hash values Normaliz uses by Stephan Brumme \cite{has}:
 \begin{Verbatim}
 install_scripts_opt/install_nmz_hash-library.sh
 \end{Verbatim}
 
 \subsubsection{Flint}
 
-Flint does not extend the functionality of Normaliz (for rational polytopes), and is therefore truly optional.
+Flint \cite{Flint} does not extend the functionality of Normaliz (for rational polytopes), and is therefore truly optional.
 However, the ultrafast polynomial arithmetic of Flint is very useful if quasipolynomials with large periods come up in the computation of Hilbert series or weighted Ehrhart series. If you don't want to use the scripts in Section~\ref{stroke}, but nevertheless want to compile Normaliz with Flint, install Flint (and its prerequisite MPFR) by navigating to the Normaliz directory and entering the commands
 \begin{Verbatim}
 install_scripts_opt/install_nmz_mpfr.sh
@@ -278,14 +278,14 @@ install_scripts_opt/install_nmz_flint.sh
 
 The basic classes for algebraic polyhedra are defined in the package
 \begin{itemize}
-	\item[] e-antic by V.~Delecroix and J. Rüth (\url{https://github.com/flatsurf/e-antic}).
+	\item[] e-antic by V.~Delecroix and J. Rüth \cite{e-antic}.
 \end{itemize}
 In its turn it is based on
 \begin{arab}
-	\item[] Flint maintained by F. Johansson (\url{https://www.flintlib.org/}),
+	\item[] Flint maintained by F. Johansson \cite{Flint}.
 \end{arab}
 
-For Normaliz it is useless to install any of them separately (except Flint, see above). Again, if you don't want to use the ready-made install scripts for Normaliz as a whole, you can install e-antic and its prerequisites separately by
+Again, if you don't want to use the ready-made install scripts for Normaliz as a whole, you can install e-antic and its prerequisites separately by
 \begin{Verbatim}
 install_scripts_opt/install_eantic_with_prerequisites.sh
 \end{Verbatim}
