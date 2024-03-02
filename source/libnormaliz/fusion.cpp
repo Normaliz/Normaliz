@@ -728,7 +728,7 @@ void FusionComp<Integer>::prepare_simplicity_check(){
             coords_to_check_key.push_back(bitset_to_key(coords_to_check_ind[0]));
         }
         else
-            throw BadInputException("Candidate sunbring for non-simplicity not invarient under automorphisms.");
+            throw BadInputException("Candidate sunbring for non-simplicity not invariant under automorphisms.");
         return;
     }
     // now we must make all candidates
