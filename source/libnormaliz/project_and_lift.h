@@ -106,6 +106,7 @@ class ProjectAndLift {
     bool first_solution_printed;
     bool fusion_rings_computation;
     bool stored_local_solutions;
+    bool use_short_int;
 
     bool system_unsolvable;
 
@@ -132,7 +133,8 @@ class ProjectAndLift {
     // data for patching depending on coordinates
     vector<key_t> InsertionOrderPatches;
     vector<key_t> LevelPatches; // index of coord in InsertionOrderPatches
-    vector<Matrix<IntegerRet> > AllLocalSolutions; // "local" solutions that will be patched
+    vector<vector<vector<IntegerRet> > > AllLocalSolutions; // "local" solutions that will be patched
+    vector<vector<vector<short> > > AllShortLocalSolutions; // the same in short int format
 
     vector< map< vector<IntegerRet>, map< vector<IntegerRet>, vector<key_t>  > > >  AllLocalSolutions_by_intersection_and_cong;
 
@@ -161,7 +163,7 @@ class ProjectAndLift {
     Matrix<double> WeightOfCoord;
     Matrix<IntegerPL> DefiningSupps;
 
-    Matrix<IntegerRet> SavedLocalSolutions;
+    // Matrix<IntegerRet> SavedLocalSolutions;
 
     vector<double> ExpectedNrRounds;
     vector<double> TimeToLevel;
@@ -217,7 +219,8 @@ class ProjectAndLift {
     void prepare_split(list<vector<IntegerRet> >& LatticePoints, const key_t& this_patch);
     void read_split_data();
 
-    bool import_local_solutions(const key_t& this_patch);
+    // bool import_local_solutions(const key_t& this_patch);
+    void compute_local_solutions(const key_t this_patch, list<vector<IntegerRet> >& start_list);
 
     // void make_LLL_coordinates();
 
@@ -255,6 +258,8 @@ class ProjectAndLift {
 
     void putSuppsAndEqus(Matrix<IntegerPL>& SuppsRet, Matrix<IntegerPL>& EqusRet, size_t in_dim);
     void put_eg1Points_into(Matrix<IntegerRet>& LattPoints);
+    void put_eg1Points_into(vector<vector< IntegerRet> >& LattPoints);
+    void put_short_eg1Points_into(vector<vector<short> >& LattPoints);
     void put_single_point_into(vector<IntegerRet>& LattPoint);
     void get_h_vectors(vector<num_t>& pos, vector<num_t>& neg) const;
 

@@ -170,6 +170,7 @@ ConeProperties all_options() {
     ret.set(ConeProperty::Lex);
     ret.set(ConeProperty::RevLex);
     ret.set(ConeProperty::DegLex);
+    ret.set(ConeProperty::ShortInt);
     ret.set(ConeProperty::WritePreComp); // is not really an option, but taken care of in options.h
     ret.set(ConeProperty::NoPatching);
     ret.set(ConeProperty::NoCoarseProjection);
@@ -1135,6 +1136,7 @@ vector<string> initializeCPN() {
     CPN.at(ConeProperty::GroebnerBasis) = "GroebnerBasis";
     CPN.at(ConeProperty::Lex) = "Lex";
     CPN.at(ConeProperty::RevLex) = "RevLex";
+    CPN.at(ConeProperty::ShortInt) = "ShortInt";
     CPN.at(ConeProperty::DegLex) = "DegLex";
     CPN.at(ConeProperty::NoPatching) = "NoPatching";
     CPN.at(ConeProperty::NoCoarseProjection) = "NoCoarseProjection";
@@ -1154,7 +1156,7 @@ vector<string> initializeCPN() {
     CPN.at(ConeProperty::FusionData) = "FusionData";
 
     // detect changes in size of Enum, to remember to update CPN!
-    static_assert(ConeProperty::EnumSize == 160, "ConeProperties Enum size does not fit! Update cone_property.cpp!");
+    static_assert(ConeProperty::EnumSize == 161, "ConeProperties Enum size does not fit! Update cone_property.cpp!");
     // assert all fields contain an non-empty string
     for (size_t i = 0; i < ConeProperty::EnumSize; i++) {
         // bstd::cout << "iii " << i << "  " << CPN.at(i) << endl;

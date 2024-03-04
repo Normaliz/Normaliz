@@ -45,12 +45,15 @@ void write_control_file(const size_t split_level, const size_t nr_vectors){
 }
 
 template <typename Integer>
-void write_local_solutions(const size_t level, const Matrix<Integer>& Sols){
+void write_local_solutions(const size_t level, const vector<vector<Integer> >& Sols){
     string file_name = global_project;
-    file_name += "." + to_string(level);
-    Sols.print(file_name, "sls");
+    file_name += "." + to_string(level) + ".sls";
+    ofstream sols_out(file_name);
+    sols_out << Sols.size() << endl;
+    sols_out << Sols[0].size() << endl;
+    sols_out << Sols;
     if(verbose)
-        verboseOutput() << Sols.nr_of_rows() << " local solutions stored on level " << level << endl;
+        verboseOutput() << Sols.size()<< " local solutions stored on level " << level << endl;
 }
 
 template <typename Integer>
@@ -293,6 +296,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
     NrDoneLP.resize(EmbDim,0);
     AllLocalSolutions_by_intersection_and_cong.resize(EmbDim);
     AllLocalSolutions.resize(EmbDim);
+    AllShortLocalSolutions.resize(EmbDim);
 
     DefiningSupps.resize(EmbDim);
 
@@ -1243,25 +1247,6 @@ void select_and_split(list<vector<Integer> >& LatticePoints, const key_t& this_p
 //--------------------------------------------------------------------------
 
 template <typename IntegerPL, typename IntegerRet>
-bool ProjectAndLift<IntegerPL,IntegerRet>::import_local_solutions(const key_t& this_patch){
-
-    bool read_local_solutions = false;
-
-    string file_name = global_project + "." + to_string(this_patch) + ".sls";
-    ifstream sls(file_name);
-    if(sls.is_open()){
-        read_local_solutions = true;
-        sls.close();
-        SavedLocalSolutions = readMatrix<IntegerRet>(file_name);
-        if(verbose)
-         verboseOutput() <<  SavedLocalSolutions.nr_of_rows() << "local solutionms read on level " << this_patch << endl;
-    }
-    return read_local_solutions;
-}
-
-//--------------------------------------------------------------------------
-
-template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL,IntegerRet>::prepare_split(list<vector<IntegerRet> >& LatticePoints, const key_t& this_patch){
 
     const size_t coord = InsertionOrderPatches[this_patch];
@@ -1284,6 +1269,157 @@ void ProjectAndLift<IntegerPL,IntegerRet>::prepare_split(list<vector<IntegerRet>
             select_and_split(LatticePoints, this_patch, split_modulus,split_residue, done_indices, intersection_key);
         }
     }
+}
+
+//--------------------------------------------------------------------------
+
+template <typename Integer>
+bool import_local_solutions(vector<vector<Integer> >& SavedLocalSolutions, const key_t& this_patch){
+
+    bool read_local_solutions = false;
+
+    string file_name = global_project + "." + to_string(this_patch) + ".sls";
+    ifstream sls(file_name);
+    if(sls.is_open()){
+        read_local_solutions = true;
+        size_t nr_rows, nr_cols;
+        sls >> nr_rows;
+        sls >> nr_cols;
+        for(size_t i = 0; i < nr_rows; ++i){
+            for(size_t j = 0; j < nr_cols; ++j)
+                sls >> SavedLocalSolutions[i][j];
+        }
+        if(sls.fail())
+            throw BadInputException("Corrupt file " + file_name);
+        if(verbose)
+            verboseOutput() <<  SavedLocalSolutions.size() << "local solutionms read on level " << this_patch << endl;
+    }
+    return read_local_solutions;
+}
+
+//--------------------------------------------------------------------------
+
+template <typename IntegerPL, typename IntegerRet>
+void ProjectAndLift<IntegerPL,IntegerRet>::compute_local_solutions(const key_t this_patch,
+                            list<vector<IntegerRet> >& start_list){
+
+    const size_t coord = InsertionOrderPatches[this_patch]; // the coord marking this patch
+
+    // for easier access and simpler code
+    auto& intersection_key = AllIntersections_key[coord];
+    auto& new_coords_key = AllNew_coords_key[coord];
+
+    auto& LocalPL = AllLocalPL[coord];
+    auto&& LocalSolutions_by_intersection_and_cong =
+            AllLocalSolutions_by_intersection_and_cong[coord];
+
+    auto& LocalSolutions = AllLocalSolutions[coord];
+    auto& ShortLocalSolutions = AllShortLocalSolutions[coord];
+
+    auto& CongsRestricted = AllCongsRestricted[coord];
+
+
+    // Now we extend the "new" intersection coordinates by the local system
+    vector<vector<IntegerRet> > LocalSolutionsNow;
+    vector<vector<short> > ShortLocalSolutionsNow;
+    if(stored_local_solutions){
+        if(use_short_int)
+            stored_local_solutions = import_local_solutions(ShortLocalSolutionsNow, this_patch);
+        else
+            stored_local_solutions = import_local_solutions(LocalSolutionsNow, this_patch);
+    }
+    if(!stored_local_solutions){
+        LocalPL. set_startList(start_list);
+        LocalPL.lift_points_to_this_dim(start_list); // computes the extensions
+        if(use_short_int)
+            LocalPL.put_short_eg1Points_into(ShortLocalSolutionsNow);
+        else
+            LocalPL.put_eg1Points_into(LocalSolutionsNow);
+        if(save_local_solutions){
+            if(use_short_int)
+                write_local_solutions(this_patch, ShortLocalSolutionsNow);
+            else
+               write_local_solutions(this_patch, LocalSolutionsNow);
+        }
+    }
+    size_t nr_old_solutions = LocalSolutions.size();
+    if(use_short_int)
+        nr_old_solutions = ShortLocalSolutions.size();
+    size_t nr_new_solutions = LocalSolutionsNow.size();
+    if(use_short_int)
+        nr_old_solutions = ShortLocalSolutionsNow.size();
+    if(nr_old_solutions == 0){
+        swap(LocalSolutions,LocalSolutionsNow);
+        swap(ShortLocalSolutions, ShortLocalSolutionsNow);
+    }
+    else{
+        if(use_short_int){
+            ShortLocalSolutions.resize(nr_old_solutions + nr_new_solutions);
+            for(size_t i = 0; i < nr_new_solutions; ++i)
+                swap(ShortLocalSolutions[nr_old_solutions +i], ShortLocalSolutionsNow[i]);
+        }
+        else{
+            LocalSolutions.resize(nr_old_solutions + nr_new_solutions);
+            for(size_t i = 0; i < nr_new_solutions; ++i)
+                swap(LocalSolutions[nr_old_solutions +i], LocalSolutionsNow[i]);
+        }
+    }
+    LocalSolutionsNow.clear();
+    ShortLocalSolutionsNow.clear();
+
+    if(talkative){
+            // verbose_0 = "Local solutions total " + to_string(LocalSolutions.size()) + " new " < to_string(nr_new_solutions);
+            verboseOutput() << "--" << endl;
+            verboseOutput() << "Local solutions total " << nr_old_solutions + nr_new_solutions << " new " << nr_new_solutions << endl;
+            // LocalSolutions.debug_print('+');
+    }
+
+    // Next the newly computed extensions are registered
+    // based on overlap,
+    // and for each overlap by the partial values of the congruences.
+    // This allows only patchings that satisfy the congr5uences
+    vector<IntegerRet> overlap(intersection_key.size());
+    size_t nr_intersect = intersection_key.size();
+    size_t nr_cong = CongsRestricted.size();
+    vector<IntegerRet> partial_cong_values(nr_cong);
+    dynamic_bitset new_coords_ind = key_to_bitset(new_coords_key, EmbDim);
+
+    for(size_t i = nr_old_solutions; i < nr_old_solutions + nr_new_solutions; i++){ // take only the new solutions
+        for(size_t j = 0; j < intersection_key.size(); ++j){
+            if(use_short_int)
+                overlap[j] = ShortLocalSolutions[i][j];
+            else
+                overlap[j] = LocalSolutions[i][j];
+        }
+        // insert "new" coordinates of local solution into place in full vector
+        // On overlap the congruences will be evaluated below
+        // For patching we need that the eval on the new coordinates = - eval on the
+        // other coordiantes
+        vector<IntegerRet> local_solution_new(EmbDim);
+        for(size_t k = 0; k < new_coords_key.size(); ++k)
+            local_solution_new[new_coords_key[k]] = LocalSolutions[i][nr_intersect + k];
+        for(size_t k = 0; k < nr_cong; ++k){
+            partial_cong_values[k] =
+                eval_cong_partially(CongsRestricted[k],local_solution_new, new_coords_ind, true);
+        }
+
+        if(LocalSolutions_by_intersection_and_cong.find(overlap) != LocalSolutions_by_intersection_and_cong.end()){
+            if(LocalSolutions_by_intersection_and_cong[overlap].find(partial_cong_values)
+                        != LocalSolutions_by_intersection_and_cong[overlap].end()) {
+                LocalSolutions_by_intersection_and_cong[overlap][partial_cong_values].push_back(i);
+            }
+            else{
+                LocalSolutions_by_intersection_and_cong[overlap][partial_cong_values] ={};
+                LocalSolutions_by_intersection_and_cong[overlap][partial_cong_values].push_back(i);
+            }
+        }
+        else{
+            LocalSolutions_by_intersection_and_cong[overlap] = {};
+            LocalSolutions_by_intersection_and_cong[overlap][partial_cong_values] ={};
+            LocalSolutions_by_intersection_and_cong[overlap][partial_cong_values].push_back(i);
+        }
+    }  // for i
+
 }
 
 //---------------------------------------------------------------------------
@@ -1314,11 +1450,12 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
     auto&& CoveredKeyInverse = AllCoveredKeyInverse[coord];
     auto&  Automorphisms = fusion.Automorphisms;
 
-    auto& LocalPL = AllLocalPL[coord];
+    // auto& LocalPL = AllLocalPL[coord];
     auto&& LocalSolutions_by_intersection_and_cong =
             AllLocalSolutions_by_intersection_and_cong[coord];
 
     auto& LocalSolutions = AllLocalSolutions[coord];
+    auto& ShortLocalSolutions = AllShortLocalSolutions[coord];
     dynamic_bitset covered = AllCovered[coord];
 
     auto& CongsRestricted = AllCongsRestricted[coord];
@@ -1390,75 +1527,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
     dynamic_bitset full_coords_ind(EmbDim);
     full_coords_ind.flip();
 
-    // Now we extend the "new" intersection coordinates by the local system
-    Matrix<IntegerRet> LocalSolutionsNow(0, intersection_key.size() + new_coords_key.size());
-    if(stored_local_solutions){
-        stored_local_solutions = import_local_solutions(this_patch);
-        if(stored_local_solutions)
-            swap(SavedLocalSolutions, LocalSolutionsNow);
-    }
-    if(!stored_local_solutions){
-        LocalPL. set_startList(start_list);
-        LocalPL.lift_points_to_this_dim(start_list); // computes the extensions
-        LocalPL.put_eg1Points_into(LocalSolutionsNow);
-        if(save_local_solutions)
-               write_local_solutions(this_patch, LocalSolutionsNow);
-    }
-    size_t nr_old_solutions = LocalSolutions.nr_of_rows();
-    size_t nr_new_solutions = LocalSolutionsNow.nr_of_rows();
-    if(nr_old_solutions == 0)
-        swap(LocalSolutions,LocalSolutionsNow);
-    else
-        LocalSolutions.swap_append(LocalSolutionsNow);
-
-    if(talkative){
-            // verbose_0 = "Local solutions total " + to_string(LocalSolutions.nr_of_rows()) + " new " < to_string(nr_new_solutions);
-            verboseOutput() << "--" << endl;
-            verboseOutput() << "Local solutions total " << LocalSolutions.nr_of_rows() << " new " << nr_new_solutions << endl;
-            // LocalSolutions.debug_print('+');
-    }
-
-    // Next the newly computed extensions are registered
-    // based on overlap,
-    // and for each overlap by the partial values of the congruences.
-    // This allows only patchings that satisfy the congr5uences
-    vector<IntegerRet> overlap(intersection_key.size());
-    size_t nr_intersect = intersection_key.size();
-    size_t nr_cong = CongsRestricted.size();
-    vector<IntegerRet> partial_cong_values(nr_cong);
-    dynamic_bitset new_coords_ind = key_to_bitset(new_coords_key, EmbDim);
-
-    for(size_t i = nr_old_solutions; i < LocalSolutions.nr_of_rows(); i++){ // take only the new solutions
-       for(size_t j = 0; j < intersection_key.size(); ++j)
-            overlap[j] = LocalSolutions[i][j];
-        // insert "new" coordinates of local solution into place in full vector
-        // On overlap the congruences will be evaluated below
-        // For patching we need that the eval on the new coordinates = - eval on the
-        // other coordiantes
-        vector<IntegerRet> local_solution_new(EmbDim);
-        for(size_t k = 0; k < new_coords_key.size(); ++k)
-            local_solution_new[new_coords_key[k]] = LocalSolutions[i][nr_intersect + k];
-        for(size_t k = 0; k < nr_cong; ++k){
-            partial_cong_values[k] =
-                eval_cong_partially(CongsRestricted[k],local_solution_new, new_coords_ind, true);
-        }
-
-        if(LocalSolutions_by_intersection_and_cong.find(overlap) != LocalSolutions_by_intersection_and_cong.end()){
-            if(LocalSolutions_by_intersection_and_cong[overlap].find(partial_cong_values)
-                        != LocalSolutions_by_intersection_and_cong[overlap].end()) {
-                LocalSolutions_by_intersection_and_cong[overlap][partial_cong_values].push_back(i);
-            }
-            else{
-                LocalSolutions_by_intersection_and_cong[overlap][partial_cong_values] ={};
-                LocalSolutions_by_intersection_and_cong[overlap][partial_cong_values].push_back(i);
-            }
-        }
-        else{
-            LocalSolutions_by_intersection_and_cong[overlap] = {};
-            LocalSolutions_by_intersection_and_cong[overlap][partial_cong_values] ={};
-            LocalSolutions_by_intersection_and_cong[overlap][partial_cong_values].push_back(i);
-        }
-    }  // for i
+    compute_local_solutions(this_patch, start_list);
 
     bool last_coord = (coord == InsertionOrderPatches.back());
 
@@ -1626,9 +1695,15 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
 
                 INTERRUPT_COMPUTATION_BY_EXCEPTION
 
+                if(use_short_int){
+                    for(size_t j = 0; j < new_coords_key.size(); ++j)
+                        NewLattPoint[new_coords_key[j]] = ShortLocalSolutions[i][j + intersection_key.size()];
+                }
+                else{
+                    for(size_t j = 0; j < new_coords_key.size(); ++j)
+                        NewLattPoint[new_coords_key[j]] = LocalSolutions[i][j + intersection_key.size()];
 
-                for(size_t j = 0; j < new_coords_key.size(); ++j)
-                    NewLattPoint[new_coords_key[j]] = LocalSolutions[i][j + intersection_key.size()];
+                }
 
                 bool can_be_inserted = true;
 #pragma omp atomic
@@ -2991,6 +3066,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::initialize(const Matrix<IntegerPL>& 
     check_simplicity_all = false;
     check_simplicity_cand = false;
     stored_local_solutions = false;
+    use_short_int = false;
     TotalNrLP = 0;
     min_return_patch = 0;
     NrLP.resize(EmbDim + 1);
@@ -3315,6 +3391,26 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute_only_projection(size_t down_
 
 //---------------------------------------------------------------------------
 template <typename IntegerPL, typename IntegerRet>
+void ProjectAndLift<IntegerPL, IntegerRet>::put_short_eg1Points_into(vector<vector<short> >& LattPoints) {
+
+}
+
+//---------------------------------------------------------------------------
+template <typename IntegerPL, typename IntegerRet>
+void ProjectAndLift<IntegerPL, IntegerRet>::put_eg1Points_into(vector<vector< IntegerRet> >& LattPoints) {
+
+    while (!Deg1Points.empty()) {
+        if (use_LLL) {
+            LattPoints.push_back(LLL_Coordinates.from_sublattice(Deg1Points.front()));
+        }
+        else
+            LattPoints.push_back(Deg1Points.front());
+        Deg1Points.pop_front();
+    }
+}
+
+//---------------------------------------------------------------------------
+template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL, IntegerRet>::put_eg1Points_into(Matrix<IntegerRet>& LattPoints) {
 
     while (!Deg1Points.empty()) {
@@ -3393,6 +3489,9 @@ void ProjectAndLift<IntegerPL, IntegerRet>::setOptions(const ConeProperties& ToC
         fusion_rings_computation = true;
         fusion.set_options(ToCompute, our_verbose);
     }
+
+    if(ToCompute.test(ConeProperty::ShortInt))
+        use_short_int = true;
 
     if(primitive){
         set_primitive();

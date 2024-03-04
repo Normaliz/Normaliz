@@ -268,6 +268,8 @@ enum Enum {
     RevLex,
     DegLex,
     //
+    ShortInt,
+    //
     END_ENUM_RANGE(LAST_PROPERTY),
     //
     // ONLY FOR INTERNAL CONTROL
