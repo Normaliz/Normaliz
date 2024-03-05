@@ -334,6 +334,7 @@ void ConeProperties::check_fusion_ring_props() const{
     copy.reset(ConeProperty::NoGradingDenom);
     copy.reset(ConeProperty::DistributedComp);
     copy.reset(ConeProperty::Projection);
+    copy.reset(ConeProperty::ShortInt);
 
     if (copy.any()) {
         errorOutput() << copy << endl;
@@ -870,7 +871,7 @@ void ConeProperties::check_Q_permissible(bool after_implications) {
     copy.reset(ConeProperty::SimpleFusionRings);
     copy.reset(ConeProperty::NonsimpleFusionRings);
     copy.reset(ConeProperty::FusionData);
-;
+    copy.reset(ConeProperty::ShortInt);
     if (after_implications) {
         copy.reset(ConeProperty::Multiplicity);
         copy.reset(ConeProperty::Grading);

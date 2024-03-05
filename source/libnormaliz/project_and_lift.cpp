@@ -480,6 +480,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
         PL.set_LLL(false);
         PL.set_primitive();
         PL.set_verbose(false);
+        PL.set_short_int(use_short_int);
         PL.set_congruences(LocalCongsReordered);
         //if(coord < 15)
         //   LocalCongsReordered.debug_print('#');
@@ -1332,9 +1333,9 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_local_solutions(const key_t t
         LocalPL. set_startList(start_list);
         LocalPL.lift_points_to_this_dim(start_list); // computes the extensions
         if(use_short_int)
-            LocalPL.put_short_eg1Points_into(ShortLocalSolutionsNow);
+            LocalPL.put_short_deg1Points_into(ShortLocalSolutionsNow);
         else
-            LocalPL.put_eg1Points_into(LocalSolutionsNow);
+            LocalPL.put_deg1Points_into(LocalSolutionsNow);
         if(save_local_solutions){
             if(use_short_int)
                 write_local_solutions(this_patch, ShortLocalSolutionsNow);
@@ -1347,7 +1348,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_local_solutions(const key_t t
         nr_old_solutions = ShortLocalSolutions.size();
     size_t nr_new_solutions = LocalSolutionsNow.size();
     if(use_short_int)
-        nr_old_solutions = ShortLocalSolutionsNow.size();
+        nr_new_solutions = ShortLocalSolutionsNow.size();
     if(nr_old_solutions == 0){
         swap(LocalSolutions,LocalSolutionsNow);
         swap(ShortLocalSolutions, ShortLocalSolutionsNow);
@@ -1396,8 +1397,14 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_local_solutions(const key_t t
         // For patching we need that the eval on the new coordinates = - eval on the
         // other coordiantes
         vector<IntegerRet> local_solution_new(EmbDim);
-        for(size_t k = 0; k < new_coords_key.size(); ++k)
-            local_solution_new[new_coords_key[k]] = LocalSolutions[i][nr_intersect + k];
+        if(use_short_int){
+            for(size_t k = 0; k < new_coords_key.size(); ++k)
+                local_solution_new[new_coords_key[k]] = ShortLocalSolutions[i][nr_intersect + k];
+        }
+        else{
+            for(size_t k = 0; k < new_coords_key.size(); ++k)
+                local_solution_new[new_coords_key[k]] = LocalSolutions[i][nr_intersect + k];
+        }
         for(size_t k = 0; k < nr_cong; ++k){
             partial_cong_values[k] =
                 eval_cong_partially(CongsRestricted[k],local_solution_new, new_coords_ind, true);
@@ -1419,7 +1426,6 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_local_solutions(const key_t t
             LocalSolutions_by_intersection_and_cong[overlap][partial_cong_values].push_back(i);
         }
     }  // for i
-
 }
 
 //---------------------------------------------------------------------------
@@ -2722,11 +2728,40 @@ void ProjectAndLift<IntegerPL, IntegerRet>::finalize_latt_point(const vector<Int
     }
 }
 
+//---------------------------------------------------------------------------
+template <typename IntegerPL, typename IntegerRet>
+void ProjectAndLift<IntegerPL, IntegerRet>::splice_into_short_deg1_points(list<vector<IntegerRet> >& Deg1PointsComputed) {
+
+    if(Deg1PointsComputed.empty())
+        return;
+
+    size_t dim = Deg1PointsComputed.front().size();
+
+    vector<short> short_sol(dim);
+    long long bridge;
+
+    while(!Deg1PointsComputed.empty()){
+        for(size_t i = 0; i < dim; ++i){
+            bridge = convertTo<long long>(Deg1PointsComputed.front()[i]);
+            if(bridge > 32767 || bridge < -32768)
+                throw NoComputationException("Range short int not sufficient");
+            short_sol[i] = bridge;
+        }
+        ShortDeg1Points.push_back(short_sol);
+        Deg1PointsComputed.pop_front();
+    }
+}
+
 ///---------------------------------------------------------------------------
 template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL, IntegerRet>::collect_results(list<vector<IntegerRet> >& Deg1PointsComputed) {
 
-    Deg1Points.splice(Deg1Points.end(), Deg1PointsComputed);
+    if(use_short_int){
+        splice_into_short_deg1_points(Deg1PointsComputed);
+    }
+    else{
+        Deg1Points.splice(Deg1Points.end(), Deg1PointsComputed);
+    }
 
     for (size_t i = 0; i < Deg1Thread.size(); ++i) {
         if (h_vec_pos_thread[i].size() > h_vec_pos.size())
@@ -2763,7 +2798,12 @@ void ProjectAndLift<IntegerPL, IntegerRet>::lift_points_to_this_dim(list<vector<
         sparse = true; // ditto
         for(auto& P: Deg1Proj)
             finalize_latt_point(P, 0);
-        Deg1Points.splice(Deg1Points.begin(), Deg1Thread[0]);
+        if(use_short_int){
+            splice_into_short_deg1_points(Deg1Thread[0]);
+        }
+        else{
+            Deg1Points.splice(Deg1Points.begin(), Deg1Thread[0]);
+        }
         return;
     }
 
@@ -3162,6 +3202,11 @@ void ProjectAndLift<IntegerPL, IntegerRet>::set_verbose(bool on_off) {
 
 //---------------------------------------------------------------------------
 template <typename IntegerPL, typename IntegerRet>
+void ProjectAndLift<IntegerPL, IntegerRet>::set_short_int(bool on_off) {
+    use_short_int = on_off;
+}
+//---------------------------------------------------------------------------
+template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL, IntegerRet>::set_LLL(bool on_off) {
     use_LLL = on_off;
 }
@@ -3389,15 +3434,21 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute_only_projection(size_t down_
     compute_projections(EmbDim, down_to, StartInd, StartPair, StartParaInPair, StartRank, true);
 }
 
-//---------------------------------------------------------------------------
+//---------------------------------------------------------------------
 template <typename IntegerPL, typename IntegerRet>
-void ProjectAndLift<IntegerPL, IntegerRet>::put_short_eg1Points_into(vector<vector<short> >& LattPoints) {
+void ProjectAndLift<IntegerPL, IntegerRet>::put_short_deg1Points_into(vector<vector< short> >& LattPoints) {
 
+    assert(!use_LLL);
+
+    while (!ShortDeg1Points.empty()) {
+        LattPoints.push_back(ShortDeg1Points.front());
+        ShortDeg1Points.pop_front();
+    }
 }
 
-//---------------------------------------------------------------------------
+//---------------------------------------------------------------------
 template <typename IntegerPL, typename IntegerRet>
-void ProjectAndLift<IntegerPL, IntegerRet>::put_eg1Points_into(vector<vector< IntegerRet> >& LattPoints) {
+void ProjectAndLift<IntegerPL, IntegerRet>::put_deg1Points_into(vector<vector< IntegerRet> >& LattPoints) {
 
     while (!Deg1Points.empty()) {
         if (use_LLL) {
@@ -3412,6 +3463,15 @@ void ProjectAndLift<IntegerPL, IntegerRet>::put_eg1Points_into(vector<vector< In
 //---------------------------------------------------------------------------
 template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL, IntegerRet>::put_eg1Points_into(Matrix<IntegerRet>& LattPoints) {
+
+    if(Deg1Points.empty() && !ShortDeg1Points.empty()){
+        vector<IntegerRet> bridge(ShortDeg1Points.front().size());
+        for(auto& p: ShortDeg1Points){
+            for(size_t i= 0; i < bridge.size(); ++i)
+                bridge[i] = p[i];
+            Deg1Points.push_back(bridge);
+        }
+    }
 
     while (!Deg1Points.empty()) {
         if (use_LLL) {

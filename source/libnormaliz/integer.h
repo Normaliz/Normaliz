@@ -118,6 +118,10 @@ bool try_convert(long& ret, const nmz_float& val);
 bool try_convert(long long& ret, const nmz_float& val);
 bool try_convert(mpz_class& ret, const nmz_float& val);
 
+bool try_convert(long& ret, const nmz_float& val);
+bool try_convert(long long& ret, const nmz_float& val);
+bool try_convert(mpz_class& ret, const nmz_float& val);
+
 nmz_float mpq_to_nmz_float(const mpq_class& val);
 
 #ifdef ENFNORMALIZ
@@ -426,6 +430,8 @@ ToType convertTo(const FromType& val) {
     return copy;
 }
 
+// Now the try_convert
+
 inline bool try_convert(mpz_class& ret, const mpq_class&) {
     assert(false);  // must never be used
     return false;
@@ -567,6 +573,25 @@ inline bool try_convert(long long& ret, const nmz_float& val) {
         return false;
     return try_convert(ret, bridge);
 }
+
+
+/*
+inline bool fits_short_range(long long a) {
+    return  (a <= SHRT_MAX && a >= SHRT_MIN);
+}
+
+inline bool try_convert(short& ret, const long long& val) {
+    if(!fits_short_range(val))
+       return false;
+    ret = val;
+    return true;
+}
+
+inline bool try_convert(short& ret, const mpz_class& val) {
+    long long bridge = convertTo<long long>(val);
+    return try_convert(ret,bridge);
+}
+*/
 //---------------------------------------------------------------------------
 
 template <typename Integer>

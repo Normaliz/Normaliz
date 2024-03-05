@@ -73,6 +73,7 @@ class ProjectAndLift {
     vector<vector<num_t> > h_vec_neg_thread;
 
     list<vector<IntegerRet> > Deg1Points; // all Deg1Points found
+    list<vector<short> > ShortDeg1Points; // all Deg1Points found
     vector<IntegerRet> SingleDeg1Point;
     vector<IntegerRet> excluded_point;
     IntegerRet GD;
@@ -188,6 +189,7 @@ class ProjectAndLift {
     void compute_latt_points_float();
     void finalize_latt_point(const vector<IntegerRet>& NewPoint, const int tn);
     void collect_results(list<vector<IntegerRet> >& Deg1PointsComputed);
+    void splice_into_short_deg1_points(list<vector<IntegerRet> >& Deg1PointsComputed);
 
     void compute_projections(size_t dim,
                              size_t down_to,
@@ -237,6 +239,7 @@ class ProjectAndLift {
     void set_excluded_point(const vector<IntegerRet>& excl_point);
     void set_grading_denom(const IntegerRet GradingDenom);
     void set_verbose(bool on_off);
+    void set_short_int(bool on_off);
     void set_LLL(bool on_off);
     void set_no_relax(bool on_off);
     void set_primitive();
@@ -258,8 +261,8 @@ class ProjectAndLift {
 
     void putSuppsAndEqus(Matrix<IntegerPL>& SuppsRet, Matrix<IntegerPL>& EqusRet, size_t in_dim);
     void put_eg1Points_into(Matrix<IntegerRet>& LattPoints);
-    void put_eg1Points_into(vector<vector< IntegerRet> >& LattPoints);
-    void put_short_eg1Points_into(vector<vector<short> >& LattPoints);
+    void put_deg1Points_into(vector<vector< IntegerRet> >& LattPoints);
+    void put_short_deg1Points_into(vector<vector<short> >& ShortLattPoints);
     void put_single_point_into(vector<IntegerRet>& LattPoint);
     void get_h_vectors(vector<num_t>& pos, vector<num_t>& neg) const;
 
@@ -287,6 +290,7 @@ ProjectAndLift<IntegerPL, IntegerRet>::ProjectAndLift(const ProjectAndLift<Integ
     verbose = Original.verbose;
     no_relax = Original.no_relax;
     only_single_point = false;
+    use_short_int = false;
     convert(GD, Original.GD);
     AllSupps.resize(EmbDim + 1);
     AllCongs.resize(EmbDim + 1);
