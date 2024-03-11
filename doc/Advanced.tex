@@ -212,7 +212,13 @@ To see the effect, try \verb|baby.in| as it is and with \verb|NoPatching|.
 
 The patching algorithm and the use of polynomial equations was developed for computations of fusion rings reported in \cite{ABPP} and extensions.
 
-Note that the patching algorithm allows distributed computation (se Section \ref{DistPatch})
+It is possible  to save memory by using the option
+\begin{itemize}
+	\itemtt[ShortInt]
+\end{itemize}
+It saves the ``local solutions'' as 16 bit integers. The range is of course checked, and if it iss exceeded, Normaliz throws a \verb*|NoComputationException|.
+
+Note that the patching algorithm allows distributed computation (se Section \ref{DistPatch}).
 
 \subsubsection{Polynomial constraints for lattice points}\label{poly_const}
 

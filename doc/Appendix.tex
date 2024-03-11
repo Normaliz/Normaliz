@@ -3216,19 +3216,25 @@ The start version is
  \end{Verbatim}
  \verb*|<l>| is the split level, \verb*|<s>| the number of splits. \verb*|refinement 0| indicates the first refinement (counted from $0$). Later on this file is used to transfer information to the next refinement.
 
-A precomputation option that can be added is
+A second task that can be performed as a precomputation is solving ``local systems'' and storing the solutions in files that are then read when the solutions are needed, instead of being computed separately by every split. This can save a lot of time and also memory (the latter since certain complicated data structures need not be built). The option is
 \begin{itemize}
-\itemtt[SaveLocalSolutions, -{}-SLS] 
+	\itemtt[SaveLocalSolutions, -{}-SLS] 
 \end{itemize}
-It is useful in situations in which the computation of the ``local solutions'' of the patches takes very long so that it becomes inefficient or even impossible to have them done by every split. For our toy example the precomputation was done by
-\begin{Verbatim}
-./normaliz example/split_demo/split_ex.in -c -x=1 --DCM --SLS -X=3
-\end{Verbatim}
-This writes a series of files
+You must also set a level up to which the local solutions should be precomputed:
 \begin{itemize}
-\itemtta[<project>.<l>.sls]{project.l.sl}
+	\itemtta[-Q=<l>]{Q=l}
 \end{itemize}
-where \verb*|<l>| varies from $0$ to the split level.
+This will create files
+\begin{itemize}
+	\itemtta[<project>.<k>.sls]{project>.<k>.sls} 
+\end{itemize}
+where \verb*|<k>| runs form $0$ to \verb*|<l>|. It is of course useful to run the precomputation of local solutions before running \verb*|[DistributedComp|.
+
+We remind the reader of  option
+\begin{itemize}
+	\itemtt[ShortInt]
+\end{itemize}
+mentioned in Section \ref{positive_systems}.
 
 \subsubsection {Running a refinement}
 
