@@ -528,9 +528,9 @@ int process_data(OptionsHandler& options, const string& command_line) {
         }
 
         if(options.isUseSaveLocalSolutions()){
-            if(!options.getToCompute().test(ConeProperty::DistributedComp))
-                throw BadInputException("SaveLocalSolutions only allowed with DistributedComp");
             save_local_solutions = true;
+            if(level_local_solutions == -1)
+                throw BadInputException("SaveLocalSolutions requires level set by -Q");
         }
 
         /* if(options.isUseNextRound()){

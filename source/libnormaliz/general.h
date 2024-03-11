@@ -182,6 +182,7 @@ NORMALIZ_DLL_EXPORT extern double GlobalTimeBound;
 NORMALIZ_DLL_EXPORT extern double GlobalPredictionTimeBound;
 
 
+NORMALIZ_DLL_EXPORT extern long level_local_solutions; // transports <l> of -Q=<n>
 NORMALIZ_DLL_EXPORT extern long split_index_option; // transports <n> of -X=<n>
 NORMALIZ_DLL_EXPORT extern long split_index_rounds; // transports the split index option after adding the rounds
 NORMALIZ_DLL_EXPORT extern long split_refinement; // transports the refinement of the split

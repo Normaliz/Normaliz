@@ -68,7 +68,7 @@ string pureName(const string& fullName) {
 void OptionsHandler::setProjectName(const string& s) {
     if (project_name_set) {
         cerr << "Error: Second project name " << s << " in command line!" << endl;
-        exit(1);
+        throw BadInputException("Comnnad line error");
     }
     project_name = s;
     // check if we can read the .in file
@@ -103,7 +103,7 @@ bool OptionsHandler::handle_commandline(vector<string> argv) {
         if (argv[i][1] == '\0') // only -, disregard
             continue;
 
-        if (argv[i][1] != 'x' && argv[i][1] != 'X' && argv[i][1] != 'Z'&& argv[i][1] != 'A') {
+        if (argv[i][1] != 'x' && argv[i][1] != 'X' && argv[i][1] != 'Z' && argv[i][1] != 'A' && argv[i][1] != 'Q') {
             if (argv[i][1] == '-') { // test for long option
                 string LO = argv[i];
                 LO.erase(0, 2);
@@ -115,7 +115,7 @@ bool OptionsHandler::handle_commandline(vector<string> argv) {
         }
         if (argv[i][2] != '='){   // must now be of type -?=
             cerr << "Error: Invalid option string " << argv[i] << endl;
-            exit(1);
+            throw BadInputException("Option error");
         }
 
         if(argv[i][1] == 'x'){
@@ -128,7 +128,7 @@ bool OptionsHandler::handle_commandline(vector<string> argv) {
             }
             else {
                 cerr << "Error: Invalid option string " << argv[i] << endl;
-                exit(1);
+                throw BadInputException("Option error");
             }
 #else
             cerr << "Warning: Compiled without OpenMP support, option " << argv[i] << " ignored." << endl;
@@ -141,7 +141,17 @@ bool OptionsHandler::handle_commandline(vector<string> argv) {
             Split.erase(0, 3);
             if ((!(istringstream(Split) >> split_index_option) && split_index_option >= 0)) {
                 cerr << "Error: Invalid option string " << argv[i] << endl;
-                exit(1);
+                throw BadInputException("Option error");
+            }
+            continue;
+        }
+
+        if(argv[i][1] == 'Q'){ // used for split processing
+            string Split = argv[i];
+            Split.erase(0, 3);
+            if ((!(istringstream(Split) >> level_local_solutions) && level_local_solutions >= 0)) {
+                cerr << "Error: Invalid option string " << argv[i] << endl;
+                throw BadInputException("Option error");
             }
             continue;
         }
@@ -151,7 +161,7 @@ bool OptionsHandler::handle_commandline(vector<string> argv) {
             Instances.erase(0, 3);
             if ((!(istringstream(Instances) >> number_normaliz_instances) && number_normaliz_instances > 0)) {
                 cerr << "Error: Invalid option string " << argv[i] << endl;
-                exit(1);
+                throw BadInputException("Option error");
             }
             continue;
         }
@@ -161,13 +171,13 @@ bool OptionsHandler::handle_commandline(vector<string> argv) {
             File.erase(0, 3);
             if ((!(istringstream(File) >> input_file_option) && input_file_option >= 0)) {
                 cerr << "Error: Invalid option string " << argv[i] << endl;
-                exit(1);
+                throw BadInputException("Option error");
             }
             continue;
         }
 
         cerr << "Error: Invalid option string " << argv[i] << endl;
-        exit(1);
+        throw BadInputException("Option error");
     }
     return handle_options(LongOptions, ShortOptions);
 }
@@ -286,11 +296,11 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
                 break;
             case 'x':  // should be separated from other options
                 cerr << "Error: Option -x=<T> has to be separated from other options" << endl;
-                exit(1);
+                throw BadInputException("Option error");
                 break;
             case 'X':  // should be separated from other options
                 cerr << "Error: Option -X=<S> has to be separated from other options" << endl;
-                exit(1);
+                throw BadInputException("Option error");
                 break;
             case 'I':
                 to_compute.set(ConeProperty::Integral);
@@ -327,7 +337,7 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
                 break;
             default:
                 cerr << "Error: Unknown option -" << ShortOptions[i] << endl;
-                exit(1);
+                throw BadInputException("Option error");
                 break;
         }
     }
@@ -474,7 +484,7 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
         } catch (const BadInputException&) {
         };
         cerr << "Error: Unknown option --" << LongOption << endl;
-        exit(1);
+        throw BadInputException("Option error");
     }
 
     if (output_dir_set) {

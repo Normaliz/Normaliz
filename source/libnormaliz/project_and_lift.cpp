@@ -1096,7 +1096,41 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_covers() {
 //---------------------------------------------------------------------------
 
 template <typename IntegerPL, typename IntegerRet>
+void ProjectAndLift<IntegerPL,IntegerRet>::compute_local_solutions_for_saving() {
+
+    vector<IntegerRet> start(EmbDim);
+    start[0] = GD;
+
+    for(long this_patch = 0; this_patch <= level_local_solutions; ++this_patch){
+
+        size_t coord = InsertionOrderPatches[this_patch];
+        vector<IntegerRet> start(1, GD);
+        start_list.push_back(start);
+        AllLocalPL[coord].lift_points_to_this_dim(start_list);
+
+        if(use_short_int){
+            vector<vector<short> > ShortLocalSolutionsNow;
+            AllLocalPL[coord].put_short_deg1Points_into(ShortLocalSolutionsNow);
+            write_local_solutions(this_patch, ShortLocalSolutionsNow);
+        }
+        else{
+            vector<vector<IntegerRet> > LocalSolutionsNow;
+            AllLocalPL[coord].put_deg1Points_into(LocalSolutionsNow);
+            write_local_solutions(this_patch, LocalSolutionsNow);
+        }
+    }
+    return;
+}
+
+//---------------------------------------------------------------------------
+
+template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL,IntegerRet>::compute_latt_points_by_patching() {
+
+    if(save_local_solutions){
+        compute_local_solutions_for_saving();
+        throw NoComputationException("No output with SavedLocalSolutions");
+    }
 
     vector<IntegerRet> start(EmbDim);
     start[0] = GD;
@@ -1288,6 +1322,8 @@ bool import_local_solutions(vector<vector<Integer> >& SavedLocalSolutions, const
         sls >> nr_cols;
         SavedLocalSolutions.resize(nr_rows);
         for(size_t i = 0; i < nr_rows; ++i){
+            if(i % 1000000 == 0 && verbose)
+                verboseOutput() << i << " local solutions read on level " << this_patch << endl;
             SavedLocalSolutions[i].resize(nr_cols);
             for(size_t j = 0; j < nr_cols; ++j)
                 sls >> SavedLocalSolutions[i][j];
@@ -1295,7 +1331,7 @@ bool import_local_solutions(vector<vector<Integer> >& SavedLocalSolutions, const
         if(sls.fail())
             throw BadInputException("Corrupt file " + file_name);
         if(verbose)
-            verboseOutput() <<  SavedLocalSolutions.size() << "local solutionms read on level " << this_patch << endl;
+            verboseOutput() <<  SavedLocalSolutions.size() << " local solutions read on level " << this_patch << endl;
     }
     return read_local_solutions;
 }
@@ -1325,25 +1361,23 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_local_solutions(const key_t t
     // Now we extend the "new" intersection coordinates by the local system
     vector<vector<IntegerRet> > LocalSolutionsNow;
     vector<vector<short> > ShortLocalSolutionsNow;
-    if(stored_local_solutions){
-        if(use_short_int)
+    if(stored_local_solutions && !ImportedLocalSolutions[coord]){
+        if(use_short_int){
+            cout << "Importing short" << endl;
             stored_local_solutions = import_local_solutions(ShortLocalSolutionsNow, this_patch);
+        }
         else
             stored_local_solutions = import_local_solutions(LocalSolutionsNow, this_patch);
+        if(stored_local_solutions)
+            ImportedLocalSolutions[coord] = true;
     }
-    if(!stored_local_solutions){
+    if(!ImportedLocalSolutions[coord]){
         LocalPL. set_startList(start_list);
         LocalPL.lift_points_to_this_dim(start_list); // computes the extensions
         if(use_short_int)
             LocalPL.put_short_deg1Points_into(ShortLocalSolutionsNow);
         else
             LocalPL.put_deg1Points_into(LocalSolutionsNow);
-        if(save_local_solutions){
-            if(use_short_int)
-                write_local_solutions(this_patch, ShortLocalSolutionsNow);
-            else
-               write_local_solutions(this_patch, LocalSolutionsNow);
-        }
     }
     size_t nr_old_solutions = LocalSolutions.size();
     if(use_short_int)
@@ -1904,14 +1938,15 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
 
        NrRemainingLP[this_patch] = nr_to_match - nr_points_matched;
 
-       if(NrRemainingLP[this_patch] > 0 && distributed_computation){
-           write_control_file(this_patch, LatticePoints.size());
+       if(distributed_computation && NrRemainingLP[this_patch] > 0){
+            write_control_file(this_patch, LatticePoints.size());
             throw NoComputationException("No output with DistribitedComp for patching");
        }
 
        if(min_fall_back == 0 && NrRemainingLP[this_patch] == 0){
             LocalSolutions_by_intersection_and_cong.clear();  // save memory
             LocalSolutions.resize(0); // ditto
+            ShortLocalSolutions.resize(0);
        }
 
         double expected_number_of_rounds = NrRemainingLP[this_patch];
@@ -3080,6 +3115,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::initialize(const Matrix<IntegerPL>& 
     AllNrEqus.resize(EmbDim + 1);
     AllSupps[EmbDim] = Supps;
     Congs.resize(0, EmbDim+1);
+    ImportedLocalSolutions.resize(EmbDim + 1);
     AllSupps[EmbDim].remove_duplicate_and_zero_rows();
     AllOrders[EmbDim] = order_supps(AllSupps[EmbDim]);
     DoneWithDim.resize(EmbDim+1);
@@ -3325,7 +3361,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute(bool all_points, bool liftin
         throw ArithmeticException(0);
 #endif
 
-    if(is_split_patching){
+    if(is_split_patching || distributed_computation){
         read_split_data();
         stored_local_solutions = true; // will of course be tested
     }

@@ -221,8 +221,10 @@ class ProjectAndLift {
     void prepare_split(list<vector<IntegerRet> >& LatticePoints, const key_t& this_patch);
     void read_split_data();
 
-    // bool import_local_solutions(const key_t& this_patch);
+
     void compute_local_solutions(const key_t this_patch, list<vector<IntegerRet> >& start_list);
+    void compute_local_solutions_for_saving();
+    dynamic_bitset ImportedLocalSolutions; // registers the levels with imported local solutions
 
     // void make_LLL_coordinates();
 
@@ -261,8 +263,8 @@ class ProjectAndLift {
 
     void putSuppsAndEqus(Matrix<IntegerPL>& SuppsRet, Matrix<IntegerPL>& EqusRet, size_t in_dim);
     void put_eg1Points_into(Matrix<IntegerRet>& LattPoints);
-    void put_deg1Points_into(vector<vector< IntegerRet> >& LattPoints);
-    void put_short_deg1Points_into(vector<vector<short> >& ShortLattPoints);
+    void put_deg1Points_into(vector<vector< IntegerRet> >& LattPoints); // we have no matrices for sjort
+    void put_short_deg1Points_into(vector<vector<short> >& ShortLattPoints); // therefore vector<vector >
     void put_single_point_into(vector<IntegerRet>& LattPoint);
     void get_h_vectors(vector<num_t>& pos, vector<num_t>& neg) const;
 
