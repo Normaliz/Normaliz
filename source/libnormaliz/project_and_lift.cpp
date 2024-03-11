@@ -1286,7 +1286,9 @@ bool import_local_solutions(vector<vector<Integer> >& SavedLocalSolutions, const
         size_t nr_rows, nr_cols;
         sls >> nr_rows;
         sls >> nr_cols;
+        SavedLocalSolutions.resize(nr_rows);
         for(size_t i = 0; i < nr_rows; ++i){
+            SavedLocalSolutions[i].resize(nr_cols);
             for(size_t j = 0; j < nr_cols; ++j)
                 sls >> SavedLocalSolutions[i][j];
         }
