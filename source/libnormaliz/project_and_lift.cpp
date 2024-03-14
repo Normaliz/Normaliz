@@ -3361,8 +3361,11 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute(bool all_points, bool liftin
         throw ArithmeticException(0);
 #endif
 
-    if(is_split_patching || distributed_computation){
+    if(is_split_patching){
         read_split_data();
+    }
+
+    if(is_split_patching || distributed_computation){
         stored_local_solutions = true; // will of course be tested
     }
 

@@ -17,7 +17,7 @@ RUN apt-get update \
     sudo \
     python3-pip
 RUN pip3 install setuptools
-    
+
 RUN adduser --quiet --shell /bin/bash --gecos "norm user,101,," --disabled-password norm \
     && adduser norm sudo \
     && chown -R norm:norm /home/norm \
