@@ -561,7 +561,7 @@ int process_data(OptionsHandler& options, const string& command_line) {
         ifstream in;
         in.open(file_in, ifstream::in);
         if (!in.is_open()) {
-            if(options.get_given_name_contains_in()){
+            if(options.get_given_name_contains_in() || is_split_patching){ // patching requires real input file
                 cerr << "error: Failed to open file " << name_in << "." << endl;
                 return 1;
             }
@@ -572,6 +572,10 @@ int process_data(OptionsHandler& options, const string& command_line) {
                 cerr << "error: Failed to open file " << name_in << "." << endl;
                 return 1;
             }
+        }
+        else{
+            if(options.isUseMakeFullInput())
+                throw BadInputException("MkaeFusionInput not allowed if input file exists");
         }
 
         string polynomial;

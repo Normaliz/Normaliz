@@ -236,8 +236,9 @@ void  FusionBasic::data_from_renf_input(ifstream& cone_in){
 #endif
 
 
-void  FusionBasic::data_from_file(const string& file_name){
+bool  FusionBasic::data_from_file(const string& file_name){
     bool number_field_input = false;
+    bool fusion_input = false;
     ifstream cone_in(file_name);
     string test;
     while (cone_in.good()) {
@@ -245,10 +246,19 @@ void  FusionBasic::data_from_file(const string& file_name){
         // cout << test << endl;
         if (test == "number_field") {
             number_field_input = true;
-            break;
+        }
+        if(test == "fusion_type"){
+                fusion_input = true;
         }
     }
     cone_in.close();
+
+    if(!fusion_input && number_field_input)
+        throw BadInputException("Number filed input must be of fusion type tor fusion compoutation");
+
+    if(!fusion_input)
+        return false;
+
     cone_in.open(file_name.c_str(), ifstream::in);
 
 #ifndef ENFNORMALIZ
@@ -257,10 +267,12 @@ void  FusionBasic::data_from_file(const string& file_name){
 #else
     if(number_field_input){
         data_from_renf_input(cone_in);
-        return;
+        return true
+        ;
     }
 #endif
     data_from_mpq_input(cone_in);
+    return true;
 }
 
 
@@ -272,11 +284,14 @@ void  FusionBasic::data_from_file_or_string(const string& our_fusion){
     }
     ifstream cone_in(file_name);
 
+    bool got_data_from_file = false;
+
     if(cone_in.is_open()){
         cone_in.close();
-        data_from_file(file_name);
+        got_data_from_file = data_from_file(file_name);
     }
-    else
+
+    if(!got_data_from_file)
         data_from_string(our_fusion, false);
 }
 
@@ -331,6 +346,11 @@ pair<bool, bool> FusionBasic::data_from_string(const string& our_fusion, const b
     while(true){
         long nr;
         data >> nr;
+        if(data.fail()){
+            if(return_on_failure)
+                return make_pair(false, dummy);
+            throw BadInputException("String " + our_fusion +" not standard fusion");
+        }
         if(nr < 1){
             if(return_on_failure)
                 return make_pair(false, dummy);
@@ -384,6 +404,11 @@ pair<bool, bool> FusionBasic::data_from_string(const string& our_fusion, const b
     while(true){
         long nr;
         data >> nr;
+        if(data.fail()){
+            if(return_on_failure)
+                return make_pair(false, dummy);
+            throw BadInputException("String " + our_fusion +" not standard fusion");
+        }
         if(nr == -1 || nr == -3){
             commutative = true;
             if(nr == -3)

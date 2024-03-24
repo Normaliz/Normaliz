@@ -512,8 +512,15 @@ void collect_lat(const string& project, const long given_nr_subsplits) {
                 write_fusion_files(fusion_here, global_project, true, false, embdim, SimpleFusionRings, NonsimpleFusionRings, false);
             }
         }
-        if(verbose)
+
+        if(verbose){
             verboseOutput() << "Computation of " + global_project + " complete " << endl;
+            verboseOutput() << "Remuving archived <project>.slit.fata" << endl;
+        }
+
+        rm_command = "rm " + project_expanded + ".split.data";
+        dummy = system(rm_command.c_str());
+
         return;
     }
 

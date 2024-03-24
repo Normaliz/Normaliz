@@ -68,7 +68,7 @@ public:
     void  data_from_renf_input(ifstream& cone_in);
     void  data_from_mpq_input(ifstream& cone_in);
     void  data_from_file_or_string(const string& our_fusion);
-    void  data_from_file(const string& file_name);
+    bool  data_from_file(const string& file_name);
 
     pair<bool, bool> data_from_string(const string& our_fusion, const bool return_on_failure);
 

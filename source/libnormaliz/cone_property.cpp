@@ -335,6 +335,7 @@ void ConeProperties::check_fusion_ring_props() const{
     copy.reset(ConeProperty::DistributedComp);
     copy.reset(ConeProperty::Projection);
     copy.reset(ConeProperty::ShortInt);
+    copy.reset(ConeProperty::MinimizePolyEquations);
 
     if (copy.any()) {
         errorOutput() << copy << endl;
