@@ -211,6 +211,7 @@ FusionBasic::FusionBasic(){
     candidate_given = false;
     fusion_rank = 0;
     type_and_duality_set = false;
+    total_FPdim = 0;
 }
 
 void  FusionBasic::data_from_mpq_input(ifstream& cone_in){
@@ -376,6 +377,11 @@ pair<bool, bool> FusionBasic::data_from_string(const string& our_fusion, const b
         throw BadInputException("String " + our_fusion +" not standard fusion");
     }
     fusion_rank = type_input.size();
+    total_FPdim = 0;
+    for(size_t i = 0; i< fusion_rank; ++i){
+        double this_FPdim = convertTo<double>(type_input[i]);
+        total_FPdim += this_FPdim * this_FPdim;
+    }
     stringstream for_type;
     for_type << type_input;
     fusion_type_from_command = type_input;
@@ -449,6 +455,44 @@ pair<bool, bool> FusionBasic::data_from_string(const string& our_fusion, const b
 
 
 //--------------------------------------------------------------
+// FusionComp
+//--------------------------------------------------------------
+
+template <typename Integer>
+FusionComp<Integer>::FusionComp(){
+    initialize();
+}
+
+template <typename Integer>
+FusionComp<Integer>::FusionComp(const FusionBasic& basic){
+    initialize();
+    fusion_rank = basic.fusion_rank;
+    commutative = basic.commutative;
+    Z_2_graded = basic.Z_2_graded;
+    candidate_given = basic.candidate_given;
+    fusion_type = basic.fusion_type;
+    fusion_type_string = basic.fusion_type_string;
+    duality = basic.duality;
+    subring_base_key = basic.subring_base_key;
+    type_and_duality_set = basic.type_and_duality_set;
+    total_FPdim = basic.total_FPdim;
+}
+
+template <typename Integer>
+void FusionComp<Integer>::initialize(){
+    check_simplicity = false;
+    candidate_given = false;
+    use_automorphisms = false;
+    // select_iso_classes = false;
+    verbose = false;
+    activated = false;
+    type_and_duality_set =false;
+    commutative = false;
+    Z_2_graded = false;
+    half_at = -1;
+    nr_coordinates = 0;
+    total_FPdim = 0;
+}
 
 template <typename Integer>
 void FusionComp<Integer>::make_automorphisms(){
@@ -500,40 +544,6 @@ bool FusionComp<Integer>::simplicity_check(const vector<vector<key_t> >& subring
         }
     }
     return true;
-}
-
-template <typename Integer>
-FusionComp<Integer>::FusionComp(){
-    initialize();
-}
-
-template <typename Integer>
-FusionComp<Integer>::FusionComp(const FusionBasic& basic){
-    initialize();
-    fusion_rank = basic.fusion_rank;
-    commutative = basic.commutative;
-    Z_2_graded = basic.Z_2_graded;
-    candidate_given = basic.candidate_given;
-    fusion_type = basic.fusion_type;
-    fusion_type_string = basic.fusion_type_string;
-    duality = basic.duality;
-    subring_base_key = basic.subring_base_key;
-    type_and_duality_set = basic.type_and_duality_set;
-}
-
-template <typename Integer>
-void FusionComp<Integer>::initialize(){
-    check_simplicity = false;
-    candidate_given = false;
-    use_automorphisms = false;
-    // select_iso_classes = false;
-    verbose = false;
-    activated = false;
-    type_and_duality_set =false;
-    commutative = false;
-    Z_2_graded = false;
-    half_at = -1;
-    nr_coordinates = 0;
 }
 
 template <typename Integer>

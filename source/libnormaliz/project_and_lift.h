@@ -39,6 +39,11 @@
 namespace libnormaliz {
 using std::vector;
 
+const size_t max_nr_new_latt_points_total = 1000000;
+const size_t nr_new_latt_points_for_elimination_equs = 10000;
+const size_t nr_new_latt_points_for_elimination_inequs = 10000;
+const size_t nr_new_latt_points_for_elimination_automs = 10000;
+
 // the project-and-lift algorithm for lattice points in a polytope
 
 template <typename Integer>
@@ -48,6 +53,11 @@ template <typename IntegerPL, typename IntegerRet>
 class ProjectAndLift {
     template <typename, typename>
     friend class ProjectAndLift;
+
+    size_t max_nr_new_latt_points_total;
+    size_t nr_new_latt_points_for_elimination_equs;
+    size_t nr_new_latt_points_for_elimination_inequs;
+    size_t nr_new_latt_points_for_elimination_automs;
 
     list<vector<IntegerRet> > start_list; // list of lattice points to start from
                                           // and to be lifted to full dimension

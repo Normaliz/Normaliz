@@ -674,7 +674,23 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
         AllCovered[coord] = new_covered;
         covered = new_covered;
 
-        } // coord
+        if(fusion.total_FPdim == 0) // no discarding of equations if not fusion
+            poly_equs_minimized[coord] = true;
+
+    } // coord
+
+    max_nr_new_latt_points_total = libnormaliz::max_nr_new_latt_points_total;
+    nr_new_latt_points_for_elimination_equs = libnormaliz::nr_new_latt_points_for_elimination_equs;
+    nr_new_latt_points_for_elimination_inequs = libnormaliz:: nr_new_latt_points_for_elimination_inequs;
+    nr_new_latt_points_for_elimination_automs = libnormaliz::nr_new_latt_points_for_elimination_automs;
+
+
+    cout << "FFFFFFFFFFFF " << fusion.total_FPdim << endl;
+    // to reduce the danger of disaster by premature discarding of poly equations
+    if(fusion.total_FPdim >= 1000)
+        nr_new_latt_points_for_elimination_equs *= 10;
+    if(fusion.total_FPdim >= 10000)
+        nr_new_latt_points_for_elimination_equs *= 10;
 }
 
 //---------------------------------------------------------------------------
@@ -1180,10 +1196,6 @@ IntegerRet eval_cong_partially(const OurPolynomialCong<IntegerRet>& cong,
 
 //---------------------------------------------------------------------------
 
-const size_t max_nr_new_latt_points_total = 1000000;
-const size_t nr_new_latt_points_for_elimination_equs = 10000;
-const size_t nr_new_latt_points_for_elimination_automs = 10000;
-
 vector<key_t> global_intersection_key;
 
 // lexicographic comparison with overlap first
@@ -1502,16 +1514,23 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
 
     auto& CongsRestricted = AllCongsRestricted[coord];
 
-    size_t max_nr_per_thread = 1000; //max_nr_new_latt_points_total/ omp_get_max_threads();
+    /*
+     * size_t max_nr_per_thread = 4000 / omp_get_max_threads(); //max_nr_new_latt_points_total/ omp_get_max_threads();
     if(distributed_computation)
         max_nr_per_thread = 10000; // to avoid very few lattice points at the lowest split level
+    */
+
+    size_t max_nr_latt_points_processed = 4000;
+    if(distributed_computation)
+        max_nr_latt_points_processed = 10000;
 
     key_t max_split_level = 0;
     if(is_split_patching){
         max_split_level = our_split.this_split_levels.back();
         if(this_patch <= max_split_level){
             prepare_split(LatticePoints, this_patch);
-            max_nr_per_thread /= 10; // we want to force a quick min_return
+            // max_nr_per_thread /= 10; // we want to force a quick min_return
+            max_nr_latt_points_processed /= 10;
         }
     }
 
@@ -1586,7 +1605,6 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
 
     size_t nr_rounds = 0;
 
-
     while (true) {
 
         /* if(talkative){
@@ -1656,6 +1674,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         size_t nr_intersect = intersection_key.size();
         dynamic_bitset full_support(EmbDim);
         full_support.flip();
+
+        size_t nr_latt_points_processed = 0;
 
 #pragma omp parallel
         {
@@ -1773,8 +1793,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                             nr_caught_by_equations++;
                             if(!poly_equs_minimized[coord])
                                 poly_equs_stat[tn][pp->first]++;
-                            else
-                                order_poly_equs.splice(order_poly_equs.begin(), order_poly_equs, pp);
+                           /* else
+                                order_poly_equs.splice(order_poly_equs.begin(), order_poly_equs, pp);*/
                             break;
                         }
                     }
@@ -1830,7 +1850,10 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
             } // for i (inner for loop)
 
             (*P)[0] = 0;  // mark point as done
-            if(this_patch >= max_split_level &&  nr_points_in_thread > max_nr_per_thread && !last_coord) {  // thread is full and we are allowed to break
+
+#pragma omp atomic
+            nr_latt_points_processed++;
+            if(this_patch >= max_split_level &&  nr_latt_points_processed > max_nr_latt_points_processed && !last_coord) {  // thread is full and we are allowed to break
                 skip_remaining = true;
 
 #pragma omp flush(skip_remaining)
@@ -1885,6 +1908,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
 
         // Discard ineffective polynomial equations
         if(!poly_equs_minimized[coord] &&  nr_latt_points_total > nr_new_latt_points_for_elimination_equs){
+            cout << "nr_latt_points_total " << nr_latt_points_total << " vnr_new_latt_points_for_elimination_equs"  << nr_new_latt_points_for_elimination_equs << endl;
             poly_equs_minimized[coord] = true;
              vector < pair<OurPolynomial<IntegerRet>, OurPolynomial<IntegerRet> > > EffectivePolys;
             for(size_t i = 0; i < PolyEqusThread[0].size(); ++i){
@@ -1919,7 +1943,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         }
 
         //Discard ineffective restrictable plolynjomial inequalities
-        if(!poly_inequs_minimized[coord] &&  nr_latt_points_total > nr_new_latt_points_for_elimination_equs){
+        if(!poly_inequs_minimized[coord] &&  nr_latt_points_total > nr_new_latt_points_for_elimination_inequs){
             poly_inequs_minimized[coord] = true;
             OurPolynomialSystem<IntegerRet> EffectivePolyInequs;
             for(size_t i = 0; i < PolyInequsThread[0].size(); ++i){

@@ -58,6 +58,8 @@ public:
     vector<key_t> duality;
     vector<key_t> subring_base_key;
 
+    double total_FPdim;
+
     // pair<bool, bool> read_data(const bool only_test);
 
     FusionBasic();
@@ -104,6 +106,8 @@ public:
     vector<key_t> fusion_type; // only coincidence pattern
     string fusion_type_string;
     vector<key_t> duality;
+
+    double total_FPdim;
 
     long half_at; // temporarily used for ZZ_2-gradings
 
@@ -223,6 +227,11 @@ template <typename Integer>
 void FusionBasic::read_data_from_input(InputMap<Integer>& input_data){
 
     vector<Integer> full_type = input_data[Type::fusion_type][0];
+    total_FPdim = 0;
+    for(size_t i = 0; i< full_type.size(); ++i){
+        double this_FPdim = convertTo<double>(full_type[i]);
+        total_FPdim += this_FPdim * this_FPdim;
+    }
     // cout << "FULL " << full_type;
     fusion_type = fusion_coincidence_pattern(full_type);
     // cout << "COINC " << fusion_type_coinc_from_input;
