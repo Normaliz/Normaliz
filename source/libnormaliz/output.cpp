@@ -1468,10 +1468,10 @@ void Output<Integer>::write_files() {
         }
         if (homogeneous && Result->isComputed(ConeProperty::IsSerreR1)) {
             if (Result->isIntegrallyClosed()) {
-                out << "original monoid satisfies Serre cindition R1" << endl;
+                out << "original monoid satisfies Serre condition R1" << endl;
             }
             else {
-                out << "original monoid violates Serre cindition R1" << endl;
+                out << "original monoid violates Serre condition R1" << endl;
             }
         }
         out << endl;
