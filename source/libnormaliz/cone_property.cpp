@@ -171,6 +171,7 @@ ConeProperties all_options() {
     ret.set(ConeProperty::RevLex);
     ret.set(ConeProperty::DegLex);
     ret.set(ConeProperty::ShortInt);
+    ret.set(ConeProperty::NoHeuristicMinimization);
     ret.set(ConeProperty::WritePreComp); // is not really an option, but taken care of in options.h
     ret.set(ConeProperty::NoPatching);
     ret.set(ConeProperty::NoCoarseProjection);
@@ -334,6 +335,7 @@ void ConeProperties::check_fusion_ring_props() const{
     copy.reset(ConeProperty::NoGradingDenom);
     copy.reset(ConeProperty::DistributedComp);
     copy.reset(ConeProperty::Projection);
+    copy.reset(ConeProperty::NoHeuristicMinimization);
     copy.reset(ConeProperty::ShortInt);
     copy.reset(ConeProperty::MinimizePolyEquations);
 
@@ -873,6 +875,7 @@ void ConeProperties::check_Q_permissible(bool after_implications) {
     copy.reset(ConeProperty::NonsimpleFusionRings);
     copy.reset(ConeProperty::FusionData);
     copy.reset(ConeProperty::ShortInt);
+    copy.reset(ConeProperty::NoHeuristicMinimization);
     if (after_implications) {
         copy.reset(ConeProperty::Multiplicity);
         copy.reset(ConeProperty::Grading);
@@ -1139,6 +1142,7 @@ vector<string> initializeCPN() {
     CPN.at(ConeProperty::Lex) = "Lex";
     CPN.at(ConeProperty::RevLex) = "RevLex";
     CPN.at(ConeProperty::ShortInt) = "ShortInt";
+    CPN.at(ConeProperty::NoHeuristicMinimization) = "NoHeuristicMinimization";
     CPN.at(ConeProperty::DegLex) = "DegLex";
     CPN.at(ConeProperty::NoPatching) = "NoPatching";
     CPN.at(ConeProperty::NoCoarseProjection) = "NoCoarseProjection";
@@ -1158,7 +1162,7 @@ vector<string> initializeCPN() {
     CPN.at(ConeProperty::FusionData) = "FusionData";
 
     // detect changes in size of Enum, to remember to update CPN!
-    static_assert(ConeProperty::EnumSize == 161, "ConeProperties Enum size does not fit! Update cone_property.cpp!");
+    static_assert(ConeProperty::EnumSize == 162, "ConeProperties Enum size does not fit! Update cone_property.cpp!");
     // assert all fields contain an non-empty string
     for (size_t i = 0; i < ConeProperty::EnumSize; i++) {
         // bstd::cout << "iii " << i << "  " << CPN.at(i) << endl;

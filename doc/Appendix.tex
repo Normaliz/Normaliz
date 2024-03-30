@@ -3518,6 +3518,13 @@ Lattice point:
 Note that the single lattice point is not uniquely determined. 
 There are $300$ lattice points in the polytope. 
 
+The system of degree $2$ polynomial equations resulting from the associativity condition is highly overdetermined.For example, \verb*|pet_new.in| generates $240$ equations, but a run with \verb*|MinimizePplyEquations| reduces them to $50$. Using \verb*|MinimizePp	lyEquations| is usually not a good idea since the formal minimization takes much more time than a run without it. Normaliz uses \emph{heuristic minimization} by counting how often a vector that has passed all preceding equations is not satisfied. If an equation has ``never'' failed after a certain number $n$ of vectors passing it, it is declared ineffective and skipped latter on. The number $n$ depends on the FPdim of the fusion ring. However, a vector is only declared a final solution after checking all equations on it. So there is no danger of fals results. But if an equation gets discarded prematurely, the computation time can explode. As a prevention, Normaliz offers the option
+\begin{itemize}
+\itemtt[NoHeuristicMinimization, -{-NHM}]
+\end{itemize}
+Unfortunately, this option often doubles the computation time
+
+
 \subsection{Standard names and virtual input files}\label{virtual_input}
 
 Fusion rings can be computed without an input file -- the input file exists ``virtually''. For this variant the project name must contain the fusion type and duality. Such ``standard names'' have the structure

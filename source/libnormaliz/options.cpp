@@ -474,6 +474,10 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
             continue;
 
         }
+        if(LongOption == "NHM"){
+            to_compute.set(ConeProperty::NoHeuristicMinimization);
+            continue;
+        }
         if (find(AdmissibleOut.begin(), AdmissibleOut.end(), LongOption) != AdmissibleOut.end()) {
             OutFiles.push_back(LongOption);
             continue;

@@ -983,6 +983,8 @@ Matrix<Integer> FusionComp<Integer>::make_add_constraints_for_grading(const vect
     return GradEqu;
 }
 
+vector<long long> test_vec = {0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,1,0,0,1,0,1,1,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,0,1,1,0,0,1,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,1,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,1,0,0,0,0,1,1,1,1,0,1,1,0,1,0,2,1,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,1,1,0,0,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,1,1,0,0,0,1,1,1,1,0,1,1,0,1,0,2,1,0,1,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,1,1,0,1,1,0,2,0,1,1,1,1,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,1,0,0,0,1,1,0,0,0,1,1,1,1,0,1,1,2,0,1,0,0,0,0,0,0,0,0,1,0,1,0,0,1,0,1,0,1,0,1,1,1,1,2,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 1};
+
 
 template <typename Integer>
 Matrix<Integer> FusionComp<Integer>::make_linear_constraints(const vector<Integer>& d){
@@ -1015,18 +1017,29 @@ Matrix<Integer> FusionComp<Integer>::make_linear_constraints(const vector<Intege
     Matrix<Integer> GradEqu(0, nr_coordinates + 1);
     half_at = -1;
     if(Z_2_graded){
-
         find_grading(d);
         GradEqu = make_add_constraints_for_grading(d);
-
     }
-
-
 
     Equ.remove_duplicate_and_zero_rows();
     if(libnormaliz::verbose)
         verboseOutput() << "Made " << Equ.nr_of_rows() << " inhom linear equations in " << Equ.nr_of_columns() -1 << " unknowns " << endl;
     Equ.append(GradEqu);
+
+    vector<Integer> test_vec_conv;
+    convert(test_vec_conv, test_vec);
+
+    vector<Integer> prod = Equ.MxV(test_vec_conv);
+    for(size_t i = 0; i < prod.size(); ++i){
+        if(prod[i] != 0){
+            cout << "ALARM " << i << endl;
+            cout << Equ[i];
+            exit(0);
+
+        }
+
+    }
+
 
     // Equ.pretty_print(cout);
     return Equ;

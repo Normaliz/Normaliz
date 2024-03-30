@@ -269,6 +269,7 @@ enum Enum {
     DegLex,
     //
     ShortInt,
+    NoHeuristicMinimization,
     //
     END_ENUM_RANGE(LAST_PROPERTY),
     //

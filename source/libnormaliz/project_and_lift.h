@@ -40,9 +40,9 @@ namespace libnormaliz {
 using std::vector;
 
 const size_t max_nr_new_latt_points_total = 1000000;
-const size_t nr_new_latt_points_for_elimination_equs = 10000;
-const size_t nr_new_latt_points_for_elimination_inequs = 10000;
-const size_t nr_new_latt_points_for_elimination_automs = 10000;
+const size_t nr_extensions_for_elimination_equs = 10000;
+const size_t nr_extensions_for_elimination_inequs = 10000;
+const size_t nr_extensions_for_elimination_automs = 10000;
 
 // the project-and-lift algorithm for lattice points in a polytope
 
@@ -55,9 +55,9 @@ class ProjectAndLift {
     friend class ProjectAndLift;
 
     size_t max_nr_new_latt_points_total;
-    size_t nr_new_latt_points_for_elimination_equs;
-    size_t nr_new_latt_points_for_elimination_inequs;
-    size_t nr_new_latt_points_for_elimination_automs;
+    size_t nr_extensions_for_elimination_equs;
+    size_t nr_extensions_for_elimination_inequs;
+    size_t nr_extensions_for_elimination_automs;
 
     list<vector<IntegerRet> > start_list; // list of lattice points to start from
                                           // and to be lifted to full dimension
@@ -118,6 +118,7 @@ class ProjectAndLift {
     bool fusion_rings_computation;
     bool stored_local_solutions;
     bool use_short_int;
+    bool no_heuristic_minimization;
 
     bool system_unsolvable;
 
@@ -267,6 +268,7 @@ class ProjectAndLift {
     void set_linear_order_patches(const bool on_off);
     void set_cong_order_patches(const bool on_off);
     void set_distributed_computation(const bool on_off);
+    void set_no_heuristic_minimization(bool on_off);
 
     void compute(bool do_all_points = true, bool lifting_float = false, bool count_only = false);
     void compute_only_projection(size_t down_to);

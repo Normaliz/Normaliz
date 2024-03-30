@@ -674,23 +674,23 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
         AllCovered[coord] = new_covered;
         covered = new_covered;
 
-        if(fusion.total_FPdim == 0) // no discarding of equations if not fusion
+        if(fusion.total_FPdim == 0 || no_heuristic_minimization) // no discarding of equations if not fusion
             poly_equs_minimized[coord] = true;
 
     } // coord
 
     max_nr_new_latt_points_total = libnormaliz::max_nr_new_latt_points_total;
-    nr_new_latt_points_for_elimination_equs = libnormaliz::nr_new_latt_points_for_elimination_equs;
-    nr_new_latt_points_for_elimination_inequs = libnormaliz:: nr_new_latt_points_for_elimination_inequs;
-    nr_new_latt_points_for_elimination_automs = libnormaliz::nr_new_latt_points_for_elimination_automs;
+    nr_extensions_for_elimination_equs = libnormaliz::nr_extensions_for_elimination_equs;
+    nr_extensions_for_elimination_inequs = libnormaliz:: nr_extensions_for_elimination_inequs;
+    nr_extensions_for_elimination_automs = libnormaliz::nr_extensions_for_elimination_automs;
 
 
     cout << "FFFFFFFFFFFF " << fusion.total_FPdim << endl;
     // to reduce the danger of disaster by premature discarding of poly equations
     if(fusion.total_FPdim >= 1000)
-        nr_new_latt_points_for_elimination_equs *= 10;
+        nr_extensions_for_elimination_equs *= 10;
     if(fusion.total_FPdim >= 10000)
-        nr_new_latt_points_for_elimination_equs *= 10;
+        nr_extensions_for_elimination_equs *= 10;
 }
 
 //---------------------------------------------------------------------------
@@ -1637,7 +1637,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         skip_remaining = false;
         int omp_start_level = omp_get_level();
 
-        size_t nr_latt_points_total = 0;  //statistics for this run of the while loop
+        size_t nr_extensions = 0;  //statistics for this run of the while loop
         size_t nr_caught_by_restricted = 0;  //restricted inequalities
         size_t nr_caught_by_simplicity = 0;  //restricted inequalities
         size_t nr_caught_by_equations = 0;  //statistics for this run of the while loop
@@ -1769,7 +1769,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
 
                 bool can_be_inserted = true;
 #pragma omp atomic
-                nr_latt_points_total++;
+                nr_extensions++;
 
                 if(check_simplicity_cand && critical_coord_simplicity == coord){
                     if(!fusion.simplicity_check(fusion.coords_to_check_key[0], NewLattPoint)){
@@ -1899,16 +1899,16 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
             // cout << "PPPP " << poly_equs_stat_total;
         }
 
-        // size_t nr_new_latt_points = NewLatticePoints.size();
-
         if(last_coord)
             collect_results(NewLatticePoints); // clears NewLatticePoints
 
-        NrDoneLP[coord] += nr_latt_points_total;
+        NrDoneLP[coord] += nr_extensions;
 
-        // Discard ineffective polynomial equations
-        if(!poly_equs_minimized[coord] &&  nr_latt_points_total > nr_new_latt_points_for_elimination_equs){
-            cout << "nr_latt_points_total " << nr_latt_points_total << " vnr_new_latt_points_for_elimination_equs"  << nr_new_latt_points_for_elimination_equs << endl;
+        // *******************************************
+        // Heuristic minimization of equations etc.
+        // *******************************************
+        if(!poly_equs_minimized[coord] &&  nr_extensions > nr_extensions_for_elimination_equs){
+            // cout << "nr_extensions " << nr_extensions << " nr_extensions_for_elimination_equs"  << nr_extensions_for_elimination_equs << endl;
             poly_equs_minimized[coord] = true;
              vector < pair<OurPolynomial<IntegerRet>, OurPolynomial<IntegerRet> > > EffectivePolys;
             for(size_t i = 0; i < PolyEqusThread[0].size(); ++i){
@@ -1927,7 +1927,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                     PolyEqusThread[thr] = EffectivePolys;
         }
 
-        if(!automs_minimized[coord] &&  nr_latt_points_total > nr_new_latt_points_for_elimination_automs &&!last_coord){
+        if(!automs_minimized[coord] &&  nr_extensions > nr_extensions_for_elimination_automs &&!last_coord){
             automs_minimized[coord] = true;
             vector<key_t> EffectiveAutoms;
             for(size_t i = 0; i < Automs.size(); ++i){
@@ -1943,7 +1943,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         }
 
         //Discard ineffective restrictable plolynjomial inequalities
-        if(!poly_inequs_minimized[coord] &&  nr_latt_points_total > nr_new_latt_points_for_elimination_inequs){
+        if(!poly_inequs_minimized[coord] &&  nr_extensions > nr_extensions_for_elimination_inequs){
             poly_inequs_minimized[coord] = true;
             OurPolynomialSystem<IntegerRet> EffectivePolyInequs;
             for(size_t i = 0; i < PolyInequsThread[0].size(); ++i){
@@ -1980,7 +1980,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
 
         if(talkative){
             verboseOutput() << "done " << nr_points_done_in_this_round;
-            verboseOutput() << " ext " << nr_latt_points_total;
+            verboseOutput() << " ext " << nr_extensions;
             if(PolyEqusThread[0].size() > 0)
                 verboseOutput() << " equ " << nr_caught_by_equations;
             if(PolyInequsThread[0].size() > 0)
@@ -3169,6 +3169,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::initialize(const Matrix<IntegerPL>& 
     check_simplicity_cand = false;
     stored_local_solutions = false;
     use_short_int = false;
+    no_heuristic_minimization = false;
     TotalNrLP = 0;
     min_return_patch = 0;
     NrLP.resize(EmbDim + 1);
@@ -3266,6 +3267,11 @@ void ProjectAndLift<IntegerPL, IntegerRet>::set_verbose(bool on_off) {
 template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL, IntegerRet>::set_short_int(bool on_off) {
     use_short_int = on_off;
+}
+//---------------------------------------------------------------------------
+template <typename IntegerPL, typename IntegerRet>
+void ProjectAndLift<IntegerPL, IntegerRet>::set_no_heuristic_minimization(bool on_off) {
+    no_heuristic_minimization = on_off;
 }
 //---------------------------------------------------------------------------
 template <typename IntegerPL, typename IntegerRet>
@@ -3617,6 +3623,9 @@ void ProjectAndLift<IntegerPL, IntegerRet>::setOptions(const ConeProperties& ToC
 
     if(ToCompute.test(ConeProperty::ShortInt))
         use_short_int = true;
+
+    if(ToCompute.test(ConeProperty::NoHeuristicMinimization))
+        no_heuristic_minimization = true;
 
     if(primitive){
         set_primitive();
