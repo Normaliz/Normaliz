@@ -9,7 +9,7 @@ rank = 3 (maximal)
 external index = 1
 internal index = 1
 original monoid is not integrally closed in chosen lattice
-original monoid vioaltes Serre cindition R1
+original monoid violates Serre cindition R1
 
 size of triangulation   = 2
 resulting sum of |det|s = 3

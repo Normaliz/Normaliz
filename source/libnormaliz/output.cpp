@@ -1471,7 +1471,7 @@ void Output<Integer>::write_files() {
                 out << "original monoid satisfies Serre cindition R1" << endl;
             }
             else {
-                out << "original monoid vioaltes Serre cindition R1" << endl;
+                out << "original monoid violates Serre cindition R1" << endl;
             }
         }
         out << endl;
