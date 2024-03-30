@@ -132,22 +132,23 @@ vector<vector<key_t> > make_all_permutations(const vector<key_t>& type,const vec
         }
     }
 
-    if(duality == identity_key(type.size()))
-        return AllFullPerms;
-
     vector<vector<key_t> > Compatible;
-    for(auto& p: AllFullPerms){
-        bool comp = true;
-        for(size_t i = 0; i < p.size(); ++i){
-            if(p[duality[i]] != duality[p[i]]){
-                comp = false;
-                break;
+    if(duality == identity_key(type.size()))
+        swap(Compatible, AllFullPerms);
+    else{ // check compatibilty with duality
+        for(auto& p: AllFullPerms){
+            bool comp = true;
+            for(size_t i = 0; i < p.size(); ++i){
+                if(p[duality[i]] != duality[p[i]]){
+                    comp = false;
+                    break;
+                }
             }
+            if(comp)
+                Compatible.push_back(p);
         }
-        if(comp)
-            Compatible.push_back(p);
+        AllFullPerms.clear();
     }
-    AllFullPerms.clear();
 
     if(half_at < 0) // no Z2-grading
         return Compatible;
@@ -212,6 +213,7 @@ FusionBasic::FusionBasic(){
     fusion_rank = 0;
     type_and_duality_set = false;
     total_FPdim = 0;
+    half_at = -1;
 }
 
 void  FusionBasic::data_from_mpq_input(ifstream& cone_in){
@@ -476,6 +478,7 @@ FusionComp<Integer>::FusionComp(const FusionBasic& basic){
     subring_base_key = basic.subring_base_key;
     type_and_duality_set = basic.type_and_duality_set;
     total_FPdim = basic.total_FPdim;
+    half_at = basic.half_at;
 }
 
 template <typename Integer>
@@ -923,7 +926,7 @@ void FusionComp<Integer>::find_grading(const vector<Integer>& d){
             other_comp.push_back(d[i]);
         verboseOutput() << "ZZ_2 grading " << endl;
         verboseOutput() << "Neutral compinent " << triv_comp;
-        verboseOutput() << "Swecond compinent " << other_comp;
+        verboseOutput() << "Second compinent " << other_comp;
     }
 }
 
@@ -983,9 +986,6 @@ Matrix<Integer> FusionComp<Integer>::make_add_constraints_for_grading(const vect
     return GradEqu;
 }
 
-vector<long long> test_vec = {0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,1,0,0,1,0,1,1,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,0,1,1,0,0,1,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,1,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,1,0,0,0,0,1,1,1,1,0,1,1,0,1,0,2,1,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,1,1,0,0,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,1,1,0,0,0,1,1,1,1,0,1,1,0,1,0,2,1,0,1,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,1,1,0,1,1,0,2,0,1,1,1,1,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,1,0,0,0,1,1,0,0,0,1,1,1,1,0,1,1,2,0,1,0,0,0,0,0,0,0,0,1,0,1,0,0,1,0,1,0,1,0,1,1,1,1,2,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 1};
-
-
 template <typename Integer>
 Matrix<Integer> FusionComp<Integer>::make_linear_constraints(const vector<Integer>& d){
 
@@ -1025,21 +1025,6 @@ Matrix<Integer> FusionComp<Integer>::make_linear_constraints(const vector<Intege
     if(libnormaliz::verbose)
         verboseOutput() << "Made " << Equ.nr_of_rows() << " inhom linear equations in " << Equ.nr_of_columns() -1 << " unknowns " << endl;
     Equ.append(GradEqu);
-
-    vector<Integer> test_vec_conv;
-    convert(test_vec_conv, test_vec);
-
-    vector<Integer> prod = Equ.MxV(test_vec_conv);
-    for(size_t i = 0; i < prod.size(); ++i){
-        if(prod[i] != 0){
-            cout << "ALARM " << i << endl;
-            cout << Equ[i];
-            exit(0);
-
-        }
-
-    }
-
 
     // Equ.pretty_print(cout);
     return Equ;

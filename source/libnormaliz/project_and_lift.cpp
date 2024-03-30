@@ -684,8 +684,6 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
     nr_extensions_for_elimination_inequs = libnormaliz:: nr_extensions_for_elimination_inequs;
     nr_extensions_for_elimination_automs = libnormaliz::nr_extensions_for_elimination_automs;
 
-
-    cout << "FFFFFFFFFFFF " << fusion.total_FPdim << endl;
     // to reduce the danger of disaster by premature discarding of poly equations
     if(fusion.total_FPdim >= 1000)
         nr_extensions_for_elimination_equs *= 10;
