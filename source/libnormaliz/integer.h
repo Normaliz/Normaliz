@@ -430,6 +430,23 @@ ToType convertTo(const FromType& val) {
     return copy;
 }
 
+
+// Conversion of mpq_classs to nmz_float needs its own function
+// since we did not manage to do it via templates alone
+template <typename FromType>
+nmz_float convertTo_nmz_float(const FromType& val) {
+    nmz_float copy;
+    convert(copy, val);
+    return copy;
+}
+
+template <>
+inline nmz_float convertTo_nmz_float(const mpq_class& val) {
+    return mpq_to_nmz_float(val);
+}
+
+
+
 // Now the try_convert
 
 inline bool try_convert(mpz_class& ret, const mpq_class&) {

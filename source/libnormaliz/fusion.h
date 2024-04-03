@@ -230,7 +230,11 @@ void FusionBasic::read_data_from_input(InputMap<Integer>& input_data){
     vector<Integer> full_type = input_data[Type::fusion_type][0];
     total_FPdim = 0;
     for(size_t i = 0; i< full_type.size(); ++i){
-        double this_FPdim = convertTo<double>(full_type[i]);
+        double this_FPdim;
+        /* if(using_mpq_class<Integer>())
+            this_FPdim = mpq_to_nmz_float(full_type[i]);
+        else */
+            this_FPdim = convertTo_nmz_float<Integer>(full_type[i]);
         total_FPdim += this_FPdim * this_FPdim;
     }
     // cout << "FULL " << full_type;
