@@ -39,7 +39,8 @@
 namespace libnormaliz {
 using std::vector;
 
-const size_t max_nr_new_latt_points_total = 1000000;
+const size_t max_nr_new_latt_points_total = 10000; // before we go one level up in the recursion
+const size_t max_nr_new_latt_points_patching = 4000; // the same for patching
 const size_t nr_extensions_for_elimination_equs = 10000;
 const size_t nr_extensions_for_elimination_inequs = 10000;
 const size_t nr_extensions_for_elimination_automs = 10000;
@@ -55,6 +56,7 @@ class ProjectAndLift {
     friend class ProjectAndLift;
 
     size_t max_nr_new_latt_points_total;
+    size_t max_nr_new_latt_points_patching;
     size_t nr_extensions_for_elimination_equs;
     size_t nr_extensions_for_elimination_inequs;
     size_t nr_extensions_for_elimination_automs;

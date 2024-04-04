@@ -680,6 +680,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
     } // coord
 
     max_nr_new_latt_points_total = libnormaliz::max_nr_new_latt_points_total;
+    max_nr_new_latt_points_patching = libnormaliz::max_nr_new_latt_points_patching;
     nr_extensions_for_elimination_equs = libnormaliz::nr_extensions_for_elimination_equs;
     nr_extensions_for_elimination_inequs = libnormaliz:: nr_extensions_for_elimination_inequs;
     nr_extensions_for_elimination_automs = libnormaliz::nr_extensions_for_elimination_automs;
@@ -1373,7 +1374,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_local_solutions(const key_t t
     vector<vector<short> > ShortLocalSolutionsNow;
     if(stored_local_solutions && !ImportedLocalSolutions[coord]){
         if(use_short_int){
-            cout << "Importing short" << endl;
+            if(verbose)
+                verboseOutput() << "Importing short integers" << endl;
             stored_local_solutions = import_local_solutions(ShortLocalSolutionsNow, this_patch);
         }
         else
@@ -1635,9 +1637,11 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         skip_remaining = false;
         int omp_start_level = omp_get_level();
 
+
+        size_t nr_new_latt_points = 0;  // counts number of new lattice points produced in the loop
         size_t nr_extensions = 0;  //statistics for this run of the while loop
         size_t nr_caught_by_restricted = 0;  //restricted inequalities
-        size_t nr_caught_by_simplicity = 0;  //restricted inequalities
+        size_t nr_caught_by_simplicity = 0;  // caught by simplicity check
         size_t nr_caught_by_equations = 0;  //statistics for this run of the while loop
         size_t nr_caught_by_automs = 0;  //statistics for this run of the while loop
         size_t nr_points_done_in_this_round = 0;
@@ -1692,7 +1696,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         else
             tn = omp_get_ancestor_thread_num(omp_start_level + 1);
 
-        size_t nr_points_in_thread = 0;
+        // size_t nr_points_in_thread = 0;
 
         size_t ppos = 0;
         auto P = LatticePoints.begin();
@@ -1838,7 +1842,9 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                     }
                 }
                 if(can_be_inserted){
-                    nr_points_in_thread++;
+                    // nr_points_in_thread++;
+#pragma omp atomic
+                    nr_new_latt_points++;
                     if(last_coord)
                         finalize_latt_point(NewLattPoint, tn);
                     else
@@ -1851,7 +1857,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
 
 #pragma omp atomic
             nr_latt_points_processed++;
-            if(this_patch >= max_split_level &&  nr_latt_points_processed > max_nr_latt_points_processed && !last_coord) {  // thread is full and we are allowed to break
+            if(this_patch >= max_split_level &&  nr_new_latt_points > max_nr_new_latt_points_patching && !last_coord) {  // thread is full and we are allowed to break
                 skip_remaining = true;
 
 #pragma omp flush(skip_remaining)
