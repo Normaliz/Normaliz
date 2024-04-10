@@ -7330,7 +7330,11 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
     }
 
     // Support hyperplanes etc. prepared now
-    Matrix<Integer> CongOri = BasisChange.getCongruencesMatrix();
+    Matrix<Integer> CongOri;
+    if(no_lattice_data)
+        CongOri = Congruences;
+    else
+        CongOri = BasisChange.getCongruencesMatrix();
     vector<Integer> GradingOnPolytope;  // used in the inhomogeneous case for Hilbert function
     if (inhomogeneous && isComputed(ConeProperty::Grading) && ToCompute.test(ConeProperty::HilbertSeries))
         GradingOnPolytope = Grading;

@@ -223,11 +223,6 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
     max_sparse.resize(nr_all_supps); // indicator of inequalities used in covering by "sparse" inequalities
 
     // Congs.debug_print();
-    cout << "CCCCCCCCCCC " << Congs.nr_of_rows() << endl;
-    for(size_t i = 0; i < Congs.nr_of_rows(); ++i){
-        if(Congs[i][6] != 0 && Congs[i][39] != 0)
-            cout << Congs[i];
-    }
 
     for(size_t i = 0; i< nr_all_supps; ++i){
 
@@ -523,25 +518,25 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
         // now we find the congruences that can be restricted to new_covered, but not to
         // covered or AllPatches[coord]
 
-        cout << "Covered " << bitset_to_key(covered) << endl;
+        /*cout << "Covered " << bitset_to_key(covered) << endl;
         cout << "NewCovered " << bitset_to_key(new_covered) << endl;
-        cout << "AllPatches " << bitset_to_key(AllPatches[coord]) << endl;
+        cout << "AllPatches " << bitset_to_key(AllPatches[coord]) << endl;*/
         for(size_t i = 0; i < Congs.nr_of_rows(); ++i){
-            if(Congs[i][7] != 0 && Congs[i][39] != 0){
+            /*if(Congs[i][6] != 0 && Congs[i][37] != 0){
                 cout << Congs[i];
                 cout << "Indicator " << bitset_to_key(CongIndicator[i]) << endl;
                 cout << "New " << CongIndicator[i].is_subset_of(new_covered) << endl;
                 cout << "Cov " << CongIndicator[i].is_subset_of(covered) << endl;
                 cout << " Pat " << CongIndicator[i].is_subset_of(AllPatches[coord]) << endl;
-            }
+            }*/
             if(!CongIndicator[i].is_subset_of(new_covered))
                 continue;
             if(CongIndicator[i].is_subset_of(covered))
                 continue;
             if(CongIndicator[i].is_subset_of(AllPatches[coord]))
                 continue;
-            if(Congs[i][6] != 0 && Congs[i][39] != 0)
-                cout << "*********" << Congs[i];
+            /*if(Congs[i][6] != 0 && Congs[i][36] != 0)
+                cout << "*********" << Congs[i];*/
             AllCongsRestricted[coord].push_back(OurPolynomialCong<IntegerRet>(Congs[i]));
         }
 
