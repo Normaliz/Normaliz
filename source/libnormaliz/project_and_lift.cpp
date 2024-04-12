@@ -1785,15 +1785,13 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         for(key_t k = 0; k < Automs.size(); ++k)
             order_automs.push_back(k);
 
-        size_t our_count = 0;
+        /* size_t our_count = 0;   $$$$$
         for(auto& v: LatticePoints){
             if(v[0] != 0)
                 our_count++;
         }
 
-        cout << "TO MATCH " << nr_to_match << " COUNT " << our_count << endl;
-
-        // assert(our_count != 0);
+        cout << "TO MATCH " << nr_to_match << " COUNT " << our_count << endl; */
 
 #pragma omp for schedule(dynamic)
         for (size_t ppp = 0; ppp < nr_to_match; ++ppp) {
@@ -1806,12 +1804,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
             for (; ppp < ppos; --ppos, --P)
                 ;
 
-            // cout << "DRIN" << endl;
-
             if ((*P)[0] == 0)  // point done
                 continue;
-
-            // cout << "WAU WAU WAU" << endl;
 
 #pragma omp atomic
             nr_points_matched++;
@@ -1937,15 +1931,15 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                     if(last_coord)
                         finalize_latt_point(NewLattPoint, tn);
                     else{
-                        assert(NewLattPoint[0] == 1);
+                        // assert(NewLattPoint[0] == 1);
                         store_new_vector(NewLattPoint,tn);
-                        assert(Deg1Thread[tn].back()[0] == 1);
-                        for(auto& v: Deg1Thread[tn]){
+                        // assert(Deg1Thread[tn].back()[0] == 1);
+                        /* for(auto& v: Deg1Thread[tn]){ $$$$$
                             if(v[0] == 0){
                                 cout << "SCHLIMM " << endl;
                                 assert(false);
                             }
-                        }
+                        }*/
                     }
                         // Deg1Thread[tn].push_back(NewLattPoint);
                 }
@@ -1997,12 +1991,12 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         for (size_t i = 0; i < Deg1Thread.size(); ++i)
             NewLatticePoints.splice(NewLatticePoints.end(), Deg1Thread[i]);
 
-        for(auto& v: NewLatticePoints){
+        /* for(auto& v: NewLatticePoints){ $$$$$
             if(v[0] == 0){
                 cout << "SCHEISSE " << endl;
                 assert(false);
             }
-        }
+        } */
 
         if(!automs_minimized[coord]){
             for(size_t i = 0; i< automs_stat.size(); ++i){
@@ -2157,18 +2151,18 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
 
             // ***********************************   ascent to next patch
             time_to_ascent = MeasureTime(time_begin);
-            cout << "GOING TO " << this_patch +1;
-            size_t our_count1 = 0;
+            // cout << "GOING TO " << this_patch +1;
+            /* size_t our_count1 = 0;
             for(auto& v: NewLatticePoints){
             if(v[0] != 0)
                 our_count1++;
             }
             cout << " WITH " << NewLatticePoints.size() << " COUNT " << our_count1 << endl;
-            assert(NewLatticePoints.size() == our_count1);
+            assert(NewLatticePoints.size() == our_count1); */
 
             extend_points_to_next_coord(NewLatticePoints, this_patch + 1);
 
-            cout << "BACK ON " << this_patch << endl;
+            // cout << "BACK ON " << this_patch << endl;
             // ****************************************** down from next patch
 
             if(verbose && !talkative){
@@ -2250,17 +2244,17 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
             throw TimeBoundException("patching");
         }
 
-        size_t our_count = 0;
+        /* size_t our_count = 0;  $$$$$
         for(auto& v: LatticePoints){
             if(v[0] != 0)
                 our_count++;
-        }
+        } */
 
 
-        cout << "AUF " << this_patch <<" ENDE MATCHED " << nr_points_matched << "   " << " TO MATCH " << nr_to_match << endl;
-        cout << "COUNT " << our_count << endl;
+        /* cout << "AUF " << this_patch <<" ENDE MATCHED " << nr_points_matched << "   " << " TO MATCH " << nr_to_match << endl;
+        cout << "COUNT " << our_count << endl;   $$$$$
         if(our_count == 0)
-            assert(nr_points_matched == nr_to_match);
+            assert(nr_points_matched == nr_to_match); */
 
         if(nr_points_matched == nr_to_match)
             break;
