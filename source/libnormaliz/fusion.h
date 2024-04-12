@@ -197,7 +197,7 @@ void make_partition_input_from_fusion_data(const FusionBasic& FusionInput, Input
 vector<dynamic_bitset> make_all_subsets(const size_t card);
 vector<vector<key_t> > make_all_permutations(size_t n);
 vector<vector<key_t> > collect_coincidence_subset_keys(const vector<key_t>& type);
-vector<vector<key_t> > make_all_permutations(const vector<key_t>& v);
+vector<vector<key_t> > make_all_permutations(const vector<key_t>& v, const vector<key_t>& duality);
 vector<vector<key_t> > make_all_permutations(const vector<key_t>& type, const vector<key_t>& duality, const long& half_at);
 
 // void remove_global_fusion_data();

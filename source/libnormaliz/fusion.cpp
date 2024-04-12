@@ -48,6 +48,9 @@ vector<dynamic_bitset> make_all_subsets(const size_t card){
     dynamic_bitset sub_one_less(card -1);
     dynamic_bitset sub(card);
     for(auto& s: one_card_less){
+
+        INTERRUPT_COMPUTATION_BY_EXCEPTION
+
         for(size_t i = 0; i < card - 1; ++i)
             sub[i] = s[i];
         sub[card -1] = 0;
@@ -66,6 +69,9 @@ vector<vector<key_t> > make_all_permutations(const size_t n){
     for(key_t i=1; i<n; ++i){
         Perms.resize(i+1);
         for(key_t j=0;j<=i;++j){
+
+            INTERRUPT_COMPUTATION_BY_EXCEPTION
+
             for(key_t k=0; k< (key_t) Perms[i-1].size(); ++k){
                 vector<key_t> new_perm = Perms[i-1][k];
                 new_perm.resize(i+1);
@@ -79,24 +85,48 @@ vector<vector<key_t> > make_all_permutations(const size_t n){
     return Perms[n-1];
 }
 
-vector<vector<key_t> > make_all_permutations(const vector<key_t>& v){
+vector<vector<key_t> > make_all_permutations(const vector<key_t>& v, const vector<key_t>& duality){
 
     vector<vector<key_t> >Perms = make_all_permutations(v.size());
+    vector<vector<key_t> > KeyPerms;
+    vector<key_t> v_inv(duality.size());
+    for(size_t i = 0; i < v.size(); ++i)
+        v_inv[v[i]] = i;
+    vector<key_t> dual(v.size());
+    for(size_t i = 0; i < v.size(); ++i)
+        dual [i] = v_inv[duality[v[i]]];
     for(auto& w: Perms){
+
+        INTERRUPT_COMPUTATION_BY_EXCEPTION
+
+        bool comp = true;
+        for(size_t i = 0; i < v.size(); ++i){
+            if(dual[w[i]] != w[dual[i]]){
+                comp = false;
+                break;
+            }
+        }
+        if(!comp)
+            continue;
+
         vector<key_t> w_new(v.size());
         for(size_t i = 0; i< w.size(); ++i)
             w_new[i] = v[w[i]];
-        w = w_new;
+        KeyPerms.push_back(w_new);
     }
-    return Perms;
+    return KeyPerms;
 }
 
 vector<vector<key_t> > super_impose(const vector<vector<key_t> >& set_1, const vector<vector<key_t> >& set_2){
 
     vector<vector<key_t> > total;
     for(auto& v: set_1){
-        for(auto& w: set_2)
+        for(auto& w: set_2){
+
+            INTERRUPT_COMPUTATION_BY_EXCEPTION
+
             total.push_back(v_add(v,w));
+        }
     }
     return total;
 }
@@ -111,7 +141,7 @@ vector<vector<key_t> > make_all_permutations(const vector<key_t>& type,const vec
 
     for(auto& co: coincidence_keys){
         vector<vector<key_t> > ThisFullPerms;
-        auto Perms = make_all_permutations(co);
+        auto Perms = make_all_permutations(co, duality);
         vector<key_t> FullPerm(type.size());
         for(auto& p: Perms){
             for(size_t i = 0; i< p.size(); ++i){
