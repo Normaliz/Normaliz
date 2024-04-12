@@ -704,6 +704,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
         nr_extensions_for_elimination_equs *= 10;
     if(fusion.total_FPdim >= 10000)
         nr_extensions_for_elimination_equs *= 10;
+
+    FreeVectThread.resize(omp_get_max_threads());
 }
 
 //---------------------------------------------------------------------------
@@ -1364,6 +1366,64 @@ bool import_local_solutions(vector<vector<Integer> >& SavedLocalSolutions, const
 //--------------------------------------------------------------------------
 
 template <typename IntegerPL, typename IntegerRet>
+void ProjectAndLift<IntegerPL,IntegerRet>::store_new_vector(vector<IntegerRet> new_vect, const int tn){
+
+    for(auto& v: Deg1Thread[tn]){
+        if(v[0] == 0){
+            cout << "AM STÀRT KACKE" << endl;
+            assert(false);
+        }
+    }
+
+    bool vector_available = true;
+
+    if(FreeVectThread[tn].empty()){
+        if(FreeVect.empty()){
+            vector_available = false;
+        }
+        else{
+    #pragma omp critical(FREEVECT)
+            {
+            if(FreeVect.empty()) // must test again because another thread may have emtied FreeVect
+                vector_available = false;
+            else{  // vector_available is still true
+                // take 100 vectors from FreeVect or what you can get
+                auto F = FreeVect.begin();
+                size_t q;
+                for (q = 0; q < 100; ++q, ++F) {
+                    if (F == FreeVect.end())
+                        break;
+                }
+                if (q < 100)
+                    FreeVectThread[tn].splice(FreeVectThread[tn].begin(), FreeVect);
+                else
+                    FreeVectThread[tn].splice(FreeVectThread[tn].begin(), FreeVect, FreeVect.begin(), F);
+            } // FreeVect empty in critical
+            } // critical
+        } // FreeVect empty outer
+    } // FreeVectThread empty
+
+    if(vector_available){
+        Deg1Thread[tn].splice( Deg1Thread[tn].begin(),FreeVectThread[tn], FreeVectThread[tn].begin());
+        // swap(Deg1Thread[tn].back(), new_vect);
+        Deg1Thread[tn].front() = new_vect;
+        if(new_vect[0] == 0)
+            assert(false);
+    }
+    else
+        Deg1Thread[tn].push_front(new_vect);
+
+    for(auto& v: Deg1Thread[tn]){
+        if(v[0] == 0){
+            cout << "AM ENDE KACKE" << endl;
+            assert(false);
+        }
+    }
+}
+
+//--------------------------------------------------------------------------
+
+template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL,IntegerRet>::compute_local_solutions(const key_t this_patch,
                             list<vector<IntegerRet> >& start_list){
 
@@ -1725,6 +1785,16 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         for(key_t k = 0; k < Automs.size(); ++k)
             order_automs.push_back(k);
 
+        size_t our_count = 0;
+        for(auto& v: LatticePoints){
+            if(v[0] != 0)
+                our_count++;
+        }
+
+        cout << "TO MATCH " << nr_to_match << " COUNT " << our_count << endl;
+
+        // assert(our_count != 0);
+
 #pragma omp for schedule(dynamic)
         for (size_t ppp = 0; ppp < nr_to_match; ++ppp) {
 
@@ -1736,8 +1806,12 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
             for (; ppp < ppos; --ppos, --P)
                 ;
 
+            // cout << "DRIN" << endl;
+
             if ((*P)[0] == 0)  // point done
                 continue;
+
+            // cout << "WAU WAU WAU" << endl;
 
 #pragma omp atomic
             nr_points_matched++;
@@ -1859,10 +1933,21 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                     // nr_points_in_thread++;
 #pragma omp atomic
                     nr_new_latt_points++;
+                    // cout << "NEW " << nr_new_latt_points << endl;
                     if(last_coord)
                         finalize_latt_point(NewLattPoint, tn);
-                    else
-                        Deg1Thread[tn].push_back(NewLattPoint);
+                    else{
+                        assert(NewLattPoint[0] == 1);
+                        store_new_vector(NewLattPoint,tn);
+                        assert(Deg1Thread[tn].back()[0] == 1);
+                        for(auto& v: Deg1Thread[tn]){
+                            if(v[0] == 0){
+                                cout << "SCHLIMM " << endl;
+                                assert(false);
+                            }
+                        }
+                    }
+                        // Deg1Thread[tn].push_back(NewLattPoint);
                 }
 
             } // for i (inner for loop)
@@ -1871,6 +1956,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
 
 #pragma omp atomic
             nr_latt_points_processed++;
+            // cout << "PRO " << nr_latt_points_processed << endl;
             if(this_patch >= max_split_level &&  nr_new_latt_points > max_nr_new_latt_points_patching && !last_coord) {  // thread is full and we are allowed to break
                 skip_remaining = true;
 
@@ -1906,8 +1992,17 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
             // cout << "PPPP " << poly_equs_stat_total;
         }
 
+        assert(NewLatticePoints.empty());
+
         for (size_t i = 0; i < Deg1Thread.size(); ++i)
             NewLatticePoints.splice(NewLatticePoints.end(), Deg1Thread[i]);
+
+        for(auto& v: NewLatticePoints){
+            if(v[0] == 0){
+                cout << "SCHEISSE " << endl;
+                assert(false);
+            }
+        }
 
         if(!automs_minimized[coord]){
             for(size_t i = 0; i< automs_stat.size(); ++i){
@@ -2062,7 +2157,18 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
 
             // ***********************************   ascent to next patch
             time_to_ascent = MeasureTime(time_begin);
+            cout << "GOING TO " << this_patch +1;
+            size_t our_count1 = 0;
+            for(auto& v: NewLatticePoints){
+            if(v[0] != 0)
+                our_count1++;
+            }
+            cout << " WITH " << NewLatticePoints.size() << " COUNT " << our_count1 << endl;
+            assert(NewLatticePoints.size() == our_count1);
+
             extend_points_to_next_coord(NewLatticePoints, this_patch + 1);
+
+            cout << "BACK ON " << this_patch << endl;
             // ****************************************** down from next patch
 
             if(verbose && !talkative){
@@ -2074,7 +2180,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                  }
             }
         }
-        NewLatticePoints.clear();
+        // NewLatticePoints.clear();
+        FreeVect.splice(FreeVect.end(), NewLatticePoints);
 
         if(single_point_found)
             break;
@@ -2142,6 +2249,18 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
             errorOutput() << "expected time exceeds bound of " << GlobalPredictionTimeBound << " sec" << endl;
             throw TimeBoundException("patching");
         }
+
+        size_t our_count = 0;
+        for(auto& v: LatticePoints){
+            if(v[0] != 0)
+                our_count++;
+        }
+
+
+        cout << "AUF " << this_patch <<" ENDE MATCHED " << nr_points_matched << "   " << " TO MATCH " << nr_to_match << endl;
+        cout << "COUNT " << our_count << endl;
+        if(our_count == 0)
+            assert(nr_points_matched == nr_to_match);
 
         if(nr_points_matched == nr_to_match)
             break;
