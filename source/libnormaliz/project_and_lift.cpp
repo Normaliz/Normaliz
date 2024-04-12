@@ -1366,14 +1366,14 @@ bool import_local_solutions(vector<vector<Integer> >& SavedLocalSolutions, const
 //--------------------------------------------------------------------------
 
 template <typename IntegerPL, typename IntegerRet>
-void ProjectAndLift<IntegerPL,IntegerRet>::store_new_vector(vector<IntegerRet> new_vect, const int tn){
+void ProjectAndLift<IntegerPL,IntegerRet>::store_new_vector(const vector<IntegerRet>& new_vect, const int tn){
 
-    for(auto& v: Deg1Thread[tn]){
+    /* for(auto& v: Deg1Thread[tn]){ $$$$$$$
         if(v[0] == 0){
             cout << "AM STÀRT KACKE" << endl;
             assert(false);
         }
-    }
+    }*/
 
     bool vector_available = true;
 
@@ -1387,17 +1387,19 @@ void ProjectAndLift<IntegerPL,IntegerRet>::store_new_vector(vector<IntegerRet> n
             if(FreeVect.empty()) // must test again because another thread may have emtied FreeVect
                 vector_available = false;
             else{  // vector_available is still true
-                // take 100 vectors from FreeVect or what you can get
+                // take 1000 vectors from FreeVect or what you can get
                 auto F = FreeVect.begin();
                 size_t q;
-                for (q = 0; q < 100; ++q, ++F) {
+                for (q = 0; q < 1000; ++q, ++F) {
                     if (F == FreeVect.end())
                         break;
                 }
-                if (q < 100)
+                cout << "RECYLING " << q << " VECTORS" << endl;
+                if (q < 1000)
                     FreeVectThread[tn].splice(FreeVectThread[tn].begin(), FreeVect);
                 else
                     FreeVectThread[tn].splice(FreeVectThread[tn].begin(), FreeVect, FreeVect.begin(), F);
+                cout << "FREE " << FreeVect.size() << endl;
             } // FreeVect empty in critical
             } // critical
         } // FreeVect empty outer
@@ -1405,7 +1407,6 @@ void ProjectAndLift<IntegerPL,IntegerRet>::store_new_vector(vector<IntegerRet> n
 
     if(vector_available){
         Deg1Thread[tn].splice( Deg1Thread[tn].begin(),FreeVectThread[tn], FreeVectThread[tn].begin());
-        // swap(Deg1Thread[tn].back(), new_vect);
         Deg1Thread[tn].front() = new_vect;
         if(new_vect[0] == 0)
             assert(false);
@@ -1413,12 +1414,12 @@ void ProjectAndLift<IntegerPL,IntegerRet>::store_new_vector(vector<IntegerRet> n
     else
         Deg1Thread[tn].push_front(new_vect);
 
-    for(auto& v: Deg1Thread[tn]){
+    /* for(auto& v: Deg1Thread[tn]){    $$$$$
         if(v[0] == 0){
             cout << "AM ENDE KACKE" << endl;
             assert(false);
         }
-    }
+    } */
 }
 
 //--------------------------------------------------------------------------
@@ -1991,9 +1992,9 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         for (size_t i = 0; i < Deg1Thread.size(); ++i)
             NewLatticePoints.splice(NewLatticePoints.end(), Deg1Thread[i]);
 
-        /* for(auto& v: NewLatticePoints){ $$$$$
+        /* for(auto& v: NewLatticePoints){
             if(v[0] == 0){
-                cout << "SCHEISSE " << endl;
+                cout << "SCHEISSE QUADRAT" << endl;
                 assert(false);
             }
         } */
@@ -2175,7 +2176,21 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
             }
         }
         // NewLatticePoints.clear();
+        /* for(auto& v: NewLatticePoints){
+            if(v[0] == 0){
+                cout << "SCHEISSE 1" << endl;
+                assert(false);
+            }
+        } */
+
         FreeVect.splice(FreeVect.end(), NewLatticePoints);
+        cout << "NEW FREE " << FreeVect.size() << endl;
+        /* for(auto& v: FreeVect){
+            if(v[0] == 0){
+                cout << "SCHEISSE" << endl;
+                assert(false);
+            }
+        }*/
 
         if(single_point_found)
             break;
