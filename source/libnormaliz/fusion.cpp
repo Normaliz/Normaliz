@@ -1017,6 +1017,48 @@ Matrix<Integer> FusionComp<Integer>::make_add_constraints_for_grading(const vect
 }
 
 template <typename Integer>
+void write_inhom_eq_as_lp(const Matrix<Integer>& Equ){
+
+    string file_name = global_project+ ".lp";
+    ofstream lp_out(file_name);
+    size_t lhs_dim = Equ.nr_of_columns() -1;
+    lp_out << "max:  ;" << endl;
+    /*for(size_t i = 0; i < lhs_dim; ++i){
+        lp_out << " + x" + to_string(i+1);
+    }
+    lp_out << ";" << endl;*/
+    for(size_t i = 0; i < Equ.nr_of_rows(); ++i){
+        for(size_t j = 0; j < lhs_dim; ++j){
+            if(Equ[i][j] == 0)
+                continue;
+            if (Equ[i][j] > 0){
+                if(Equ[i][j] == 1){
+                    lp_out << " x" << to_string(j+1);
+                    continue;
+                }
+                lp_out << " + " << Equ[i][j] << " x" << to_string(j+1);
+            }
+           if (Equ[i][j] < 0){
+                if(Equ[i][j] == -1){
+                    lp_out << " - x" << to_string(j+1);
+                    continue;
+                }
+                lp_out << " - " << Iabs<Integer>(Equ[i][j]) << " x" << to_string(j+1);
+            }
+        }
+        lp_out << " = " << -Equ[i][lhs_dim] << ";" << endl;
+    }
+    for(size_t j = 0; j < lhs_dim; ++j){
+        lp_out << "x" << to_string(j+1) + " >= 0;" << endl;
+    }
+    lp_out << "int ";
+    for(size_t j = 0; j < lhs_dim - 1; ++j){
+        lp_out << "x" << to_string(j+1) << ",";
+    }
+    lp_out << "x" << to_string(lhs_dim) << ";" << endl;
+}
+
+template <typename Integer>
 Matrix<Integer> FusionComp<Integer>::make_linear_constraints(const vector<Integer>& d){
 
     if(libnormaliz::verbose)
@@ -1043,6 +1085,9 @@ Matrix<Integer> FusionComp<Integer>::make_linear_constraints(const vector<Intege
             Equ.append(this_equ);
         }
     }
+
+    write_inhom_eq_as_lp(Equ);
+    // Equ.print(global_project,"equ");
 
     Matrix<Integer> GradEqu(0, nr_coordinates + 1);
     half_at = -1;
@@ -1093,6 +1138,8 @@ Matrix<Integer> FusionComp<Integer>::make_linear_constraints_partition(const vec
     Equ.remove_duplicate_and_zero_rows();
     if(libnormaliz::verbose)
         verboseOutput() << "Made " << Equ.nr_of_rows() << " inhom linear equations in " << Equ.nr_of_columns() -1 << " unknowns " << endl;
+
+    write_inhom_eq_as_lp(Equ);
 
     // Equ.pretty_print(cout);
     return Equ;
