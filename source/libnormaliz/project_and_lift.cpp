@@ -1394,12 +1394,12 @@ void ProjectAndLift<IntegerPL,IntegerRet>::store_new_vector(const vector<Integer
                     if (F == FreeVect.end())
                         break;
                 }
-                cout << "RECYLING " << q << " VECTORS" << endl;
+                // cout << "RECYLING " << q << " VECTORS" << endl;
                 if (q < 1000)
                     FreeVectThread[tn].splice(FreeVectThread[tn].begin(), FreeVect);
                 else
                     FreeVectThread[tn].splice(FreeVectThread[tn].begin(), FreeVect, FreeVect.begin(), F);
-                cout << "FREE " << FreeVect.size() << endl;
+                // cout << "FREE " << FreeVect.size() << endl;
             } // FreeVect empty in critical
             } // critical
         } // FreeVect empty outer
@@ -2184,7 +2184,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         } */
 
         FreeVect.splice(FreeVect.end(), NewLatticePoints);
-        cout << "NEW FREE " << FreeVect.size() << endl;
+        // cout << "NEW FREE " << FreeVect.size() << endl;
         /* for(auto& v: FreeVect){
             if(v[0] == 0){
                 cout << "SCHEISSE" << endl;
