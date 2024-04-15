@@ -911,6 +911,7 @@ InputMap<Number> readNormalizInput(istream& in,
     bool we_have_a_polynomial = false;
     bool convert_equations = false;
     no_lattice_data = false; // in general.h and cpp
+    write_lp_file = false; // in general.h and cpp
     size_t length_weight = 0;
     bool monoid_read = false;
     bool lattice_ideal_read = false;
@@ -1082,6 +1083,10 @@ InputMap<Number> readNormalizInput(istream& in,
                 }
                 if (type_string == "no_lattice_data") {
                     no_lattice_data = true;
+                    continue;
+                }
+                if (type_string == "write_lp_file") {
+                    write_lp_file = true;
                     continue;
                 }
                 if (type_string == "list_polynomials") {

@@ -62,6 +62,7 @@ int thread_limit = default_thread_limit;
 bool parallelization_set = false;
 bool no_output_on_interrupt = false;
 bool no_lattice_data = false;
+bool write_lp_file = false;
 bool save_local_solutions = false;
 
 // bool test_arithmetic_overflow = false;

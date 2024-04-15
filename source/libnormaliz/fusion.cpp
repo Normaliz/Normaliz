@@ -1019,6 +1019,9 @@ Matrix<Integer> FusionComp<Integer>::make_add_constraints_for_grading(const vect
 template <typename Integer>
 void write_inhom_eq_as_lp(const Matrix<Integer>& Equ){
 
+    if(verbose)
+        verboseOutput() << "Writing inhomogeneous equations in lp format" << endl;
+
     string file_name = global_project+ ".lp";
     ofstream lp_out(file_name);
     size_t lhs_dim = Equ.nr_of_columns() -1;
