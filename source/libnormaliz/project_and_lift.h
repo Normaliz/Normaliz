@@ -80,6 +80,10 @@ class ProjectAndLift {
 
     size_t StartRank;
 
+    list<vector<IntegerRet> > FreeVect;
+    vector<list<vector<IntegerRet> > > FreeVectThread;
+    void store_new_vector(const vector<IntegerRet>& new_vect, const int tn);
+
     vector<list<vector<IntegerRet> > > Deg1Thread;
     vector<vector<num_t> > h_vec_pos_thread;
     vector<vector<num_t> > h_vec_neg_thread;
