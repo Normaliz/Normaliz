@@ -5,3 +5,4 @@ SingleLatticePoint
 parallel_threads 1
 NoWeights
 ShortInt
+NoMatricesOutput

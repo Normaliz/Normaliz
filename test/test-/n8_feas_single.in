@@ -171,3 +171,4 @@ constraints 168
 nonnegative
 SingleLatticePoint
 parallel_threads 1
+NoMatricesOutput

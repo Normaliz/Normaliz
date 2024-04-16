@@ -1089,7 +1089,8 @@ Matrix<Integer> FusionComp<Integer>::make_linear_constraints(const vector<Intege
         }
     }
 
-    write_inhom_eq_as_lp(Equ);
+    if(write_lp_file)
+        write_inhom_eq_as_lp(Equ);
     // Equ.print(global_project,"equ");
 
     Matrix<Integer> GradEqu(0, nr_coordinates + 1);
@@ -1142,7 +1143,8 @@ Matrix<Integer> FusionComp<Integer>::make_linear_constraints_partition(const vec
     if(libnormaliz::verbose)
         verboseOutput() << "Made " << Equ.nr_of_rows() << " inhom linear equations in " << Equ.nr_of_columns() -1 << " unknowns " << endl;
 
-    write_inhom_eq_as_lp(Equ);
+    if(write_lp_file)
+        write_inhom_eq_as_lp(Equ);
 
     // Equ.pretty_print(cout);
     return Equ;

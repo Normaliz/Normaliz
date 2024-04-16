@@ -1755,10 +1755,6 @@ void Cone<Integer>::find_lower_and_upper_bounds(){
             zero_one = false;
     }
 
-    cout << "UUUUUUUUUUUUUUUU " << endl;
-    for(size_t i = 0; i < UpperBoundsLattP.size(); ++i)
-        cout << i+1 << "   " << UpperBoundsLattP[i] << endl;
-
     // cout << "BBBBBB " << positive_and_bounded << endl;
 
    //  BoundingInequalitiesLattP.debug_print();

@@ -172,3 +172,4 @@ nonnegative
 SingleLatticePoint
 NoPatching
 parallel_threads 1
+NoMatricesOutput
