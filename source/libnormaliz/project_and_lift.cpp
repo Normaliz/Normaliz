@@ -2889,6 +2889,8 @@ void ProjectAndLift<IntegerPL, IntegerRet>::lift_points_to_this_dim(list<vector<
 
     list<vector<IntegerRet> > Deg1Lifted;  // to this dimension if < EmbDim
 
+    max_nr_new_latt_points_total = libnormaliz::max_nr_new_latt_points_total;
+
     size_t max_nr_per_thread = max_nr_new_latt_points_total / omp_get_max_threads();
 
     size_t nr_to_lift = Deg1Proj.size();

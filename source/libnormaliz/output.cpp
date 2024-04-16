@@ -337,7 +337,7 @@ void Output<Integer>::write_matrix_mod(const Matrix<Integer>& M) const {
 
 template <typename Integer>
 void Output<Integer>::write_matrix_lat(const Matrix<Integer>& M) const {
-    if (ext == true) {
+    if (lat == true) {
         M.print(name, "lat");
     }
 }
@@ -1659,7 +1659,8 @@ void Output<Integer>::write_files() {
         }
 
        if (Result->isComputed(ConeProperty::SingleLatticePoint)) {
-            if (Result->getSingleLatticePoint().size() > 0) {
+           // output can be suppressed in tests because non-uniqueness of the lattice point
+            if (Result->getSingleLatticePoint().size() > 0 && !no_matrices_output) {
                 out << "Lattice point:" << endl;
                 out <<  Result->getSingleLatticePoint();
             }
