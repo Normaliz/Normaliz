@@ -171,9 +171,6 @@ void ProjectAndLift<IntegerPL,IntegerRet>::restrict_congruences() {
             new_cong.back() = Congs[j].back();
             AllCongs[i].append(new_cong);
         }
-        // assert(AllCongs[i].nr_of_columns() == AllSupps[i].nr_of_columns() +1);
-        //cout << "iiiiiiiiiiii " << i << endl;
-        // AllCongs[i].debug_print('-');
     }
 }
 
@@ -477,17 +474,12 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
         vector<dynamic_bitset> DummyInd;
         LocalSuppsReordered.remove_duplicate_and_zero_rows();
         ProjectAndLift<IntegerPL, IntegerRet> PL(LocalSuppsReordered, DummyInd, 0); // 0 is dummy
-        //if(coord < 15)
-        //    LocalSuppsReordered.debug_print('~');
         PL.set_LLL(false);
         PL.set_primitive();
         PL.set_verbose(false);
         PL.set_short_int(use_short_int);
         PL.set_congruences(LocalCongsReordered);
-        //if(coord < 15)
-        //   LocalCongsReordered.debug_print('#');
         PL.compute_projections_primitive(LocalKey.size());
-        // cout << "In local PLs" << endl;
         PL.add_congruences_from_equations();
         PL.restrict_congruences();
         if(false){ // verbose){
@@ -518,25 +510,13 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
         // now we find the congruences that can be restricted to new_covered, but not to
         // covered or AllPatches[coord]
 
-        /*cout << "Covered " << bitset_to_key(covered) << endl;
-        cout << "NewCovered " << bitset_to_key(new_covered) << endl;
-        cout << "AllPatches " << bitset_to_key(AllPatches[coord]) << endl;*/
         for(size_t i = 0; i < Congs.nr_of_rows(); ++i){
-            /*if(Congs[i][6] != 0 && Congs[i][37] != 0){
-                cout << Congs[i];
-                cout << "Indicator " << bitset_to_key(CongIndicator[i]) << endl;
-                cout << "New " << CongIndicator[i].is_subset_of(new_covered) << endl;
-                cout << "Cov " << CongIndicator[i].is_subset_of(covered) << endl;
-                cout << " Pat " << CongIndicator[i].is_subset_of(AllPatches[coord]) << endl;
-            }*/
             if(!CongIndicator[i].is_subset_of(new_covered))
                 continue;
             if(CongIndicator[i].is_subset_of(covered))
                 continue;
             if(CongIndicator[i].is_subset_of(AllPatches[coord]))
                 continue;
-            /*if(Congs[i][6] != 0 && Congs[i][36] != 0)
-                cout << "*********" << Congs[i];*/
             AllCongsRestricted[coord].push_back(OurPolynomialCong<IntegerRet>(Congs[i]));
         }
 
@@ -566,7 +546,6 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
                 if(can_be_restricted){
                     vector<IntegerRet> inequ;
                     convert(inequ, AllSupps[EmbDim][i]);
-                    // cout << "*** " << inequ;
                     ExtraInequalities.append(inequ);
                 }
              }
@@ -1264,14 +1243,6 @@ void select_and_split(list<vector<Integer> >& LatticePoints, const key_t& this_p
         }
         PreSelection.clear();
     }
-    /*
-    long i = 0;
-    for(auto& p: LatticePoints){
-        if(i% split_modulus == split_residue){
-            Selection.push_back(p);
-        }
-        i++;
-    }*/
 
     size_t nr_left = LatticePoints.size();
     size_t nr_per_split = nr_left / split_modulus;
@@ -1290,8 +1261,6 @@ void select_and_split(list<vector<Integer> >& LatticePoints, const key_t& this_p
 
     if(split_residue + 1 == split_modulus)
         assert(nr_left == last);
-
-    // cout << "********** " << nr_left << " " << split_residue << " " << nr_per_split << " " << start << " " << last << endl;
 
     size_t i = 0;
     for(auto& p: LatticePoints){
@@ -1315,15 +1284,12 @@ void ProjectAndLift<IntegerPL,IntegerRet>::prepare_split(list<vector<IntegerRet>
     auto& intersection_key = AllIntersections_key[coord];
 
     for(size_t i = 0; i < our_split.nr_split_levels; ++i){
-        // cout << "ii " << i << " done_indices " << our_split.this_split_done_indices;
         if(this_patch == our_split.this_split_levels[i]){
-            // cout << "Drin patch " << this_patch << endl;
             long split_modulus = our_split.split_moduli[i];
             long split_residue = our_split.this_split_residues[i];
             size_t done_indices = 0;
             size_t total_indices = 0;
             if(i >= 1){
-                // cout << "%%% " << our_split.nr_split_levels << " ref " << our_split.this_refinement << " diff " << i + 1 - our_split.this_refinement << endl;
                 done_indices = our_split.this_split_done_indices[i - 1];
                 total_indices = our_split.this_split_total_indices[i - 1];
                 assert(LatticePoints.size() == total_indices);
@@ -1364,16 +1330,10 @@ bool import_local_solutions(vector<vector<Integer> >& SavedLocalSolutions, const
 }
 
 //--------------------------------------------------------------------------
-
+// Recyccling of lattice points in patching algorithm. Unclear whetehr it has much effect
+// on time or RAM usage. See 3.10.2 for straight version without recyccling.
 template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL,IntegerRet>::store_new_vector(const vector<IntegerRet>& new_vect, const int tn){
-
-    /* for(auto& v: Deg1Thread[tn]){ $$$$$$$
-        if(v[0] == 0){
-            cout << "AM STÀRT KACKE" << endl;
-            assert(false);
-        }
-    }*/
 
     bool vector_available = true;
 
@@ -1394,12 +1354,10 @@ void ProjectAndLift<IntegerPL,IntegerRet>::store_new_vector(const vector<Integer
                     if (F == FreeVect.end())
                         break;
                 }
-                // cout << "RECYLING " << q << " VECTORS" << endl;
                 if (q < 1000)
                     FreeVectThread[tn].splice(FreeVectThread[tn].begin(), FreeVect);
                 else
                     FreeVectThread[tn].splice(FreeVectThread[tn].begin(), FreeVect, FreeVect.begin(), F);
-                // cout << "FREE " << FreeVect.size() << endl;
             } // FreeVect empty in critical
             } // critical
         } // FreeVect empty outer
@@ -1413,13 +1371,6 @@ void ProjectAndLift<IntegerPL,IntegerRet>::store_new_vector(const vector<Integer
     }
     else
         Deg1Thread[tn].push_front(new_vect);
-
-    /* for(auto& v: Deg1Thread[tn]){    $$$$$
-        if(v[0] == 0){
-            cout << "AM ENDE KACKE" << endl;
-            assert(false);
-        }
-    } */
 }
 
 //--------------------------------------------------------------------------
@@ -1556,15 +1507,6 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_local_solutions(const key_t t
 template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vector<IntegerRet> >& LatticePoints, const key_t this_patch) {
 
-    /* if(LatticePoints.size() == 1){
-        for(size_t i = 0; i < LatticePoints.front().size(); ++i){
-            cout << i << " --- " << LatticePoints.front()[i];
-            if(LatticePoints.front()[i] != 0)
-                cout << "!!!!!!!!!";
-            cout << endl;
-        }
-    }*/
-
     const size_t coord = InsertionOrderPatches[this_patch]; // the coord marking this patch
 
     // for easier access and simpler code
@@ -1610,8 +1552,6 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
     }
 
     StartTime();
-
-    // cout << NrRemainingLP;
 
     size_t min_fall_back = 0;
     bool min_found = false;
@@ -1786,14 +1726,6 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         for(key_t k = 0; k < Automs.size(); ++k)
             order_automs.push_back(k);
 
-        /* size_t our_count = 0;   $$$$$
-        for(auto& v: LatticePoints){
-            if(v[0] != 0)
-                our_count++;
-        }
-
-        cout << "TO MATCH " << nr_to_match << " COUNT " << our_count << endl; */
-
 #pragma omp for schedule(dynamic)
         for (size_t ppp = 0; ppp < nr_to_match; ++ppp) {
 
@@ -1906,7 +1838,6 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                             r = 0;
                         for(size_t i = 0; i < CoveredKey.size(); ++i){
                             key_t image = Automorphisms[Automs[*pp]][CoveredKey[i]];
-                            // cout << "image " << image << " --- " << covered.size() << endl;
                             if(covered[image]){
                                 key_t inverse_image = CoveredKeyInverse[image];
                                 restricted_conjugate[inverse_image] = restricted[i];
@@ -1928,21 +1859,12 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                     // nr_points_in_thread++;
 #pragma omp atomic
                     nr_new_latt_points++;
-                    // cout << "NEW " << nr_new_latt_points << endl;
                     if(last_coord)
                         finalize_latt_point(NewLattPoint, tn);
                     else{
-                        // assert(NewLattPoint[0] == 1);
                         store_new_vector(NewLattPoint,tn);
-                        // assert(Deg1Thread[tn].back()[0] == 1);
-                        /* for(auto& v: Deg1Thread[tn]){ $$$$$
-                            if(v[0] == 0){
-                                cout << "SCHLIMM " << endl;
-                                assert(false);
-                            }
-                        }*/
+                        // Deg1Thread[tn].push_back(NewLattPoint); // straight version
                     }
-                        // Deg1Thread[tn].push_back(NewLattPoint);
                 }
 
             } // for i (inner for loop)
@@ -1951,7 +1873,6 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
 
 #pragma omp atomic
             nr_latt_points_processed++;
-            // cout << "PRO " << nr_latt_points_processed << endl;
             if(this_patch >= max_split_level &&  nr_new_latt_points > max_nr_new_latt_points_patching && !last_coord) {  // thread is full and we are allowed to break
                 skip_remaining = true;
 
@@ -1976,7 +1897,6 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                     for(size_t j = 0; j < poly_equs_stat[0].size(); ++j)
                         poly_equs_stat_total[j] += poly_equs_stat[i][j];
             }
-            // cout << "PPPP " << poly_equs_stat_total;
         }
 
         if(!poly_inequs_minimized[coord]){
@@ -1984,7 +1904,6 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                     for(size_t j = 0; j < poly_inequs_stat[0].size(); ++j)
                         poly_inequs_stat_total[j] += poly_inequs_stat[i][j];
             }
-            // cout << "PPPP " << poly_equs_stat_total;
         }
 
         assert(NewLatticePoints.empty());
@@ -1992,19 +1911,11 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         for (size_t i = 0; i < Deg1Thread.size(); ++i)
             NewLatticePoints.splice(NewLatticePoints.end(), Deg1Thread[i]);
 
-        /* for(auto& v: NewLatticePoints){
-            if(v[0] == 0){
-                cout << "SCHEISSE QUADRAT" << endl;
-                assert(false);
-            }
-        } */
-
         if(!automs_minimized[coord]){
             for(size_t i = 0; i< automs_stat.size(); ++i){
                     for(size_t j = 0; j < automs_stat[0].size(); ++j)
                         automs_stat_total[j] += automs_stat[i][j];
             }
-            // cout << "PPPP " << poly_equs_stat_total;
         }
 
         if(last_coord)
@@ -2016,14 +1927,11 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         // Heuristic minimization of equations etc.
         // *******************************************
         if(!poly_equs_minimized[coord] &&  nr_extensions > nr_extensions_for_elimination_equs){
-            // cout << "nr_extensions " << nr_extensions << " nr_extensions_for_elimination_equs"  << nr_extensions_for_elimination_equs << endl;
             poly_equs_minimized[coord] = true;
              vector < pair<OurPolynomial<IntegerRet>, OurPolynomial<IntegerRet> > > EffectivePolys;
             for(size_t i = 0; i < PolyEqusThread[0].size(); ++i){
                 if(poly_equs_stat_total[i] > 0){
                     EffectivePolys.push_back(PolyEqusThread[0][i]);
-                    // dynamic_bitset supp = PolyEqusThread[0][i].first.support | PolyEqusThread[0][i].second.support;
-                    // cout << "Poly " << supp.count() << " --- " << CoveredKey.size() << endl;
                 }
             }
 
@@ -2148,22 +2056,9 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
             for(size_t i = this_patch + 2; i < NrNodes.size(); ++i)
                 NrNodes[i] = 1;
 
-            // cout << "NrNodes " <<  NrNodes;
-
             // ***********************************   ascent to next patch
             time_to_ascent = MeasureTime(time_begin);
-            // cout << "GOING TO " << this_patch +1;
-            /* size_t our_count1 = 0;
-            for(auto& v: NewLatticePoints){
-            if(v[0] != 0)
-                our_count1++;
-            }
-            cout << " WITH " << NewLatticePoints.size() << " COUNT " << our_count1 << endl;
-            assert(NewLatticePoints.size() == our_count1); */
-
             extend_points_to_next_coord(NewLatticePoints, this_patch + 1);
-
-            // cout << "BACK ON " << this_patch << endl;
             // ****************************************** down from next patch
 
             if(verbose && !talkative){
@@ -2175,22 +2070,9 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                  }
             }
         }
-        // NewLatticePoints.clear();
-        /* for(auto& v: NewLatticePoints){
-            if(v[0] == 0){
-                cout << "SCHEISSE 1" << endl;
-                assert(false);
-            }
-        } */
 
         FreeVect.splice(FreeVect.end(), NewLatticePoints);
-        // cout << "NEW FREE " << FreeVect.size() << endl;
-        /* for(auto& v: FreeVect){
-            if(v[0] == 0){
-                cout << "SCHEISSE" << endl;
-                assert(false);
-            }
-        }*/
+        // NewLatticePoints.clear(); // straight version
 
         if(single_point_found)
             break;
@@ -2209,37 +2091,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
             // -------------------------------
 
             TimeToLevel[this_patch + 1] = NrNodes[this_patch] * time_to_ascent + TimeToLevel[this_patch];
-
             total_expected_time = TimeToLevel[this_patch] + NrNodes[this_patch + 1] * time_spent + TimeSinceStart();
-
-            /* cout << "time_to_ascent " << time_to_ascent << endl;
-            cout << "time_spent " << time_spent << endl;
-            cout << "NrNodes " <<  NrNodes;
-            cout << "TimeToLevel " << TimeToLevel; */
-
             // -------------------------
-
-            /*
-            total_expected_time = time_spent;
-            double factor =1.0;
-            bool found = false;
-            for(size_t i = 0; i <= this_patch; ++i){
-                if(!found && ExpectedNrRounds[i] == 0)
-                    continue;
-                if(!found && ExpectedNrRounds[i] != 0){
-                    found = true;
-                    factor *= ExpectedNrRounds[i];
-                    // cout << i << " --- " << ExpectedNrRounds[i] << " --- " << factor << endl;
-                    continue;
-                }
-                factor *= (ExpectedNrRounds[i] +1);
-                // cout << i << " --- " << ExpectedNrRounds[i] + 1 << " --- " << factor << endl;
-            }
-            total_expected_time *= factor;
-            // total_expected_time += expected_time;
-            total_expected_time += TimeSinceStart() - time_spent;
-            */
-
         }
 
         if(time_measured){
@@ -2259,26 +2112,12 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
             throw TimeBoundException("patching");
         }
 
-        /* size_t our_count = 0;  $$$$$
-        for(auto& v: LatticePoints){
-            if(v[0] != 0)
-                our_count++;
-        } */
-
-
-        /* cout << "AUF " << this_patch <<" ENDE MATCHED " << nr_points_matched << "   " << " TO MATCH " << nr_to_match << endl;
-        cout << "COUNT " << our_count << endl;   $$$$$
-        if(our_count == 0)
-            assert(nr_points_matched == nr_to_match); */
-
         if(nr_points_matched == nr_to_match)
             break;
 
         // Here we record what has been done on the lowest level to which we reurn for further work
         // this information is compeletely written whenever qwe return here.
         if(is_split_patching && this_patch == min_return_patch){
-
-            // cout << "Writing " << this_patch << " " << min_return_patch << endl;
 
             ofstream prel_data;
             prel_data.open(lat_file_name, ofstream::app);
@@ -2406,10 +2245,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::reorder_coordinates(){
             NewOrder.push_back(i);
     }
     AllSupps[EmbDim].permute_columns(NewOrder);
-
     PolyEquations.permute_variables(NewOrder);
-    // cout << PolyEquations[0] << endl;;
-
     PolyInequalities.permute_variables(NewOrder);
 }
 
@@ -2839,17 +2675,14 @@ bool ProjectAndLift<IntegerPL, IntegerRet>::fiber_interval(IntegerRet& MinInterv
     if (check_supps > 1000 && dim < EmbDim && !no_relax)
         check_supps = 1000;
     for (size_t j = 0; j < check_supps; ++j) {
-        INTERRUPT_COMPUTATION_BY_EXCEPTION
 
-        // cout << "SSSSS " << Supps[Order[j]];
+        INTERRUPT_COMPUTATION_BY_EXCEPTION
 
         IntegerPL Den = Supps[Order[j]].back();
         if (Den == 0)
             continue;
         IntegerPL Num = -v_scalar_product_vectors_unequal_lungth(LiftedGen, Supps[Order[j]]);
-        // cout << "Num " << Num << endl;
         IntegerRet Bound = 0;
-        // frac=(Num % Den !=0);
         if (Den > 0) {  // we must produce a lower bound of the interval
             Bound = ceil_quot<IntegerRet, IntegerPL>(Num, Den);
             if (FirstMin || Bound > MinInterval) {
@@ -3090,8 +2923,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::lift_points_to_this_dim(list<vector<
 
                 try {
                     IntegerRet MinInterval = 0, MaxInterval = 0;  // the fiber over *p is an interval -- 0 to make gcc happy
-                    fiber_interval(MinInterval, MaxInterval, *p);
-                    // cout << "Min " << MinInterval << " Max " << MaxInterval << endl;
+                    fiber_interval(MinInterval, MaxInterval, *p);;
                     IntegerRet add_nr_Int = 0;
                     if (MaxInterval >= MinInterval)
                         add_nr_Int = 1 + MaxInterval - MinInterval;
@@ -3118,16 +2950,10 @@ void ProjectAndLift<IntegerPL, IntegerRet>::lift_points_to_this_dim(list<vector<
                             }
 
                             if (!AllCongs[dim].check_congruences(NewPoint)){
-// #pragma omp atomic
-                                // nr_cong_killed++;
                                 continue;
                             }
 
                             if (dim == EmbDim) {
-                                /*if(our_counter % 1000 == 0)
-                                    cout << "Counter LP " << our_counter << endl;
-#pragma omp atomic
-                                our_counter++;*/
                                 finalize_latt_point(NewPoint, tn);
                             }
                             else{
@@ -3154,15 +2980,11 @@ void ProjectAndLift<IntegerPL, IntegerRet>::lift_points_to_this_dim(list<vector<
 
         }  // pararllel
 
-        // cout << "CONG KILLED " << nr_cong_killed << " Congs " << AllCongs[dim].nr_of_rows()  <<  endl;
-
         if (!(tmp_exception == 0))
             std::rethrow_exception(tmp_exception);
 
         for (size_t i = 0; i < Deg1Thread.size(); ++i)
             Deg1Lifted.splice(Deg1Lifted.begin(), Deg1Thread[i]);
-
-        // Matrix<IntegerRet>(Deg1Lifted).debug_print();
 
         if (dim == EmbDim){
             collect_results(Deg1Lifted);
@@ -3548,7 +3370,6 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute(bool all_points, bool liftin
     }
 
     if(fusion.nr_coordinates > 0 && fusion.nr_coordinates != EmbDim -1){
-        // cout << "SSSSSSSSSSSSSSSS " << fusion.nr_coordinates << endl;
         throw BadInputException("Wrong number of coordinates in fusion data. Mismatch of duality or commutativity.");
     }
 
@@ -3584,7 +3405,6 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute(bool all_points, bool liftin
             Grading = LLL_Coordinates.to_sublattice_dual_no_div(Grading);
     }
 
-    // cout << "Global Global Global" << endl;
     add_congruences_from_equations();
     restrict_congruences();
 
