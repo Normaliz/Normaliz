@@ -55,6 +55,7 @@ bool verbose = false;
 bool constructor_verbose = true;
 bool polynomial_verbose = false;
 bool talkative = false;
+bool running_input_file = false;
 
 volatile sig_atomic_t nmz_interrupted = 0;
 const int default_thread_limit = 8;
@@ -63,6 +64,7 @@ bool parallelization_set = false;
 bool no_output_on_interrupt = false;
 bool no_lattice_data = false;
 bool write_lp_file = false;
+bool check_fusion_grading = false;
 bool save_local_solutions = false;
 
 // bool test_arithmetic_overflow = false;

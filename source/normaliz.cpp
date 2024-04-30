@@ -173,6 +173,8 @@ int main(int argc, char* argv[]){
     ProfilerStart("normaliz.prof");
 #endif
 
+    running_input_file = true; // used to print output files directly
+
     verb_length = 0;
 
     // signal handler for interrupt

@@ -242,8 +242,26 @@ FusionBasic::FusionBasic(){
     candidate_given = false;
     fusion_rank = 0;
     type_and_duality_set = false;
+    automorphisms_mde = false;
     total_FPdim = 0;
     half_at = -1;
+}
+
+template<typename Integer>
+FusionBasic::FusionBasic(const FusionComp<Integer>& FC){
+    commutative = FC.commutative;
+    Z_2_graded = false;
+    candidate_given = FC.candidate_given;
+    fusion_rank = FC.fusion_rank;
+    fusion_type = FC.fusion_type;
+    duality = FC.duality;
+    type_and_duality_set = true;
+    total_FPdim = FC.total_FPdim;
+    fusion_type_string = FC.fusion_type_string;
+    subring_base_key = FC.subring_base_key;
+    //Automorphisms = FC.Automorphisms; // not needed at pressent
+    //type_automs = F:type_automs;
+    automorphisms_mde = FC.automorphisms_mde;
 }
 
 void  FusionBasic::data_from_mpq_input(ifstream& cone_in){
@@ -509,6 +527,9 @@ FusionComp<Integer>::FusionComp(const FusionBasic& basic){
     type_and_duality_set = basic.type_and_duality_set;
     total_FPdim = basic.total_FPdim;
     half_at = basic.half_at;
+    Automorphisms = basic.Automorphisms;
+    type_automs = basic.type_automs;
+    automorphisms_mde = basic.automorphisms_mde;
 }
 
 template <typename Integer>
@@ -518,7 +539,8 @@ void FusionComp<Integer>::initialize(){
     use_automorphisms = false;
     // select_iso_classes = false;
     verbose = false;
-    activated = false;
+    // activated = false;
+    automorphisms_mde = false;
     type_and_duality_set =false;
     commutative = false;
     Z_2_graded = false;
@@ -530,17 +552,27 @@ void FusionComp<Integer>::initialize(){
 template <typename Integer>
 void FusionComp<Integer>::make_automorphisms(){
 
+    if(automorphisms_mde)
+        return;
+
     make_CoordMap();
 
     /* cout <<  "Coord " << CoordMap.size() << endl;
     cout << "Type " << fusion_type << endl;
-    cout << "duality " << duality;*/
+    cout << "duality " << duality;
+    cout << "half at " << half_at << endl;*/
 
-    auto type_automs = make_all_permutations(fusion_type,duality, half_at);
+    type_automs = make_all_permutations(fusion_type,duality, half_at);
+
+    /*cout << "type automs " << type_automs.size() << endl;
+     cout << "selected_ind_tuples " << selected_ind_tuples.size() << endl;*/
 
     for(auto& p: type_automs){
         vector<key_t> coord_perm(1); // must start with 0 !!!!
         for(auto& t: selected_ind_tuples){
+
+            INTERRUPT_COMPUTATION_BY_EXCEPTION
+
             vector<key_t> image;
             for(auto& c: t)
                 image.push_back(p[c]);
@@ -548,8 +580,9 @@ void FusionComp<Integer>::make_automorphisms(){
         }
         Automorphisms.push_back(coord_perm);
     }
-    if(verbose)
+    if(libnormaliz::verbose)
         verboseOutput() << "Fusion data automorphism group of order " << Automorphisms.size() << " computed" << endl;
+    automorphisms_mde = true;
 }
 
 
@@ -587,8 +620,8 @@ void FusionComp<Integer>::set_options(const ConeProperties& ToCompute, const boo
     // select_simple = ToCompute.test(ConeProperty::SelectSimple);
     use_automorphisms = ToCompute.test(ConeProperty::FusionRings) || ToCompute.test(ConeProperty::SimpleFusionRings);
     // select_iso_classes = ToCompute.test(ConeProperty::FusionIsoClasses);
-    if(check_simplicity || use_automorphisms)
-        activated = true;
+    /* if(check_simplicity || use_automorphisms)
+        activated = true;*/
     if(check_simplicity)
         prepare_simplicity_check();
     if(use_automorphisms)
@@ -1062,6 +1095,357 @@ void write_inhom_eq_as_lp(const Matrix<Integer>& Equ){
 }
 
 template <typename Integer>
+bool FusionComp<Integer>::compatible_duality(const vector<dynamic_bitset >& parts, const string& group_type){
+
+    if(group_type == "C2"){
+        dynamic_bitset duals(fusion_rank);
+        for(size_t i = 0; i < fusion_rank; ++i){
+            if(parts[1][i] != 0)
+                duals[duality[i]] = 1;
+        }
+        if(duals != parts[1])
+            return false;
+        return true;
+    }
+    if(group_type == "C3"){
+        dynamic_bitset duals(fusion_rank);
+        for(size_t i = 0; i < fusion_rank; ++i){
+            if(parts[1][i] != 0)
+                duals[duality[i]] = 1;
+        }
+        if(duals != parts[2])
+            return false;
+    }
+    if(group_type == "C2xC2"){
+        for(size_t k = 1; k < 4; ++k){
+            dynamic_bitset duals(fusion_rank);
+            for(size_t i = 0; i < fusion_rank; ++i){
+                if(parts[1][i] != 0)
+                    duals[duality[i]] = 1;
+            }
+            if(duals != parts[k])
+                return false;
+        }
+    }
+    if(group_type == "C4"){
+        long order_2_at = -1;
+        for(size_t k = 1; k < 4; ++k){
+            dynamic_bitset duals(fusion_rank);
+            for(size_t i = 0; i < fusion_rank; ++i){
+                if(parts[1][i] != 0)
+                    duals[duality[i]] = 1;
+            }
+            if(duals == parts[k]){
+                order_2_at = k;
+                break;
+            }
+        }
+        if(order_2_at == -1)
+            return false;
+
+        vector<long> grad_dual;
+        for(size_t k = 1; k < 4; ++k){
+            if(k != order_2_at)
+                grad_dual.push_back(k);
+        }
+
+        dynamic_bitset duals(fusion_rank);
+        for(size_t i = 0; i < fusion_rank; ++i){
+            if(parts[grad_dual[0]][i] != 0)
+                duals[duality[i]] = 1;
+        }
+        if(duals != parts[grad_dual[1]])
+            return false;
+    }
+    return true;
+}
+
+
+template <typename Integer>
+bool is_divisible(Integer& part_FPdim,const Integer& full_FPdim, const size_t&group_order){
+
+    if(full_FPdim % group_order != 0)
+        return false;
+    part_FPdim = full_FPdim / group_order;
+    return true;
+}
+
+#ifdef ENFNORMALIZ
+template <>
+bool is_divisible(renf_elem_class& part_FPdim,const renf_elem_class& full_FPdim, const size_t&group_order){
+
+    part_FPdim = full_FPdim / group_order;
+    return true;
+}
+#endif
+
+
+
+template <typename Integer>
+vector<dynamic_bitset> make_subsets_FPdim(const vector<Integer>& d, const Integer&part_FPdim, const vector<dynamic_bitset>& AllSubsets){
+
+    dynamic_bitset group(d.size());
+    for(size_t i = 0; i < d.size(); ++i){
+            if(d[i] > 1)
+                break;
+        group[i] = 1;
+    }
+
+    vector<dynamic_bitset> subsets_FPdim;
+    for(auto& S: AllSubsets){
+        Integer test_FPdim = 0;
+        for(size_t i = 0; i < S.size(); ++i){
+            if(!S[i])
+                continue;
+            test_FPdim += d[i]*d[i];
+            if(test_FPdim > part_FPdim)
+                break;
+        }
+        if(S[0] && !group.is_subset_of(S))
+            continue;
+        if(test_FPdim == part_FPdim)
+            subsets_FPdim.push_back(S);
+    }
+    cout << subsets_FPdim;
+    return subsets_FPdim;
+}
+
+
+void all_partitions(vector<dynamic_bitset>& Partitions, dynamic_bitset partition, const vector<dynamic_bitset>& subsets_FPdim,
+               size_t index, dynamic_bitset already_covered, const size_t& group_order, size_t level){
+
+    if(level == group_order){
+        Partitions.push_back(partition);
+        return;
+    }
+
+    for(size_t i = index; i < subsets_FPdim.size(); ++i){
+        dynamic_bitset intersect = already_covered & subsets_FPdim[i];
+        if(intersect.any())
+            continue;
+        dynamic_bitset covered = already_covered | subsets_FPdim[i];
+        dynamic_bitset new_partition = partition;
+        new_partition[i] = 1;
+        all_partitions(Partitions, new_partition, subsets_FPdim, i + 1, covered, group_order, level +1);
+    }
+}
+
+vector<dynamic_bitset> sort_part(const vector<dynamic_bitset>& to_be_sorted){
+
+    vector<dynamic_bitset> sorted;
+    map<int,int> sort_map;
+    for(size_t i = 0; i < to_be_sorted.size(); ++i)
+        sort_map[to_be_sorted[i].find_first()] = i;
+    for(auto& q: sort_map)
+        sorted.push_back(to_be_sorted[q.second]);
+    return sorted;
+}
+
+template <typename Integer>
+vector<vector<dynamic_bitset> > make_FPdim_partitions(const vector<Integer>& d, const Integer& part_FPdim, const size_t& group_order,
+                                                      vector<dynamic_bitset>& AllSubsets){
+
+    vector<dynamic_bitset> subsets_FPdim = make_subsets_FPdim(d, part_FPdim, AllSubsets);
+    vector<dynamic_bitset> Partitions;
+    dynamic_bitset partition(subsets_FPdim.size());
+    dynamic_bitset already_covered(d.size());
+
+    all_partitions(Partitions, partition, subsets_FPdim, 0, already_covered, group_order, 0);
+
+    dynamic_bitset group(group_order);
+    group.flip();
+
+    vector<vector<dynamic_bitset> > FPdimParts;
+    for(auto& p :Partitions){
+        vector<key_t> selection = bitset_to_key(p);
+        vector<dynamic_bitset> FPdimPart;
+        vector<dynamic_bitset> FPdimPart_sorted;
+        for(auto& c: selection)
+           FPdimPart.push_back(subsets_FPdim[c]);
+        // sort(FPdimPart.begin(), FPdimPart.end());
+
+        FPdimParts.push_back(sort_part(FPdimPart));
+    }
+    cout << "----------" << endl;
+    for(auto& p: FPdimParts){
+        for(auto& q:p)
+            cout << bitset_to_key(q);
+        cout << "------------" << endl;
+    }
+    return FPdimParts;
+}
+
+template <typename Integer>
+vector<vector<dynamic_bitset> > FusionComp<Integer>::make_part_classes(const vector<vector<dynamic_bitset> >& GradPartitions){
+
+    vector<vector<dynamic_bitset> > PartNormalForms;
+    for(auto& part: GradPartitions){
+        bool is_normal_form = true;
+        for(auto& aut: type_automs){
+            vector<dynamic_bitset> cand;
+            for(auto& p: part){
+                dynamic_bitset image(part.front().size());
+                for(size_t i = 0; i < p.size(); ++i){
+                    if(p[i])
+                        image[aut[i]] = 1;
+                }
+                cand.push_back(image);
+            }
+            cand = sort_part(cand);
+            if(cand < part){
+                is_normal_form = false;
+                break;
+            }
+        }
+        if(is_normal_form)
+            PartNormalForms.push_back(part);
+    }
+    return PartNormalForms;
+
+}
+
+template <typename Integer>
+vector< vector<int> > FusionComp<Integer>::make_grad_mult_table(const vector<dynamic_bitset>& part){
+
+    size_t group_order = part.size();
+
+    vector<key_t> in_comp(fusion_rank);
+    for(size_t k = 0; k < group_order; ++k){
+        for(size_t i = 0; i < part[k].size(); ++i){
+            if(!part[k][i])
+                continue;
+            in_comp[i] = k;
+        }
+    }
+     cout << "--------------" << endl;
+     cout << in_comp;
+
+     vector< vector<int> > MultTable(group_order, vector<int>(group_order,-1));
+     for(size_t i = 0; i < group_order; ++i){
+         MultTable[0][i] = i;
+         MultTable[i][0] = i;
+     }
+     cout << "--------------" << endl;
+     cout << MultTable;
+     vector<key_t> inverse(group_order);
+     for(size_t i = 0; i < group_order; ++i){
+         size_t k = part[i].find_first();
+         inverse[i] = in_comp[duality[k]];
+     }
+     cout << "--------------" << endl;
+     cout << inverse;
+     for(size_t i = 0; i < group_order; ++i){
+        MultTable[inverse[i]][i] = 0;
+        MultTable[i][inverse[i]] = 0;
+     }
+    cout << "--------------" << endl;
+    for(size_t i = 1; i < group_order; ++i){
+        dynamic_bitset defined(group_order);
+        dynamic_bitset used(group_order);
+        for(size_t j = 1; j < group_order; ++j){
+            if(MultTable[i][j] >= 0){
+                defined[j] = 1;
+                used[MultTable[i][j]] = 1;
+            }
+        }
+        for(size_t j = 1; j < group_order; ++j){
+            if(defined[j])
+                continue;
+            int third = -2;
+            for(size_t k = 1; k < group_order; ++k){
+                if(k == i || k == j)
+                    continue;
+                if(used[k])
+                    continue;
+                third = k;
+            }
+            MultTable[i][j] = third;
+            defined[j] = 1;
+            used[third] =1;
+        }
+    }
+    cout << MultTable;
+    cout << "--------------" << endl;
+    return MultTable;
+}
+
+
+template <typename Integer>
+bool FusionComp<Integer>::make_grading(const vector<Integer>& d,
+            vector< vector<dynamic_bitset> >& GradPartitions, vector<vector<int> >& GradMultTable){
+
+    size_t group_order = 0;
+    for(auto& t: d){
+        if(t == 1)
+            group_order++;
+        if(t > 1)
+            break;
+    }
+    if(group_order == 1)
+        return false;
+    if(group_order > 4)
+        return false;
+    string group_type;
+    if(group_order == 2)
+        group_type = "C2";
+    if(group_order == 3){
+        group_type = "C3";
+        if(duality[1] != 2)
+            return false;
+    }
+    if(group_order == 4){
+        if(duality[1] == 1 && duality[2] == 2)
+            group_type == "C2xC2";
+        else
+            group_type = "C4";
+    }
+
+    /*
+    GradMultTable.resize(group_order);
+    // GradMultTable = makeMultTable(group_order, group_type);
+    for(auto& z: GradMultTable)
+        z.resize(group_order);*/
+
+    Integer full_FPdim = 0;
+    for(auto& t: d)
+        full_FPdim += t*t;
+    Integer part_FPdim;
+    if(!is_divisible(part_FPdim,full_FPdim, group_order))
+        return false;
+
+    vector<dynamic_bitset> AllSubsets = make_all_subsets(fusion_rank);
+    vector<vector<dynamic_bitset> > FPdimParts = make_FPdim_partitions(d, part_FPdim, group_order, AllSubsets);
+    for(auto& P: FPdimParts){
+        if(compatible_duality(P, group_type))
+            GradPartitions.push_back(P);
+    }
+    // identify partitions that are conjugate under automorphisms
+    make_automorphisms();
+    vector<vector<dynamic_bitset> > PartNormalForms = make_part_classes(GradPartitions);
+
+    if(PartNormalForms.empty()){
+        if(libnormaliz::verbose)
+            verboseOutput() << "No drading partition found" << endl;;
+        return false;
+    }
+    if(libnormaliz::verbose){
+        verboseOutput() << PartNormalForms.size() << " grading partitions found:" << endl;
+        size_t i = 0;
+        for(auto& P: PartNormalForms){
+            i++;
+            verboseOutput() << "Grading " << i << endl;
+            for(auto& p: P)
+             verboseOutput() << bitset_to_key(p);
+        }
+    }
+
+
+    GradMultTable = make_grad_mult_table(PartNormalForms[0]);
+
+ return true;
+}
+
+template <typename Integer>
 Matrix<Integer> FusionComp<Integer>::make_linear_constraints(const vector<Integer>& d){
 
     if(libnormaliz::verbose)
@@ -1092,6 +1476,23 @@ Matrix<Integer> FusionComp<Integer>::make_linear_constraints(const vector<Intege
     if(write_lp_file)
         write_inhom_eq_as_lp(Equ);
     // Equ.print(global_project,"equ");
+
+    vector<vector<int> > GradMultTable;
+
+    if(check_fusion_grading){
+        vector<vector<dynamic_bitset> > GradPartitions;
+        bool has_grading = make_grading(d, GradPartitions, GradMultTable);
+        if(!has_grading){
+            if(running_input_file){
+                FusionBasic aux_fusion(*this);
+                Matrix<Integer> Empty(0,nr_coordinates);
+                if(verbose)
+                    verboseOutput() << "Writing output file with 0 fusion rings" << endl;
+                write_fusion_files(aux_fusion,global_project,true,true,nr_coordinates, Empty, Empty,false);
+                throw NoComputationException("No modular fusion grading found");
+            }
+        }
+    }
 
     Matrix<Integer> GradEqu(0, nr_coordinates + 1);
     half_at = -1;
@@ -1527,7 +1928,7 @@ void split_into_simple_and_nonsimple(const FusionBasic& basic, Matrix<Integer>& 
     FusionComp<Integer> fusion(basic);
     // cout << fusion.fusion_rank << endl;
     fusion.select_simple = true;
-    fusion.activated = true;
+    // fusion.activated = true;
     fusion.verbose = false;
     fusion.prepare_simplicity_check();
     SimpleFusionRings = fusion.do_select_simple(FusionRings);

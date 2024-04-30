@@ -42,6 +42,9 @@ using std::set;
 using std::ifstream;
 using std::pair;
 
+template <typename Integer>
+class FusionComp;
+
 class FusionBasic {
 
 public:
@@ -61,9 +64,16 @@ public:
     double total_FPdim;
     long half_at;
 
+    vector<vector<key_t> > Automorphisms; // permutations of the coordinates
+    vector<vector<key_t> > type_automs; // permutations of the basis vectors
+    bool automorphisms_mde;
+
     // pair<bool, bool> read_data(const bool only_test);
 
     FusionBasic();
+
+    template<typename Integer>
+    FusionBasic(const FusionComp<Integer>& FC);
 
     template <typename Integer>
     void read_data_from_input(InputMap<Integer>& input_data);
@@ -96,6 +106,7 @@ public:
     bool check_simplicity;
     bool select_simple;
     bool candidate_given;
+    bool automorphisms_mde;
 
     bool use_automorphisms;
     bool select_iso_classes;
@@ -121,7 +132,8 @@ public:
     vector<vector<key_t> > selected_ind_tuples; // the lex smallest in each FrobRec set
     map<set<vector<key_t> >, key_t> CoordMap;
 
-    vector<vector<key_t> > Automorphisms;
+    vector<vector<key_t> > Automorphisms; // permutations of the coordinates
+    vector<vector<key_t> > type_automs; // permutations of the basis vectors
     vector<dynamic_bitset> Orbits;
 
     vector<vector<Matrix<Integer> > > AllTables;
@@ -174,6 +186,11 @@ public:
     void tables_for_all_rings(const Matrix<Integer>& rings);
     vector<Matrix<Integer> > make_all_data_tables(const vector<Integer>& ring);
     Matrix<Integer> data_table(const vector<Integer>& ring, const size_t i);
+
+    bool make_grading(const vector<Integer>& d, vector<vector<dynamic_bitset> >& GradPartition, vector<vector<int> >& GradMultTablee);
+    vector<vector<dynamic_bitset> > make_part_classes(const vector<vector<dynamic_bitset> >& GradPartitions);
+    bool compatible_duality(const vector<dynamic_bitset >& parts, const string& group_type);
+    vector< vector<int> > make_grad_mult_table(const vector<dynamic_bitset>& part);
 };
 
 // helpers
@@ -316,6 +333,9 @@ void make_full_input(FusionBasic& FusionInput, InputMap<Integer>& input_data, se
     FusionComp<Integer> OurFusion(FusionInput);
     vector<Integer> full_type = input_data[Type::fusion_type][0];
     Matrix<Integer> Equ = OurFusion.make_linear_constraints(full_type);
+    FusionInput.automorphisms_mde = OurFusion.automorphisms_mde;
+    swap(FusionInput.Automorphisms,OurFusion.Automorphisms);
+    swap(FusionInput.type_automs, OurFusion.type_automs);
     FusionInput.half_at = OurFusion.half_at;
     Matrix<Integer> InEqu = Equ;
     Integer MinusOne = -1;
