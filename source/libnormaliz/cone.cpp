@@ -815,6 +815,7 @@ void Cone<Integer>::process_multi_input_inner(InputMap<Integer>& multi_input_dat
 
     if(contains(multi_input_data, Type::fusion_type)) {
         set<map<vector<key_t>, Integer> > Polys;
+        fusion_type_input =multi_input_data[Type::fusion_type][0];
         make_full_input(FusionBasicCone, multi_input_data, Polys);
         // we use the same conventions as the production of PolynomiualWquations
         // from strings, Polys use input coordinates counting from 1
@@ -2204,6 +2205,7 @@ void Cone<Integer>::initialize() {
     face_codim_bound = -1;
     gb_degree_bound = -1;
     gb_min_degree = -1,
+    modular_grading = -1;
 
     keep_convex_hull_data = false;
     conversion_done = false;
@@ -3439,6 +3441,17 @@ vector<size_t> Cone<Integer>::getDualFVectorOrbits() {
     return dual_f_vector_orbits;
 }
 
+template <typename Integer>
+const vector<vector<dynamic_bitset> >& Cone<Integer>::getModularGradings(){
+    compute(ConeProperty::ModularGradings);
+    return FusionBasicCone.ModularGradings;
+}
+template <typename Integer>
+size_t Cone<Integer>::getNrModularGradings(){
+    compute(ConeProperty::ModularGradings);
+    return FusionBasicCone.ModularGradings.size();
+}
+
 //---------------------------------------------------------------------------
 
 template <typename Integer>
@@ -4538,7 +4551,8 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
 
     // Note: the situation that the following lines take care of can
     // only arise with a traditional input file -- so no dager if called via libnormaliz
-    if(!is_fusion &&(ToCompute.test(ConeProperty::FusionRings) || ToCompute.test(ConeProperty::SimpleFusionRings))){
+    if(!is_fusion &&(ToCompute.test(ConeProperty::FusionRings) || ToCompute.test(ConeProperty::SimpleFusionRings)
+            || ToCompute.test(ConeProperty::ModularGradings)  )){
         if(verbose)
             verboseOutput() << "Trying to get fusion data from file name" << endl;
         FusionBasicCone.data_from_string(global_project, false);
@@ -4551,10 +4565,18 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     if(is_fusion_partition)
         ToCompute.set_fusion_partition_default();
 
-    if(ToCompute.test(ConeProperty::FusionRings) || ToCompute.test(ConeProperty::SimpleFusionRings) || is_fusion)
+    if(ToCompute.test(ConeProperty::FusionRings) || ToCompute.test(ConeProperty::SimpleFusionRings)
+        || ToCompute.test(ConeProperty::ModularGradings) || is_fusion)
         ToCompute.check_fusion_ring_props();
 
     ToCompute.set_preconditions(inhomogeneous, using_renf<Integer>());
+
+    make_modular_gradings(ToCompute);
+
+    ToCompute.reset(is_Computed);
+    if (ToCompute.none()) {
+        LEAVE_CONE return ConeProperties();
+    }
 
     if (using_renf<Integer>())
         ToCompute.check_Q_permissible(true);  // after implications!
@@ -6520,6 +6542,9 @@ void Cone<Integer>::setNumericalParams(const map<NumParam::Param, long>& num_par
     np = num_params.find(NumParam::gb_min_degree);
     if (np != num_params.end())
         setGBMinDegree(np->second);
+    np = num_params.find(NumParam::modular_grading);
+    if (np != num_params.end())
+        setModularGraing(np->second);
 }
 
 template <typename Integer>
@@ -6603,6 +6628,17 @@ void Cone<Integer>::setExpansionDegree(long degree) {
     IntData.set_expansion_degree(degree);
     HSeries.set_expansion_degree(degree);
     EhrSeries.set_expansion_degree(degree);
+}
+
+template <typename Integer>
+void Cone<Integer>::setModularGraing(long mod_gr) {
+    modular_grading = mod_gr;
+    is_Computed.reset(ConeProperty::FusionRings);
+    is_Computed.reset(ConeProperty::SimpleFusionRings);
+    is_Computed.reset(ConeProperty::NonsimpleFusionRings);
+    FusionRings.resize(0);
+    SimpleFusionRings.resize(0);
+    NonsimpleFusionRings.resize(0);
 }
 
 template <typename Integer>
@@ -9610,6 +9646,22 @@ void Cone<Integer>::resetProjectionCoords(const vector<Integer>& lf) {
     for (size_t i = 0; i < lf.size(); ++i)
         if (lf[i] != 0)
             projection_coord_indicator[i] = true;
+}
+//---------------------------------------------------------------------------
+
+template <typename Integer>
+void Cone<Integer>::make_modular_gradings(ConeProperties& ToCompute){
+
+    if(!(ToCompute.test(ConeProperty::ModularGradings) || ToCompute.test(ConeProperty::UseModularGrading)) )
+        return;
+
+    FusionBasicCone.make_gradings(fusion_type_input);
+    if(ToCompute.test(ConeProperty::ModularGradings)){
+        setComputed(ConeProperty::ModularGradings);
+        return;
+    }
+
+    exit(0);
 }
 
 //---------------------------------------------------------------------------

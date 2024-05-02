@@ -317,6 +317,7 @@ class Cone {
     void setBlocksizeHollowTri(long block_size);
     void setGBDegreeBound(const long degree_bound);
     void setGBMinDegree(const long min_degree);
+    void setModularGraing(long mod_gr);
 
     void setProjectName(const string& my_project);
     string getProjectName() const;
@@ -497,6 +498,9 @@ class Cone {
 
     const map<dynamic_bitset, int>& getDualFaceLatticeOrbits();
     vector<size_t> getDualFVectorOrbits();
+
+    const vector<vector<dynamic_bitset> >& getModularGradings();
+    size_t getNrModularGradings();
 
     // the actual grading is Grading/GradingDenom
     vector<Integer> getGrading();
@@ -706,6 +710,7 @@ class Cone {
     Matrix<Integer> SimpleFusionRings;
     Matrix<Integer> NonsimpleFusionRings;
     vector<vector<Matrix<Integer> > > FusionTables; // to avoid the name FusionData
+    vector<Integer> fusion_type_input;
 
     HilbertSeries HSeries;
     HilbertSeries EhrSeries;
@@ -796,6 +801,7 @@ class Cone {
     long block_size_hollow_tri;
     long gb_degree_bound;
     long gb_min_degree;
+    long modular_grading;
 
     // if this is true we allow to change to a smaller integer type in the computation
     bool change_integer_type;
@@ -855,6 +861,7 @@ class Cone {
                 const vector<long long>& ValuesGradingOnMonoid,
                 bool verbose);
 
+    void make_modular_gradings(ConeProperties& ToCompute);
     void try_symmetrization(ConeProperties& ToCompute);
     void try_approximation_or_projection(ConeProperties& ToCompute);
     void make_fusion_data(ConeProperties& ToCompute);

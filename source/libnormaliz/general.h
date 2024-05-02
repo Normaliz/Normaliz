@@ -120,7 +120,6 @@ NORMALIZ_DLL_EXPORT extern bool int_max_value_primary_long_long_computed;
 NORMALIZ_DLL_EXPORT extern bool no_output_on_interrupt;
 NORMALIZ_DLL_EXPORT extern bool no_lattice_data;
 NORMALIZ_DLL_EXPORT extern bool write_lp_file;
-NORMALIZ_DLL_EXPORT extern bool check_fusion_grading;
 
 #ifdef NMZ_EXTENDED_TESTS
 NORMALIZ_DLL_EXPORT extern bool test_arith_overflow_full_cone, test_arith_overflow_dual_mode;

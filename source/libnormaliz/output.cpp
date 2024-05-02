@@ -1238,6 +1238,11 @@ void Output<Integer>::write_files() {
         return;
     }
 
+    if(Result->isComputed(ConeProperty::ModularGradings)){
+        write_modular_gradings(name, Result->getModularGradings());
+        return;
+    }
+
     size_t i, nr;
     vector<libnormaliz::key_t> rees_ideal_key;
 
@@ -1919,6 +1924,23 @@ void Output<Integer>::write_files() {
     write_Stanley_dec();
 }
 
+void write_modular_gradings(const string& name, const vector<vector<dynamic_bitset> >& modular_gradings){
+
+    string name_open = name + ".out";  // preparing output files
+    ofstream out(name_open);
+    out << modular_gradings.size() << " modular gradings" << endl;
+    out << endl;
+    out << "***********************************************************************" << endl << endl;
+    out << modular_gradings.size() << " modular gradings:" << endl;
+    for(size_t i = 0; i < modular_gradings.size(); ++i){
+
+        out << "modular grading " << i + 1 << endl << endl;
+        for(auto& p: modular_gradings[i])
+            out << bitset_to_key(p);
+        out << "---------------------" << endl;
+    }
+}
+
 
 template <typename Integer>
 void write_fusion_files(const FusionBasic fusion_basic, const string& name, const bool simple_fusion_rings,
@@ -1973,7 +1995,7 @@ void write_fusion_files(const FusionBasic fusion_basic, const string& name, cons
 
         vector<Integer> dehom(embdim);
         dehom.back() = 1;
-        out << "Embedding dimension " << embdim << endl;
+        out << "Embedding dimension = " << embdim << endl;
         out << endl;
         out << "dehomogenization" << endl;
         out << dehom;

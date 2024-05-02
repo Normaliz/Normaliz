@@ -173,6 +173,8 @@ void write_fusion_files(const FusionBasic basic, const string& name, const bool 
                                          const Matrix<Integer>& NonSimpleFusionRings,
                                          const bool no_matrices_output);
 
+void write_modular_gradings(const string& name, const vector<vector<dynamic_bitset> >& modular_gradings);
+
 }  // namespace libnormaliz
 
 //---------------------------------------------------------------------------

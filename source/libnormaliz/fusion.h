@@ -50,7 +50,7 @@ class FusionBasic {
 public:
 
     bool commutative;
-    bool Z_2_graded;
+    bool use_modular_grading;
     bool candidate_given;
     bool type_and_duality_set;
 
@@ -64,9 +64,14 @@ public:
     double total_FPdim;
     long half_at;
 
-    vector<vector<key_t> > Automorphisms; // permutations of the coordinates
+    vector<vector<dynamic_bitset> > ModularGradings;
+    size_t group_order;
+    string group_type;
+    vector<vector<int> > GradMultTablee;
+    vector<dynamic_bitset> chosen_modular_grading;
+
     vector<vector<key_t> > type_automs; // permutations of the basis vectors
-    bool automorphisms_mde;
+    bool type_automs_made;
 
     // pair<bool, bool> read_data(const bool only_test);
 
@@ -86,6 +91,14 @@ public:
     pair<bool, bool> data_from_string(const string& our_fusion, const bool return_on_failure);
 
     void do_write_input_file(InputMap<mpq_class>&  input) const;
+
+    template <typename Integer>
+    bool make_gradings(const vector<Integer>& d);
+    vector<vector<dynamic_bitset> > make_part_classes(const vector<vector<dynamic_bitset> >& GradPartitions);
+    bool compatible_duality(const vector<dynamic_bitset >& parts);
+    vector< vector<int> > make_grad_mult_table(const vector<dynamic_bitset>& part);
+
+    void make_type_automs();
 };
 
 template <typename Integer>
@@ -101,12 +114,13 @@ public:
     bool verbose;
 
     bool commutative;
-    bool Z_2_graded;
+    bool use_modular_grading;
 
     bool check_simplicity;
     bool select_simple;
     bool candidate_given;
     bool automorphisms_mde;
+    bool type_automs_made;
 
     bool use_automorphisms;
     bool select_iso_classes;
@@ -186,11 +200,6 @@ public:
     void tables_for_all_rings(const Matrix<Integer>& rings);
     vector<Matrix<Integer> > make_all_data_tables(const vector<Integer>& ring);
     Matrix<Integer> data_table(const vector<Integer>& ring, const size_t i);
-
-    bool make_grading(const vector<Integer>& d, vector<vector<dynamic_bitset> >& GradPartition, vector<vector<int> >& GradMultTablee);
-    vector<vector<dynamic_bitset> > make_part_classes(const vector<vector<dynamic_bitset> >& GradPartitions);
-    bool compatible_duality(const vector<dynamic_bitset >& parts, const string& group_type);
-    vector< vector<int> > make_grad_mult_table(const vector<dynamic_bitset>& part);
 };
 
 // helpers
@@ -271,11 +280,11 @@ void FusionBasic::read_data_from_input(InputMap<Integer>& input_data){
         if(prel_duality[0] == -1 || prel_duality[0] == -3) {
             commutative = true;
             if(prel_duality[0] == -3)
-                Z_2_graded = true;
+                use_modular_grading = true;
             prel_duality[0] = 0;
         }
         if(prel_duality[0] == -2) {
-            Z_2_graded = true;
+            use_modular_grading = true;
             prel_duality[0] = 0;
         }
         duality.resize(fusion_rank);
@@ -333,8 +342,8 @@ void make_full_input(FusionBasic& FusionInput, InputMap<Integer>& input_data, se
     FusionComp<Integer> OurFusion(FusionInput);
     vector<Integer> full_type = input_data[Type::fusion_type][0];
     Matrix<Integer> Equ = OurFusion.make_linear_constraints(full_type);
-    FusionInput.automorphisms_mde = OurFusion.automorphisms_mde;
-    swap(FusionInput.Automorphisms,OurFusion.Automorphisms);
+    // FusionInput.type_aiutoms_mde = OurFusion.automorphisms_mde;
+    // swap(FusionInput.Automorphisms,OurFusion.Automorphisms);
     swap(FusionInput.type_automs, OurFusion.type_automs);
     FusionInput.half_at = OurFusion.half_at;
     Matrix<Integer> InEqu = Equ;
@@ -351,6 +360,100 @@ void make_full_input(FusionBasic& FusionInput, InputMap<Integer>& input_data, se
 
     Polys = OurFusion.make_associativity_constraints();
 
+}
+
+template <typename Integer>
+inline bool is_divisible(Integer& part_FPdim,const Integer& full_FPdim, const size_t&group_order){
+
+    if(full_FPdim % group_order != 0)
+        return false;
+    part_FPdim = full_FPdim / group_order;
+    return true;
+}
+
+#ifdef ENFNORMALIZ
+template <>
+inline bool is_divisible(renf_elem_class& part_FPdim,const renf_elem_class& full_FPdim, const size_t&group_order){
+
+    part_FPdim = full_FPdim / group_order;
+    return true;
+}
+#endif
+
+template <typename Integer>
+vector<vector<dynamic_bitset> > make_FPdim_partitions(const vector<Integer>& d, const Integer& part_FPdim, const size_t& group_order,
+                                                      vector<dynamic_bitset>& AllSubsets);
+
+template <typename Integer>
+bool FusionBasic::make_gradings(const vector<Integer>& d){
+
+    group_order = 0;
+    for(auto& t: d){
+        if(t == 1)
+            group_order++;
+        if(t > 1)
+            break;
+    }
+    if(group_order == 1)
+        return false;
+    if(group_order > 4)
+        return false;
+    string group_type;
+    if(group_order == 2)
+        group_type = "C2";
+    if(group_order == 3){
+        group_type = "C3";
+        if(duality[1] != 2)
+            return false;
+    }
+    if(group_order == 4){
+        if(duality[1] == 1 && duality[2] == 2)
+            group_type == "C2xC2";
+        else
+            group_type = "C4";
+    }
+
+    /*
+    GradMultTable.resize(group_order);
+    // GradMultTable = makeMultTable(group_order, group_type);
+    for(auto& z: GradMultTable)
+        z.resize(group_order);*/
+
+    Integer full_FPdim = 0;
+    for(auto& t: d)
+        full_FPdim += t*t;
+    Integer part_FPdim;
+    if(!is_divisible(part_FPdim,full_FPdim, group_order))
+        return false;
+
+    vector<dynamic_bitset> AllSubsets = make_all_subsets(fusion_rank);
+    vector<vector<dynamic_bitset> > FPdimParts = make_FPdim_partitions(d, part_FPdim, group_order, AllSubsets);
+    vector< vector<dynamic_bitset> > GradPartitions;
+    for(auto& P: FPdimParts){
+        if(compatible_duality(P))
+            GradPartitions.push_back(P);
+    }
+    // identify partitions that are conjugate under automorphisms
+    make_type_automs();
+    ModularGradings = make_part_classes(GradPartitions);
+
+    if(ModularGradings.empty()){
+        if(libnormaliz::verbose)
+            verboseOutput() << "No drading partition found" << endl;;
+        return false;
+    }
+    if(libnormaliz::verbose){
+        verboseOutput() << ModularGradings.size() << " grading partitions found:" << endl;
+        size_t i = 0;
+        for(auto& P: ModularGradings){
+            i++;
+            verboseOutput() << "Grading " << i << endl;
+            for(auto& p: P)
+             verboseOutput() << bitset_to_key(p);
+        }
+    }
+
+ return true;
 }
 
 }  // end namespace libnormaliz

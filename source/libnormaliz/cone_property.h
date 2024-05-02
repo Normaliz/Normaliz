@@ -83,6 +83,7 @@ enum Enum {
     SimpleFusionRings,
     NonsimpleFusionRings,
     FusionRings,
+    ModularGradings,
     END_ENUM_RANGE(LAST_MATRIX),
 
     START_ENUM_RANGE(FIRST_MATRIX_FLOAT),
@@ -258,6 +259,7 @@ enum Enum {
     LinearOrderPatches,
     CongOrderPatches,
     MinimizePolyEquations,
+    UseModularGrading,
     //
     Dynamic,
     Static,
