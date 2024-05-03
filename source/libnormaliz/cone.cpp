@@ -9668,11 +9668,7 @@ void Cone<Integer>::make_modular_gradings(ConeProperties& ToCompute){
     if(FusionBasicCone.ModularGradings.size() == 0)
         throw BadInputException("UseModularGrading asked for fusaion input qithout modular grading");
     if((modular_grading <= 0 && FusionBasicCone.ModularGradings.size() > 1)
-        || modular_grading > (long) FusionBasicCone.ModularGradings.size()){
-        cout << modular_grading << " " << FusionBasicCone.ModularGradings.size() << endl;
-        cout << (modular_grading > FusionBasicCone.ModularGradings.size()) << endl;
-
-        cout << (modular_grading <= 0 && FusionBasicCone.ModularGradings.size() > 1) << endl;
+        || modular_grading > static_cast<long>(FusionBasicCone.ModularGradings.size())){
         throw BadInputException("modular_grading not chosen or out of tange");
     }
 

@@ -1590,8 +1590,6 @@ NMZTESTS +=						\
 	test-Int/[1,5,5,5,6,7,7][-1,1,2,3,4,5,6].ref	\
 	test-fus/bracket_4_comm.in			\
 	test-fus/bracket_4_comm_z2.in			\
-	test-fus/bracket_4.in				\
-	test-fus/bracket_4_z2.in			\
 	test-fus/bracket_4_comm.ref			\
 	test-fus/bracket_4_comm_z2.ref			\
 	test-fus/bracket_4.ref				\
