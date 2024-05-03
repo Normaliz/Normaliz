@@ -62,12 +62,11 @@ public:
     vector<key_t> subring_base_key;
 
     double total_FPdim;
-    long half_at;
 
     vector<vector<dynamic_bitset> > ModularGradings;
     size_t group_order;
     string group_type;
-    vector<vector<int> > GradMultTablee;
+    vector<vector<int> > GradMultTable;
     vector<dynamic_bitset> chosen_modular_grading;
 
     vector<vector<key_t> > type_automs; // permutations of the basis vectors
@@ -93,10 +92,11 @@ public:
     void do_write_input_file(InputMap<mpq_class>&  input) const;
 
     template <typename Integer>
-    bool make_gradings(const vector<Integer>& d);
+    void make_gradings(const vector<Integer>& d);
     vector<vector<dynamic_bitset> > make_part_classes(const vector<vector<dynamic_bitset> >& GradPartitions);
     bool compatible_duality(const vector<dynamic_bitset >& parts);
-    vector< vector<int> > make_grad_mult_table(const vector<dynamic_bitset>& part);
+    void make_grad_mult_table();
+    void restrict_type_automs_to_grading();
 
     void make_type_automs();
 };
@@ -133,9 +133,10 @@ public:
     string fusion_type_string;
     vector<key_t> duality;
 
-    double total_FPdim;
+    vector<dynamic_bitset> chosen_modular_grading;
+    vector<vector<int> > GradMultTable;
 
-    long half_at; // temporarily used for ZZ_2-gradings
+    double total_FPdim;
 
     void initialize();
     void import_global_data();
@@ -193,8 +194,7 @@ public:
     set<map<vector<key_t>, Integer> > make_associativity_constraints();
     // void set_global_fusion_data();
 
-    void find_grading(const vector<Integer>& d);
-    Matrix<Integer> make_add_constraints_for_grading(const vector<Integer>& d);
+    Matrix<Integer> make_add_constraints_for_grading();
 
     void write_all_data_tables(const Matrix<Integer>& rings, ostream& table_out);
     void tables_for_all_rings(const Matrix<Integer>& rings);
@@ -213,7 +213,7 @@ template <typename Integer>
 void split_into_simple_and_nonsimple(const FusionBasic& basic, Matrix<Integer>& SimpleFusionRings, Matrix<Integer>& NonsimpleFusionRings, const Matrix<Integer>& FusionRings, bool verb);
 
 template <typename Integer>
-void make_full_input(const FusionBasic& FusionInput, InputMap<Integer>& input_data, set<map<vector<key_t>, Integer> >& Polys);
+void make_full_input(const FusionBasic& FusionInput, InputMap<Integer>& input_data);
 template <typename Integer>
 void make_full_input_partition(InputMap<Integer>& input_data);
 
@@ -224,7 +224,7 @@ vector<dynamic_bitset> make_all_subsets(const size_t card);
 vector<vector<key_t> > make_all_permutations(size_t n);
 vector<vector<key_t> > collect_coincidence_subset_keys(const vector<key_t>& type);
 vector<vector<key_t> > make_all_permutations(const vector<key_t>& v, const vector<key_t>& duality);
-vector<vector<key_t> > make_all_permutations(const vector<key_t>& type, const vector<key_t>& duality, const long& half_at);
+vector<vector<key_t> > make_all_permutations(const vector<key_t>& type, const vector<key_t>& duality);
 
 // void remove_global_fusion_data();
 
@@ -336,7 +336,7 @@ void FusionBasic::read_data_from_input(InputMap<Integer>& input_data){
 }
 
 template <typename Integer>
-void make_full_input(FusionBasic& FusionInput, InputMap<Integer>& input_data, set<map<vector<key_t>, Integer> >& Polys) {
+void make_full_input(FusionBasic& FusionInput, InputMap<Integer>& input_data) {
 
     FusionInput.read_data_from_input(input_data);
     FusionComp<Integer> OurFusion(FusionInput);
@@ -344,8 +344,7 @@ void make_full_input(FusionBasic& FusionInput, InputMap<Integer>& input_data, se
     Matrix<Integer> Equ = OurFusion.make_linear_constraints(full_type);
     // FusionInput.type_aiutoms_mde = OurFusion.automorphisms_mde;
     // swap(FusionInput.Automorphisms,OurFusion.Automorphisms);
-    swap(FusionInput.type_automs, OurFusion.type_automs);
-    FusionInput.half_at = OurFusion.half_at;
+    // swap(FusionInput.type_automs, OurFusion.type_automs);
     Matrix<Integer> InEqu = Equ;
     Integer MinusOne = -1;
     Equ.scalar_multiplication(MinusOne);
@@ -358,7 +357,7 @@ void make_full_input(FusionBasic& FusionInput, InputMap<Integer>& input_data, se
     input_data[Type::inhom_inequalities] = InEqu;
     input_data[Type::inequalities] = Matrix<Integer>(InEqu.nr_of_columns()-1);
 
-    Polys = OurFusion.make_associativity_constraints();
+    // Polys = OurFusion.make_associativity_constraints(); now later
 
 }
 
@@ -385,7 +384,7 @@ vector<vector<dynamic_bitset> > make_FPdim_partitions(const vector<Integer>& d, 
                                                       vector<dynamic_bitset>& AllSubsets);
 
 template <typename Integer>
-bool FusionBasic::make_gradings(const vector<Integer>& d){
+void FusionBasic::make_gradings(const vector<Integer>& d){
 
     group_order = 0;
     for(auto& t: d){
@@ -394,37 +393,38 @@ bool FusionBasic::make_gradings(const vector<Integer>& d){
         if(t > 1)
             break;
     }
-    if(group_order == 1)
-        return false;
+    for(size_t i = group_order; i < d.size(); ++i){
+        if(d[i] == 1)
+            throw BadInputException("Fusion type has 1 at wrong place");
+    }
     if(group_order > 4)
-        return false;
-    string group_type;
+        throw BadInputException("Group order > 4 not allowed for modular gradings");
+    if(group_order == 1)
+        throw BadInputException("Modular grading asked for perfect fusion rings");
     if(group_order == 2)
         group_type = "C2";
     if(group_order == 3){
         group_type = "C3";
         if(duality[1] != 2)
-            return false;
+            throw BadInputException("Group for modular grading has wrong guality");
     }
     if(group_order == 4){
         if(duality[1] == 1 && duality[2] == 2)
-            group_type == "C2xC2";
+            group_type = "C2xC2";
         else
             group_type = "C4";
     }
+    if(verbose){
+        verboseOutput() << "Modular grading group is " << group_type << endl;
 
-    /*
-    GradMultTable.resize(group_order);
-    // GradMultTable = makeMultTable(group_order, group_type);
-    for(auto& z: GradMultTable)
-        z.resize(group_order);*/
+    }
 
     Integer full_FPdim = 0;
     for(auto& t: d)
         full_FPdim += t*t;
     Integer part_FPdim;
     if(!is_divisible(part_FPdim,full_FPdim, group_order))
-        return false;
+        throw BadInputException("Fusion type cannot be partitioned");
 
     vector<dynamic_bitset> AllSubsets = make_all_subsets(fusion_rank);
     vector<vector<dynamic_bitset> > FPdimParts = make_FPdim_partitions(d, part_FPdim, group_order, AllSubsets);
@@ -437,23 +437,16 @@ bool FusionBasic::make_gradings(const vector<Integer>& d){
     make_type_automs();
     ModularGradings = make_part_classes(GradPartitions);
 
-    if(ModularGradings.empty()){
-        if(libnormaliz::verbose)
-            verboseOutput() << "No drading partition found" << endl;;
-        return false;
-    }
-    if(libnormaliz::verbose){
+    if(verbose){
         verboseOutput() << ModularGradings.size() << " grading partitions found:" << endl;
         size_t i = 0;
         for(auto& P: ModularGradings){
             i++;
             verboseOutput() << "Grading " << i << endl;
             for(auto& p: P)
-             verboseOutput() << bitset_to_key(p);
+                verboseOutput() << bitset_to_key(p);
         }
     }
-
- return true;
 }
 
 }  // end namespace libnormaliz

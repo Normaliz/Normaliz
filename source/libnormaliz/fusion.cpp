@@ -131,7 +131,7 @@ vector<vector<key_t> > super_impose(const vector<vector<key_t> >& set_1, const v
     return total;
 }
 
-vector<vector<key_t> > make_all_permutations(const vector<key_t>& type,const vector<key_t>& duality, const long& half_at){
+vector<vector<key_t> > make_all_full_permutations(const vector<key_t>& type,const vector<key_t>& duality){
 
     auto type_1 = type;
     type_1[0] = 0; // to single out the unit
@@ -162,10 +162,12 @@ vector<vector<key_t> > make_all_permutations(const vector<key_t>& type,const vec
         }
     }
 
-    vector<vector<key_t> > Compatible;
+    return AllFullPerms;
+
+    /*vector<vector<key_t> > Compatible;
     if(duality == identity_key(type.size()))
         swap(Compatible, AllFullPerms);
-    else{ // check compatibilty with duality
+    else{ // check compatibilty withe duality
         for(auto& p: AllFullPerms){
             bool comp = true;
             for(size_t i = 0; i < p.size(); ++i){
@@ -180,32 +182,42 @@ vector<vector<key_t> > make_all_permutations(const vector<key_t>& type,const vec
         AllFullPerms.clear();
     }
 
-    if(half_at < 0) // no Z2-grading
-        return Compatible;
+    return Compatible; */
+}
 
-    bool disjoint_FPdim = true;
-    for(long i = 0; i <= half_at; ++i)
-        for(long j = half_at + 1; j < type.size(); ++j)
-            if(type[i] == type[j])
-                disjoint_FPdim = false;
+void FusionBasic::restrict_type_automs_to_grading(){
 
-    if(disjoint_FPdim)  // automs respect grading automatically
-        return Compatible;
-
-    vector<vector<key_t> > Compatible_Z2grading;
-    for(auto& p: Compatible){
-        bool comp = true;
-        for(long i = 0; i <= half_at; ++i){
-            if(p[i] > half_at){
-                comp = false;
+    vector<key_t> in_comp(fusion_rank);
+    for(size_t k = 0; k < group_order; ++k){
+        for(size_t i = 0; i < chosen_modular_grading[k].size(); ++i){
+            if(!chosen_modular_grading[k][i])
+                continue;
+            in_comp[i] = k;
+        }
+    }
+    vector<vector<key_t> >selection;
+    for(auto& p: type_automs){
+        // cout << p;
+        vector<key_t> image;
+        for(size_t i = 0; i< chosen_modular_grading.size(); ++i){
+            size_t first_elem = chosen_modular_grading[i].find_first();
+            image.push_back(in_comp[p[first_elem]]);
+        }
+        // cout << image;
+        bool restrictable = true;
+        for(size_t k = 0; k < fusion_rank; ++k){
+            if(in_comp[p[k]] != image[in_comp[k]] ){
+                restrictable = false;
                 break;
             }
         }
-        if(comp)
-            Compatible_Z2grading.push_back(p);
-    }
 
-    return Compatible_Z2grading;
+        if(restrictable)
+            selection.push_back(p);
+    }
+    swap(selection, type_automs);
+    if(verbose)
+        verboseOutput() << type_automs.size() << " type permutations selected" << endl;
 }
 
 vector<vector<key_t> > collect_coincidence_subset_keys(const vector<key_t>& type){
@@ -244,7 +256,6 @@ FusionBasic::FusionBasic(){
     type_and_duality_set = false;
     type_automs_made = false;
     total_FPdim = 0;
-    half_at = -1;
 }
 
 template<typename Integer>
@@ -291,7 +302,9 @@ void  FusionBasic::data_from_renf_input(ifstream& cone_in){
 void FusionBasic::make_type_automs(){
     if(type_automs_made)
         return;
-    type_automs = make_all_permutations(fusion_type,duality, half_at);
+    type_automs = make_all_full_permutations(fusion_type,duality);
+    if(verbose)
+        verboseOutput() << type_automs.size() << " type permutations made" << endl;
     type_automs_made = true;
 }
 
@@ -634,9 +647,9 @@ vector<vector<dynamic_bitset> > FusionBasic::make_part_classes(const vector<vect
 
 }
 
-vector< vector<int> > FusionBasic::make_grad_mult_table(const vector<dynamic_bitset>& part){
+void FusionBasic::make_grad_mult_table(){
 
-    size_t group_order = part.size();
+    vector<dynamic_bitset>& part = chosen_modular_grading;
 
     vector<key_t> in_comp(fusion_rank);
     for(size_t k = 0; k < group_order; ++k){
@@ -646,28 +659,21 @@ vector< vector<int> > FusionBasic::make_grad_mult_table(const vector<dynamic_bit
             in_comp[i] = k;
         }
     }
-     cout << "--------------" << endl;
-     cout << in_comp;
 
      vector< vector<int> > MultTable(group_order, vector<int>(group_order,-1));
      for(size_t i = 0; i < group_order; ++i){
          MultTable[0][i] = i;
          MultTable[i][0] = i;
      }
-     cout << "--------------" << endl;
-     cout << MultTable;
      vector<key_t> inverse(group_order);
      for(size_t i = 0; i < group_order; ++i){
          size_t k = part[i].find_first();
          inverse[i] = in_comp[duality[k]];
      }
-     cout << "--------------" << endl;
-     cout << inverse;
      for(size_t i = 0; i < group_order; ++i){
         MultTable[inverse[i]][i] = 0;
         MultTable[i][inverse[i]] = 0;
      }
-    cout << "--------------" << endl;
     for(size_t i = 1; i < group_order; ++i){
         dynamic_bitset defined(group_order);
         dynamic_bitset used(group_order);
@@ -693,9 +699,8 @@ vector< vector<int> > FusionBasic::make_grad_mult_table(const vector<dynamic_bit
             used[third] =1;
         }
     }
-    cout << MultTable;
-    cout << "--------------" << endl;
-    return MultTable;
+
+    GradMultTable = MultTable;
 }
 
 
@@ -726,7 +731,7 @@ bool FusionBasic::compatible_duality(const vector<dynamic_bitset >& parts){
         for(size_t k = 1; k < 4; ++k){
             dynamic_bitset duals(fusion_rank);
             for(size_t i = 0; i < fusion_rank; ++i){
-                if(parts[1][i] != 0)
+                if(parts[k][i] != 0)
                     duals[duality[i]] = 1;
             }
             if(duals != parts[k])
@@ -789,11 +794,11 @@ FusionComp<Integer>::FusionComp(const FusionBasic& basic){
     subring_base_key = basic.subring_base_key;
     type_and_duality_set = basic.type_and_duality_set;
     total_FPdim = basic.total_FPdim;
-    half_at = basic.half_at;
     // Automorphisms = basic.Automorphisms;
     type_automs = basic.type_automs;
     type_automs_made = basic.type_automs_made;
     // automorphisms_mde = basic.automorphisms_mde;
+    chosen_modular_grading = basic.chosen_modular_grading;
 }
 
 template <typename Integer>
@@ -809,7 +814,6 @@ void FusionComp<Integer>::initialize(){
     type_and_duality_set =false;
     commutative = false;
     use_modular_grading = false;
-    half_at = -1;
     nr_coordinates = 0;
     total_FPdim = 0;
 }
@@ -824,10 +828,10 @@ void FusionComp<Integer>::make_automorphisms(){
 
     /* cout <<  "Coord " << CoordMap.size() << endl;
     cout << "Type " << fusion_type << endl;
-    cout << "duality " << duality;
-    cout << "half at " << half_at << endl;*/
+    cout << "duality " << duality;*/
+
     if(!type_automs_made)
-     type_automs = make_all_permutations(fusion_type,duality, half_at);
+     type_automs = make_all_full_permutations(fusion_type,duality);
 
     /*cout << "type automs " << type_automs.size() << endl;
      cout << "selected_ind_tuples " << selected_ind_tuples.size() << endl;*/
@@ -1209,68 +1213,52 @@ Matrix<Integer> FusionComp<Integer>::do_iso_classes(const Matrix<Integer>& LattP
 }
 
 template <typename Integer>
-void FusionComp<Integer>::find_grading(const vector<Integer>& d){
-
-
-    Integer Total_FPdim = 0;
-    half_at = -1;
-    for(auto& c: d)
-        Total_FPdim += c*c;
-    // cout << "Total FPdim " << Total_FPdim << endl;
-    Integer test = 0;
-    bool potentially_graded = true;
-    if(d[1] > 1)
-        potentially_graded = false;
-    if(d.size() >= 3 && d[2] == 1)
-        potentially_graded = false;
-    if(potentially_graded){
-        for(size_t i = 0; i < d.size(); ++i){
-            test += d[i] * d[i];
-            if(2 * test > Total_FPdim){
-                potentially_graded = false;
-                break;
-            }
-            if(2 * test== Total_FPdim){
-                half_at = i;
-                break;
-            }
-        }
-    }
-
-    if(!potentially_graded)
-        throw BadInputException("Could not find required grading");
-
-    for(size_t i = 0; i < duality.size(); ++i){
-        if(i <= half_at && duality[i] > half_at)
-         throw BadInputException("Duality not compatible with grading");
-    }
-
-    if(libnormaliz::verbose){
-        vector<Integer> triv_comp;
-        for(size_t i = 0; i <= half_at; ++i)
-            triv_comp.push_back(d[i]);
-        vector<Integer> other_comp;
-        for(size_t i = half_at +1 ; i < d.size(); ++i)
-            other_comp.push_back(d[i]);
-        verboseOutput() << "ZZ_2 grading " << endl;
-        verboseOutput() << "Neutral compinent " << triv_comp;
-        verboseOutput() << "Second compinent " << other_comp;
-    }
-}
-
-template <typename Integer>
-Matrix<Integer> FusionComp<Integer>::make_add_constraints_for_grading(const vector<Integer>& d){
-
-   //  long counter = 0;
+Matrix<Integer> FusionComp<Integer>::make_add_constraints_for_grading(){
 
     Matrix<Integer> GradEqu(0, nr_coordinates + 1);
     vector<key_t> indices(3);
+    vector<key_t> in_comp(fusion_rank);
+    for(size_t k = 0; k < chosen_modular_grading.size(); ++k){
+        for(size_t i = 0; i < chosen_modular_grading[k].size(); ++i){
+            if(!chosen_modular_grading[k][i])
+                continue;
+            in_comp[i] = k;
+        }
+    }
+
+    // cout << chosen_modular_grading.size() << endl;
 
     for(key_t i = 1; i < fusion_rank; ++i){
         indices[0] = i;
         for(key_t j = 1; j < fusion_rank; ++j){
             indices[1] = j;
+            key_t product_comp = GradMultTable[in_comp[i]][in_comp[j]];
+            // cout << i << " " << j << " " << product_comp << endl;
             for(key_t k = 1; k < fusion_rank; k++){
+                indices[2] =k;
+                if(!chosen_modular_grading[product_comp][k]){
+                    // cout << "zero" << endl;
+                    vector<Integer> this_equ(nr_coordinates + 1);
+                    this_equ[coord_cone(indices)] = 1;
+                    assert(coord_cone(indices) < nr_coordinates + 1);
+                    GradEqu.append(this_equ);
+                }
+            }
+        }
+    }
+    GradEqu.remove_duplicate_and_zero_rows();
+    if(libnormaliz::verbose)
+        verboseOutput() << GradEqu.nr_of_rows() << " coordinates set to 0" << endl;
+    Matrix<Integer>  Neg = GradEqu;
+    Integer MinusOne = -1;
+    Neg.scalar_multiplication(MinusOne);
+    GradEqu.append(Neg);
+    return GradEqu;
+}
+
+
+            /*
+
                 indices[2] = k;
                 bool add_equ = false;
                 // multiplication inside neutral component
@@ -1304,15 +1292,13 @@ Matrix<Integer> FusionComp<Integer>::make_add_constraints_for_grading(const vect
     GradEqu.remove_duplicate_and_zero_rows();
     // cout << "Zero coords " << GradEqu.nr_of_rows() << " of " << GradEqu.nr_of_columns() << endl;
 
-    /*
     vector<Integer> test_v(GradEqu.nr_of_columns());
     test_v.back() = 1;
     for(size_t kkn = 0; kkn < GradEqu.nr_of_rows(); ++kkn)
         if(test_v == GradEqu[kkn])
             assert(false);
-    */
     return GradEqu;
-}
+}*/
 
 template <typename Integer>
 void write_inhom_eq_as_lp(const Matrix<Integer>& Equ){
@@ -1394,8 +1380,6 @@ Matrix<Integer> FusionComp<Integer>::make_linear_constraints(const vector<Intege
     if(write_lp_file)
         write_inhom_eq_as_lp(Equ);
     // Equ.print(global_project,"equ");
-
-    vector<vector<int> > GradMultTable;
 
     Equ.remove_duplicate_and_zero_rows();
     if(libnormaliz::verbose)
@@ -1514,7 +1498,6 @@ pair<Integer, vector<key_t> >  FusionComp<Integer>::term(const key_t& i, const k
 
 template <typename Integer>
 set<map<vector<key_t>, Integer> > FusionComp<Integer>::make_associativity_constraints(){
-
 
     if(libnormaliz::verbose)
         verboseOutput() << "Making accociativity constraints for fusion rings" << endl;
@@ -1868,7 +1851,7 @@ Matrix<long long> extract_latt_points_from_out(ifstream& in_out){
     string s;
     in_out >> s;
     if(s != "lattice" && s != "fusion" && s!= "simple")
-        throw BadInputException("out file not suitable for extraction of sim,ple fusion rtings");
+        throw BadInputException("out file not suitable for extraction of simple fusion rtings");
     while(true){
         in_out >> s;
         if(s == "dimension")
@@ -1978,7 +1961,7 @@ void post_process_fusion(const vector<string>& command_line_items){
     verbose = our_verbose;
 
     if(our_project.empty())
-        throw BadInputException("No project derfined");
+        throw BadInputException("No project defined");
     if(verbose)
         verboseOutput() << "Given file " << our_project << endl;
 

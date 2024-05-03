@@ -816,13 +816,8 @@ void Cone<Integer>::process_multi_input_inner(InputMap<Integer>& multi_input_dat
     if(contains(multi_input_data, Type::fusion_type)) {
         set<map<vector<key_t>, Integer> > Polys;
         fusion_type_input =multi_input_data[Type::fusion_type][0];
-        make_full_input(FusionBasicCone, multi_input_data, Polys);
-        // we use the same conventions as the production of PolynomiualWquations
-        // from strings, Polys use input coordinates counting from 1
-        size_t dim_here = multi_input_data[Type::inhom_inequalities][0].size();
-        PolynomialEquations = OurPolynomialSystem<Integer>(Polys, dim_here);
-        PolynomialEquations.shift_coordinates(-1); // now we have cone coordinates
-
+        make_full_input(FusionBasicCone, multi_input_data);
+        // only linear equations done here, associativity later
         is_fusion = true;
         polynomially_constrained = true;
     }
@@ -4577,6 +4572,11 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     if (ToCompute.none()) {
         LEAVE_CONE return ConeProperties();
     }
+
+    if(is_fusion){
+        add_fusion_ass_and_grading_constraints(); // c ould be done later
+    }
+
 
     if (using_renf<Integer>())
         ToCompute.check_Q_permissible(true);  // after implications!
@@ -9655,13 +9655,51 @@ void Cone<Integer>::make_modular_gradings(ConeProperties& ToCompute){
     if(!(ToCompute.test(ConeProperty::ModularGradings) || ToCompute.test(ConeProperty::UseModularGrading)) )
         return;
 
-    FusionBasicCone.make_gradings(fusion_type_input);
+    if(!FusionBasicCone.commutative)
+        throw BadInputException("Modular gradings need commutativity indicated by -1 in the duality");
+
+    FusionBasicCone.make_gradings(fusion_type_input); // fusion_type_input is the fusion type in Integer numbers
     if(ToCompute.test(ConeProperty::ModularGradings)){
         setComputed(ConeProperty::ModularGradings);
         return;
     }
 
-    exit(0);
+    if(FusionBasicCone.ModularGradings.size() == 0)
+        throw BadInputException("UseModularGrading asked for fusaion input qithout modular grading");
+    if(modular_grading <= 0 || modular_grading > FusionBasicCone.ModularGradings.size())
+            throw BadInputException("modular_grading not chosen or out of tange");
+
+    if(FusionBasicCone.ModularGradings.size() > 1){
+        FusionBasicCone.chosen_modular_grading = FusionBasicCone.ModularGradings[modular_grading - 1];
+        if(verbose)
+            verboseOutput() << "Chosen nodular grading " << modular_grading << endl;
+    }
+    else{
+         FusionBasicCone.chosen_modular_grading = FusionBasicCone.ModularGradings[0];
+    }
+
+    FusionBasicCone.restrict_type_automs_to_grading();
+}
+
+//---------------------------------------------------------------------------
+
+template <typename Integer>
+void Cone<Integer>::add_fusion_ass_and_grading_constraints(){
+
+    FusionComp<Integer> OurFusion(FusionBasicCone);
+    set<map<vector<key_t>, Integer> > Polys;
+    // we use the same conventions as the production of PolynomiualWquations
+    // from strings, Polys use input coordinates counting from 1
+    Polys = OurFusion.make_associativity_constraints();
+    PolynomialEquations = OurPolynomialSystem<Integer>(Polys,getEmbeddingDim());
+    PolynomialEquations.shift_coordinates(-1); // now we have cone coordinates
+
+    if(FusionBasicCone.use_modular_grading){
+         FusionBasicCone.make_grad_mult_table();
+         OurFusion.GradMultTable = FusionBasicCone.GradMultTable;
+         Matrix<Integer> GradInEqu = OurFusion.make_add_constraints_for_grading();
+         Inequalities.append(GradInEqu);
+    }
 }
 
 //---------------------------------------------------------------------------

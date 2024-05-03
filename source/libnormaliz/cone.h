@@ -862,6 +862,7 @@ class Cone {
                 bool verbose);
 
     void make_modular_gradings(ConeProperties& ToCompute);
+    void add_fusion_ass_and_grading_constraints();
     void try_symmetrization(ConeProperties& ToCompute);
     void try_approximation_or_projection(ConeProperties& ToCompute);
     void make_fusion_data(ConeProperties& ToCompute);
