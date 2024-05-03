@@ -4574,7 +4574,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     }
 
     if(is_fusion){
-        add_fusion_ass_and_grading_constraints(); // c ould be done later
+        add_fusion_ass_and_grading_constraints(); // could be done later
     }
 
 
@@ -9661,13 +9661,20 @@ void Cone<Integer>::make_modular_gradings(ConeProperties& ToCompute){
     FusionBasicCone.make_gradings(fusion_type_input); // fusion_type_input is the fusion type in Integer numbers
     if(ToCompute.test(ConeProperty::ModularGradings)){
         setComputed(ConeProperty::ModularGradings);
+        setComputed(ConeProperty::NoGradingDenom);
         return;
     }
 
     if(FusionBasicCone.ModularGradings.size() == 0)
         throw BadInputException("UseModularGrading asked for fusaion input qithout modular grading");
-    if(modular_grading <= 0 || modular_grading > FusionBasicCone.ModularGradings.size())
-            throw BadInputException("modular_grading not chosen or out of tange");
+    if((modular_grading <= 0 && FusionBasicCone.ModularGradings.size() > 1)
+        || modular_grading > (long) FusionBasicCone.ModularGradings.size()){
+        cout << modular_grading << " " << FusionBasicCone.ModularGradings.size() << endl;
+        cout << (modular_grading > FusionBasicCone.ModularGradings.size()) << endl;
+
+        cout << (modular_grading <= 0 && FusionBasicCone.ModularGradings.size() > 1) << endl;
+        throw BadInputException("modular_grading not chosen or out of tange");
+    }
 
     if(FusionBasicCone.ModularGradings.size() > 1){
         FusionBasicCone.chosen_modular_grading = FusionBasicCone.ModularGradings[modular_grading - 1];
@@ -9679,6 +9686,7 @@ void Cone<Integer>::make_modular_gradings(ConeProperties& ToCompute){
     }
 
     FusionBasicCone.restrict_type_automs_to_grading();
+    FusionBasicCone.use_modular_grading = true;
 }
 
 //---------------------------------------------------------------------------
