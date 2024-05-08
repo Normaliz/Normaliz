@@ -893,6 +893,32 @@ void ConeProperties::check_Q_permissible(bool after_implications) {
     }
 }
 
+void ConeProperties::check_conflicting_fusion_variants(){
+
+    size_t fusion_count = 0;
+    size_t latt_count = 0;
+    if(CPs.test(ConeProperty::FusionRings))
+        fusion_count++;
+    if(CPs.test(ConeProperty::SimpleFusionRings))
+        fusion_count++;
+    if(CPs.test(ConeProperty::ModularGradings))
+        fusion_count++;
+    if(CPs.test(ConeProperty::LatticePoints)){
+        fusion_count++;
+        latt_count++;
+    }
+    if(CPs.test(ConeProperty::SingleLatticePoint)){
+        fusion_count++;
+        latt_count++;
+    }
+    if(fusion_count > 1 || latt_count > 1)
+        throw BadInputException("Conflicting properties for lattice points/fusion rings");
+    if(latt_count > 0 &&CPs.test(ConeProperty::UseModularGrading))
+        throw BadInputException("Conflicting properties for lattice points/fusion rings");
+    if(CPs.test(ConeProperty::ModularGradings) &&CPs.test(ConeProperty::UseModularGrading))
+        throw BadInputException("Conflicting properties for lattice points/fusion rings");
+}
+
 void ConeProperties::check_conflicting_variants() {
     if ((CPs.test(ConeProperty::BottomDecomposition) &&
          (CPs.test(ConeProperty::NoBottomDec) || CPs.test(ConeProperty::KeepOrder))) ||
@@ -909,13 +935,8 @@ void ConeProperties::check_conflicting_variants() {
         (CPs.test(ConeProperty::LinearOrderPatches) && CPs.test(ConeProperty::CongOrderPatches)) ||
         (CPs.test(ConeProperty::LatticePoints) && CPs.test(ConeProperty::SingleLatticePoint) ) ||
         // (CPs.test(ConeProperty::Symmetrize) && CPs.test(ConeProperty::SignedDec)) ||
-        (CPs.test(ConeProperty::Dynamic) && CPs.test(ConeProperty::Static)) ||
-        (CPs.test(ConeProperty::FusionRings) && CPs.test(ConeProperty::SimpleFusionRings)) ||
-        ((CPs.test(ConeProperty::FusionRings) || CPs.test(ConeProperty::SimpleFusionRings)) &&
-                            CPs.test(ConeProperty::ModularGradings)) ||
-        (CPs.test(ConeProperty::ModularGradings) && (CPs.test(ConeProperty::LatticePoints) ||
-            CPs.test(ConeProperty::SingleLatticePoint)) )
-        )
+        (CPs.test(ConeProperty::Dynamic) && CPs.test(ConeProperty::Static) )
+    )
         throw BadInputException("Contradictory algorithmic variants in options.");
 
     size_t nr_var = 0;

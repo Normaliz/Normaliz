@@ -2107,7 +2107,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
             }
         }
 
-        if(GlobalPredictionTimeBound > 0 && expected_time > GlobalPredictionTimeBound){
+        if(GlobalPredictionTimeBound > 0 && total_expected_time > GlobalPredictionTimeBound){
             errorOutput() << "expected time exceeds bound of " << GlobalPredictionTimeBound << " sec" << endl;
             throw TimeBoundException("patching");
         }

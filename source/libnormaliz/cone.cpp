@@ -4437,6 +4437,8 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     set_extended_tests(ToCompute);
 #endif
 
+    ToCompute.check_conflicting_fusion_variants();
+
     if(ToCompute.test(ConeProperty::SingleLatticePoint)){ // we single out SingleLatticePoint
         ConeProperties SingleComp;
         SingleComp.set(ConeProperty::SingleLatticePointInternal);
