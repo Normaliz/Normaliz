@@ -135,6 +135,7 @@ public:
 
     vector<dynamic_bitset> chosen_modular_grading;
     vector<vector<int> > GradMultTable;
+    set<vector<key_t> > ZeroCoords; // made 0 by grading
 
     double total_FPdim;
 
@@ -284,6 +285,7 @@ void FusionBasic::read_data_from_input(InputMap<Integer>& input_data){
             prel_duality[0] = 0;
         }
         if(prel_duality[0] == -2) {
+            commutative = true;
             use_modular_grading = true;
             prel_duality[0] = 0;
         }

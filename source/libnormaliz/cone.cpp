@@ -9693,19 +9693,21 @@ template <typename Integer>
 void Cone<Integer>::add_fusion_ass_and_grading_constraints(){
 
     FusionComp<Integer> OurFusion(FusionBasicCone);
-    set<map<vector<key_t>, Integer> > Polys;
-    // we use the same conventions as the production of PolynomiualWquations
-    // from strings, Polys use input coordinates counting from 1
-    Polys = OurFusion.make_associativity_constraints();
-    PolynomialEquations = OurPolynomialSystem<Integer>(Polys,getEmbeddingDim());
-    PolynomialEquations.shift_coordinates(-1); // now we have cone coordinates
 
     if(FusionBasicCone.use_modular_grading){
          FusionBasicCone.make_grad_mult_table();
          OurFusion.GradMultTable = FusionBasicCone.GradMultTable;
+         OurFusion.make_CoordMap();
          Matrix<Integer> GradInEqu = OurFusion.make_add_constraints_for_grading();
          Inequalities.append(GradInEqu);
     }
+
+    set<map<vector<key_t>, Integer> > Polys;
+    // we use the same conventions as the production of PolynomiualEquations
+    // from strings, Polys use input coordinates counting from 1
+    Polys = OurFusion.make_associativity_constraints();
+    PolynomialEquations = OurPolynomialSystem<Integer>(Polys,getEmbeddingDim());
+    PolynomialEquations.shift_coordinates(-1); // now we have cone coordinates
 }
 
 //---------------------------------------------------------------------------

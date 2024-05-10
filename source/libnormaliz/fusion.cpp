@@ -493,6 +493,7 @@ pair<bool, bool> FusionBasic::data_from_string(const string& our_fusion, const b
             nr = 0;
         }
         if(nr == -2){
+            commutative = true;
            use_modular_grading = true;
            nr = 0;
         }
@@ -1238,6 +1239,7 @@ Matrix<Integer> FusionComp<Integer>::make_add_constraints_for_grading(){
                 indices[2] =k;
                 if(!chosen_modular_grading[product_comp][k]){
                     // cout << "zero" << endl;
+                    ZeroCoords.insert(indices);
                     vector<Integer> this_equ(nr_coordinates + 1);
                     this_equ[coord_cone(indices)] = 1;
                     assert(coord_cone(indices) < nr_coordinates + 1);
@@ -1467,6 +1469,7 @@ void subtracct(map<vector<key_t>, Integer>& poly, const pair<Integer, vector<key
 template <typename Integer>
 pair<Integer, vector<key_t> >  FusionComp<Integer>::term(const key_t& i, const key_t& j, const key_t& k){
 
+    vector<key_t> indices = {i,j,k};
     Integer coeff = -1;
     vector<key_t> exponent;
     if(k == 0){
@@ -1489,9 +1492,11 @@ pair<Integer, vector<key_t> >  FusionComp<Integer>::term(const key_t& i, const k
     }
     if(coeff == -1){
         coeff = 1;
-        vector<key_t> indices = {i,j,k};
         exponent.push_back(coord(indices));
     }
+
+    if(ZeroCoords.find(indices) != ZeroCoords.end())
+        coeff = 0;
 
     return make_pair(coeff, exponent);
 }
