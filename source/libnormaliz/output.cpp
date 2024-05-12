@@ -1214,12 +1214,13 @@ void Output<Integer>::writeSeries(ofstream& out, const HilbertSeries& HS, string
 
 //---------------------------------------------------------------------------
 
-
-
-//---------------------------------------------------------------------------
-
 template <typename Integer>
 void Output<Integer>::write_files() {
+
+    if(Result->isComputed(ConeProperty::SingleFusionRing)){
+        write_single_fusion_file(Result->getFusionBasicCone(), name, Result->getEmbeddingDim(), Result->getSingleFusionRing(), no_matrices_output);
+        return;
+    }
 
     if(Result->isComputed(ConeProperty::FusionRings) || Result->isComputed(ConeProperty::SimpleFusionRings)){
         if(Result->isComputed(ConeProperty::FusionRings)){
@@ -1941,6 +1942,58 @@ void write_modular_gradings(const string& name, const vector<vector<dynamic_bits
     }
 }
 
+template <typename Integer>
+void write_single_fusion_file(const FusionBasic fusion_basic, const string& name,
+                        size_t embdim, vector<Integer> SingleFusionRing,
+                        const bool no_matrices_output) {
+
+    string name_open = name + ".out";  // preparing output files
+    const char* file = name_open.c_str();
+    ofstream out(file);
+    if (out.fail()) {
+        throw BadInputException("Cannot write to output file. Typo in directory name?");
+    }
+
+    FusionComp<Integer> fusion(fusion_basic);
+
+    size_t total_nr_fusion_rings = 0;
+    if(SingleFusionRing.size() > 0)
+        total_nr_fusion_rings = 1;
+
+    out << total_nr_fusion_rings << " fusion rings ";
+    if(total_nr_fusion_rings > 0)
+        out << "(only one asked for)";
+    out << endl;
+
+    out << endl;
+
+    if(embdim == 0){
+        embdim = SingleFusionRing.size();
+    }
+
+    if(embdim > 0){
+
+        vector<Integer> dehom(embdim);
+        dehom.back() = 1;
+        out << "Embedding dimension = " << embdim << endl;
+        out << endl;
+        out << "dehomogenization" << endl;
+        out << dehom;
+    }
+    out << endl;
+
+    if(total_nr_fusion_rings == 0)
+        out << "No fusion ring found" << endl;
+    else{
+        out << "fusion ring " << endl;
+        out << SingleFusionRing;
+    }
+    out << endl;
+    out << "***********************************************************************" << endl << endl;
+
+    out.close();
+    return;
+}
 
 template <typename Integer>
 void write_fusion_files(const FusionBasic fusion_basic, const string& name, const bool simple_fusion_rings,
@@ -2022,15 +2075,6 @@ void write_fusion_files(const FusionBasic fusion_basic, const string& name, cons
     }
     out.close();
 
-    if(write_fusion_mult_tables_from_input){
-        name_open = name + ".fus";
-        ofstream ftb_out(name_open);
-        Matrix<Integer> AllFusionRings = SimpleFusionRings;
-        if(NonsimpleFusionRings.nr_of_rows() > 0)
-            AllFusionRings.append(NonsimpleFusionRings);
-        fusion.write_all_data_tables(AllFusionRings, ftb_out);
-        ftb_out.close();
-    }
 }
 
 #ifndef NMZ_MIC_OFFLOAD  // offload with long is not supported
@@ -2067,4 +2111,18 @@ template void write_fusion_files(const FusionBasic fusion_basic, const string& n
                                  const Matrix<renf_elem_class>& NonSimpleFusionRings,
                                  const bool no_matrices_output);
 #endif
+
+template void write_single_fusion_file(const FusionBasic fusion_basic, const string& name,
+                        size_t embdim, vector<long> SingleFusionRing, const bool no_matrices_output);
+
+template void write_single_fusion_file(const FusionBasic fusion_basic, const string& name,
+                        size_t embdim, vector<long long> SingleFusionRing, const bool no_matrices_output);
+
+template void write_single_fusion_file(const FusionBasic fusion_basic, const string& name,
+                        size_t embdim, vector<mpz_class> SingleFusionRing, const bool no_matrices_output);
+#ifdef ENFNORMALIZ
+template void write_single_fusion_file(const FusionBasic fusion_basic, const string& name,
+                        size_t embdim, vector<renf_elem_class> SingleFusionRing, const bool no_matrices_output);
+#endif
+
 }  // namespace libnormaliz

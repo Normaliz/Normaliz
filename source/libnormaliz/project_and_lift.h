@@ -143,6 +143,8 @@ class ProjectAndLift {
 
     size_t nr_time_printed;
 
+    struct timeval stop_ckeck_begin;
+
     // data for patching method
     vector<dynamic_bitset> Indicator; // indicaor of nonzero coordinates in inequality
     dynamic_bitset upper_bounds; // indicator of inequalities giving upper boounds

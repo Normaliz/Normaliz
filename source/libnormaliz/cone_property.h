@@ -101,6 +101,7 @@ enum Enum {
     CoveringFace,
     AxesScaling,
     SingleLatticePoint,
+    SingleFusionRing,
     END_ENUM_RANGE(LAST_VECTOR),
 
     // integer valued

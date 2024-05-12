@@ -481,6 +481,7 @@ class Cone {
     size_t getNrLatticePoints();
 
     const vector<Integer>& getSingleLatticePoint();
+    const vector<Integer>& getSingleFusionRing();
 
     const map<dynamic_bitset, int>& getSingularLocus();
     size_t getCodimSingularLocus();
@@ -706,6 +707,7 @@ class Cone {
     Matrix<Integer> ModuleGeneratorsOverOriginalMonoid;
     Matrix<Integer> Deg1Elements;
     vector<Integer> SingleLatticePoint;
+    vector<Integer> SingleFusionRing;
     Matrix<Integer> FusionRings;
     Matrix<Integer> SimpleFusionRings;
     Matrix<Integer> NonsimpleFusionRings;

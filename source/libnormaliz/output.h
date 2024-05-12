@@ -175,6 +175,11 @@ void write_fusion_files(const FusionBasic basic, const string& name, const bool 
 
 void write_modular_gradings(const string& name, const vector<vector<dynamic_bitset> >& modular_gradings);
 
+template <typename Integer>
+void write_single_fusion_file(const FusionBasic fusion_basic, const string& name,
+                        size_t embdim, vector<Integer> SingleFusionRing,
+                        const bool no_matrices_output);
+
 }  // namespace libnormaliz
 
 //---------------------------------------------------------------------------

@@ -1161,7 +1161,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_latt_points_by_patching() {
 
     // we stop other splits if this one was successful
     if(is_split_patching && only_single_point && NrLP[EmbDim] > 0){
-        string name = global_project + ".stop";
+        string name = global_project + ".spst";
         ofstream stop_file(name);
         stop_file << " ";
         stop_file.close();
@@ -1506,6 +1506,26 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_local_solutions(const key_t t
 
 template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vector<IntegerRet> >& LatticePoints, const key_t this_patch) {
+
+    if(is_split_patching && only_single_point){
+        double time_spent = MeasureTime(stop_ckeck_begin);
+        if(time_spent > 10){
+            StartTime(stop_ckeck_begin);
+            string name = global_project + ".spst";
+            ifstream stop(name);
+            if(stop.is_open()){
+                ofstream out(lat_file_name);
+                string lat_type = "fusion_rings";
+                if(!fusion_rings_computation)
+                    lat_type = "lattice_points";
+                out << lat_file_name << endl;
+                out << "0" << endl;
+                out << "0 " << endl;
+                out.close();
+                throw NoComputationException("Single lattice point already found");
+            }
+        }
+    }
 
     const size_t coord = InsertionOrderPatches[this_patch]; // the coord marking this patch
 
@@ -3583,6 +3603,8 @@ void ProjectAndLift<IntegerPL, IntegerRet>::putSuppsAndEqus(Matrix<IntegerPL>& S
 template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL, IntegerRet>::setOptions(const ConeProperties& ToCompute, const bool primitive, const bool our_verbose){
 
+    if(is_split_patching)
+        StartTime(stop_ckeck_begin);
 
     if(ToCompute.test(ConeProperty::FusionRings) || ToCompute.test(ConeProperty::SimpleFusionRings)){
         fusion_rings_computation = true;
@@ -3651,7 +3673,7 @@ void project_and_lift(Cone<renf_elem_class>&  C, const ConeProperties& ToCompute
                                              const OurPolynomialSystem<renf_elem_class>& PolyEqus,
                                              const OurPolynomialSystem<renf_elem_class>& PolyInequs) {   // no primitive vgersion yet for renf
     bool count_only = ToCompute.test(ConeProperty::NumberLatticePoints);
-    bool all_points = !ToCompute.test(ConeProperty::SingleLatticePoint);
+    bool all_points = !( ToCompute.test(ConeProperty::SingleLatticePoint) ||ToCompute.test(ConeProperty::SingleFusionRing) );
 
     vector<dynamic_bitset> Ind;
     if(!primitive){
@@ -3726,8 +3748,7 @@ void project_and_lift(Cone<Integer>&  C, const ConeProperties& ToCompute,
                                      const OurPolynomialSystem<Integer>& PolyInequs ) {
     bool float_projection = ToCompute.test(ConeProperty::ProjectionFloat);
     bool count_only = ToCompute.test(ConeProperty::NumberLatticePoints);
-    bool all_points = !ToCompute.test(ConeProperty::SingleLatticePoint);
-
+    bool all_points = !( ToCompute.test(ConeProperty::SingleLatticePoint) ||ToCompute.test(ConeProperty::SingleFusionRing) );
     vector<dynamic_bitset> Ind;
 
     if (!primitive && !C.isParallelotope()) {
