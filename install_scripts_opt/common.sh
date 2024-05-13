@@ -34,7 +34,7 @@ else
 fi
 
 if [[ $OSTYPE == darwin* ]] &&  [ "$GMP_INSTALLDIR" == "" ]; then
-    GMP_INSTALLDIR=/usr/local
+    GMP_INSTALLDIR=$(brew --prefix)
 fi
 
 if [ "$GMP_INSTALLDIR" != "" ]; then
