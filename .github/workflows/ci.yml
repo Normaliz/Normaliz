@@ -217,7 +217,7 @@ jobs:
       - uses: actions/checkout@v3
       - name: "Install homebrew packages"
         run: |
-          brew install autoconf automake libtool gmp llvm boost
+          brew install autoconf automake libtool gmp llvm boost lobomp
       - name: "Install prerequisites"
         run: |
           ./install_scripts_opt/install_nmz_nauty.sh
