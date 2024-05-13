@@ -1509,7 +1509,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
 
     if(is_split_patching && only_single_point){
         double time_spent = MeasureTime(stop_ckeck_begin);
-        if(time_spent > 10){
+        if(time_spent > 1){
             StartTime(stop_ckeck_begin);
             string name = global_project + ".spst";
             ifstream stop(name);
@@ -1518,7 +1518,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                 string lat_type = "fusion_rings";
                 if(!fusion_rings_computation)
                     lat_type = "lattice_points";
-                out << lat_file_name << endl;
+                out << lat_type << endl;
                 out << "0" << endl;
                 out << "0 " << endl;
                 out.close();

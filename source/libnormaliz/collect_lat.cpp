@@ -328,7 +328,8 @@ void analyze_lat_file(ifstream& lat_in,  const string& lat_name, bool & prelimin
             verboseOutput() << lat_name << " in preliminary stage" << endl;
     }
     lat_in >> lat_type;
-    if(lat_type != "simple_fusion_rings" && lat_type != "fusion_rings" && lat_type != "lattice_points")
+    if(lat_type != "simple_fusion_rings" && lat_type != "fusion_rings" && lat_type != "lattice_points"
+        && lat_type != "single_lattice_point" && lat_type != "single_fusion_ring"    )
         throw BadInputException(lat_name + "is corrupt");
 }
 
@@ -347,7 +348,7 @@ void write_lat_file(const Matrix<long long>& LatticePoints) {
     size_t embdim = LatticePoints.nr_of_columns();
 
     if(embdim > 0){
-        out << "Embedding dimension " << embdim << endl;
+        out << "Embedding dimension = " << embdim << endl;
     }
 
     out << endl;
@@ -425,7 +426,7 @@ void collect_lat(const string& project, const long given_nr_subsplits) {
     // and register the splits that have not been complete in NotDone
     // We read the data of the others and rewrite a simplified version.
 
-    string lat_type; // can be fusion_rings, simple_fusion_rings, lattice_points
+    string lat_type; // can be fusion_rings, simple_fusion_rings, lattice_points, single_lattice_point, single_fusion_ring
 
     for(size_t i = 0; i < our_split.nr_splits_to_do; ++i){
         string lat_name = project + "." + to_string(our_split.this_refinement) + "." +  to_string(i) + ".lat";
@@ -487,13 +488,17 @@ void collect_lat(const string& project, const long given_nr_subsplits) {
     rm_command = "rm " + project_expanded + "." + to_string(our_split.this_refinement) + ".*.lat";
     dummy = system(rm_command.c_str());
     if(verbose)
-        verboseOutput() << "Removing zipped files by " << rm_command << endl;
+        verboseOutput() << "Removed zipped files by " << rm_command << endl;
+    rm_command = "rm " + project_expanded + ".spst";  // remove stop signal file in case of "single"
+    dummy = system(rm_command.c_str());
+    if(verbose)
+        verboseOutput() << "Removed potential stop file by " << rm_command << endl;
 
     if(NotDone.size() == 0){
         TotalLat.sort_lex();
         for(size_t i = 0; i< TotalLat.nr_of_rows(); ++i){
             if(TotalLat[i].back() != 1)
-                throw BadInputException("Cpoordinate error in final.lat");
+                throw BadInputException("Coordinate error in final.lat");
         }
         if(lat_type == "lattice_points"){
             write_lat_file(TotalLat);

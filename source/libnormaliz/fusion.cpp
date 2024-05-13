@@ -1450,6 +1450,9 @@ void add(map<vector<key_t>, Integer>& poly, const pair<Integer, vector<key_t> >&
 
     // cout << summand.first << "+++++++++++++++" << summand.second;
 
+    if(summand.first == 0)
+        return;
+
     if(poly.find(summand.second) != poly.end()){
         poly[summand.second] += summand.first;
     }
