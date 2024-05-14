@@ -9859,6 +9859,10 @@ vector<Integer> Cone<Integer>::getVectorConeProperty(ConeProperty::Enum property
             return this->getCoveringFace();
         case ConeProperty::AxesScaling:
             return this->getAxesScaling();
+        case ConeProperty::SingleFusionRing:
+            return this->getSingleFusionRing();
+        case ConeProperty::SingleLatticePoint:
+            return this->getSingleLatticePoint();
         default:
             throw FatalException("Vector property without output");
     }

@@ -2444,7 +2444,10 @@ There are several more computation goals that come as matrices, vectors or numbe
 		WitnessNotIntegrallyClosed,
 		GeneratorOfInterior,
 		CoveringFace,
-		AxesScaling}
+		AxesScaling,
+		SingleLatticePoint,
+		SingleFusionRing
+	}
 	\item Numbers: \ttt{    
 		TriangulationSize,
 		NumberLatticePoints,
@@ -2834,7 +2837,7 @@ The definition of fusion rings (see Appendix \ref{fusion_rings}) follows the usu
 \end{Verbatim}
 As in ordinary input files, the duality can be omitted if it is the identity. As usual the type and the duality which are really vectors, must be disguised as matrices with a single row. 
 
-Wec can also ask for \verb*|SimpleFusionRings|, \verb*|NonSimpleFusionRings|, \verb*|LatticePoints|, \verb*|SingleLatticePoint| and \verb*|FusionData|. For our example we get (line breaks inserted) 
+Wec can also ask for \verb*|SimpleFusionRings|, \verb*|NonSimpleFusionRings|, \verb*|LatticePoints|, \verb*|SingleLatticePoint| and \verb*|FusionData|. For our example we get the fusion data (line breaks inserted) 
 \begin{Verbatim}
 [[[[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]],
   [[0, 1, 0, 0], [1, 0, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]],
