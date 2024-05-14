@@ -1949,7 +1949,7 @@ void post_process_fusion_file(const vector<string>& command_line_items,string ou
 
     string name = global_project + ".fusion";
     write_fusion_files(blabla, name, non_simple_fusion_rings, true, embdim,
-                            SimpleFusionRings, NonsimpleFusionRings,false);
+                            SimpleFusionRings, NonsimpleFusionRings,false,false);
 }
 
 void post_process_fusion(const vector<string>& command_line_items){

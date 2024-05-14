@@ -511,10 +511,10 @@ void collect_lat(const string& project, const long given_nr_subsplits) {
             fusion_here.data_from_file_or_string(global_project);
             if(lat_type == "fusion_rings"){
                 split_into_simple_and_nonsimple(fusion_here, SimpleFusionRings, NonsimpleFusionRings, TotalLat, verbose);
-                write_fusion_files(fusion_here, global_project, true, true, embdim, SimpleFusionRings, NonsimpleFusionRings, false);
+                write_fusion_files(fusion_here, global_project, true, true, embdim, SimpleFusionRings, NonsimpleFusionRings, false,false);
             }
             else{ // only soimple computed
-                write_fusion_files(fusion_here, global_project, true, false, embdim, SimpleFusionRings, NonsimpleFusionRings, false);
+                write_fusion_files(fusion_here, global_project, true, false, embdim, SimpleFusionRings, NonsimpleFusionRings, false,false);
             }
         }
 
