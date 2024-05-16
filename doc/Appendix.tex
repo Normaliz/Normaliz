@@ -825,6 +825,7 @@ void Cone<Integer>::setDecimalDigits(long digits)
 void Cone<Integer>::setBlocksizeHollowTri(long block_size)
 void Cone<Integer>::setGBDegreeBound(const long degree_bound)
 void Cone<Integer>::setGBMinDegree(const long min_degree)
+void Cone<Integer>::setModularGraing(long mod_gr)
 \end{Verbatim}
 There common default value of \verb|degree| is $-1$, signaling no expansion, all coefficients or no codimension bound etc. One can reset the values after a computation. Then they will delete the computation results that depend on them.
 %However, there is no point in changing the codimension bounds for the exploitation of the automorphism group after the computations to that they refer have been finished.
@@ -843,6 +844,7 @@ face_codim_bound,
 autom_codim_bound_vectors,  // not yet used
 block_size_hollow_tri,
 decimal_digits,
+modular_grading,
 not_a_num_param
 };
 } //end namespace NumParam
@@ -930,6 +932,7 @@ GeneratorOfInterior,
 CoveringFace,
 AxesScaling,
 SingleLatticePoint,
+SingeleFusionRing,
 END_ENUM_RANGE(LAST_VECTOR),
 
 // integer valued
@@ -1039,7 +1042,8 @@ SingularLocus,
 Sublattice,
 //
 ClassGroup,
-    //
+//
+ModularGradings,
 FusionData,
 END_ENUM_RANGE(LAST_COMPLEX_STRUCTURE),
 
@@ -1772,8 +1776,10 @@ const vector<vector<Integer> >& Cone<Integer>::getSimpleFusionRings()
 size_t Cone<Integer>::getNrSimpleFusionRings()
 const vector<vector<Integer> >& Cone<Integer>::getNonsimpleFusionRings()
 size_t Cone<Integer>::getNrNonsimpleFusionRings()
+const vector<Integer>& Cone<Integer>::getSingleFusionRing()
+const vector<vector<dynamic_bitset> >& Cone<Integer>::getModularGradings()
 \end{Verbatim}
-There exist \verb*|Matrix| variants as well.
+There exist \verb*|Matrix| variants for \verb*|FusionRings| and \verb*|SimnpleFusionRings| as well.
 
 One can also retrieve the full fusion data:
 \begin{Verbatim}
@@ -2564,7 +2570,7 @@ So there are four faces. The \verb|list| contains the support hyperplanes that m
 
 If you want to limit the codimension of the faces computed with \verb|FaceLattice| or \verb|FVector|, set the bound by
 \begin{Verbatim}
->>> SetFaceCodimBound(1)
+>>> C.SetFaceCodimBound(1)
 \end{Verbatim}
 Try it and ask for \verb|FaceLattice| once more. If you want to get rid of a previously set bound:
 \begin{Verbatim}
@@ -2835,7 +2841,14 @@ The definition of fusion rings (see Appendix \ref{fusion_rings}) follows the usu
 >>> C.FusionRings()
 [[0, 0, 0, 1, 0, 1, 0, 1, 1, 0, 1]]
 \end{Verbatim}
-As in ordinary input files, the duality can be omitted if it is the identity. As usual the type and the duality which are really vectors, must be disguised as matrices with a single row. 
+As in ordinary input files, the duality can be omitted if it is the identity. As usual the type and the duality which are really vectors, must be disguised as matrices with a single row.
+
+For this simple input there is only one fusion ring. It is of course also returned by 
+\begin{Verbatim}
+>>> C.SingleFusionRing()
+[0, 0, 0, 1, 0, 1, 0, 1, 1, 0, 1]
+\end{Verbatim} 
+as a vector.
 
 Wec can also ask for \verb*|SimpleFusionRings|, \verb*|NonSimpleFusionRings|, \verb*|LatticePoints|, \verb*|SingleLatticePoint| and \verb*|FusionData|. For our example we get the fusion data (line breaks inserted) 
 \begin{Verbatim}
@@ -2844,6 +2857,8 @@ Wec can also ask for \verb*|SimpleFusionRings|, \verb*|NonSimpleFusionRings|, \v
   [[0, 0, 1, 0], [0, 0, 1, 0], [1, 1, 0, 1], [0, 0, 1, 1]],
   [[0, 0, 0, 1], [0, 0, 0, 1], [0, 0, 1, 1], [1, 1, 1, 0]]]]
 \end{Verbatim}
+
+For suitable input it make sense to ask for \verb*|ModularGradings|. Then the algorithmic variant \verb*|UseModularGrading| can be applied via the collective compute command discussed below. If there is more than one modular grading, you must pick one by the function \verb*|setModularGrading(<g>)| where  \verb*|<g>| is the number of the grading you want to pick, counted from 1.
 
 \subsubsection{The collective compute command and algorithmic variants}\label{CollComp}
 So far we have asked Normaliz for a single cone property. It is also possible to bundle several computation goals and options in a single compute command:

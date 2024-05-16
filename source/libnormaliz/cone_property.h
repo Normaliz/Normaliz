@@ -83,7 +83,6 @@ enum Enum {
     SimpleFusionRings,
     NonsimpleFusionRings,
     FusionRings,
-    ModularGradings,
     END_ENUM_RANGE(LAST_MATRIX),
 
     START_ENUM_RANGE(FIRST_MATRIX_FLOAT),
@@ -212,6 +211,7 @@ enum Enum {
     //
     ClassGroup,
     //
+    ModularGradings,
     FusionData,
     END_ENUM_RANGE(LAST_COMPLEX_STRUCTURE),
 
