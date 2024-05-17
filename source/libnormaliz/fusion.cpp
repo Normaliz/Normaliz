@@ -529,13 +529,6 @@ pair<bool, bool> FusionBasic::data_from_string(const string& our_fusion, const b
 template <typename Integer>
 vector<dynamic_bitset> make_subsets_FPdim(const vector<Integer>& d, const Integer&part_FPdim, const vector<dynamic_bitset>& AllSubsets){
 
-    dynamic_bitset group(d.size());
-    for(size_t i = 0; i < d.size(); ++i){
-            if(d[i] > 1)
-                break;
-        group[i] = 1;
-    }
-
     vector<dynamic_bitset> subsets_FPdim;
     for(auto& S: AllSubsets){
         Integer test_FPdim = 0;
@@ -546,8 +539,6 @@ vector<dynamic_bitset> make_subsets_FPdim(const vector<Integer>& d, const Intege
             if(test_FPdim > part_FPdim)
                 break;
         }
-        if(S[0] && !group.is_subset_of(S))
-            continue;
         if(test_FPdim == part_FPdim)
             subsets_FPdim.push_back(S);
     }
@@ -595,9 +586,6 @@ vector<vector<dynamic_bitset> > make_FPdim_partitions(const vector<Integer>& d, 
     dynamic_bitset already_covered(d.size());
 
     all_partitions(Partitions, partition, subsets_FPdim, 0, already_covered, group_order, 0);
-
-    dynamic_bitset group(group_order);
-    group.flip();
 
     vector<vector<dynamic_bitset> > FPdimParts;
     for(auto& p :Partitions){
