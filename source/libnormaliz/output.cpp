@@ -2045,6 +2045,16 @@ void write_fusion_files(const FusionBasic fusion_basic, const string& name, cons
     }
     out.close();
 
+    if(write_fusion_mult_tables_from_input){
+        name_open = name + ".fus";
+        ofstream ftb_out(name_open);
+        Matrix<Integer> AllFusionRings = SimpleFusionRings;
+        if(NonsimpleFusionRings.nr_of_rows() > 0)
+            AllFusionRings.append(NonsimpleFusionRings);
+        fusion.write_all_data_tables(AllFusionRings, ftb_out);
+        ftb_out.close();
+    }
+
 }
 
 #ifndef NMZ_MIC_OFFLOAD  // offload with long is not supported
