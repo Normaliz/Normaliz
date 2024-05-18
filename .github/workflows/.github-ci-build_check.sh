@@ -10,6 +10,7 @@ case $BUILDSYSTEM in
 
     *static*)
         if [[ $OSTYPE == darwin* ]]; then
+            find / -name libomp.dylib
             install -m 0644 /usr/local/lib/libomp.dylib ${PREFIX}/bin
             otool -L ${PREFIX}/bin/normaliz
             install_name_tool -id "@loader_path/./libomp.dylib" ${PREFIX}/bin/libomp.dylib
