@@ -9688,7 +9688,7 @@ void Cone<Integer>::make_modular_gradings(ConeProperties& ToCompute){
         throw BadInputException("UseModularGrading asked for fusaion input qithout modular grading");
     if((modular_grading <= 0 && FusionBasicCone.ModularGradings.size() > 1)
         || modular_grading > static_cast<long>(FusionBasicCone.ModularGradings.size())){
-        throw BadInputException("modular_grading not chosen or out of tange");
+        throw BadInputException("modular_grading not chosen or out of range");
     }
 
     if(FusionBasicCone.ModularGradings.size() > 1){

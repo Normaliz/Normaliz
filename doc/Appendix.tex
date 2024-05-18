@@ -811,7 +811,7 @@ void Cone<Integer>::resetProjectionCoords(const vector<Integer>& lf)
 \end{Verbatim}
 The entries of \verb|lf| must be $0$ or $1$.
 
-\subsubsection{Numerical parameters}
+\subsubsection{Numerical parameters}\label{num_params}
 
 Some computations can be controlled by numerical parameters. They can be given to the cone en bloc or individually.
 
@@ -827,7 +827,7 @@ void Cone<Integer>::setGBDegreeBound(const long degree_bound)
 void Cone<Integer>::setGBMinDegree(const long min_degree)
 void Cone<Integer>::setModularGraing(long mod_gr)
 \end{Verbatim}
-There common default value of \verb|degree| is $-1$, signaling no expansion, all coefficients or no codimension bound etc. One can reset the values after a computation. Then they will delete the computation results that depend on them.
+There common default value of \verb|degree| is $-1$, signaling no expansion, all coefficients or no codimension bound etc. One can reset the values after a computation. Then they will delete the computation results that depend on them. Modular Gradings are counted from $1$ (as in the input file).
 %However, there is no point in changing the codimension bounds for the exploitation of the automorphism group after the computations to that they refer have been finished.
 
 To set them en bloc you can use
@@ -1785,6 +1785,12 @@ One can also retrieve the full fusion data:
 \begin{Verbatim}
 const vector<vector<Matrix<Integer> > >& Cone<Integer>::getFusionDataMatrix()
 \end{Verbatim}
+
+If there are several modular gradings, then for \verb*|UseModzlarGrading| you must pick one by
+\begin{Verbatim}
+void Cone<Integer>::setModularGraing(long mod_gr)
+\end{Verbatim}
+counting from $1$ (also see \ref{num_params}).
 
 \subsubsection{Boolean valued results}
 
