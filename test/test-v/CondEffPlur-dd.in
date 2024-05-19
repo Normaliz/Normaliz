@@ -9,5 +9,5 @@ inequalities 6
 nonnegative
 total_degree
 Multiplicity
-FixedPrecision
-decimal_digits 33
+/* FixedPrecision
+decimal_digits 33 */
