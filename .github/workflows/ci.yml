@@ -211,7 +211,7 @@ jobs:
     runs-on: macos-latest
     env:
       BUILDSYSTEM: "cocoa-eantic-nauty-static"
-      CONFIGURE_FLAGS: "--enable-openmp"
+      # CONFIGURE_FLAGS: "--enable-openmp"
       NO_COVERAGE: "1"
     steps:
       - uses: actions/checkout@v3
