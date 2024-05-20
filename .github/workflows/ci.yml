@@ -244,7 +244,7 @@ jobs:
           path: local/bin/MacOSbinary.zip
 
   eantic:
-    runs-on: macos-latest
+    runs-on: macos-12
     env:
       BUILDSYSTEM: "eantic"
       NO_COVERAGE: "1"
@@ -273,7 +273,7 @@ jobs:
       #   uses: mxschmitt/action-tmate@v3
 
   nauty:
-    runs-on: macos-latest
+    runs-on: macos-12
     env:
       BUILDSYSTEM: "nauty"
       NO_COVERAGE: "1"
