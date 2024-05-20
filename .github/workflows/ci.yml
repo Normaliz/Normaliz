@@ -305,6 +305,7 @@ jobs:
     env:
       BUILDSYSTEM: "check"
       ## NORMPARA: "-x=1"
+      CONFIGURE_FLAGS: "--enable-openmp"
       NO_COVERAGE: "1"
     steps:
       - uses: actions/checkout@v3
