@@ -1445,7 +1445,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_local_solutions(const key_t t
     if(talkative){
             // verbose_0 = "Local solutions total " + to_string(LocalSolutions.size()) + " new " < to_string(nr_new_solutions);
             verboseOutput() << "--" << endl;
-            verboseOutput() << "Local solutions total " << nr_old_solutions + nr_new_solutions << " new " << nr_new_solutions << endl;
+            verboseOutput() << this_patch << " / " << InsertionOrderPatches[this_patch] << "Local solutions total "
+                        << nr_old_solutions + nr_new_solutions << " new " << nr_new_solutions << endl;
             // LocalSolutions.debug_print('+');
     }
 
@@ -1639,6 +1640,11 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
     StartTime(time_begin);
 
     size_t nr_rounds = 0;
+
+    bool apply_automorphisms = true;
+    if(LatticePoints.size() < 100 && Automorphisms.size() > 1000  && !last_coord) {
+        apply_automorphisms = false;
+    }
 
     while (true) {
 
@@ -1850,7 +1856,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                         }
                     }
                 }
-               if(can_be_inserted && fusion.use_automorphisms){
+               if(can_be_inserted && fusion.use_automorphisms && apply_automorphisms){
                     for(size_t i = 0; i < CoveredKey.size(); ++i)
                         restricted[i] = NewLattPoint[CoveredKey[i]];
                     for(auto pp = order_automs.begin(); pp!= order_automs.end(); ++pp){
@@ -2003,10 +2009,16 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
             throw NoComputationException("No output with DistribitedComp for patching");
        }
 
-       if(min_fall_back == 0 && NrRemainingLP[this_patch] == 0){
+       if(min_fall_back == 0 && NrRemainingLP[this_patch] == 0){ // no return to this level
             LocalSolutions_by_intersection_and_cong.clear();  // save memory
-            LocalSolutions.resize(0); // ditto
-            ShortLocalSolutions.resize(0);
+            LocalSolutions.clear();
+            ShortLocalSolutions.clear();
+            poly_equs_stat.clear();
+            poly_equs_stat_total.clear();
+            poly_inequs_stat.clear();
+            poly_inequs_stat_total.clear();
+            automs_stat.clear();
+            automs_stat_total.clear();
        }
 
         double expected_number_of_rounds = NrRemainingLP[this_patch];

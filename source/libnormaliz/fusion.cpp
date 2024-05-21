@@ -117,6 +117,44 @@ vector<vector<key_t> > make_all_permutations(const vector<key_t>& v, const vecto
     return KeyPerms;
 }
 
+
+vector<vector<key_t> > super_impose(const vector<vector<key_t> >& set_1, const vector<vector<key_t> >& set_2){
+
+    size_t size_1 = set_1.size();
+    size_t size_2 = set_2.size();
+    size_t nr_coods = set_1[0].size();
+    vector<vector<key_t> > total(size_1*size_2, vector<key_t>(nr_coods));
+
+    bool skip_remaining = false;
+    std::exception_ptr tmp_exception;
+
+#pragma omp parallel for
+    for(size_t i = 0; i < size_1; ++i){
+
+        if(skip_remaining)
+            continue;
+        try{
+            for(size_t j = 0; j < size_2; ++j){
+
+                INTERRUPT_COMPUTATION_BY_EXCEPTION
+
+                total[i*size_2 +j] = v_add(set_1[i],set_2[j]);
+            }
+        }catch (const std::exception&) {
+            tmp_exception = std::current_exception();
+            skip_remaining = true;
+#pragma omp flush(skip_remaining)
+            }
+    }
+
+    if (!(tmp_exception == 0))
+        std::rethrow_exception(tmp_exception);
+
+    return total;
+}
+
+
+/*
 vector<vector<key_t> > super_impose(const vector<vector<key_t> >& set_1, const vector<vector<key_t> >& set_2){
 
     vector<vector<key_t> > total;
@@ -130,6 +168,7 @@ vector<vector<key_t> > super_impose(const vector<vector<key_t> >& set_1, const v
     }
     return total;
 }
+*/
 
 vector<vector<key_t> > make_all_full_permutations(const vector<key_t>& type,const vector<key_t>& duality){
 
@@ -163,26 +202,6 @@ vector<vector<key_t> > make_all_full_permutations(const vector<key_t>& type,cons
     }
 
     return AllFullPerms;
-
-    /*vector<vector<key_t> > Compatible;
-    if(duality == identity_key(type.size()))
-        swap(Compatible, AllFullPerms);
-    else{ // check compatibilty withe duality
-        for(auto& p: AllFullPerms){
-            bool comp = true;
-            for(size_t i = 0; i < p.size(); ++i){
-                if(p[duality[i]] != duality[p[i]]){
-                    comp = false;
-                    break;
-                }
-            }
-            if(comp)
-                Compatible.push_back(p);
-        }
-        AllFullPerms.clear();
-    }
-
-    return Compatible; */
 }
 
 void FusionBasic::restrict_type_automs_to_grading(){
@@ -302,9 +321,11 @@ void  FusionBasic::data_from_renf_input(ifstream& cone_in){
 void FusionBasic::make_type_automs(){
     if(type_automs_made)
         return;
+    if(libnormaliz::verbose)
+        verboseOutput() << "Making type automorphisms" << endl;
     type_automs = make_all_full_permutations(fusion_type,duality);
     if(verbose)
-        verboseOutput() << type_automs.size() << " type permutations made" << endl;
+        verboseOutput() << type_automs.size() << " type automorphisms made" << endl;
     type_automs_made = true;
 }
 
@@ -819,25 +840,54 @@ void FusionComp<Integer>::make_automorphisms(){
     cout << "Type " << fusion_type << endl;
     cout << "duality " << duality;*/
 
-    if(!type_automs_made)
-     type_automs = make_all_full_permutations(fusion_type,duality);
+    if(!type_automs_made){
+        if(libnormaliz::verbose)
+            verboseOutput() << "Making type automorphisms" << endl;
+        type_automs = make_all_full_permutations(fusion_type,duality);
+        if(libnormaliz::verbose)
+            verboseOutput() << type_automs.size() << " type automorphisms" << endl;
+        type_automs_made =true;
+    }
 
     /*cout << "type automs " << type_automs.size() << endl;
      cout << "selected_ind_tuples " << selected_ind_tuples.size() << endl;*/
 
-    for(auto& p: type_automs){
-        vector<key_t> coord_perm(1); // must start with 0 !!!!
-        for(auto& t: selected_ind_tuples){
+    if(libnormaliz::verbose)
+        verboseOutput() << "Making coordinate automorphisms" << endl;
 
-            INTERRUPT_COMPUTATION_BY_EXCEPTION
+    Automorphisms.resize(type_automs.size());
 
-            vector<key_t> image;
-            for(auto& c: t)
-                image.push_back(p[c]);
-            coord_perm.push_back(coord(image));
-        }
-        Automorphisms.push_back(coord_perm);
+    bool skip_remaining = false;
+    std::exception_ptr tmp_exception;
+
+#pragma omp parallel for
+    for(size_t i = 0; i< type_automs.size(); ++i){
+
+        if(skip_remaining)
+            continue;
+        try{
+            vector<key_t> coord_perm(1); // must start with 0 !!!!
+            for(auto& t: selected_ind_tuples){
+
+                INTERRUPT_COMPUTATION_BY_EXCEPTION
+
+                vector<key_t> image;
+                for(auto& c: t)
+                    image.push_back(type_automs[i][c]);
+                coord_perm.push_back(coord(image));
+            }
+            Automorphisms[i] = coord_perm;
     }
+    catch (const std::exception&) {
+            tmp_exception = std::current_exception();
+            skip_remaining = true;
+#pragma omp flush(skip_remaining)
+            }
+    }
+
+    if (!(tmp_exception == 0))
+        std::rethrow_exception(tmp_exception);
+
     if(libnormaliz::verbose)
         verboseOutput() << "Fusion data automorphism group of order " << Automorphisms.size() << " computed" << endl;
     automorphisms_mde = true;
