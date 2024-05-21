@@ -55,11 +55,11 @@ public:
     bool type_and_duality_set;
 
     size_t fusion_rank;
-    vector<short_key_t> fusion_type;
+    vector<key_t> fusion_type;
     vector<long> fusion_type_from_command;
     string fusion_type_string;
-    vector<short_key_t> duality;
-    vector<short_key_t> subring_base_key;
+    vector<key_t> duality;
+    vector<key_t> subring_base_key;
 
     double total_FPdim;
 
@@ -69,7 +69,7 @@ public:
     vector<vector<int> > GradMultTable;
     vector<dynamic_bitset> chosen_modular_grading;
 
-    vector<vector<short_key_t> > type_automs; // permutations of the basis vectors
+    vector<vector<key_t> > type_automs; // permutations of the basis vectors
     bool type_automs_made;
 
     // pair<bool, bool> read_data(const bool only_test);
@@ -129,27 +129,27 @@ public:
     size_t nr_coordinates;
 
     size_t fusion_rank;
-    vector<short_key_t> fusion_type; // only coincidence pattern
+    vector<key_t> fusion_type; // only coincidence pattern
     string fusion_type_string;
-    vector<short_key_t> duality;
+    vector<key_t> duality;
 
     vector<dynamic_bitset> chosen_modular_grading;
     vector<vector<int> > GradMultTable;
-    set<vector<short_key_t> > ZeroCoords; // made 0 by grading
+    set<vector<key_t> > ZeroCoords; // made 0 by grading
 
     double total_FPdim;
 
     void initialize();
     void import_global_data();
-    vector<vector<vector<short_key_t> > > all_critical_coords_keys;
-    vector<vector<short_key_t> > coords_to_check_key;
+    vector<vector<vector<key_t> > > all_critical_coords_keys;
+    vector<vector<key_t> > coords_to_check_key;
     vector<dynamic_bitset> coords_to_check_ind;
-    vector<vector<short_key_t> > all_ind_tuples;
-    vector<vector<short_key_t> > selected_ind_tuples; // the lex smallest in each FrobRec set
-    map<set<vector<short_key_t> >, short_key_t> CoordMap;
+    vector<vector<key_t> > all_ind_tuples;
+    vector<vector<key_t> > selected_ind_tuples; // the lex smallest in each FrobRec set
+    map<set<vector<key_t> >, key_t> CoordMap;
 
-    vector<vector<short_key_t> > Automorphisms; // permutations of the coordinates
-    vector<vector<short_key_t> > type_automs; // permutations of the basis vectors
+    vector<vector<key_t> > Automorphisms; // permutations of the coordinates
+    vector<vector<key_t> > type_automs; // permutations of the basis vectors
     vector<dynamic_bitset> Orbits;
 
     vector<vector<Matrix<Integer> > > AllTables;
@@ -161,28 +161,28 @@ public:
 
     // coordinates
     void make_CoordMap();
-    set<vector<short_key_t> > FrobRec(const vector<short_key_t>& ind_tuple);
-    set<vector<short_key_t> > FrobRec_6(const vector<short_key_t>& ind_tuple);
-    set<vector<short_key_t> > FrobRec_12(const vector<short_key_t>& ind_tuple);
-    short_key_t coord(set<vector<short_key_t> >& FR);
-    short_key_t coord(vector<short_key_t>& ind_tuple);
-    short_key_t coord_cone(vector<short_key_t>& ind_tuple);
+    set<vector<key_t> > FrobRec(const vector<key_t>& ind_tuple);
+    set<vector<key_t> > FrobRec_6(const vector<key_t>& ind_tuple);
+    set<vector<key_t> > FrobRec_12(const vector<key_t>& ind_tuple);
+    key_t coord(set<vector<key_t> >& FR);
+    key_t coord(vector<key_t>& ind_tuple);
+    key_t coord_cone(vector<key_t>& ind_tuple);
     void make_all_ind_tuples();
-    Integer value(const vector<Integer>& ring, vector<short_key_t>& ind_tuple);
+    Integer value(const vector<Integer>& ring, vector<key_t>& ind_tuple);
 
     // for simplicity check
-    vector<short_key_t> subring_base_key;
-    dynamic_bitset critical_coords(const vector<short_key_t>& base_key);
-    vector<vector<short_key_t> > all_base_keys;
+    vector<key_t> subring_base_key;
+    dynamic_bitset critical_coords(const vector<key_t>& base_key);
+    vector<vector<key_t> > all_base_keys;
     void make_all_base_keys();
     void prepare_simplicity_check();
     Matrix<Integer> do_select_simple_inner(const Matrix<Integer>& LattPoints);
     Matrix<Integer> do_iso_classes_inner(const Matrix<Integer>& LattPoints);
     Matrix<Integer> do_select_simple(const Matrix<Integer>& LattPoints) const;
     Matrix<Integer> do_iso_classes(const Matrix<Integer>& LattPoints) const;
-    bool simplicity_check(const vector<short_key_t>& subring, const vector<Integer>& sol);
-    bool simplicity_check(const vector<vector<short_key_t> >& subrings, const vector<Integer>& sol);
-    bool automs_compatible(const vector<short_key_t>& cand) const;
+    bool simplicity_check(const vector<key_t>& subring, const vector<Integer>& sol);
+    bool simplicity_check(const vector<vector<key_t> >& subrings, const vector<Integer>& sol);
+    bool automs_compatible(const vector<key_t>& cand) const;
 
     // for automosphisms
     void make_automorphisms();
@@ -191,8 +191,8 @@ public:
     Matrix<Integer> make_linear_constraints(const vector<Integer>& d);
     Matrix<Integer> make_linear_constraints_partition(const vector<Integer>& d,
                                             const vector<long>& card);
-    pair<Integer, vector<short_key_t> >  term(const key_t& i, const key_t& j, const key_t& k);
-    set<map<vector<short_key_t>, Integer> > make_associativity_constraints();
+    pair<Integer, vector<key_t> >  term(const key_t& i, const key_t& j, const key_t& k);
+    set<map<vector<key_t>, Integer> > make_associativity_constraints();
     // void set_global_fusion_data();
 
     Matrix<Integer> make_add_constraints_for_grading();
@@ -222,17 +222,17 @@ void make_input_from_fusion_data(const FusionBasic& FusionInput, InputMap<mpq_cl
 void make_partition_input_from_fusion_data(const FusionBasic& FusionInput, InputMap<mpq_class>&  input, const bool write_input_file);
 
 vector<dynamic_bitset> make_all_subsets(const size_t card);
-vector<vector<short_key_t> > make_all_permutations(size_t n);
-vector<vector<short_key_t> > collect_coincidence_subset_keys(const vector<short_key_t>& type);
-vector<vector<short_key_t> > make_all_permutations(const vector<short_key_t>& v, const vector<short_key_t>& duality);
-vector<vector<short_key_t> > make_all_permutations(const vector<short_key_t>& type, const vector<short_key_t>& duality);
+vector<vector<key_t> > make_all_permutations(size_t n);
+vector<vector<key_t> > collect_coincidence_subset_keys(const vector<key_t>& type);
+vector<vector<key_t> > make_all_permutations(const vector<key_t>& v, const vector<key_t>& duality);
+vector<vector<key_t> > make_all_permutations(const vector<key_t>& type, const vector<key_t>& duality);
 
 // void remove_global_fusion_data();
 
 // void post_process_fusion(const vector<string>& command_line_items);
 
 template <typename Integer>
-vector<short_key_t> fusion_coincidence_pattern(const vector<Integer>& v);
+vector<key_t> fusion_coincidence_pattern(const vector<Integer>& v);
 
 template<typename Integer>
 bool check_duality(vector<Integer> test_duality, const vector<Integer>& test_type){
@@ -290,7 +290,7 @@ void FusionBasic::read_data_from_input(InputMap<Integer>& input_data){
             prel_duality[0] = 0;
         }
         duality.resize(fusion_rank);
-        for(short_key_t i = 0; i < fusion_rank; ++i){
+        for(key_t i = 0; i < fusion_rank; ++i){
             bool in_range = false;
             for(long j = 0; j < fusion_rank; ++j){  // conversion by counting
                 if(convertTo<Integer>(j) == prel_duality[i]){
@@ -304,7 +304,7 @@ void FusionBasic::read_data_from_input(InputMap<Integer>& input_data){
         }
         if(key_to_bitset(duality, fusion_rank).count() != fusion_rank)
             throw BadInputException("Fusion duality has repeated entries");
-        if(!check_duality<short_key_t>(duality, fusion_type))
+        if(!check_duality<key_t>(duality, fusion_type))
             throw BadInputException("Fusion duality does not fit type");
     }
     else{

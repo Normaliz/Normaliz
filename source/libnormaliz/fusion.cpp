@@ -61,19 +61,19 @@ vector<dynamic_bitset> make_all_subsets(const size_t card){
     return all_subsets;
 }
 
-vector<vector<short_key_t> > make_all_permutations(const size_t n){
-    vector<vector <vector<short_key_t> > > Perms(1);
+vector<vector<key_t> > make_all_permutations(const size_t n){
+    vector<vector <vector<key_t> > > Perms(1);
     Perms[0].resize(1);
     Perms[0][0].resize(1);
     Perms[0][0][0] = 0;
-    for(short_key_t i=1; i<n; ++i){
+    for(key_t i=1; i<n; ++i){
         Perms.resize(i+1);
-        for(short_key_t j=0;j<=i;++j){
+        for(key_t j=0;j<=i;++j){
 
             INTERRUPT_COMPUTATION_BY_EXCEPTION
 
-            for(short_key_t k=0; k< (short_key_t) Perms[i-1].size(); ++k){
-                vector<short_key_t> new_perm = Perms[i-1][k];
+            for(key_t k=0; k< (key_t) Perms[i-1].size(); ++k){
+                vector<key_t> new_perm = Perms[i-1][k];
                 new_perm.resize(i+1);
                 new_perm[i] = i;
                 swap(new_perm[j],new_perm[i]);
@@ -85,14 +85,14 @@ vector<vector<short_key_t> > make_all_permutations(const size_t n){
     return Perms[n-1];
 }
 
-vector<vector<short_key_t> > make_all_permutations(const vector<short_key_t>& v, const vector<short_key_t>& duality){
+vector<vector<key_t> > make_all_permutations(const vector<key_t>& v, const vector<key_t>& duality){
 
-    vector<vector<short_key_t> >Perms = make_all_permutations(v.size());
-    vector<vector<short_key_t> > KeyPerms;
-    vector<short_key_t> v_inv(duality.size());
+    vector<vector<key_t> >Perms = make_all_permutations(v.size());
+    vector<vector<key_t> > KeyPerms;
+    vector<key_t> v_inv(duality.size());
     for(size_t i = 0; i < v.size(); ++i)
         v_inv[v[i]] = i;
-    vector<short_key_t> dual(v.size());
+    vector<key_t> dual(v.size());
     for(size_t i = 0; i < v.size(); ++i)
         dual [i] = v_inv[duality[v[i]]];
     for(auto& w: Perms){
@@ -109,7 +109,7 @@ vector<vector<short_key_t> > make_all_permutations(const vector<short_key_t>& v,
         if(!comp)
             continue;
 
-        vector<short_key_t> w_new(v.size());
+        vector<key_t> w_new(v.size());
         for(size_t i = 0; i< w.size(); ++i)
             w_new[i] = v[w[i]];
         KeyPerms.push_back(w_new);
@@ -118,12 +118,12 @@ vector<vector<short_key_t> > make_all_permutations(const vector<short_key_t>& v,
 }
 
 
-vector<vector<short_key_t> > super_impose(const vector<vector<short_key_t> >& set_1, const vector<vector<short_key_t> >& set_2){
+vector<vector<key_t> > super_impose(const vector<vector<key_t> >& set_1, const vector<vector<key_t> >& set_2){
 
     size_t size_1 = set_1.size();
     size_t size_2 = set_2.size();
     size_t nr_coods = set_1[0].size();
-    vector<vector<short_key_t> > total(size_1*size_2, vector<short_key_t>(nr_coods));
+    vector<vector<key_t> > total(size_1*size_2, vector<key_t>(nr_coods));
 
     bool skip_remaining = false;
     std::exception_ptr tmp_exception;
@@ -155,9 +155,9 @@ vector<vector<short_key_t> > super_impose(const vector<vector<short_key_t> >& se
 
 
 /*
-vector<vector<short_key_t> > super_impose(const vector<vector<short_key_t> >& set_1, const vector<vector<short_key_t> >& set_2){
+vector<vector<key_t> > super_impose(const vector<vector<key_t> >& set_1, const vector<vector<key_t> >& set_2){
 
-    vector<vector<short_key_t> > total;
+    vector<vector<key_t> > total;
     for(auto& v: set_1){
         for(auto& w: set_2){
 
@@ -170,18 +170,18 @@ vector<vector<short_key_t> > super_impose(const vector<vector<short_key_t> >& se
 }
 */
 
-vector<vector<short_key_t> > make_all_full_permutations(const vector<short_key_t>& type,const vector<short_key_t>& duality){
+vector<vector<key_t> > make_all_full_permutations(const vector<key_t>& type,const vector<key_t>& duality){
 
     auto type_1 = type;
     type_1[0] = 0; // to single out the unit
 
     auto coincidence_keys = collect_coincidence_subset_keys(type_1);
-    vector<vector< vector<short_key_t> > > FullPermsByCoinc;
+    vector<vector< vector<key_t> > > FullPermsByCoinc;
 
     for(auto& co: coincidence_keys){
-        vector<vector<short_key_t> > ThisFullPerms;
+        vector<vector<key_t> > ThisFullPerms;
         auto Perms = make_all_permutations(co, duality);
-        vector<short_key_t> FullPerm(type.size());
+        vector<key_t> FullPerm(type.size());
         for(auto& p: Perms){
             for(size_t i = 0; i< p.size(); ++i){
                 FullPerm[co[i]] = p[i];
@@ -191,7 +191,7 @@ vector<vector<short_key_t> > make_all_full_permutations(const vector<short_key_t
         FullPermsByCoinc.push_back(ThisFullPerms);
     }
 
-    vector<vector<short_key_t> > AllFullPerms;
+    vector<vector<key_t> > AllFullPerms;
     for(size_t i = 0; i < coincidence_keys.size(); ++i){
         if(i == 0){
             AllFullPerms=FullPermsByCoinc[0];
@@ -206,7 +206,7 @@ vector<vector<short_key_t> > make_all_full_permutations(const vector<short_key_t
 
 void FusionBasic::restrict_type_automs_to_grading(){
 
-    vector<short_key_t> in_comp(fusion_rank);
+    vector<key_t> in_comp(fusion_rank);
     for(size_t k = 0; k < group_order; ++k){
         for(size_t i = 0; i < chosen_modular_grading[k].size(); ++i){
             if(!chosen_modular_grading[k][i])
@@ -214,10 +214,10 @@ void FusionBasic::restrict_type_automs_to_grading(){
             in_comp[i] = k;
         }
     }
-    vector<vector<short_key_t> >selection;
+    vector<vector<key_t> >selection;
     for(auto& p: type_automs){
         // cout << p;
-        vector<short_key_t> image;
+        vector<key_t> image;
         for(size_t i = 0; i< chosen_modular_grading.size(); ++i){
             size_t first_elem = chosen_modular_grading[i].find_first();
             image.push_back(in_comp[p[first_elem]]);
@@ -239,15 +239,15 @@ void FusionBasic::restrict_type_automs_to_grading(){
         verboseOutput() << type_automs.size() << " type permutations selected" << endl;
 }
 
-vector<vector<short_key_t> > collect_coincidence_subset_keys(const vector<short_key_t>& type){
+vector<vector<key_t> > collect_coincidence_subset_keys(const vector<key_t>& type){
 
-    vector<vector<short_key_t> > coincidence_keys;
+    vector<vector<key_t> > coincidence_keys;
     dynamic_bitset done(type.size());
 
     for(size_t i = 0; i < type.size(); ++i){
         if(done[i])
             continue;
-        coincidence_keys.push_back(vector<short_key_t>(1,i));
+        coincidence_keys.push_back(vector<key_t>(1,i));
         done[i] = 1;
         for(size_t j = i + 1; j < type.size(); ++j){
             if(done[j])
@@ -539,7 +539,7 @@ pair<bool, bool> FusionBasic::data_from_string(const string& our_fusion, const b
     };
 
     duality.resize(fusion_rank);
-    for(short_key_t i = 0; i< fusion_rank; ++i){
+    for(key_t i = 0; i< fusion_rank; ++i){
         duality[i] = duality_input[i];
     }
     type_and_duality_set = true;
@@ -610,7 +610,7 @@ vector<vector<dynamic_bitset> > make_FPdim_partitions(const vector<Integer>& d, 
 
     vector<vector<dynamic_bitset> > FPdimParts;
     for(auto& p :Partitions){
-        vector<short_key_t> selection = bitset_to_key(p);
+        vector<key_t> selection = bitset_to_key(p);
         vector<dynamic_bitset> FPdimPart;
         vector<dynamic_bitset> FPdimPart_sorted;
         for(auto& c: selection)
@@ -661,7 +661,7 @@ void FusionBasic::make_grad_mult_table(){
 
     vector<dynamic_bitset>& part = chosen_modular_grading;
 
-    vector<short_key_t> in_comp(fusion_rank);
+    vector<key_t> in_comp(fusion_rank);
     for(size_t k = 0; k < group_order; ++k){
         for(size_t i = 0; i < part[k].size(); ++i){
             if(!part[k][i])
@@ -675,7 +675,7 @@ void FusionBasic::make_grad_mult_table(){
          MultTable[0][i] = i;
          MultTable[i][0] = i;
      }
-     vector<short_key_t> inverse(group_order);
+     vector<key_t> inverse(group_order);
      for(size_t i = 0; i < group_order; ++i){
          size_t k = part[i].find_first();
          inverse[i] = in_comp[duality[k]];
@@ -866,12 +866,12 @@ void FusionComp<Integer>::make_automorphisms(){
         if(skip_remaining)
             continue;
         try{
-            vector<short_key_t> coord_perm(1); // must start with 0 !!!!
+            vector<key_t> coord_perm(1); // must start with 0 !!!!
             for(auto& t: selected_ind_tuples){
 
                 INTERRUPT_COMPUTATION_BY_EXCEPTION
 
-                vector<short_key_t> image;
+                vector<key_t> image;
                 for(auto& c: t)
                     image.push_back(type_automs[i][c]);
                 coord_perm.push_back(coord(image));
@@ -899,7 +899,7 @@ void FusionComp<Integer>::make_automorphisms(){
 // checks whether sol is contained in the "subring". If so, "false" is returned,
 // meaning "not sinmple"
 template <typename Integer>
-bool FusionComp<Integer>::simplicity_check(const vector<short_key_t>& subring, const vector<Integer>& sol){
+bool FusionComp<Integer>::simplicity_check(const vector<key_t>& subring, const vector<Integer>& sol){
 
     for(auto& c: subring){
         if(sol[c] != 0)
@@ -910,7 +910,7 @@ bool FusionComp<Integer>::simplicity_check(const vector<short_key_t>& subring, c
 
 // checks whether sol is contained in one of the "subrings". If so "false" is returned.
 template <typename Integer>
-bool FusionComp<Integer>::simplicity_check(const vector<vector<short_key_t> >& subrings, const vector<Integer>& sol){
+bool FusionComp<Integer>::simplicity_check(const vector<vector<key_t> >& subrings, const vector<Integer>& sol){
 
     for(auto& sub: subrings){
         if(!simplicity_check(sub, sol)){
@@ -938,7 +938,7 @@ void FusionComp<Integer>::set_options(const ConeProperties& ToCompute, const boo
 }
 
 template <typename Integer>
-set<vector<short_key_t> >  FusionComp<Integer>::FrobRec(const vector<short_key_t>& ind_tuple){
+set<vector<key_t> >  FusionComp<Integer>::FrobRec(const vector<key_t>& ind_tuple){
     if(commutative)
         return FrobRec_12(ind_tuple);
     else
@@ -947,14 +947,14 @@ set<vector<short_key_t> >  FusionComp<Integer>::FrobRec(const vector<short_key_t
 
 
 template <typename Integer>
-set<vector<short_key_t> >  FusionComp<Integer>::FrobRec_6(const vector<short_key_t>& ind_tuple){
+set<vector<key_t> >  FusionComp<Integer>::FrobRec_6(const vector<key_t>& ind_tuple){
 
     assert(ind_tuple.size() == 3);
-    short_key_t i,j,k;
+    key_t i,j,k;
     i = ind_tuple[0];
     j = ind_tuple[1];
     k = ind_tuple[2];
-    set< vector<short_key_t> > F;
+    set< vector<key_t> > F;
     // cout << "FR "<< duality;
     F = {
             {i,j,k},
@@ -968,23 +968,23 @@ set<vector<short_key_t> >  FusionComp<Integer>::FrobRec_6(const vector<short_key
 }
 
 template <typename Integer>
-set<vector<short_key_t> >  FusionComp<Integer>::FrobRec_12(const vector<short_key_t>& ind_tuple){
+set<vector<key_t> >  FusionComp<Integer>::FrobRec_12(const vector<key_t>& ind_tuple){
 
-    set< vector<short_key_t> > F = FrobRec_6(ind_tuple);
-    vector<short_key_t> comm_tuple(3);
+    set< vector<key_t> > F = FrobRec_6(ind_tuple);
+    vector<key_t> comm_tuple(3);
     comm_tuple[0] = ind_tuple[1];
     comm_tuple[1] = ind_tuple[0];
     comm_tuple[2] = ind_tuple[2];
-    set< vector<short_key_t> > G = FrobRec_6(comm_tuple);
+    set< vector<key_t> > G = FrobRec_6(comm_tuple);
     for(auto& t: G)
         F.insert(t);
     return F;
 }
 
 template <typename Integer>
-Integer FusionComp<Integer>::value(const vector<Integer>& ring, vector<short_key_t>& ind_tuple){
+Integer FusionComp<Integer>::value(const vector<Integer>& ring, vector<key_t>& ind_tuple){
 
-    short_key_t i,j,k;
+    key_t i,j,k;
     i =ind_tuple[0];
     j = ind_tuple[1];
     k = ind_tuple[2];
@@ -1013,21 +1013,21 @@ Integer FusionComp<Integer>::value(const vector<Integer>& ring, vector<short_key
 
 
 template <typename Integer>
-short_key_t FusionComp<Integer>::coord(vector<short_key_t>& ind_tuple){
-    set<vector<short_key_t> > FR = FrobRec(ind_tuple);
+key_t FusionComp<Integer>::coord(vector<key_t>& ind_tuple){
+    set<vector<key_t> > FR = FrobRec(ind_tuple);
     return coord(FR);
 }
 
 template <typename Integer>
-short_key_t FusionComp<Integer>::coord_cone(vector<short_key_t>& ind_tuple){
-    short_key_t coord_compute = coord(ind_tuple);
+key_t FusionComp<Integer>::coord_cone(vector<key_t>& ind_tuple){
+    key_t coord_compute = coord(ind_tuple);
     if(coord_compute == 0)
         return nr_coordinates;
     return coord_compute -1;
 }
 
 template <typename Integer>
-short_key_t FusionComp<Integer>::coord(set<vector<short_key_t> >& FR){
+key_t FusionComp<Integer>::coord(set<vector<key_t> >& FR){
     return CoordMap[FR];
 }
 
@@ -1035,8 +1035,8 @@ short_key_t FusionComp<Integer>::coord(set<vector<short_key_t> >& FR){
 // makes the critical coordinates for the simplicity check
 // bse_key is the vector of bases (by keys) of the potential subrings
 template <typename Integer>
-dynamic_bitset FusionComp<Integer>::critical_coords(const vector<short_key_t>& base_key){
-    set<short_key_t> cand_set;
+dynamic_bitset FusionComp<Integer>::critical_coords(const vector<key_t>& base_key){
+    set<key_t> cand_set;
     cand_set.insert(base_key.begin(), base_key.end());
 
     dynamic_bitset crit_coords(CoordMap.size() + 1); // coordinate 0 is omitted
@@ -1053,10 +1053,10 @@ dynamic_bitset FusionComp<Integer>::critical_coords(const vector<short_key_t>& b
 
 template <typename Integer>
 void FusionComp<Integer>::make_all_ind_tuples(){
-    for(short_key_t i = 1; i < fusion_rank; ++i){
-        for(short_key_t j = 1; j < fusion_rank; ++j){
-            for(short_key_t k = 1; k < fusion_rank; ++k){
-                vector<short_key_t> ind_tuple = {i,j,k};
+    for(key_t i = 1; i < fusion_rank; ++i){
+        for(key_t j = 1; j < fusion_rank; ++j){
+            for(key_t k = 1; k < fusion_rank; ++k){
+                vector<key_t> ind_tuple = {i,j,k};
                 all_ind_tuples.push_back(ind_tuple);
             }
         }
@@ -1072,9 +1072,9 @@ void FusionComp<Integer>::make_CoordMap(){
     make_all_ind_tuples();
     // cout << "ind_tuples " << all_ind_tuples.size() << endl;
 
-    short_key_t val = 1;  // coordinate 0 is the homogenizing one
+    key_t val = 1;  // coordinate 0 is the homogenizing one
     for(auto& ind_tuple: all_ind_tuples){
-        set<vector<short_key_t> > F= FrobRec(ind_tuple);
+        set<vector<key_t> > F= FrobRec(ind_tuple);
         if(CoordMap.find(F) != CoordMap.end())
             continue;
         CoordMap[F] = val;
@@ -1096,7 +1096,7 @@ void  FusionComp<Integer>::make_all_base_keys(){
     for(auto& sub: all_subsets){
         if(sub.count() == 0 || sub.count() == fusion_rank -1) // must discard empty set and the full ring
             continue;
-        vector<short_key_t> kk = bitset_to_key(sub);
+        vector<key_t> kk = bitset_to_key(sub);
         for(auto& c: kk)
             c++;
         bool duality_closed = true;
@@ -1113,10 +1113,10 @@ void  FusionComp<Integer>::make_all_base_keys(){
 }
 
 template <typename Integer>
-bool FusionComp<Integer>::automs_compatible(const vector<short_key_t>& cand ) const{
+bool FusionComp<Integer>::automs_compatible(const vector<key_t>& cand ) const{
 
     for(auto& aa: Automorphisms){
-        dynamic_bitset cand_ind = short_key_to_bitset(cand, Automorphisms.begin()->size());
+        dynamic_bitset cand_ind = key_to_bitset(cand, Automorphisms.begin()->size());
         for(auto& c: cand){
             if(!cand_ind[aa[c]])
                 return false;
@@ -1199,7 +1199,7 @@ Matrix<Integer> FusionComp<Integer>::do_iso_classes_inner(const Matrix<Integer>&
     IsoClasses.resize(0,LattPoints.nr_of_columns());
 
     for(auto& aa: Automorphisms){  // homogenizing coordinate is the last now
-        vector<short_key_t> modified = aa;
+        vector<key_t> modified = aa;
         v_cyclic_shift_left(modified, modified.size() -1);
         modified.resize(modified.size()-1);
         for(auto& c: modified)
@@ -1255,8 +1255,8 @@ template <typename Integer>
 Matrix<Integer> FusionComp<Integer>::make_add_constraints_for_grading(){
 
     Matrix<Integer> GradEqu(0, nr_coordinates + 1);
-    vector<short_key_t> indices(3);
-    vector<short_key_t> in_comp(fusion_rank);
+    vector<key_t> indices(3);
+    vector<key_t> in_comp(fusion_rank);
     for(size_t k = 0; k < chosen_modular_grading.size(); ++k){
         for(size_t i = 0; i < chosen_modular_grading[k].size(); ++i){
             if(!chosen_modular_grading[k][i])
@@ -1267,13 +1267,13 @@ Matrix<Integer> FusionComp<Integer>::make_add_constraints_for_grading(){
 
     // cout << chosen_modular_grading.size() << endl;
 
-    for(short_key_t i = 1; i < fusion_rank; ++i){
+    for(key_t i = 1; i < fusion_rank; ++i){
         indices[0] = i;
-        for(short_key_t j = 1; j < fusion_rank; ++j){
+        for(key_t j = 1; j < fusion_rank; ++j){
             indices[1] = j;
-            short_key_t product_comp = GradMultTable[in_comp[i]][in_comp[j]];
+            key_t product_comp = GradMultTable[in_comp[i]][in_comp[j]];
             // cout << i << " " << j << " " << product_comp << endl;
-            for(short_key_t k = 1; k < fusion_rank; k++){
+            for(key_t k = 1; k < fusion_rank; k++){
                 indices[2] =k;
                 if(!chosen_modular_grading[product_comp][k]){
                     // cout << "zero" << endl;
@@ -1400,16 +1400,16 @@ Matrix<Integer> FusionComp<Integer>::make_linear_constraints(const vector<Intege
 
     Matrix<Integer> Equ(0, nr_coordinates + 1); // mudst accomodate right hand side in last coordinate
 
-    vector<short_key_t> indices(3);
-    for(short_key_t i = 1; i < fusion_rank; ++i){
+    vector<key_t> indices(3);
+    for(key_t i = 1; i < fusion_rank; ++i){
         indices[0] = i;
-        for(short_key_t j = 1; j < fusion_rank; ++j){
+        for(key_t j = 1; j < fusion_rank; ++j){
             indices[1] = j;
             vector<Integer> this_equ(nr_coordinates + 1);
             this_equ.back() = - d[i]*d[j];
             if(i == duality[j])
                 this_equ.back() += 1;
-            for(short_key_t k = 1; k < fusion_rank; ++k){
+            for(key_t k = 1; k < fusion_rank; ++k){
                 indices[2] = k;
                 this_equ[coord_cone(indices)] += d[k];
             }
@@ -1442,16 +1442,16 @@ Matrix<Integer> FusionComp<Integer>::make_linear_constraints_partition(const vec
 
     Matrix<Integer> Equ(0, nr_coordinates + 1); // mudst accomodate right hand side in last coordinate
 
-    vector<short_key_t> indices(3);
-    for(short_key_t i = 1; i < fusion_rank; ++i){
+    vector<key_t> indices(3);
+    for(key_t i = 1; i < fusion_rank; ++i){
         indices[0] = i;
-        for(short_key_t j = 1; j < fusion_rank; ++j){
+        for(key_t j = 1; j < fusion_rank; ++j){
             indices[1] = j;
             vector<Integer> this_equ(nr_coordinates + 1);
             this_equ.back() = - d[i]*d[j]*card[i]*card[j];
             if(i == j) // duality is trivial
                 this_equ.back() += card[i];
-            for(short_key_t k = 1; k < fusion_rank; ++k){
+            for(key_t k = 1; k < fusion_rank; ++k){
                 indices[2] = k;
                 this_equ[coord_cone(indices)] += d[k];
             }
@@ -1472,10 +1472,10 @@ Matrix<Integer> FusionComp<Integer>::make_linear_constraints_partition(const vec
 
 // factor_1 = factor_1 * factor__2
 template <typename Integer>
-void prod(pair<Integer, vector<short_key_t> >& factor_1, const pair<Integer, vector<short_key_t> >& factor_2){
+void prod(pair<Integer, vector<key_t> >& factor_1, const pair<Integer, vector<key_t> >& factor_2){
 
     if(factor_1.first == 0 || factor_2.first == 0){
-        factor_1 = make_pair(0, vector<short_key_t>(0));
+        factor_1 = make_pair(0, vector<key_t>(0));
         return;
     }
     factor_1.first *= factor_2.first;
@@ -1484,7 +1484,7 @@ void prod(pair<Integer, vector<short_key_t> >& factor_1, const pair<Integer, vec
 }
 
 template <typename Integer>
-void add(map<vector<short_key_t>, Integer>& poly, const pair<Integer, vector<short_key_t> >& summand){
+void add(map<vector<key_t>, Integer>& poly, const pair<Integer, vector<key_t> >& summand){
 
     // cout << summand.first << "+++++++++++++++" << summand.second;
 
@@ -1501,18 +1501,18 @@ void add(map<vector<short_key_t>, Integer>& poly, const pair<Integer, vector<sho
 }
 
 template <typename Integer>
-void subtracct(map<vector<short_key_t>, Integer>& poly, const pair<Integer, vector<short_key_t> >& summand){
-    pair<Integer, vector<short_key_t> > subtrahend = summand;
+void subtracct(map<vector<key_t>, Integer>& poly, const pair<Integer, vector<key_t> >& summand){
+    pair<Integer, vector<key_t> > subtrahend = summand;
     subtrahend.first = -subtrahend.first;
     add(poly, subtrahend);
 }
 
 template <typename Integer>
-pair<Integer, vector<short_key_t> >  FusionComp<Integer>::term(const short_key_t& i, const short_key_t& j, const short_key_t& k){
+pair<Integer, vector<key_t> >  FusionComp<Integer>::term(const key_t& i, const key_t& j, const key_t& k){
 
-    vector<short_key_t> indices = {i,j,k};
+    vector<key_t> indices = {i,j,k};
     Integer coeff = -1;
-    vector<short_key_t> exponent;
+    vector<key_t> exponent;
     if(k == 0){
         if(i == duality[j])
             coeff = 1;
@@ -1543,7 +1543,7 @@ pair<Integer, vector<short_key_t> >  FusionComp<Integer>::term(const short_key_t
 }
 
 template <typename Integer>
-set<map<vector<short_key_t>, Integer> > FusionComp<Integer>::make_associativity_constraints(){
+set<map<vector<key_t>, Integer> > FusionComp<Integer>::make_associativity_constraints(){
 
     if(libnormaliz::verbose)
         verboseOutput() << "Making accociativity constraints for fusion rings" << endl;
@@ -1555,20 +1555,20 @@ set<map<vector<short_key_t>, Integer> > FusionComp<Integer>::make_associativity_
     // if one of i,j,k is 0, no need for it since
     // the neutral element is automatically "associative"
 
-    set<map<vector<short_key_t>, Integer> > Polys;
+    set<map<vector<key_t>, Integer> > Polys;
 
-    for(short_key_t i = 1; i< fusion_rank; ++i){
-        for(short_key_t j = 1; j < fusion_rank; ++j){
-            for(short_key_t k = 1; k < fusion_rank; ++k){
-                for(short_key_t t = 0; t < fusion_rank; ++t){
-                    map<vector<short_key_t>, Integer> P;
-                    for(short_key_t s = 0; s < fusion_rank; ++s){ // the poly is a sium over s
-                        pair<Integer, vector<short_key_t> > t_1 = term(i,j,s);
-                        pair<Integer, vector<short_key_t> > t_2 = term(s,k,t);
+    for(key_t i = 1; i< fusion_rank; ++i){
+        for(key_t j = 1; j < fusion_rank; ++j){
+            for(key_t k = 1; k < fusion_rank; ++k){
+                for(key_t t = 0; t < fusion_rank; ++t){
+                    map<vector<key_t>, Integer> P;
+                    for(key_t s = 0; s < fusion_rank; ++s){ // the poly is a sium over s
+                        pair<Integer, vector<key_t> > t_1 = term(i,j,s);
+                        pair<Integer, vector<key_t> > t_2 = term(s,k,t);
                         prod(t_1, t_2);
                         add(P, t_1);
-                        pair<Integer, vector<short_key_t> > t_3 = term(j,k,s);
-                        pair<Integer, vector<short_key_t> > t_4 = term(i,s,t);
+                        pair<Integer, vector<key_t> > t_3 = term(j,k,s);
+                        pair<Integer, vector<key_t> > t_4 = term(i,s,t);
                         prod(t_3, t_4);
                         subtracct(P, t_3);
                     }
@@ -1675,10 +1675,10 @@ Matrix<Integer> FusionComp<Integer>::data_table(const vector<Integer>& ring, con
 
     Matrix<Integer> Table(fusion_rank, fusion_rank);
 
-    for(short_key_t k = 0; k < fusion_rank; k++){
-        for(short_key_t j= 0; j < fusion_rank; j++){
-            short_key_t ii = i;
-            vector<short_key_t>ind_tuple = {ii, j, k};
+    for(key_t k = 0; k < fusion_rank; k++){
+        for(key_t j= 0; j < fusion_rank; j++){
+            key_t ii = i;
+            vector<key_t>ind_tuple = {ii, j, k};
             Table[j][k] = value(ring, ind_tuple);
         }
     }
@@ -1754,10 +1754,10 @@ Matrix<Integer> FusionComp<Integer>::data_table(const vector<Integer>& ring, con
 
     Matrix<Integer> Table(fusion_rank, fusion_rank);
 
-    for(short_key_t k = 0; k < fusion_rank; k++){
-        for(short_key_t j= 0; j < fusion_rank; j++){
-            short_key_t ii = i;
-            vector<short_key_t>ind_tuple = {ii, j, k};
+    for(key_t k = 0; k < fusion_rank; k++){
+        for(key_t j= 0; j < fusion_rank; j++){
+            key_t ii = i;
+            vector<key_t>ind_tuple = {ii, j, k};
             Table[j][k] = value(ring, ind_tuple);
         }
     }
@@ -2081,9 +2081,9 @@ void make_full_input_partition(InputMap<Integer>& input_data){
 }
 
 template <typename Integer>
-vector<short_key_t> fusion_coincidence_pattern(const vector<Integer>& v){
+vector<key_t> fusion_coincidence_pattern(const vector<Integer>& v){
 
-    vector<short_key_t> coinc;
+    vector<key_t> coinc;
 
     if(v.size() == 0)
         return coinc;
@@ -2091,9 +2091,9 @@ vector<short_key_t> fusion_coincidence_pattern(const vector<Integer>& v){
     coinc.resize(v.size());
 
     coinc[0] = 1;
-    short_key_t last_new = 1;
-    for(short_key_t i = 1; i < v.size(); ++i){
-        for(short_key_t j = 1; j < i; ++j){
+    key_t last_new = 1;
+    for(key_t i = 1; i < v.size(); ++i){
+        for(key_t j = 1; j < i; ++j){
             if(v[i] == v[j]){
                 coinc[i] = coinc[j];
                 break;
@@ -2162,11 +2162,11 @@ template Matrix<renf_elem_class> fusion_iso_classes(const Matrix<renf_elem_class
 #endif
 */
 
-template vector<short_key_t> fusion_coincidence_pattern(const vector<long>& v);
-template vector<short_key_t> fusion_coincidence_pattern(const vector<long long>& v);
-template vector<short_key_t> fusion_coincidence_pattern(const vector<mpz_class>& v);
+template vector<key_t> fusion_coincidence_pattern(const vector<long>& v);
+template vector<key_t> fusion_coincidence_pattern(const vector<long long>& v);
+template vector<key_t> fusion_coincidence_pattern(const vector<mpz_class>& v);
 #ifdef ENFNORMALIZ
-template vector<short_key_t> fusion_coincidence_pattern(const vector<renf_elem_class>& v);
+template vector<key_t> fusion_coincidence_pattern(const vector<renf_elem_class>& v);
 #endif
 
 /*
@@ -2179,11 +2179,11 @@ template bool FusionBasic::make_gradings(vector<renf_elem_class> d);
 */
 
 /*
-template void make_full_input<long>(const FusionBasic& FusionInput, InputMap<long>& input_data, set<map<vector<short_key_t>, long> >& Polys);
-template void make_full_input<long long>(const FusionBasic& FusionInput, InputMap<long long>& input_data, set<map<vector<short_key_t>, long long> >& Polys);
-template void make_full_input<mpz_class>(const FusionBasic& FusionInput, InputMap<mpz_class>& input_data, set<map<vector<short_key_t>, mpz_class> >& Polys);
+template void make_full_input<long>(const FusionBasic& FusionInput, InputMap<long>& input_data, set<map<vector<key_t>, long> >& Polys);
+template void make_full_input<long long>(const FusionBasic& FusionInput, InputMap<long long>& input_data, set<map<vector<key_t>, long long> >& Polys);
+template void make_full_input<mpz_class>(const FusionBasic& FusionInput, InputMap<mpz_class>& input_data, set<map<vector<key_t>, mpz_class> >& Polys);
 #ifdef ENFNORMALIZ
-template void make_full_input<renf_elem_class>(const FusionBasic& FusionInput, InputMap<renf_elem_class>& input_data, set<map<vector<short_key_t>, renf_elem_class> >& Polys);
+template void make_full_input<renf_elem_class>(const FusionBasic& FusionInput, InputMap<renf_elem_class>& input_data, set<map<vector<key_t>, renf_elem_class> >& Polys);
 #endif
 */
 

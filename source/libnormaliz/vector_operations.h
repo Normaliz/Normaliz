@@ -158,8 +158,8 @@ bool compare_last(const vector<Integer>& a, const vector<Integer>& b) {
 
 // swaps entry i and j of the vector<bool> v
 void v_bool_entry_swap(vector<bool>& v, size_t i, size_t j);
-
 vector<key_t> identity_key(size_t n);
+vector<shortkey_t> identity_shortkey(size_t n);
 vector<key_t> reverse_key(size_t n);
 vector<key_t> random_key(size_t n);
 
@@ -567,8 +567,10 @@ Integer v_standardize(vector<Integer>& v);
 
 vector<bool> bitset_to_bool(const dynamic_bitset& BS);
 vector<key_t> bitset_to_key(const dynamic_bitset& BS);
+vector<shortkey_t> bitset_to_shortkey(const dynamic_bitset& BS);
 dynamic_bitset bool_to_bitset(const vector<bool>& val);
 dynamic_bitset key_to_bitset(const vector<key_t>& key, long size);
+dynamic_bitset shortkey_to_bitset(const vector<shortkey_t>& key, long size);
 
 template <typename Integer>
 inline void make_integral(vector<Integer>& vec) {
@@ -1056,6 +1058,13 @@ inline vector<key_t> identity_key(size_t n) {
     return key;
 }
 
+inline vector<shortkey_t> identity_shortkey(size_t n) {
+    vector<shortkey_t> key(n);
+    for (shortkey_t k = 0; k < n; ++k)
+        key[k] = k;
+    return key;
+}
+
 inline vector<key_t> reverse_key(size_t n) {
     vector<key_t> key(n);
     for (size_t k = 0; k < n; ++k)
@@ -1286,7 +1295,24 @@ inline vector<key_t> bitset_to_key(const dynamic_bitset& val) {
     return ret;
 }
 
+inline vector<shortkey_t> bitset_to_shortkey(const dynamic_bitset& val) {
+    vector<shortkey_t> ret;
+    for (shortkey_t i = 0; i < val.size(); ++i)
+        if (val[i])
+            ret.push_back(i);
+    return ret;
+}
+
 inline dynamic_bitset key_to_bitset(const vector<key_t>& key, long size) {
+    dynamic_bitset bs(size);
+    for (size_t i = 0; i < key.size(); ++i) {
+        assert(key[i] < size);
+        bs[key[i]] = 1;
+    }
+    return bs;
+}
+
+inline dynamic_bitset shortkey_to_bitset(const vector<shortkey_t>& key, long size) {
     dynamic_bitset bs(size);
     for (size_t i = 0; i < key.size(); ++i) {
         assert(key[i] < size);
