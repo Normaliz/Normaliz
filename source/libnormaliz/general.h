@@ -104,6 +104,7 @@ const nmz_float nmz_epsilon = 1.0e-12;
 /* this type is used in the entries of keys
  * it has to be able to hold number of generators */
 typedef unsigned int key_t;
+typedef unsigned short shortkey_t;
 
 NORMALIZ_DLL_EXPORT extern bool verbose;
 NORMALIZ_DLL_EXPORT extern bool running_input_file;
