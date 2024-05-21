@@ -10,11 +10,11 @@ case $BUILDSYSTEM in
 
     *static*)
         if [[ $OSTYPE == darwin* ]]; then
-            install -m 0644 /usr/local/opt/llvm/lib/libomp.dylib ${PREFIX}/bin
-            otool -L ${PREFIX}/bin/normaliz
-            install_name_tool -id "@loader_path/./libomp.dylib" ${PREFIX}/bin/libomp.dylib
-            install_name_tool -change "/usr/local/opt/llvm/lib/libomp.dylib" "@loader_path/./libomp.dylib" ${PREFIX}/bin/normaliz
-        fi
+           install -m 0644 $(brew --prefix)/opt/libomp/lib/libomp.dylib ${PREFIX}/bin
+           otool -L ${PREFIX}/bin/normaliz
+           install_name_tool -id "@loader_path/./libomp.dylib" ${PREFIX}/bin/libomp.dylib
+           install_name_tool -change "$(brew --prefix)$(brew --prefix)/opt/libomp/lib/libomp.dylib" "@loader_path/./libomp.dylib" ${PREFIX}/bin/normaliz
+         fi
 
         if [[ $OSTYPE == darwin* ]]; then
             otool -L ${PREFIX}/bin/*

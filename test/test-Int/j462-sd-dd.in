@@ -11,7 +11,7 @@ inequalities 8
 0 0 0 -1 1
 equations 1
 -1 -1 -1 -1 2
-grading 
+grading
 unit_vector 5
 polynomial
 x[1]*x[2]*x[3]*x[4]*x[1]*x[2]*x[3]*x[4]*
