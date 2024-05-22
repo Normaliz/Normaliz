@@ -1644,6 +1644,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
     bool apply_automorphisms = true;
     if(LatticePoints.size() < 100 && Automorphisms.size() > 1000  && !last_coord) {
         apply_automorphisms = false;
+        automs_minimized[coord] = true;
     }
 
     while (true) {

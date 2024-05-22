@@ -61,19 +61,19 @@ vector<dynamic_bitset> make_all_subsets(const size_t card){
     return all_subsets;
 }
 
-vector<vector<key_t> > make_all_permutations(const size_t n){
-    vector<vector <vector<key_t> > > Perms(1);
+vector<vector<shortkey_t> > make_all_permutations(const size_t n){
+    vector<vector <vector<shortkey_t> > > Perms(1);
     Perms[0].resize(1);
     Perms[0][0].resize(1);
     Perms[0][0][0] = 0;
-    for(key_t i=1; i<n; ++i){
+    for(shortkey_t i=1; i<n; ++i){
         Perms.resize(i+1);
-        for(key_t j=0;j<=i;++j){
+        for(shortkey_t j=0;j<=i;++j){
 
             INTERRUPT_COMPUTATION_BY_EXCEPTION
 
-            for(key_t k=0; k< (key_t) Perms[i-1].size(); ++k){
-                vector<key_t> new_perm = Perms[i-1][k];
+            for(shortkey_t k=0; k< (shortkey_t) Perms[i-1].size(); ++k){
+                vector<shortkey_t> new_perm = Perms[i-1][k];
                 new_perm.resize(i+1);
                 new_perm[i] = i;
                 swap(new_perm[j],new_perm[i]);
@@ -85,14 +85,14 @@ vector<vector<key_t> > make_all_permutations(const size_t n){
     return Perms[n-1];
 }
 
-vector<vector<key_t> > make_all_permutations(const vector<key_t>& v, const vector<key_t>& duality){
+vector<vector<shortkey_t> > make_all_permutations(const vector<shortkey_t>& v, const vector<key_t>& duality){
 
-    vector<vector<key_t> >Perms = make_all_permutations(v.size());
-    vector<vector<key_t> > KeyPerms;
-    vector<key_t> v_inv(duality.size());
+    vector<vector<shortkey_t> >Perms = make_all_permutations(v.size());
+    vector<vector<shortkey_t> > KeyPerms;
+    vector<shortkey_t> v_inv(duality.size());
     for(size_t i = 0; i < v.size(); ++i)
         v_inv[v[i]] = i;
-    vector<key_t> dual(v.size());
+    vector<shortkey_t> dual(v.size());
     for(size_t i = 0; i < v.size(); ++i)
         dual [i] = v_inv[duality[v[i]]];
     for(auto& w: Perms){
@@ -109,7 +109,7 @@ vector<vector<key_t> > make_all_permutations(const vector<key_t>& v, const vecto
         if(!comp)
             continue;
 
-        vector<key_t> w_new(v.size());
+        vector<shortkey_t> w_new(v.size());
         for(size_t i = 0; i< w.size(); ++i)
             w_new[i] = v[w[i]];
         KeyPerms.push_back(w_new);
@@ -118,12 +118,12 @@ vector<vector<key_t> > make_all_permutations(const vector<key_t>& v, const vecto
 }
 
 
-vector<vector<key_t> > super_impose(const vector<vector<key_t> >& set_1, const vector<vector<key_t> >& set_2){
+vector<vector<shortkey_t> > super_impose(const vector<vector<shortkey_t> >& set_1, const vector<vector<shortkey_t> >& set_2){
 
     size_t size_1 = set_1.size();
     size_t size_2 = set_2.size();
     size_t nr_coods = set_1[0].size();
-    vector<vector<key_t> > total(size_1*size_2, vector<key_t>(nr_coods));
+    vector<vector<shortkey_t> > total(size_1*size_2, vector<shortkey_t>(nr_coods));
 
     bool skip_remaining = false;
     std::exception_ptr tmp_exception;
@@ -155,9 +155,9 @@ vector<vector<key_t> > super_impose(const vector<vector<key_t> >& set_1, const v
 
 
 /*
-vector<vector<key_t> > super_impose(const vector<vector<key_t> >& set_1, const vector<vector<key_t> >& set_2){
+vector<vector<shortkey_t> > super_impose(const vector<vector<shortkey_t> >& set_1, const vector<vector<shortkey_t> >& set_2){
 
-    vector<vector<key_t> > total;
+    vector<vector<shortkey_t> > total;
     for(auto& v: set_1){
         for(auto& w: set_2){
 
@@ -170,18 +170,18 @@ vector<vector<key_t> > super_impose(const vector<vector<key_t> >& set_1, const v
 }
 */
 
-vector<vector<key_t> > make_all_full_permutations(const vector<key_t>& type,const vector<key_t>& duality){
+vector<vector<shortkey_t> > make_all_full_permutations(const vector<key_t>& type,const vector<key_t>& duality){
 
     auto type_1 = type;
     type_1[0] = 0; // to single out the unit
 
     auto coincidence_keys = collect_coincidence_subset_keys(type_1);
-    vector<vector< vector<key_t> > > FullPermsByCoinc;
+    vector<vector< vector<shortkey_t> > > FullPermsByCoinc;
 
     for(auto& co: coincidence_keys){
-        vector<vector<key_t> > ThisFullPerms;
+        vector<vector<shortkey_t> > ThisFullPerms;
         auto Perms = make_all_permutations(co, duality);
-        vector<key_t> FullPerm(type.size());
+        vector<shortkey_t> FullPerm(type.size());
         for(auto& p: Perms){
             for(size_t i = 0; i< p.size(); ++i){
                 FullPerm[co[i]] = p[i];
@@ -191,7 +191,7 @@ vector<vector<key_t> > make_all_full_permutations(const vector<key_t>& type,cons
         FullPermsByCoinc.push_back(ThisFullPerms);
     }
 
-    vector<vector<key_t> > AllFullPerms;
+    vector<vector<shortkey_t> > AllFullPerms;
     for(size_t i = 0; i < coincidence_keys.size(); ++i){
         if(i == 0){
             AllFullPerms=FullPermsByCoinc[0];
@@ -204,50 +204,15 @@ vector<vector<key_t> > make_all_full_permutations(const vector<key_t>& type,cons
     return AllFullPerms;
 }
 
-void FusionBasic::restrict_type_automs_to_grading(){
+vector<vector<shortkey_t> > collect_coincidence_subset_keys(const vector<key_t>& type){
 
-    vector<key_t> in_comp(fusion_rank);
-    for(size_t k = 0; k < group_order; ++k){
-        for(size_t i = 0; i < chosen_modular_grading[k].size(); ++i){
-            if(!chosen_modular_grading[k][i])
-                continue;
-            in_comp[i] = k;
-        }
-    }
-    vector<vector<key_t> >selection;
-    for(auto& p: type_automs){
-        // cout << p;
-        vector<key_t> image;
-        for(size_t i = 0; i< chosen_modular_grading.size(); ++i){
-            size_t first_elem = chosen_modular_grading[i].find_first();
-            image.push_back(in_comp[p[first_elem]]);
-        }
-        // cout << image;
-        bool restrictable = true;
-        for(size_t k = 0; k < fusion_rank; ++k){
-            if(in_comp[p[k]] != image[in_comp[k]] ){
-                restrictable = false;
-                break;
-            }
-        }
-
-        if(restrictable)
-            selection.push_back(p);
-    }
-    swap(selection, type_automs);
-    if(verbose)
-        verboseOutput() << type_automs.size() << " type permutations selected" << endl;
-}
-
-vector<vector<key_t> > collect_coincidence_subset_keys(const vector<key_t>& type){
-
-    vector<vector<key_t> > coincidence_keys;
+    vector<vector<shortkey_t> > coincidence_keys;
     dynamic_bitset done(type.size());
 
     for(size_t i = 0; i < type.size(); ++i){
         if(done[i])
             continue;
-        coincidence_keys.push_back(vector<key_t>(1,i));
+        coincidence_keys.push_back(vector<shortkey_t>(1,i));
         done[i] = 1;
         for(size_t j = i + 1; j < type.size(); ++j){
             if(done[j])
@@ -317,6 +282,41 @@ void  FusionBasic::data_from_renf_input(ifstream& cone_in){
     read_data_from_input<renf_elem_class>(input);
 }
 #endif
+
+void FusionBasic::restrict_type_automs_to_grading(){
+
+    vector<key_t> in_comp(fusion_rank);
+    for(size_t k = 0; k < group_order; ++k){
+        for(size_t i = 0; i < chosen_modular_grading[k].size(); ++i){
+            if(!chosen_modular_grading[k][i])
+                continue;
+            in_comp[i] = k;
+        }
+    }
+    vector<vector<shortkey_t> >selection;
+    for(auto& p: type_automs){
+        // cout << p;
+        vector<key_t> image;
+        for(size_t i = 0; i< chosen_modular_grading.size(); ++i){
+            size_t first_elem = chosen_modular_grading[i].find_first();
+            image.push_back(in_comp[p[first_elem]]);
+        }
+        // cout << image;
+        bool restrictable = true;
+        for(size_t k = 0; k < fusion_rank; ++k){
+            if(in_comp[p[k]] != image[in_comp[k]] ){
+                restrictable = false;
+                break;
+            }
+        }
+
+        if(restrictable)
+            selection.push_back(p);
+    }
+    swap(selection, type_automs);
+    if(verbose)
+        verboseOutput() << type_automs.size() << " type permutations selected" << endl;
+}
 
 void FusionBasic::make_type_automs(){
     if(type_automs_made)
@@ -866,7 +866,7 @@ void FusionComp<Integer>::make_automorphisms(){
         if(skip_remaining)
             continue;
         try{
-            vector<key_t> coord_perm(1); // must start with 0 !!!!
+            vector<shortkey_t> coord_perm(1); // must start with 0 !!!!
             for(auto& t: selected_ind_tuples){
 
                 INTERRUPT_COMPUTATION_BY_EXCEPTION
@@ -1199,7 +1199,7 @@ Matrix<Integer> FusionComp<Integer>::do_iso_classes_inner(const Matrix<Integer>&
     IsoClasses.resize(0,LattPoints.nr_of_columns());
 
     for(auto& aa: Automorphisms){  // homogenizing coordinate is the last now
-        vector<key_t> modified = aa;
+        vector<shortkey_t> modified = aa;
         v_cyclic_shift_left(modified, modified.size() -1);
         modified.resize(modified.size()-1);
         for(auto& c: modified)

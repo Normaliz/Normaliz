@@ -69,7 +69,7 @@ public:
     vector<vector<int> > GradMultTable;
     vector<dynamic_bitset> chosen_modular_grading;
 
-    vector<vector<key_t> > type_automs; // permutations of the basis vectors
+    vector<vector<shortkey_t> > type_automs; // permutations of the basis vectors
     bool type_automs_made;
 
     // pair<bool, bool> read_data(const bool only_test);
@@ -148,8 +148,8 @@ public:
     vector<vector<key_t> > selected_ind_tuples; // the lex smallest in each FrobRec set
     map<set<vector<key_t> >, key_t> CoordMap;
 
-    vector<vector<key_t> > Automorphisms; // permutations of the coordinates
-    vector<vector<key_t> > type_automs; // permutations of the basis vectors
+    vector<vector<shortkey_t> > Automorphisms; // permutations of the coordinates
+    vector<vector<shortkey_t> > type_automs; // permutations of the basis vectors
     vector<dynamic_bitset> Orbits;
 
     vector<vector<Matrix<Integer> > > AllTables;
@@ -222,10 +222,10 @@ void make_input_from_fusion_data(const FusionBasic& FusionInput, InputMap<mpq_cl
 void make_partition_input_from_fusion_data(const FusionBasic& FusionInput, InputMap<mpq_class>&  input, const bool write_input_file);
 
 vector<dynamic_bitset> make_all_subsets(const size_t card);
-vector<vector<key_t> > make_all_permutations(size_t n);
-vector<vector<key_t> > collect_coincidence_subset_keys(const vector<key_t>& type);
-vector<vector<key_t> > make_all_permutations(const vector<key_t>& v, const vector<key_t>& duality);
-vector<vector<key_t> > make_all_permutations(const vector<key_t>& type, const vector<key_t>& duality);
+vector<vector<shortkey_t> > make_all_permutations(size_t n);
+vector<vector<shortkey_t> > collect_coincidence_subset_keys(const vector<key_t>& type);
+vector<vector<shortkey_t> > make_all_permutations(const vector<key_t>& v, const vector<key_t>& duality);
+vector<vector<shortkey_t> > make_all_permutations(const vector<key_t>& type, const vector<key_t>& duality);
 
 // void remove_global_fusion_data();
 
