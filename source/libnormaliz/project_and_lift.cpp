@@ -2178,7 +2178,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
 
             prel_data << "found_solutions" << endl;
             prel_data << FoundSolutions.nr_of_rows() << endl;
-            prel_data << FoundSolutions.nr_of_columns() << endl;
+            prel_data << EmbDim << endl;
             FoundSolutions.pretty_print(prel_data);
             prel_data.close();
         }

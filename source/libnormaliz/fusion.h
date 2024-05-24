@@ -432,13 +432,14 @@ void FusionBasic::make_gradings(const vector<Integer>& d){
     vector<vector<dynamic_bitset> > FPdimParts = make_FPdim_partitions(d, part_FPdim, group_order, AllSubsets);
     vector< vector<dynamic_bitset> > GradPartitions;
     for(auto& P: FPdimParts){
-        if(compatible_duality(P))
+        if(compatible_duality(P)){
             GradPartitions.push_back(P);
+            continue;
+        }
     }
     // identify partitions that are conjugate under automorphisms
     make_type_automs();
     ModularGradings = make_part_classes(GradPartitions);
-
     if(verbose){
         verboseOutput() << ModularGradings.size() << " grading partitions found:" << endl;
         size_t i = 0;

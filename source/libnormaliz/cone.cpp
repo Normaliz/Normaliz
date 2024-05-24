@@ -4582,7 +4582,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     }
 
     if(is_fusion){
-        add_fusion_ass_and_grading_constraints(); // could be done later
+        add_fusion_ass_and_grading_constraints(ToCompute); // could be done later
     }
 
 
@@ -6641,12 +6641,16 @@ void Cone<Integer>::setExpansionDegree(long degree) {
 template <typename Integer>
 void Cone<Integer>::setModularGraing(long mod_gr) {
     modular_grading = mod_gr;
+    if(FusionBasicCone.use_modular_grading)
+        throw BadInputException("Once chosen, the modular grading can't be changed");
     is_Computed.reset(ConeProperty::FusionRings);
     is_Computed.reset(ConeProperty::SimpleFusionRings);
     is_Computed.reset(ConeProperty::NonsimpleFusionRings);
+    is_Computed.reset(ConeProperty::SingleFusionRing);
     FusionRings.resize(0);
     SimpleFusionRings.resize(0);
     NonsimpleFusionRings.resize(0);
+    SingleFusionRing.resize(0);
 }
 
 template <typename Integer>
@@ -7151,7 +7155,8 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
 
     if (inhomogeneous && (!ToCompute.test(ConeProperty::ModuleGenerators) && !ToCompute.test(ConeProperty::HilbertBasis) &&
                           !ToCompute.test(ConeProperty::NumberLatticePoints)&& !ToCompute.test(ConeProperty::SingleLatticePoint) &&
-                          !ToCompute.test(ConeProperty::FusionRings) &&!ToCompute.test(ConeProperty::SimpleFusionRings) ) )
+                          !ToCompute.test(ConeProperty::FusionRings) &&!ToCompute.test(ConeProperty::SimpleFusionRings) &&
+                          !ToCompute.test(ConeProperty::SingleFusionRing) ) )
         return;
 
     bool primitive = false;
@@ -9674,6 +9679,14 @@ void Cone<Integer>::make_modular_gradings(ConeProperties& ToCompute){
     if(!(ToCompute.test(ConeProperty::ModularGradings) || ToCompute.test(ConeProperty::UseModularGrading)) )
         return;
 
+    if(FusionBasicCone.use_modular_grading)
+        return;
+
+    is_Computed.reset(ConeProperty::FusionRings);
+    is_Computed.reset(ConeProperty::SimpleFusionRings);
+    is_Computed.reset(ConeProperty::NonsimpleFusionRings);
+    is_Computed.reset(ConeProperty::SingleFusionRing);
+
     if(!FusionBasicCone.commutative)
         throw BadInputException("Modular gradings need commutativity indicated by -1 in the duality");
 
@@ -9685,9 +9698,11 @@ void Cone<Integer>::make_modular_gradings(ConeProperties& ToCompute){
     }
 
     if(FusionBasicCone.ModularGradings.size() == 0)
-        throw BadInputException("UseModularGrading asked for fusaion input qithout modular grading");
+        throw BadInputException("UseModularGrading asked for fusaion input without modular grading");
+
     if((modular_grading <= 0 && FusionBasicCone.ModularGradings.size() > 1)
         || modular_grading > static_cast<long>(FusionBasicCone.ModularGradings.size())){
+        cout << "size " << FusionBasicCone.ModularGradings.size() << " mod " << modular_grading << endl;
         throw BadInputException("modular_grading not chosen or out of range");
     }
 
@@ -9707,7 +9722,15 @@ void Cone<Integer>::make_modular_gradings(ConeProperties& ToCompute){
 //---------------------------------------------------------------------------
 
 template <typename Integer>
-void Cone<Integer>::add_fusion_ass_and_grading_constraints(){
+void Cone<Integer>::add_fusion_ass_and_grading_constraints(ConeProperties& ToCompute){
+
+    if(!(ToCompute.test(ConeProperty::FusionRings) || ToCompute.test(ConeProperty::SimpleFusionRings)
+        || ToCompute.test(ConeProperty::NonsimpleFusionRings) || ToCompute.test(ConeProperty::SingleFusionRing)
+        || ToCompute.test(ConeProperty::ModularGradings)  || ToCompute.test(ConeProperty::LatticePoints)
+        || ToCompute.test(ConeProperty::SingleLatticePoint)  || ToCompute.test(ConeProperty::Deg1Elements)
+        || ToCompute.test(ConeProperty::HilbertBasis) ) )
+
+    return;
 
     FusionComp<Integer> OurFusion(FusionBasicCone);
 

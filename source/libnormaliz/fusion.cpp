@@ -717,15 +717,15 @@ void FusionBasic::make_grad_mult_table(){
 
 
 bool FusionBasic::compatible_duality(const vector<dynamic_bitset >& parts){
-
     if(group_type == "C2"){
         dynamic_bitset duals(fusion_rank);
         for(size_t i = 0; i < fusion_rank; ++i){
             if(parts[1][i] != 0)
                 duals[duality[i]] = 1;
         }
-        if(duals != parts[1])
+        if(duals != parts[1]){
             return false;
+        }
         return true;
     }
     if(group_type == "C3"){
