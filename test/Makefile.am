@@ -1577,6 +1577,9 @@ NMZTESTS +=						\
 	test-fus/pet_fus_part.in			\
 	test-fus/pet_fus_simple.in			\
 	test-fus/pet_fus_single.in			\
+	test-fus/pet_fus_single_fus.in			\
+	test-fus/mod_grad.in				\
+	test-fus/mod_grad.ref				\
 	test-fus/pet_fus_comm.ref			\
 	test-fus/pet_fus_dual.ref			\
 	test-fus/pet_fus.ref				\
@@ -1584,6 +1587,7 @@ NMZTESTS +=						\
 	test-fus/pet_fus_part.ref			\
 	test-fus/pet_fus_simple.ref			\
 	test-fus/pet_fus_single.ref			\
+	test-fus/pet_fus_single_fus.ref			\
 	test-Int/[1,5,5,5,6,7,7][0,1,2,3,4,5,6].in	\
 	test-Int/[1,5,5,5,6,7,7][0,1,2,3,4,5,6].ref	\
 	test-Int/[1,5,5,5,6,7,7][-1,1,2,3,4,5,6].in	\
