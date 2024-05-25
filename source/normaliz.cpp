@@ -187,33 +187,6 @@ int main(int argc, char* argv[]){
         command_line_items.push_back(string(argv[i]));
     }
 
-    /*
-    verbose = true;
-    vector<mpq_class> ty = {1,1,2,2};
-    vector<mpq_class> du = {-1,1,2,3};
-    Matrix<mpq_class> ty_mat(0,4);
-    ty_mat.append(ty);
-    Matrix<mpq_class> du_mat(0,4);
-    du_mat.append(du);
-    Cone<long long> CT(Type::fusion_type, ty_mat, Type::fusion_duality, du_mat);
-    // CT.compute(ConeProperty::FusionRings, ConeProperty::UseModularGrading);
-    Matrix<long long> Res = CT.getFusionRingsMatrix();
-    Res.debug_print();
-    CT.compute(ConeProperty::FusionRings, ConeProperty::UseModularGrading);
-    Res = CT.getFusionRingsMatrix();
-    Res.debug_print();
-    Res = CT.getSingleFusionRing();
-    exit(0);
-    Res.debug_print('%');
-    CT.compute(ConeProperty::FusionRings, ConeProperty::UseModularGrading);
-    Res = CT.getFusionRingsMatrix();
-    Res.debug_print('@');
-    CT.setModularGraing(0);
-    cout << "-------------------------------------------------------------------------------------------------------" << endl;
-    Res = CT.getFusionRingsMatrix();
-    Res.debug_print();
-    exit(0); */
-
 /*
     for(auto& s: command_line_items){
         if(s == "--PostProcessFusion"){
@@ -228,7 +201,6 @@ int main(int argc, char* argv[]){
         }
     }
 */
-
 
     string global_command_line = command_line;
 
@@ -729,4 +701,31 @@ int process_data(OptionsHandler& options, const string& command_line) {
 
     return 0;
 }
+
+    /*
+    verbose = true;
+    vector<mpq_class> ty = {1,1,2,2};
+    vector<mpq_class> du = {-1,1,2,3};
+    Matrix<mpq_class> ty_mat(0,4);
+    ty_mat.append(ty);
+    Matrix<mpq_class> du_mat(0,4);
+    du_mat.append(du);
+    Cone<long long> CT(Type::fusion_type, ty_mat, Type::fusion_duality, du_mat);
+    // CT.compute(ConeProperty::FusionRings, ConeProperty::UseModularGrading);
+    Matrix<long long> Res = CT.getFusionRingsMatrix();
+    Res.debug_print();
+    CT.compute(ConeProperty::FusionRings, ConeProperty::UseModularGrading);
+    Res = CT.getFusionRingsMatrix();
+    Res.debug_print();
+    Res = CT.getSingleFusionRing();
+    exit(0);
+    Res.debug_print('%');
+    CT.compute(ConeProperty::FusionRings, ConeProperty::UseModularGrading);
+    Res = CT.getFusionRingsMatrix();
+    Res.debug_print('@');
+    CT.setModularGraing(0);
+    cout << "-------------------------------------------------------------------------------------------------------" << endl;
+    Res = CT.getFusionRingsMatrix();
+    Res.debug_print();
+    exit(0); */
 
