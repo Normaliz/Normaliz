@@ -246,6 +246,7 @@ If you want to use a preinstalled version of CoCoALib: for parallelization it mu
 \begin{Verbatim}
 ./configure --threadsafe-hack --only-cocoalib
 \end{Verbatim}
+\textbf{Make sure that your CoCoALib has been compiled with the option \text{-fPIC}}. If not iz cannot be used in the compilation of a shared library.
 
 \subsubsection{nauty}
 
@@ -255,7 +256,7 @@ install_scripts_opt/install_nmz_nauty.sh
 \end{Verbatim}
 nauty is downloaded and compiled as described above.
 
-You can or course use a preinstalled version of nauty.
+You can or course use a preinstalled version of nauty. \textbf{However, make sure that your nauty has been compiled with the option \text{-fPIC}}. If not iz cannot be used in the compilation of a shared library.
 
 We thank Brendan McKay for his help in the integration of nauty to Normaliz.
 

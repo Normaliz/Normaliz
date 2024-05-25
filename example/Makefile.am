@@ -131,9 +131,12 @@ EXTRA_DIST =					\
 	bracket_4.in				\
 	bracket_4_comm.in			\
 	bracket_4_comm_z2.in			\
+	bracket_4_single.in			\
 	bracket_4_z2.in				\
 	bracket_3_cand.in			\
 	bracket_3_part.in			\
+	find_mod_grad.in			\
+	mod_grad.in				\
 	EH1.in					\
 	InList					\
 	SubModularConeN4_hom.in			\

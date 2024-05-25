@@ -3510,14 +3510,47 @@ candidate_subring
 \end{Verbatim}
 If a \verb*|candidate_subring| is given, the default computation goal is changed to \verb*|SingleLatiicePoint|. If another computation goal is set explicitly, then the \verb*|candidate_subring| is disregarded.
 
-Finally one also generates the input file with a system of linear equations that constitutes a necessary condition of fusion rings for the given type: if the ``partition system'' has no solution in nonnegative integers, then there are no fusion rings for the given type, regardless of the duality). See \cite{ABPP}. The input type is
+If you only want to find out whether there is a fusion ring for your type and duality, you can use the option
+\begin{itemize}
+	\itemtt[SingleFusionRing]
+\end{itemize}
+If there exist simple and nonsimple fusion rings for your data, then it is impossible to predict whether the single fusion ring will be simple or nonsimple. However, the output files will test the single fusion ring for these properties. Example \verb*|bracket_4_single.in|:
+\begin{Verbatim}
+amb_space auto
+fusion_type
+[1,1,2,3,3,6,6,8,8,8,12,12]
+fusion_duality
+[0,1,2,3,4,5,6,7,8,9,11,10]
+SingleFusionRing
+\end{Verbatim}
+It yields the output
+
+\begin{Verbatim}
+1 fusion rings up to isomorphism (omnly single fusionm ring  asked for)
+0 simple fusion rings up to isomorphism
+1 nonsimple fusion rings up to isomorphism
+
+Embedding dimension = 276
+
+dehomogenization
+0 0 0 0 0 0 0 0 0 0 0 0 0 0  ...0 0 0 0 0 1 
+
+***********************************************************************
+
+0 simple fusion rings up to isomorphism:
+
+1 nonsimple fusion rings up to isomorphism:
+0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0...  3 3 1 1 1
+\end{Verbatim}
+Note that the single fusion ring found is not uniquely determined. The option can save considerable computation time, but only if there exists a fusion ring.
+
+Finally one can also generate an input file with a system of linear equations that constitutes a necessary condition of fusion rings for the given type: if the ``partition system'' has no solution in nonnegative integers, then there are no fusion rings for the given type, regardless of the duality). See \cite{ABPP}. The input type is
 \begin{itemize}
 	\itemtt[fusion\_type\_for\_partition] -- the type to be tested.
 \end{itemize}
 The default computation goal is \verb*|SingleLatticePoint| since (at present) we are only interested in the solubility. Also \verb*|LatticePoints| is allowed, but be aware of potentially very large numbers of solutions. Example \verb*|bracket_3_part.in|:
 \begin{Verbatim}
 amb_space auto
-
 fusion_type_for_partition
 [1,1,2,3,3,6,6,8,8,8,12,12]
 \end{Verbatim}
@@ -3538,11 +3571,11 @@ Lattice point:
 Note that the single lattice point is not uniquely determined. 
 There are $300$ lattice points in the polytope. 
 
-The system of degree $2$ polynomial equations resulting from the associativity condition is highly overdetermined.For example, \verb*|pet_new.in| generates $240$ equations, but a run with \verb*|MinimizePplyEquations| reduces them to $50$. Using \verb*|MinimizePp	lyEquations| is usually not a good idea since the formal minimization takes much more time than a run without it. Normaliz uses \emph{heuristic minimization} by counting how often a vector that has passed all preceding equations is not satisfied. If an equation has ``never'' failed after a certain number $n$ of vectors passing it, it is declared ineffective and skipped latter on. The number $n$ depends on the FPdim of the fusion ring. However, a vector is only declared a final solution after checking all equations on it. So there is no danger of fals results. But if an equation gets discarded prematurely, the computation time can explode. As a prevention, Normaliz offers the option
+The system of degree $2$ polynomial equations resulting from the associativity condition is highly overdetermined. For example, \verb*|pet_new.in| generates $240$ equations, but a run with \verb*|MinimizePolyEquations| reduces them to $50$. Using \verb*|MinimizePpolyEquations| is usually not a good idea since the formal minimization takes much more time than a run without it. Normaliz uses \emph{heuristic minimization} by counting how often a vector that has passed all preceding equations is not a solution. If an equation has ``never'' failed after a certain number $n$ of vectors passing it, it is declared ineffective and skipped latter on. The number $n$ depends on the FPdim of the fusion ring. However, a vector is only declared a final solution after checking all equations on it. So there is no danger of false results. But if an equation gets discarded prematurely, the computation time can explode. As a prevention, Normaliz offers the option
 \begin{itemize}
 \itemtt[NoHeuristicMinimization, -{-NHM}]
 \end{itemize}
-Unfortunately, this option often doubles the computation time
+Unfortunately, this option often doubles the computation time.
 
 
 \subsection{Standard names and virtual input files}\label{virtual_input}
@@ -3622,11 +3655,11 @@ dehomogenization
 
 \subsection{Necessary conditions for modular categorification}\label{modular}
 
-Fusion rings that allow modular categorification (see \cite{ABPP} and \cite{EGNO}) must satisfy certain conditions. Normaliz can be asked to compute only fusion rings that satisfy them. At present we use the first entry of the duality to set these conditions. The values can be $-1$, $-2$ and $-3$.
+Fusion rings that allow modular categorification (see \cite{ABPP} and \cite{EGNO}) must satisfy certain conditions. Normaliz can be asked to compute only fusion rings that satisfy them.
 
 \subsubsection{Commutativity}
 
-The first condition is commutativity. Then the first entry is $-1$ or $-3$.  Example \verb*|bracket_4_comm.in|:
+The first condition is commutativity. Then the first entry of the duality is $-1$.  Example \verb*|bracket_4_comm.in|:
 \begin{Verbatim}
 amb_space auto
 fusion_type
@@ -3634,27 +3667,76 @@ fusion_type
 fusion_duality
 [-1,1,2,3,4,5,6,7,8,9,11,10]
 \end{Verbatim}
+This somewhat strange way to communicate commutativity is necessary because Normaliz must know it altready at the time of construction. It would come too late as an algorithmic variant.
 
 Note that forcing commutativity is superfluous if the duality is the identity. However, in other cases it can speed up computations significantly. 
 
 \subsubsection{Graded structure}
 
+Normaliz requires that fusion rings to which the options in this section are to be applied are commutative, as explained in the preceding section.
+
 The base elements $b_i$ with $d_i=1$ form a group under multiplication. Let $m$ be their number. For modular categorification the ring must be graded with respect to this group. The homogeneous components are modules over the neutral component and generated by subsets $B_i$, $i=1,\dots,m$, of $\{b_0,\dots,b_{r-1}\}$ as $\ZZ$-modules. (We are counting basis elements from $0$. ) Set $f_i = \sum_{j\in B_i} d_j^2$. Then  $f_1=\dots=f_m$.
 
 See \cite[Section 3.5]{EGNO} for basic facts about gradings of fusion rings and \cite[8.22.9(iii), 4.14.3]{EGNO} for the existence in the case of modular categorification.
 
-At present Normaliz allows only $m=2$ for which there is only one choice of grading group, namely $\ZZ_2$. Moreover, $B_1$ and $B_2$ must be blocks of consecutive base elements: there exists $h$ such that $B_1=\{b_0,\dots,b_h\}$ and $B_2=\{b_{h+1},\dots,b_{r-1}\}$. The condition $f_1 = f_2$ allows Normaliz to find $B_1$ and $B_2$.
+At present Normaliz allows only $m\le 4$. The reason for this restriction is that the group table that underlies the grading is uniquely determined by the duality. For groups of higher order further input data would be necessary, at least if one wants to use the grading already in the computation for which it often has a significant effect.
 
-We indicate the requirement of a $\ZZ_2$-grading by choosing the first entry of the duality as $-2$ or $-3$.  The latter combines commutativity with the existence of a $\ZZ_2$-grading. Example \verb*|bracket_4_comm_z2.in|:
+There is another ambiguity that must be taken care of: the type and the duality may allow different partitions of the set of base vectors that are compatible to the group structure. To be on the safe side one first runs the input file with the option
+\begin{itemize}
+\itemtt[ModularGradings]
+\end{itemize}
+Example \verb*|find_mod_grad.in|:
 \begin{Verbatim}
-amb_space auto
+amb_space 14
 fusion_type
-[1,1,2,3,3,6,6,8,8,8,12,12]
+1 1 1 1 2 2 2 2 2 2 2 4 4 4
 fusion_duality
-[-3,1,2,3,4,5,6,7,8,9,11,10]
+-1 1 2 3 4 5 6 7 8 9 10 11 12 13
+ModularGradings
 \end{Verbatim}
+Result:
+\begin{Verbatim}
+2 modular gradings
 
-The $\ZZ_2$-grading forces $b_ib_j \in B_2$ if $b_i$ and $b_j$ belong to different components, and $b_ib_j \in B_1$ otherwise. Consequently $N_{ij}^k = 0$ for many index tuples $(i,j,k)$, and this can speed up computations tremendously.
+***********************************************************************
+
+2 modular gradings:
+modular grading 1
+
+0 1 2 3 4 5 6 7 
+8 11 
+9 12 
+10 13 
+---------------------
+modular grading 2
+
+0 1 2 3 11 
+4 5 6 7 8 
+9 12 
+10 13 
+---------------------
+\end{Verbatim}
+All other modular gradings differ from the two above by automorphisms of the system, and it is enough to consider only one representative in each orbit.
+
+For the computation one must fix one of the gradings as in the input by
+\begin{itemize}
+\itemtta[modular\_grading <g>]{modulargrading}
+\end{itemize}
+where \verb*|<g>| is the index of the grading, as in \verb*|mod_grad.-in|:
+\begin{Verbatim}
+amb_space 14
+fusion_type
+1 1 1 1 2 2 2 2 2 2 2 4 4 4
+fusion_duality
+-1 1 2 3 4 5 6 7 8 9 10 11 12 13
+modular_grading 2
+UseModularGrading
+\end{Verbatim}
+The option
+\begin{itemize}
+\itemtt[UseModularGrading]
+\end{itemize}
+has told Normaliz  to use the chosen modular grading. If there is only one modular grading, the choice is superfluous.
 
 \subsection{Full fusion data}
 
