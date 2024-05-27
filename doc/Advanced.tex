@@ -404,7 +404,10 @@ With the option \texttt{BottomDecomposition}, \texttt{-b}, Normaliz computes a t
 
 Normaliz does not always use the bottom decomposition by default since its computation requires some time and administrative overhead. However, as soon as the input ``profile'' is considered to be ``rough'' it is invoked. The measure of roughness is the ratio between the maximum degree (or $L_1$ norm without a grading) and the minimum. A ratio $\ge 10$ activates the bottom decomposition.
 
-If you have the impression that the bottom decomposition slows down your computation, you can suppress it by \texttt{NoBottomDec}, \texttt{-o}.
+If you have the impression that the bottom decomposition slows down your computation, you can suppress it by 
+\begin{itemize}
+\itemtt[NoBottomDec, -o]
+\end{itemize}
 
 The bottom decomposition is part of the subdivision of large simplicial cones discussed in the next section.
 
