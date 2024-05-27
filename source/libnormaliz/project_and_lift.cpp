@@ -1445,7 +1445,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_local_solutions(const key_t t
     if(talkative){
             // verbose_0 = "Local solutions total " + to_string(LocalSolutions.size()) + " new " < to_string(nr_new_solutions);
             verboseOutput() << "--" << endl;
-            verboseOutput() << this_patch << " / " << InsertionOrderPatches[this_patch] << "Local solutions total "
+            verboseOutput() << this_patch << " / " << InsertionOrderPatches[this_patch] << " Local solutions total "
                         << nr_old_solutions + nr_new_solutions << " new " << nr_new_solutions << endl;
             // LocalSolutions.debug_print('+');
     }

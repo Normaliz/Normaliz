@@ -630,7 +630,7 @@ int process_data(OptionsHandler& options, const string& command_line) {
                 verboseOutput() << "Input file: " << options.getProjectName() << endl;
             verboseOutput() << "Compute: ";
             if (options.getToCompute().none())
-                verboseOutput() << "No computation goal set, using defaults for given input" << endl;
+                verboseOutput() << "No computation goal/variant  set, using defaults for given input" << endl;
             else
                 verboseOutput() << options.getToCompute() << endl;
             for(auto& P: num_param_input)

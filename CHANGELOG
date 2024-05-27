@@ -1,5 +1,10 @@
 # ChangeLog
 
+## [3.10.3]  2024-05-31
+
+-- computation goals SingleFusionRing and ModularGradings.
+-- Algorithmic variant UseModularGrading.
+
 ## [3.10.2]  2024-02-20
 
 -- extensive improvements for fusion rings: computation, input and output

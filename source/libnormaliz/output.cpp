@@ -1993,7 +1993,7 @@ void write_fusion_files(const FusionBasic fusion_basic, const string& name, cons
     size_t total_nr_fusion_rings = NonsimpleFusionRings.nr_of_rows() + SimpleFusionRings.nr_of_rows();
     if(fusion_rings){
         if(only_one && total_nr_fusion_rings > 0)
-            out << total_nr_fusion_rings << " fusion rings up to isomorphism (omnly single fusionm ring  asked for)" << endl;
+            out << total_nr_fusion_rings << " fusion rings up to isomorphism (only single fusion ring  asked for)" << endl;
         else
             out << total_nr_fusion_rings << " fusion rings up to isomorphism" << endl;
     }
