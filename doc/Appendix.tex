@@ -3327,6 +3327,12 @@ A second task of \verb*|--CollectLat| is the preparation of \verb*|<project>.spl
 \end{itemize}
 Then the next refinement can be started in the same way as refinement $0$.
 
+The computation goals \verb*|SingleLatticePoint| and \verb*|SingleFusionRing| ask for  a single point. If a split has found such a point, it signalizes this to the other splits by writing the file
+\begin{itemize}
+\itemtta[<project>.spst]{project.spst}
+\end{itemize}
+This file is deleted by \verb*|CollectLat|.
+
 
 \section{Lists of input files}\label{input_list}
 

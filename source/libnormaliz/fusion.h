@@ -365,10 +365,11 @@ void make_full_input(FusionBasic& FusionInput, InputMap<Integer>& input_data) {
 
 template <typename Integer>
 inline bool is_divisible(Integer& part_FPdim,const Integer& full_FPdim, const size_t&group_order){
+	long group_long = group_order; // to avoid problems with MS Windows gmpxx
 
-    if(full_FPdim % group_order != 0)
+    if(full_FPdim % group_long != 0)
         return false;
-    part_FPdim = full_FPdim / group_order;
+    part_FPdim = full_FPdim / group_long;
     return true;
 }
 

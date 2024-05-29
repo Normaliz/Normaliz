@@ -402,6 +402,14 @@ void collect_lat(const string& project, const long given_nr_subsplits) {
         verboseOutput() << "Collecting lattice points and preliminary data from " << our_split.nr_splits_to_do << " lat files" << endl;
     }
 
+    bool stopped_single_point = false;
+    name = global_project + ".spst";
+    ifstream stop(name);
+    if(stop.is_open()){
+        stopped_single_point = true;
+        stop.close();
+    }
+
     // first we zip the lat files
     string project_expanded = expand_project(project);
     string zip_command;
@@ -489,12 +497,14 @@ void collect_lat(const string& project, const long given_nr_subsplits) {
     dummy = system(rm_command.c_str());
     if(verbose)
         verboseOutput() << "Removed zipped files by " << rm_command << endl;
-    rm_command = "rm " + project_expanded + ".spst";  // remove stop signal file in case of "single"
-    dummy = system(rm_command.c_str());
-    if(verbose)
+    if(stopped_single_point){
+        rm_command = "rm " + project_expanded + ".spst";  // remove stop signal file in case of "single"
+        dummy = system(rm_command.c_str());
+    }
+    if(stopped_single_point && verbose)
         verboseOutput() << "Removed potential stop file by " << rm_command << endl;
 
-    if(NotDone.size() == 0){
+    if(NotDone.size() == 0 || stopped_single_point){
         TotalLat.sort_lex();
         for(size_t i = 0; i< TotalLat.nr_of_rows(); ++i){
             if(TotalLat[i].back() != 1)
