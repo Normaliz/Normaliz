@@ -79,6 +79,7 @@ source/gperftools/*
 /.bindist-vars*
 
 # build files etc.
+normaliz.pc
 homepage/*-Dateien/*
 nmz_opt_lib/*
 local/*

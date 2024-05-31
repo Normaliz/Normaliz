@@ -29,7 +29,7 @@ jobs:
       - name: "Install prerequisites"
         run: |
           sudo apt-get update
-          sudo apt-get install libgmp-dev
+          sudo apt-get install libgmp-dev pkg-config
           ./install_scripts_opt/install_nmz_cocoa.sh
       - name: "Configure"
         run: .github/workflows/.github-ci-build_configure.sh
