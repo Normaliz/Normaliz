@@ -322,7 +322,7 @@ void analyze_lat_file(ifstream& lat_in,  const string& lat_name, bool & prelimin
         string prel;
         lat_in >> prel;
         if(prel != "preliminary_stage")
-            throw BadInputException(lat_name + "is corrupt");
+            throw BadInputException(lat_name + " is corrupt");
         preliminary = true;
         if(verbose)
             verboseOutput() << lat_name << " in preliminary stage" << endl;

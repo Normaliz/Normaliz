@@ -908,6 +908,8 @@ void ConeProperties::check_conflicting_fusion_variants(){
         fusion_count++;
     if(CPs.test(ConeProperty::SimpleFusionRings))
         fusion_count++;
+    if(CPs.test(ConeProperty::SingleFusionRing))
+        fusion_count++;
     if(CPs.test(ConeProperty::ModularGradings))
         fusion_count++;
     if(CPs.test(ConeProperty::LatticePoints)){
