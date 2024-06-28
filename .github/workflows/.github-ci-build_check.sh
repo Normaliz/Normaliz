@@ -42,6 +42,9 @@ case $BUILDSYSTEM in
         make -j2 -k check
         make install
         if [[ $OSTYPE == darwin* ]]; then
+            echo "VVVVVVVVVVVVVVVVVVVVVV"
+            diff --version
+            echo "VVVVVVVVVVVVVVVVVVVVVV"
             otool -L ${PREFIX}/bin/*
         else
             ldd ${PREFIX}/bin/*
