@@ -75,7 +75,7 @@ jobs:
         run: .github/workflows/.github-ci-build_check.sh
 
   eantic-nauty-cocoa-extended:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     env:
       BUILDSYSTEM: "eantic-nauty-cocoa-extended"
     steps:
