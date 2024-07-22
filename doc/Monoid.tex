@@ -1,8 +1,8 @@
-\section{Affine monid algebras and binomial ideals by examples}\label{AffMon}
+\section{Affine monoid algebras and binomial ideals by examples}\label{AffMon}
 
 The role of binomials in the computation of affine monoids and their algebras is briefly explained in Sections \ref{aff_mon_bin_id} and \ref{binomials}. We assume that the user is familiar with them.
 
-\subsection{Computations for affine monids}
+\subsection{Computations for affine monoids}
 
 \subsubsection{Input and default computation goals}\label{moninp_def}
 Affine monoids are given to Normaliz by the input type 
@@ -69,7 +69,7 @@ Our monoid actually has another grading, in which all generators have degree $1$
 
 \textbf{Note:}\enspace The input type \verb|monoid| is close to \verb|cone_and_lattice| if the monoid is normal.But there are two differences in the default choices: (1) The default computation goals and (2) the default grading. In fact, for \verb|monoid| is is derived from the standard grading on the ambient lattice, whereas or \verb|cone_and_lattice| it gives degree $1$ to the extreme integral generators, provided this is possible.
 
-The input type \verb|monoid| allows fewer computationn goals nd options than \ttt{cone\_and\_lattice}. These are
+The input type \verb|monoid| allows fewer computation goals and options than \ttt{cone\_and\_lattice}. These are
 
 \texttt{
 \begin{tabular}{llll} 
@@ -81,7 +81,7 @@ Lex & DegLex
 \end{tabular}
 }
 
-Automorphism groups of monoids are discussed in Secion \ref{mon_auto}.
+Automorphism groups of monoids are discussed in Section \ref{mon_auto}.
 
 
 
@@ -106,7 +106,7 @@ In our case \verb|monoid.mrk|:
 1 1 1 -3 0 0 
 0 1 2 -2 -1 0
 \end{Verbatim}
-Each column corresponds to an input vector, and the rows aee indeed relations: the scalar product of a row listed in the Markov basis and a column of the matrix \verb|monoid| is $0$. The binomials in $P=K[Y_1,\dots,Y_6]$ corresponding to the rows in the Markov basis form a system of generators of the binomial ideal defining our monoid algebra as a residue class ring of $P$. The binomials are
+Each column corresponds to an input vector, and the rows are indeed relations: the scalar product of a row listed in the Markov basis and a column of the matrix \verb|monoid| is $0$. The binomials in $P=K[Y_1,\dots,Y_6]$ corresponding to the rows in the Markov basis form a system of generators of the binomial ideal defining our monoid algebra as a residue class ring of $P$. The binomials are
 $$
 b_1 = Y_1Y_5 - Y_3Y_4, \qquad b_2 = Y_3^2Y_6 - Y_1^2Y_3,\dots,\qquad b_7 = Y_2Y_3^2 - Y_4^2Y_5.
 $$
@@ -155,13 +155,13 @@ Despite of being the default choice, the degree reverse lexicographic order is i
 \begin{itemize}
 	\itemtt[RevLex] degree reverse lexicographic order (with respect to the standard grading on the polynomial ring)
 	\itemtt[Lex] lexicographic order
-	\itemtt[DegLex] gegree lexicographic order (with the same degree as RevLex)
+	\itemtt[DegLex] degree lexicographic order (with the same degree as RevLex)
 \end{itemize}
-Activate also \verb|Lex| in our example and see what changes. \verb|DegLex| is taken with respect to the total standard degree as well, and makes no difference in our case, since the generating binomials are homogeneous in this grading. It is also possoible to apply a weight vector specified by 
+Activate also \verb|Lex| in our example and see what changes. \verb|DegLex| is taken with respect to the total standard degree as well, and makes no difference in our case, since the generating binomials are homogeneous in this grading. It is also possible to apply a weight vector specified by 
 \begin{itemize}
 	\itemtt[gb\_weight]
 \end{itemize}
-Its length is the number of variables of the binomial ideal. For the input type \verb|monoid| it is the number of input generators of the monoid. (For \verb|lattice_ideal| and  \verb|toric_ideal| it is \verb|amb_space; see below.|) Monomials of egual weight must be distinguished by a monomial order that serves as a tie bgreaker. The choices are \verb|RevLex| (default) or \verb|Lex|. (\verb|DegLex| has a fixed weight namely the standard grading.) Note that the entries of the weightb vector musat be positive if \verb|RevLex| is the tie breaker, and nonnnegative for \verb|Lex|. An example (\verb|monoid_weight.in|):
+Its length is the number of variables of the binomial ideal. For the input type \verb|monoid| it is the number of input generators of the monoid. (For \verb|lattice_ideal| and  \verb|toric_ideal| it is \verb|amb_space; see below.|) Monomials of equal weight must be distinguished by a monomial order that serves as a tie breaker. The choices are \verb|RevLex| (default) or \verb|Lex|. (\verb|DegLex| has a fixed weight namely the standard grading.) Note that the entries of the weight vector must be positive if \verb|RevLex| is the tie breaker, and nonnegative for \verb|Lex|. An example (\verb|monoid_weight.in|):
 \begin{Verbatim}
 amb_space 3
 monoid 6
@@ -187,7 +187,7 @@ and the Gröbner basis is
 2 -1 -4 0 3 0
 \end{Verbatim}
 
-\textbf{Warning:} \enspace Don't confuse \verb|grading| and \verb|gb_weight|. The binoimials must be homogeneous polynomials for the grading so that the grading has no effect on picking the initial monomial. Therefore a grading (or homogeneous weight) has no effect on the Grobner basis compoutation.
+\textbf{Warning:} \enspace Don't confuse \verb|grading| and \verb|gb_weight|. The binomials must be homogeneous polynomials for the grading so that the grading has no effect on picking the initial monomial. Therefore a grading (or homogeneous weight) has no effect on the Grobner basis computation.
 
 A grading of the monomial algebra induces a grading on the binomials in its defining ideal such that the latter are homogeneous polynomials. With respect to this grading  the output of Markov and Gröbner bases can be restricted:
 \begin{itemize}
@@ -199,7 +199,7 @@ There is one more computation goal for monoids that complements \verb|HilbertBas
 \begin{itemize}
 	\itemtt[Representations] representations of reducible elements in \verb|monoid| in terms of the Hilbert basis
 \end{itemize}
-The outpur is a list of binomials in the file with suffix
+The output is a list of binomials in the file with suffix
 \begin{itemize}
 	\itemtt[rep] representations  of reducible elements in terms of the Hilbert basis.
 \end{itemize}
@@ -324,9 +324,9 @@ inequalities 5
 MarkovBasis
 SingularLocus
 \end{Verbatim}
-with the same result as above, except that there is no originl monoid.
+with the same result as above, except that there is no original monoid.
 
-Sinc ethe number of monoid generaors is impossible to predict for cone input, it is not possible to givea weight vevctor.
+Since the number of monoid generators is impossible to predict for cone input, it is not possible to give a weight vector.
 
 \subsection{Monoids from binomials}\label{binom_ex}
 
@@ -341,14 +341,14 @@ The input type that asks for a toric ring from binomial input is
 \begin{itemize}
 	\itemtt[toric\_ideal]
 \end{itemize}
-The input vectors are obtained as the differences of the two exponent vectors in the binomials. So the input ideal \verb+toric_ideal.in+ for ur $3$ binomials is
+The input vectors are obtained as the differences of the two exponent vectors in the binomials. So the input ideal \verb+toric_ideal.in+ for our $3$ binomials is
 \begin{Verbatim}
 amb_space 6
 toric_ideal 3
 2 1  0 -1 -1  -1
 1 0 -1  2 -1  -1
 1 1  1  0 -2  -1
-/* total_dgegree */
+/* total_degree */
 \end{Verbatim}
 In order to avoid special input rules for this case in which our object is not defined as a subset of an ambient space, but as a quotient of type \emph{generators/relations}, we abuse the name \verb|amb_space|: it determines the space in which the input vectors live.
 
@@ -371,7 +371,7 @@ We see
 grading:
 1 1 1 
 \end{Verbatim}
-So Normaliz uses the standard grading on the ambient polynomial ring into which $R/J$ has been embedded. This is the default choice, as it is for the input type \verb|monolid|. Our toric ring actually has its own standard tgrading: activate \verb|total_degree| in the input file and look at the output. In fact, the binomials above are homogeneous in the standard gading on $P$, and \verb|total_degree| sets this grading.
+So Normaliz uses the standard grading on the ambient polynomial ring into which $R/J$ has been embedded. This is the default choice, as it is for the input type \verb|monoid|. Our toric ring actually has its own standard grading: activate \verb|total_degree| in the input file and look at the output. In fact, the binomials above are homogeneous in the standard gadding on $P$, and \verb|total_degree| sets this grading.
 
 The generators are repeated (in this case) in a different order,m as we know already:
 \begin{Verbatim}
@@ -401,9 +401,9 @@ The output contains
 1
 \end{Verbatim}
 
-Normaliz transforms \verb|toric_ideal| into \verb|monoid|. Therefore onlyx the compuation goals of \verb|monoid| are allowed with the exception of \verb|AmbientAutomorphisms| and \verb|InputAutomorphisms|.
+Normaliz transforms \verb|toric_ideal| into \verb|monoid|. Therefore only the computation goals of \verb|monoid| are allowed with the exception of \verb|AmbientAutomorphisms| and \verb|InputAutomorphisms|.
 
-A weight vector for a Gröbner basis computation can be given. Its number of components is \verb|amb_space|. Eyample (\verb|toric_ideal_grb|):
+A weight vector for a Gröbner basis computation can be given. Its number of components is \verb|amb_space|. Example (\verb|toric_ideal_grb|):
 \begin{Verbatim}
 amb_space 6
 toric_ideal 3
@@ -467,9 +467,9 @@ A lattice ideal $I$ in a polynomial ring $P$ is a binomial ideal modulo which al
 \begin{itemize}
 	\itemtt[lattice\_ideal] 
 \end{itemize}
-Normaliz tests whether the lattice ideral is toric and indicates it in the input file, but does not automatically treat the input like \verb|toric_ideal| in the positive case.
+Normaliz tests whether the lattice ideal is toric and indicates it in the input file, but does not automatically treat the input like \verb|toric_ideal| in the positive case.
 
-A soimple example of a non-toric lattice ideal is \verb|non_toric.in|
+A simple example of a non-toric lattice ideal is \verb|non_toric.in|
 \begin{Verbatim}
 amb_space 4
 lattice_ideal 4
@@ -496,6 +496,6 @@ For internal reasons and the exchange of data with external programs we can ask
  \itemtt[IsLatticeIdealToric]
 \end{itemize}
 
-In addition to \verb|MarkovBasis| nd \verb|IsLatticeIdealToric| there is only one more allowed computation goal, namely \verb|GroebnerfBasis|. There are no monoid generators for \verb|lattice_ideal| (not even if the idfeal is toric).
+In addition to \verb|MarkovBasis| nd \verb|IsLatticeIdealToric| there is only one more allowed computation goal, namely \verb|GroebnerBasis|. There are no monoid generators for \verb|lattice_ideal| (not even if the ideal is toric).
 
 \textbf{Note:} In versions until 3.9.4 \verb|lattice_ideal| had the meaning of \verb|normal_toric_ideal|.
