@@ -659,10 +659,8 @@ Matrix<Number> LLL_red(const Matrix<Number>& U, Matrix<Integer>& T, Matrix<Integ
     size_t n = U.nr_of_rows();
     // pretty_print(cout);
     if(U.rank() != n){
-        errorOutput() << "Overflow in LLL. Use BigInt, -B, or NoLLL" << endl;
-        assert(false);
+        throw ArithmeticException();
     }
-    assert(U.rank() == n);
     if (n <= 1)
         return Lred;
 
