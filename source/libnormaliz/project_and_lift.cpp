@@ -1042,8 +1042,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_covers() {
 
     sort(covering_equations.begin(), covering_equations.end());
 
-    for(auto& c: covering_equations)
-        cout << c.second;
+    /* for(auto& c: covering_equations)
+        cout << c.second; */
 
     size_t dim = EmbDim;
 
