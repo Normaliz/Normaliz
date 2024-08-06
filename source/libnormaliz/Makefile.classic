@@ -127,11 +127,14 @@ collect_lat.o:  $(LIBHEADERS) collect_lat.cpp
 fusion.o:  $(LIBHEADERS) fusion.cpp
 	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c fusion.cpp -o $@
 
+induction.o.o:  $(LIBHEADERS) induction.cpp
+	$(CXX) $(CXXFLAGS) $(NORMFLAGS) -c induction.cpp -o $@
 
-libnormaliz.a: automorph.o collection.o cone_dual_mode.o cone_property.o cone.o descent.o face_lattice.o full_cone.o general.o HilbertSeries.o input.o matrix.o nmz_integral.o nmz_nauty.o nmz_polynomial.o nmz_hash.o offload_handler.o options.o output.o project_and_lift.o reduction.o simplex.o sublattice_representation.o chunk.o signed_dec.o binomial.o binomial_containers.o lattice_ideal.o collect_lat.o fusion.o
+
+libnormaliz.a: automorph.o collection.o cone_dual_mode.o cone_property.o cone.o descent.o face_lattice.o full_cone.o general.o HilbertSeries.o input.o matrix.o nmz_integral.o nmz_nauty.o nmz_polynomial.o nmz_hash.o offload_handler.o options.o output.o project_and_lift.o reduction.o simplex.o sublattice_representation.o chunk.o signed_dec.o binomial.o binomial_containers.o lattice_ideal.o collect_lat.o fusion.o induction.o
 	ar -cr $@ $^
 
-libnormaliz.so: automorph.o collection.o cone_dual_mode.o cone_property.o cone.o descent.o face_lattice.o full_cone.o general.o HilbertSeries.o input.o matrix.o nmz_integral.o nmz_nauty.o nmz_polynomial.o nmz_hash.o offload_handler.o options.o output.o project_and_lift.o reduction.o simplex.o sublattice_representation.o chunk.o signed_dec.o binomial.o binomial_containers.o lattice_ideal.o  collect_lat.o fusion.o
+libnormaliz.so: automorph.o collection.o cone_dual_mode.o cone_property.o cone.o descent.o face_lattice.o full_cone.o general.o HilbertSeries.o input.o matrix.o nmz_integral.o nmz_nauty.o nmz_polynomial.o nmz_hash.o offload_handler.o options.o output.o project_and_lift.o reduction.o simplex.o sublattice_representation.o chunk.o signed_dec.o binomial.o binomial_containers.o lattice_ideal.o  collect_lat.o fusion.o induction.o
 	$(CXX) $(CXXFLAGS)  -shared $^ $(LINKFLAGS) -o libnormaliz.so
 
 .PHONY : install

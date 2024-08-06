@@ -907,6 +907,10 @@ bool ProjectAndLift<IntegerPL,IntegerRet>::order_patches_user_defined() {
     ifstream in_order;
     in_order.open(file_name, ifstream::in);
     if(in_order.is_open()){
+        string test;
+        in_order >> test;
+        if(test != "nr_patches")
+            throw BadInputException("<project>.order.patches does not start with nr_patches");
         long nr_patch;
         in_order >> nr_patch;
         dynamic_bitset used_patches(EmbDim);
@@ -915,6 +919,8 @@ bool ProjectAndLift<IntegerPL,IntegerRet>::order_patches_user_defined() {
             in_order >> j;
             if(j >= EmbDim || AllPatches[j].empty() )
                 throw BadInputException("File defining insertion order corrupt");
+            if(used_patches[j])
+                throw BadInputException("<project>.order.patches contains " + to_string(j) + " more than once");
             used_patches[j] = true;
             InsertionOrderPatches.push_back(j);
         }
@@ -1035,6 +1041,9 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_covers() {
     // possible.
 
     sort(covering_equations.begin(), covering_equations.end());
+
+    for(auto& c: covering_equations)
+        cout << c.second;
 
     size_t dim = EmbDim;
 

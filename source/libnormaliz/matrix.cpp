@@ -4185,6 +4185,25 @@ vector<mpz_class> Matrix<mpz_class>::optimal_subdivision_point() const {
     }
 }
 
+template<typename Integer>
+size_t Matrix<Integer>::mult_of_eigenvalue(const Integer& ev){
+
+    assert(nr == nc);
+
+    Matrix<Integer> M = *this;
+    for(size_t i= 0; i < nr; ++i)
+        M[i][i] -= ev;
+    Matrix<Integer> N = M;
+    size_t mult = 0;
+    while(true){
+        size_t m = nr - N.rank();
+        if(m == mult)
+            return mult;
+        N.multiplication(M);
+        mult = m;
+    }
+}
+
 /*
  * Version with LL for every matrix --- seems to be the best choice
  */

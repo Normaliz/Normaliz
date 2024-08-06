@@ -31,6 +31,7 @@
 #include <iostream>
 #include <string>
 #include <cmath>
+#include <cassert>
 
 #include <libnormaliz/general.h>
 #include <libnormaliz/integer.h>
@@ -287,6 +288,8 @@ class Matrix {
     void set_nr(size_t rows) {
         nc = rows;
     }
+
+    size_t mult_of_eigenvalue(const Integer& ev);
 
     //  convert the remaining matrix to nmz_float
     Matrix<nmz_float> nmz_float_without_first_column() const;
@@ -655,6 +658,10 @@ Matrix<Number> LLL_red(const Matrix<Number>& U, Matrix<Integer>& T, Matrix<Integ
     size_t dim = U.nr_of_columns();
     size_t n = U.nr_of_rows();
     // pretty_print(cout);
+    if(U.rank() != n){
+        errorOutput() << "Overflow in LLL. Use BigInt, -B, or NoLLL" << endl;
+        assert(false);
+    }
     assert(U.rank() == n);
     if (n <= 1)
         return Lred;
