@@ -50,26 +50,28 @@ Induction<Integer>::Induction(const vector<Integer>& fus_type, const vector<key_
     }
     FusBasic.fusion_type_string = fusion_type_string; */
     duality = fus_duality;
+    fusion_type = fus_type;
     FusBasic.duality = duality;
     FusBasic.fusion_type = fusion_coincidence_pattern(fus_type);
     FusComp = FusionComp<Integer>(FusBasic);
     FusComp.make_CoordMap();
     Tables = FusComp.make_all_data_tables(FusRing);
-    cout << FusRing;
-    for(auto& T: Tables)
-        T.debug_print();
+    // cout << FusRing;
+    /* for(auto& T: Tables)
+        T.debug_print();*/
 
     FPdim = 0;
     for(auto& f: fus_type)
         FPdim += f*f;
 
+    FPSquare = FPdim * FPdim;
     for(Integer t = 1; t <= FPdim; ++t){
 
         if(FPdim % t == 0)
             divisors.push_back(t);
     }
 
-    cout << FPdim << " " << divisors;
+    // cout << FPdim << " " << divisors;
 
     EVMat.resize(fusion_rank, fusion_rank);
     for(size_t s =0; s < fusion_rank; ++s){
@@ -82,13 +84,67 @@ Induction<Integer>::Induction(const vector<Integer>& fus_type, const vector<key_
             EVMat[s][l] = S;
         }
     }
-    EVMat.debug_print();
+    // EVMat.debug_print();
 
-    cout << "-----------------" << endl;
+    MultEV.resize(divisors.size());
 
     for(size_t i = 0; i< divisors.size(); ++i){
-        cout << divisors[i] << " " << EVMat.mult_of_eigenvalue(divisors[i]) << endl;
+        MultEV[i] = EVMat.mult_of_eigenvalue(divisors[i]);
+        // cout << divisors[i] << " " <<  MultEV[i] << endl;
     }
+
+   Bounds.resize(fusion_rank, fusion_rank);
+
+    for(size_t j = 0; j< fusion_rank; ++j){
+        for(size_t k = 0; k < fusion_rank; ++k){
+            Integer S =0;
+            for (size_t s = 0; s < fusion_rank; ++s){
+                for(size_t t = 0; t < fusion_rank; ++t )
+                    S += N(t,j,s)*N(s, duality[t],k);
+            }
+            Bounds[j][k] = S;
+        }
+    }
+    // Bounds.debug_print('&');
+
+    HighRepresentations.resize(0, fusion_rank);
+
+    for(auto& t: divisors){
+        LowRepresentations[t].resize(0, fusion_rank);
+        Matrix<Integer> InhomEqu(1,fusion_rank +1);
+        for(size_t i = 0; i < fusion_rank; ++i)
+            InhomEqu[0][i] = fus_type[i];
+        InhomEqu[0].back() = - t;
+        Matrix<Integer> NonNeg(InhomEqu.nr_of_columns() - 1);
+        Cone<Integer> RepCone(Type::inhom_equations, InhomEqu,Type::inequalities, NonNeg);
+        Matrix<Integer> Reps = RepCone.getLatticePointsMatrix();
+        for(size_t i = 0; i < Reps.nr_of_rows(); ++i){
+            bool too_large = false;
+            for(size_t j = 0; j < fusion_rank; ++j){
+                for(size_t k = j; k < fusion_rank; ++k){
+                    if(Reps[i][j]*Reps[i][k] > Bounds[j][k]){
+                        too_large = true;
+                        break;
+                    }
+                }
+                if(too_large)
+                    break;
+            }
+            if(too_large)
+                continue;
+            vector<Integer> new_rep = Reps[i];
+            new_rep.resize(new_rep.size() - 1);
+
+            if(Reps[i][0] == 1)
+                LowRepresentations[t].append(new_rep);
+            if(Reps[i][0] == 0)
+                HighRepresentations.append(new_rep);
+
+        }
+
+       // LowRepresentations[t].debug_print('$');
+    }
+    // HighRepresentations.debug_print('%');
 }
 
 template<>
@@ -101,6 +157,128 @@ template<typename Integer>
 Integer Induction<Integer>::N(const key_t i, const key_t j, const key_t k){
     return Tables[i][j][k];
 }
+
+template<typename Integer>
+void Induction<Integer>::start_low_parts(){
+
+    vector<Integer> EV;
+    for(size_t i = 0; i < divisors.size(); ++i){
+        for(size_t j = 0; j < MultEV[i]; ++j)
+            EV.push_back(divisors[i]);
+    }
+    for(auto& t: EV)
+        low_m.push_back(FPdim / t);
+    sort(low_m.begin(), low_m.end());
+
+    Matrix<Integer> matrix_so_far(0, fusion_rank);
+    Matrix<Integer> bounds_so_far(fusion_rank, fusion_rank);
+    build_low_matrices(matrix_so_far, bounds_so_far);
+
+    /* for(auto& M: LowParts)
+        M.debug_print();
+    for(auto& M: LowPartsBounds)
+        M.debug_print('&'); */
+}
+
+
+template<typename Integer>
+void Induction<Integer>::build_low_matrices(Matrix<Integer> matrix_so_far, Matrix<Integer> bounds_so_far){
+
+    key_t step = matrix_so_far.nr_of_rows();
+
+    Integer m_step = low_m[step];
+    for(size_t i = 0; i < LowRepresentations[m_step].nr_of_rows(); ++i){
+
+        vector<Integer> cand_extension = LowRepresentations[m_step][i];
+        bool potential_low_part = true;
+
+        Matrix<Integer> check_bounds = bounds_so_far;
+
+        for(size_t j = 0; j < fusion_rank; ++j){
+            for(size_t k = j; k < fusion_rank; ++k){
+                check_bounds[j][k] +=  cand_extension[j] * cand_extension[k];
+                if(check_bounds[j][k] > Bounds[j][k]){
+                   potential_low_part = false;
+                   break;
+                }
+                if(!potential_low_part)
+                    break;
+            }
+        }
+
+        if(!potential_low_part)
+            continue;
+        matrix_so_far.append(cand_extension);
+
+        if(matrix_so_far.nr_of_rows() == fusion_rank){
+            LowParts.push_back(matrix_so_far);
+            LowPartsBounds.push_back(check_bounds);
+            continue;
+        }
+
+        build_low_matrices(matrix_so_far, check_bounds);
+    }
+}
+
+template<typename Integer>
+void Induction<Integer>::from_low_to_full(){
+
+    Integer FPdim_so_far =0;
+    for(size_t j = 0; j < fusion_rank; ++j)
+        FPdim_so_far += low_m[j] * low_m[j];
+
+    for(size_t i = 0; i < LowParts.size(); ++i){
+
+        extend_matrix(LowParts[i], 0, LowPartsBounds[i], FPdim_so_far);
+    }
+
+    for(auto& M: InductionMatrices)
+        M.debug_print();
+
+}
+
+template<typename Integer>
+void Induction<Integer>::extend_matrix(Matrix<Integer> matrix_so_far, key_t rep_index,
+                       Matrix<Integer> bounds_so_far, Integer FPdim_so_far){
+
+    if(rep_index >= HighRepresentations.nr_of_rows())
+        return;
+
+    vector<Integer> cand_ext = HighRepresentations[rep_index];
+    Integer new_m = v_scalar_product(cand_ext, fusion_type);
+
+    while(true){
+
+        extend_matrix(matrix_so_far, rep_index +1, bounds_so_far, FPdim_so_far);
+        FPdim_so_far += new_m* new_m;
+        if(FPdim_so_far > FPSquare){
+            return;
+        }
+        bool potential_solution = true;
+        if(FPdim_so_far < FPSquare)
+            potential_solution = false;
+
+        for(size_t j = 0; j < fusion_rank; ++j){
+            for(size_t k = j; k < fusion_rank; ++k){
+                bounds_so_far[j][k] +=  cand_ext[j] * cand_ext[k];
+                if(bounds_so_far[j][k] > Bounds[j][k]){
+                    return;
+                }
+                if(bounds_so_far[j][k] < Bounds[j][k])
+                    potential_solution = false;
+            }
+        }
+        matrix_so_far.append(cand_ext);
+
+        if(potential_solution){
+            InductionMatrices.push_back(matrix_so_far);
+            // matrix_so_far.debug_print('$');
+            return;
+        }
+
+    }
+}
+
 
 template class Induction<mpz_class>;
 template class Induction<long long>;

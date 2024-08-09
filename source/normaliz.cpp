@@ -223,15 +223,17 @@ int main(int argc, char* argv[]){
         verboseOutput() << "Command line: " << command_line << endl;
     }
 
-    /*
     vector<long long> our_type = {1,1,2,6};
     vector<unsigned int> our_dual = {0,1,2,3};
     vector<long long> our_ring = {0,0,0,1,0,1,1,0,2,5,1};
 
     Induction<long long> Indu(our_type, our_dual, our_ring);
 
+    Indu.start_low_parts();
+    Indu.from_low_to_full();
+
     exit(0);
-    */
+
 
     /*Matrix<long long> FFT(1,4);
     FFT[0] = {1,1,2,2};
