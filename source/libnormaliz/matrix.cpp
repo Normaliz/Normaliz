@@ -919,7 +919,6 @@ void Matrix<Integer>::remove_duplicate(const Matrix<Integer>& M) {
 
 //---------------------------------------------------------------------------
 
-/*
 template <typename Integer>
 Matrix<Integer> Matrix<Integer>::add(const Matrix<Integer>& A) const {
     assert(nr == A.nr);
@@ -934,7 +933,7 @@ Matrix<Integer> Matrix<Integer>::add(const Matrix<Integer>& A) const {
     }
     return B;
 }
-*/
+
 //---------------------------------------------------------------------------
 
 // B = (*this)*A.transpose()

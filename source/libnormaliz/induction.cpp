@@ -73,13 +73,18 @@ Induction<Integer>::Induction(const vector<Integer>& fus_type, const vector<key_
 
     // cout << FPdim << " " << divisors;
 
+    /* for(auto& T: Tables)
+        T.debug_print('$'); */
+
     EVMat.resize(fusion_rank, fusion_rank);
     for(size_t s =0; s < fusion_rank; ++s){
         for(size_t l = 0; l < fusion_rank; ++l){
             Integer S = 0;
             for(size_t t = 0; t < fusion_rank; ++t){
-                for(size_t k = 0; k < fusion_rank; ++k)
+                for(size_t k = 0; k < fusion_rank; ++k){
+                    // cout << t << " " << k << " " << N(t, duality[t], k) << " " << N(k,l,s)<< endl;
                     S += N(t, duality[t], k)*N(k,l,s);
+                }
             }
             EVMat[s][l] = S;
         }
@@ -88,10 +93,17 @@ Induction<Integer>::Induction(const vector<Integer>& fus_type, const vector<key_
 
     MultEV.resize(divisors.size());
 
+    Integer sum_mult = 0;
+
     for(size_t i = 0; i< divisors.size(); ++i){
         MultEV[i] = EVMat.mult_of_eigenvalue(divisors[i]);
-        // cout << divisors[i] << " " <<  MultEV[i] << endl;
+        if(MultEV[i] > 0)
+            cout << divisors[i] << " " <<  MultEV[i] << endl;
+        sum_mult += MultEV[i];
     }
+
+    if(sum_mult < fusion_rank)
+        throw BadInputException("Sum of multiplicities of eigenvalues dividing FPdim < fusion_rank");
 
    Bounds.resize(fusion_rank, fusion_rank);
 
@@ -145,6 +157,13 @@ Induction<Integer>::Induction(const vector<Integer>& fus_type, const vector<key_
        // LowRepresentations[t].debug_print('$');
     }
     // HighRepresentations.debug_print('%');
+
+    cout << "Numbers of reporesentations low" << endl;
+    for(auto& t: divisors){
+        cout << t << " " << LowRepresentations[t].nr_of_rows() << endl;
+    }
+    // cout << "high" << endl;
+
 }
 
 template<>
@@ -174,9 +193,31 @@ void Induction<Integer>::start_low_parts(){
     Matrix<Integer> bounds_so_far(fusion_rank, fusion_rank);
     build_low_matrices(matrix_so_far, bounds_so_far);
 
-    /* for(auto& M: LowParts)
-        M.debug_print();
-    for(auto& M: LowPartsBounds)
+    vector<Matrix<Integer> >  OrderedLowParts;
+
+    for(auto& M: LowParts){
+        for(size_t i = 0; i < fusion_rank; ++i)
+            cout << v_scalar_product(M[i], fusion_type) << " ";
+        cout << endl;
+        bool ordered = true;
+        for(size_t i = 0; i < M.nr_of_rows() - 1; ++i){
+            if(low_m[i] == low_m[i+1]){
+                if(M[i] > M[i+1]){
+                    ordered = false;
+                    // break;
+                }
+            }
+        }
+        if(ordered)
+            OrderedLowParts.push_back(M);
+    }
+
+    cout << "Old " << LowParts.size() << " New " << OrderedLowParts.size() << endl;
+    swap(LowParts, OrderedLowParts);
+
+    for(auto& M: LowParts)
+        M.debug_print('P');
+    /* for(auto& M: LowPartsBounds)
         M.debug_print('&'); */
 }
 
@@ -188,6 +229,8 @@ void Induction<Integer>::build_low_matrices(Matrix<Integer> matrix_so_far, Matri
 
     Integer m_step = low_m[step];
     for(size_t i = 0; i < LowRepresentations[m_step].nr_of_rows(); ++i){
+
+        Matrix<Integer> NewMatrix = matrix_so_far;
 
         vector<Integer> cand_extension = LowRepresentations[m_step][i];
         bool potential_low_part = true;
@@ -208,21 +251,95 @@ void Induction<Integer>::build_low_matrices(Matrix<Integer> matrix_so_far, Matri
 
         if(!potential_low_part)
             continue;
-        matrix_so_far.append(cand_extension);
+        NewMatrix.append(cand_extension);
 
-        if(matrix_so_far.nr_of_rows() == fusion_rank){
-            LowParts.push_back(matrix_so_far);
+        if(NewMatrix.nr_of_rows() == fusion_rank){
+            LowParts.push_back(NewMatrix);
             LowPartsBounds.push_back(check_bounds);
             continue;
         }
 
-        build_low_matrices(matrix_so_far, check_bounds);
+        build_low_matrices(NewMatrix, check_bounds);
     }
 }
 
 template<typename Integer>
 void Induction<Integer>::from_low_to_full(){
 
+
+    Integer FPdim_so_far =0;
+    for(size_t j = 0; j < fusion_rank; ++j)
+        FPdim_so_far += low_m[j] * low_m[j];
+
+    Integer MinusOne = -1;
+
+    for(size_t iii = 0; iii < LowParts.size(); ++iii){
+        Matrix<Integer> MinusLowBound = LowPartsBounds[iii];
+
+        MinusLowBound.scalar_multiplication(MinusOne);
+
+        // Bounds.debug_print();
+
+        // LowPartsBounds[iii].debug_print('L');
+
+        Matrix<Integer> Remaining = Bounds.add(MinusLowBound);
+
+        // Remaining.debug_print('R');
+
+        Matrix<Integer> InhomEqu(0, HighRepresentations.nr_of_rows() + 1);
+
+        // HighRepresentations.debug_print('H');
+
+        for(size_t j = 1; j < fusion_rank; ++j){
+            for(size_t k = j; k < fusion_rank; ++k){
+                vector<Integer> this_equ;
+                for(size_t i = 0; i < HighRepresentations.nr_of_rows(); ++i){
+                        this_equ.push_back(HighRepresentations[i][j] * HighRepresentations[i][k]);
+                }
+                this_equ.push_back(-Remaining[j][k]);
+                // cout << j << " " << k << " " << "ttt " <<  this_equ;
+                InhomEqu.append(this_equ);
+            }
+        }
+
+        vector<Integer> this_equ;
+        for(size_t i = 0; i < HighRepresentations.nr_of_rows(); ++i){
+            Integer m_new = v_scalar_product(HighRepresentations[i], fusion_type);
+            this_equ.push_back(m_new * m_new);
+        }
+        this_equ.push_back(-FPSquare + FPdim_so_far);
+        InhomEqu.append(this_equ);
+
+        // InhomEqu.debug_print('&');
+
+        Matrix<Integer> Unit(HighRepresentations.nr_of_rows());
+        Cone<Integer> C(Type::inhom_equations, InhomEqu, Type::inequalities, Unit);
+        C.compute(ConeProperty::HilbertBasis, ConeProperty::Projection);
+        Matrix<Integer> LP = C.getLatticePointsMatrix();
+
+        for(size_t k= 0; k< LP.nr_of_rows(); ++k){
+            Matrix<Integer> IndMat = LowParts[iii];
+            // cout << "CCC " << LowParts[iii].nr_of_columns() << endl;
+            for(size_t j = 0; j < LP.nr_of_columns() - 1; ++j){
+                Integer count = 0;
+                while(count < LP[k][j]){
+                    // cout << "HHH " << HighRepresentations[j].size() << endl;
+                    IndMat.append(HighRepresentations[j]);
+                    count = count +1;
+                }
+
+            }
+            InductionMatrices.push_back(IndMat);
+        }
+
+    }
+
+    cout << InductionMatrices.size() << " induction matrices found" << endl;
+
+    for(auto& M: InductionMatrices)
+        M.debug_print('$');
+
+    /*
     Integer FPdim_so_far =0;
     for(size_t j = 0; j < fusion_rank; ++j)
         FPdim_so_far += low_m[j] * low_m[j];
@@ -232,8 +349,13 @@ void Induction<Integer>::from_low_to_full(){
         extend_matrix(LowParts[i], 0, LowPartsBounds[i], FPdim_so_far);
     }
 
+    cout << InductionMatrices.size() << " induction matrices found" << endl;
+
     for(auto& M: InductionMatrices)
-        M.debug_print();
+        M.debug_print('$');
+
+    */
+
 
 }
 

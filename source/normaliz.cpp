@@ -223,9 +223,28 @@ int main(int argc, char* argv[]){
         verboseOutput() << "Command line: " << command_line << endl;
     }
 
-    vector<long long> our_type = {1,1,2,6};
+    /* vector<long long> our_type = {1,1,2,6};
     vector<unsigned int> our_dual = {0,1,2,3};
-    vector<long long> our_ring = {0,0,0,1,0,1,1,0,2,5,1};
+    vector<long long> our_ring = {0,0,0,1,0,1,1,0,2,5,1}; */
+
+    /* vector<long long> our_type = {1,1,2};
+    vector<unsigned int> our_dual = {0,1,2};
+    vector<long long> our_ring ={0,0,1,1,1}; */
+
+    /* vector<long long> our_type = {1,1,1,3};
+    vector<unsigned int> our_dual = {0,2,1,3};
+    vector<long long> our_ring ={0,1,0,0,0,1,2,1}; */
+
+    /* vector<long long> our_type = {1,1,4,4,6};
+    vector<unsigned int> our_dual = {0,1,3,2,4};
+    vector<long long> our_ring ={0,0,0,1,0,0,1,0,1,1,0,2,1,1,2,3,1}; */
+
+    /* vector<long long> our_type = {1,5,5,5,6,7,7};
+    vector<unsigned int> our_dual = {0,1,2,3,4,5,6};
+    vector<long long> our_ring ={1,1,0,0,1,1,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,0,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,2,1,2,1,2,2,1,1}; */
+
+
+    /*
 
     Induction<long long> Indu(our_type, our_dual, our_ring);
 
@@ -234,6 +253,7 @@ int main(int argc, char* argv[]){
 
     exit(0);
 
+    */
 
     /*Matrix<long long> FFT(1,4);
     FFT[0] = {1,1,2,2};
