@@ -41,6 +41,8 @@ class Induction {
 
 public:
 
+    bool verbose;
+
     Matrix<Integer> F;
 
     size_t fusion_rank;
@@ -75,7 +77,7 @@ public:
     Matrix<Integer> Bounds;
 
     Induction();
-    Induction(const vector<Integer>& fus_type, const vector<key_t>& fus_duality , const vector<Integer>& FusRing);
+    Induction(const vector<Integer>& fus_type, const vector<key_t>& fus_duality , const vector<Integer>& FusRing, bool verb);
 
     void start_low_parts();
     void build_low_matrices(Matrix<Integer> matrix_so_far, Matrix<Integer> bounds_so_far);

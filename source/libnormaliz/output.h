@@ -160,6 +160,8 @@ class Output {
     void writeWeightedEhrhartSeries(ofstream& out) const;
     void writeSeries(ofstream& out, const HilbertSeries& HS, string HilbertOrEhrhart) const;
 
+    void write_induction_matrices();
+
     void write_perms_and_orbits(ofstream& out,
                                 const vector<vector<key_t> >& Perms,
                                 const vector<vector<key_t> >& Orbits,

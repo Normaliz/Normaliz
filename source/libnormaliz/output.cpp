@@ -1212,10 +1212,23 @@ void Output<Integer>::writeSeries(ofstream& out, const HilbertSeries& HS, string
     }
 }
 
+template <typename Integer>
+void Output<Integer>::write_induction_matrices() {
+    
+    cout << "IND IND" << endl;
+    
+    string name_open = name + ".ind";
+    ofstream ind_out(name_open);
+    write_vec_vec_Mat(Result->getInductionMatrices(), ind_out);
+}
+
 //---------------------------------------------------------------------------
 
 template <typename Integer>
 void Output<Integer>::write_files() {
+
+    if(Result->isComputed(ConeProperty::InductionMatrices))
+        write_induction_matrices();
 
     if(Result->isComputed(ConeProperty::SingleFusionRing)){
         write_single_fusion_file(Result->getFusionBasicCone(), name, Result->getEmbeddingDim(), Result->getSingleFusionRing(), no_matrices_output);

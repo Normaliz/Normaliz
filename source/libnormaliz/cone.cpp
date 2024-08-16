@@ -41,6 +41,7 @@
 #include "libnormaliz/input.h"
 #include "libnormaliz/lattice_ideal.h"
 #include "libnormaliz/project_and_lift.h"
+#include "libnormaliz/induction.h"
 
 namespace libnormaliz {
 using namespace std;
@@ -2201,6 +2202,7 @@ void Cone<Integer>::initialize() {
     gb_degree_bound = -1;
     gb_min_degree = -1,
     modular_grading = -1;
+    chosen_fusion_ring = -1;
 
     keep_convex_hull_data = false;
     conversion_done = false;
@@ -2955,6 +2957,12 @@ template <typename Integer>
 const vector<vector<Matrix<Integer> > >& Cone<Integer>::getFusionDataMatrix(){
     compute(ConeProperty::FusionData);
     return FusionTables;
+}
+
+template <typename Integer>
+const vector<vector<Matrix<Integer> > >& Cone<Integer>::getInductionMatrices(){
+    compute(ConeProperty::InductionMatrices);
+    return InductionMatrices;
 }
 
 // Nonsimple fusion rings cannot be computed separately
@@ -4743,6 +4751,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     try_approximation_or_projection(ToCompute);
 
     make_fusion_data(ToCompute);
+    make_induction_matrices(ToCompute);
 
     ToCompute.reset(is_Computed);
     if (ToCompute.goals().none()) {
@@ -6553,6 +6562,9 @@ void Cone<Integer>::setNumericalParams(const map<NumParam::Param, long>& num_par
     np = num_params.find(NumParam::modular_grading);
     if (np != num_params.end())
         setModularGraing(np->second);
+    np = num_params.find(NumParam::chosen_fusion_ring);
+    if (np != num_params.end())
+        setChosenFusionRing(np->second);
 }
 
 template <typename Integer>
@@ -6651,6 +6663,11 @@ void Cone<Integer>::setModularGraing(long mod_gr) {
     SimpleFusionRings.resize(0);
     NonsimpleFusionRings.resize(0);
     SingleFusionRing.resize(0);
+}
+
+template <typename Integer>
+void Cone<Integer>::setChosenFusionRing(long fus_r) {
+    chosen_fusion_ring = fus_r;
 }
 
 template <typename Integer>
@@ -7118,6 +7135,7 @@ void Cone<Integer>::make_fusion_data(ConeProperties& ToCompute){
     // we make the FusionData here only if in library mode
     // if normaliz is run, write_fusion_mult_tables_from_input = true
     // and we make the tables in output
+    // Reason: HPC
     if(write_fusion_mult_tables_from_input){
         setComputed(ConeProperty::FusionData);
         return;
@@ -7127,6 +7145,42 @@ void Cone<Integer>::make_fusion_data(ConeProperties& ToCompute){
     our_fusion.tables_for_all_rings(ModuleGenerators);
     swap(FusionTables, our_fusion.AllTables);
     setComputed(ConeProperty::FusionData);
+}
+
+//---------------------------------------------------------------------------
+template <typename Integer>
+void Cone<Integer>::make_induction_matrices(ConeProperties& ToCompute){
+
+    if(!ToCompute.test(ConeProperty::InductionMatrices) || isComputed(ConeProperty::InductionMatrices))
+        return;
+
+    Matrix<Integer> ChosenFusionRings(0,ModuleGenerators.nr_of_columns());
+
+    if(chosen_fusion_ring > 0){
+        if(chosen_fusion_ring > ModuleGenerators.nr_of_rows())
+            throw BadInputException("Chosen fusion ring index too large");
+        ChosenFusionRings.append(ModuleGenerators[chosen_fusion_ring -1]);
+    }
+    else
+        ChosenFusionRings = ModuleGenerators;
+
+    vector<key_t> our_dual = FusionBasicCone.duality;
+    vector<Integer> our_type(our_dual.size());
+    string our_type_string = FusionBasicCone.fusion_type_string;
+    istringstream type_stram(our_type_string);
+    for(size_t i = 0; i < our_dual.size(); ++i){
+        type_stram >> our_type[i];
+    }
+
+    for(size_t i = 0; i < ChosenFusionRings.nr_of_rows(); ++i){
+
+        Induction<Integer> Indu(our_type, our_dual, ChosenFusionRings[i], verbose);
+        Indu.start_low_parts();
+        Indu.from_low_to_full();
+        InductionMatrices.push_back(Indu.InductionMatrices);
+    }
+
+    setComputed(ConeProperty::InductionMatrices);
 }
 
 //---------------------------------------------------------------------------

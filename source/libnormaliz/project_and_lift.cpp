@@ -3926,7 +3926,7 @@ void project_and_lift(Cone<Integer>&  C, const ConeProperties& ToCompute,
         C.make_Hilbert_series_from_pos_and_neg(h_vec_pos, h_vec_neg);
     }
 
-    if (verbose)
+    if(C.getVerbose())
         verboseOutput() << "Project-and-lift complete" << endl
                         << "------------------------------------------------------------" << endl;
 }

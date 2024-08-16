@@ -213,6 +213,7 @@ enum Enum {
     //
     ModularGradings,
     FusionData,
+    InductionMatrices,
     END_ENUM_RANGE(LAST_COMPLEX_STRUCTURE),
 
     //

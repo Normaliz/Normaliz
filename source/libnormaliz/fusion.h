@@ -227,6 +227,9 @@ vector<vector<shortkey_t> > collect_coincidence_subset_keys(const vector<key_t>&
 vector<vector<shortkey_t> > make_all_permutations(const vector<key_t>& v, const vector<key_t>& duality);
 vector<vector<shortkey_t> > make_all_permutations(const vector<key_t>& type, const vector<key_t>& duality);
 
+template <typename Integer>
+void write_vec_vec_Mat(vector<vector<Matrix<Integer> > > AllTables, ostream& table_out);
+
 // void remove_global_fusion_data();
 
 // void post_process_fusion(const vector<string>& command_line_items);

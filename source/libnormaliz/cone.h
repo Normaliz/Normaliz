@@ -318,6 +318,7 @@ class Cone {
     void setGBDegreeBound(const long degree_bound);
     void setGBMinDegree(const long min_degree);
     void setModularGraing(long mod_gr);
+    void setChosenFusionRing(long fus_r);
 
     void setProjectName(const string& my_project);
     string getProjectName() const;
@@ -426,6 +427,7 @@ class Cone {
     size_t getNrNonsimpleFusionRings();
 
     const vector<vector<Matrix<Integer> > >& getFusionDataMatrix();
+    const vector<vector<Matrix<Integer> > >& getInductionMatrices();
 
     const FusionBasic& getFusionBasicCone();
 
@@ -712,6 +714,7 @@ class Cone {
     Matrix<Integer> SimpleFusionRings;
     Matrix<Integer> NonsimpleFusionRings;
     vector<vector<Matrix<Integer> > > FusionTables; // to avoid the name FusionData
+    vector<vector<Matrix<Integer> > > InductionMatrices;
     vector<Integer> fusion_type_input;
 
     HilbertSeries HSeries;
@@ -804,6 +807,7 @@ class Cone {
     long gb_degree_bound;
     long gb_min_degree;
     long modular_grading;
+    long chosen_fusion_ring;
 
     // if this is true we allow to change to a smaller integer type in the computation
     bool change_integer_type;
@@ -868,6 +872,7 @@ class Cone {
     void try_symmetrization(ConeProperties& ToCompute);
     void try_approximation_or_projection(ConeProperties& ToCompute);
     void make_fusion_data(ConeProperties& ToCompute);
+    void make_induction_matrices(ConeProperties& ToCompute);
 
     void try_Hilbert_Series_from_lattice_points(const ConeProperties& ToCompute);
 

@@ -327,6 +327,7 @@ void ConeProperties::check_fusion_ring_props() const{
     copy.reset(ConeProperty::SimpleFusionRings);
     copy.reset(ConeProperty::SingleFusionRing);
     copy.reset(ConeProperty::FusionData);
+    copy.reset(ConeProperty::InductionMatrices);
     copy.reset(ConeProperty::LatticePoints);
     copy.reset(ConeProperty::SingleLatticePointInternal);
     copy.reset(ConeProperty::SingleLatticePoint);
@@ -420,7 +421,7 @@ void ConeProperties::set_fusion_default(const bool has_subring) {
 
     if(CPs.test(ConeProperty::LatticePoints) || CPs.test(ConeProperty::FusionRings)
         || CPs.test(ConeProperty::SimpleFusionRings) || CPs.test(ConeProperty::NonsimpleFusionRings)
-         || CPs.test(ConeProperty::FusionData) || CPs.test(ConeProperty::SingleFusionRing) )
+         || CPs.test(ConeProperty::FusionData) || CPs.test(ConeProperty::SingleFusionRing) || CPs.test(ConeProperty::InductionMatrices) )
         return;
     if(CPs.test(ConeProperty::DefaultMode)){
         if(has_subring)
@@ -450,6 +451,10 @@ void ConeProperties::set_preconditions(bool inhomogeneous, bool numberfield) {
     }
 
     if(CPs.test(ConeProperty::SingleFusionRing)){
+        CPs.set(ConeProperty::FusionRings);
+    }
+
+    if(CPs.test(ConeProperty::InductionMatrices) && !CPs.test(ConeProperty::SimpleFusionRings)){
         CPs.set(ConeProperty::FusionRings);
     }
 
@@ -798,6 +803,7 @@ void ConeProperties::check_compatibility_with_polynomial_constraints(bool inhomo
     wanted.reset(ConeProperty::FusionRings);
     wanted.reset(ConeProperty::SimpleFusionRings);
     wanted.reset(ConeProperty::FusionData);
+    wanted.reset(ConeProperty::InductionMatrices);
     wanted.reset(ConeProperty::NonsimpleFusionRings);
     wanted.reset(ConeProperty::SingleFusionRing);
     wanted.reset(ConeProperty::ModularGradings);
@@ -1204,10 +1210,11 @@ vector<string> initializeCPN() {
     CPN.at(ConeProperty::NonsimpleFusionRings) = "NonsimpleFusionRings";
     CPN.at(ConeProperty::SingleFusionRing) = "SingleFusionRing";
     CPN.at(ConeProperty::FusionData) = "FusionData";
+    CPN.at(ConeProperty::InductionMatrices) = "InductionMatrices";
     CPN.at(ConeProperty::UseModularGrading) = "UseModularGrading";
 
     // detect changes in size of Enum, to remember to update CPN!
-    static_assert(ConeProperty::EnumSize == 165,"ConeProperties Enum size does not fit! Update cone_property.cpp!");
+    static_assert(ConeProperty::EnumSize == 166,"ConeProperties Enum size does not fit! Update cone_property.cpp!");
     // assert all fields contain an non-empty string
     for (size_t i = 0; i < ConeProperty::EnumSize; i++) {
         // bstd::cout << "iii " << i << "  " << CPN.at(i) << endl;

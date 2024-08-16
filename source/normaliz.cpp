@@ -252,8 +252,9 @@ int main(int argc, char* argv[]){
     Indu.from_low_to_full();
 
     exit(0);
-
     */
+
+
 
     /*Matrix<long long> FFT(1,4);
     FFT[0] = {1,1,2,2};

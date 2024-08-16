@@ -154,6 +154,7 @@ enum Param {
     gb_degree_bound,
     gb_min_degree,
     modular_grading,
+    chosen_fusion_ring,
     not_a_num_param
 };
 }  // end namespace NumParam
@@ -424,6 +425,8 @@ inline NumParam::Param to_numpar(const string& type_string) {
         return NumParam::gb_min_degree;
     if (type_string == "modular_grading")
         return NumParam::modular_grading;
+    if (type_string == "chosen_fusion_ring")
+        return NumParam::chosen_fusion_ring;
 
     return NumParam::not_a_num_param;
 }
@@ -449,6 +452,8 @@ inline string numpar_to_string(const NumParam::Param& numpar) {
         return "gb_min_degree";
     if (numpar == NumParam::modular_grading)
         return "modular_grading";
+    if (numpar == NumParam::chosen_fusion_ring)
+        return "chosen_fusion_ring";
     if (numpar == NumParam::not_a_num_param)
         return "not_a_num_param";
     assert(false);

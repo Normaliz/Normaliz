@@ -1710,12 +1710,10 @@ void FusionComp<Integer>::tables_for_all_rings(const Matrix<Integer>& rings){
 }
 
 template <typename Integer>
-void FusionComp<Integer>::write_all_data_tables(const Matrix<Integer>& rings, ostream& table_out){
-
-    tables_for_all_rings(rings);
+void write_vec_vec_Mat(vector<vector<Matrix<Integer> > > AllTables, ostream& table_out){
 
     table_out << "[" << endl;
-    for(size_t kk = 0; kk < rings.nr_of_rows(); kk++){
+    for(size_t kk = 0; kk < AllTables.size(); kk++){
         table_out << "  [" << endl;
         vector<Matrix<Integer> > Tables = AllTables[kk]; // for a fixed ring
         for(size_t nn = 0; nn < Tables.size(); ++nn){
@@ -1725,7 +1723,7 @@ void FusionComp<Integer>::write_all_data_tables(const Matrix<Integer>& rings, os
                 table_out << "      [";
                 for(size_t mm = 0; mm < table.nr_of_columns(); ++mm){
                     table_out << table[jj][mm];
-                    if(mm < table.nr_of_rows() - 1)
+                    if(mm < table.nr_of_columns() - 1)
                         table_out << ",";
                     else{
                         if(jj < table.nr_of_rows() -1)
@@ -1740,12 +1738,21 @@ void FusionComp<Integer>::write_all_data_tables(const Matrix<Integer>& rings, os
             else
                 table_out << "    ]," << endl;
         }
-        if(kk == rings.nr_of_rows() -1)
+        if(kk == AllTables.size() -1)
             table_out << "  ]" << endl;
         else
             table_out << "  ]," << endl;
     }
     table_out << "]" << endl;
+
+
+}
+
+template <typename Integer>
+void FusionComp<Integer>::write_all_data_tables(const Matrix<Integer>& rings, ostream& table_out){
+
+    tables_for_all_rings(rings);
+    write_vec_vec_Mat(AllTables, table_out);
 }
 
 /*
@@ -2193,6 +2200,14 @@ template void make_full_input_partition(InputMap<mpz_class>& input_data);
 #ifdef ENFNORMALIZ
 template void make_full_input_partition(InputMap<renf_elem_class>& input_data);
 #endif
+
+template void write_vec_vec_Mat(vector<vector<Matrix<long> > > AllTables, ostream& table_out);
+template void write_vec_vec_Mat(vector<vector<Matrix<long long> > > AllTables, ostream& table_out);
+template void write_vec_vec_Mat(vector<vector<Matrix<mpz_class> > > AllTables, ostream& table_out);
+#ifdef ENFNORMALIZ
+template void write_vec_vec_Mat(vector<vector<Matrix<renf_elem_class> > > AllTables, ostream& table_out);
+#endif
+
 
 template vector<vector<dynamic_bitset> > make_FPdim_partitions(const vector<long>& d, const long& part_FPdim, const size_t& group_order, vector<dynamic_bitset>& AllSubsets);
 template vector<vector<dynamic_bitset> > make_FPdim_partitions(const vector<long long>& d, const long long& part_FPdim, const size_t& group_order, vector<dynamic_bitset>& AllSubsets);
