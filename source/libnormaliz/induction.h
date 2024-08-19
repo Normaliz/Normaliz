@@ -67,7 +67,7 @@ public:
 
     vector<Matrix<Integer> > InductionMatrices;
     vector<Matrix<Integer> > LowParts;
-    vector<Matrix<Integer> > LowPartsBounds;
+    // vector<Matrix<Integer> > LowPartsBounds;
 
 
     Integer N(const key_t i, const key_t j, const key_t k);

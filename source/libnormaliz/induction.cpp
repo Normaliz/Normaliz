@@ -130,6 +130,8 @@ Induction<Integer>::Induction(const vector<Integer>& fus_type, const vector<key_
     HighRepresentations.resize(0, fusion_rank);
 
     for(auto& t: divisors){
+        if(t == FPdim)
+            continue;
         LowRepresentations[t].resize(0, fusion_rank);
         Matrix<Integer> InhomEqu(1,fusion_rank +1);
         for(size_t i = 0; i < fusion_rank; ++i)
@@ -203,7 +205,7 @@ template<typename Integer>
 void Induction<Integer>::start_low_parts(){
 
     if(verbose)
-        verboseOutput() << "Computing low parts (rows 1,...,r)" << endl;
+        verboseOutput() << "Computing low parts (rows 1,...,r before sorting)" << endl;
 
     vector<Integer> EV;
     for(size_t i = 0; i < divisors.size(); ++i){
@@ -219,20 +221,22 @@ void Induction<Integer>::start_low_parts(){
     build_low_matrices(matrix_so_far, bounds_so_far);
 
     vector<Matrix<Integer> >  OrderedLowParts;
-
     for(auto& M: LowParts){
         /* for(size_t i = 0; i < fusion_rank; ++i)
             cout << v_scalar_product(M[i], fusion_type) << " ";
         cout << endl;*/
+        // M.debug_print('C');
         bool ordered = true;
         for(size_t i = 0; i < M.nr_of_rows() - 1; ++i){
             if(low_m[i] == low_m[i+1]){
                 if(M[i] > M[i+1]){
+                    // cout << "ord " << i << " " << low_m[i] << " " << low_m[i+1] << endl;
                     ordered = false;
                     // break;
                 }
             }
         }
+        // cout << "OOOOOOO " << ordered << endl;
         if(ordered)
             OrderedLowParts.push_back(M);
     }
@@ -243,10 +247,11 @@ void Induction<Integer>::start_low_parts(){
     if(verbose)
         verboseOutput() << "Fpound " << LowParts.size() << " low parts"  << endl;
 
-    /*for(auto& M: LowParts)
-        M.debug_print('P');
-    for(auto& M: LowPartsBounds)
+    /* for(auto& M: LowParts)
+        M.debug_print('P'); */
+    /* for(auto& M: LowPartsBounds)
         M.debug_print('&'); */
+
 }
 
 
@@ -283,7 +288,6 @@ void Induction<Integer>::build_low_matrices(Matrix<Integer> matrix_so_far, Matri
 
         if(NewMatrix.nr_of_rows() == fusion_rank){
             LowParts.push_back(NewMatrix);
-            LowPartsBounds.push_back(check_bounds);
             continue;
         }
 
@@ -305,13 +309,21 @@ void Induction<Integer>::from_low_to_full(){
     Integer MinusOne = -1;
 
     for(size_t iii = 0; iii < LowParts.size(); ++iii){
-        Matrix<Integer> MinusLowBound = LowPartsBounds[iii];
+        // LowParts[iii].debug_print('#');
+        // LowPartsBounds[iii].debug_print('B');
 
+        Matrix<Integer> MinusLowBound(fusion_rank, fusion_rank);
+        for(size_t i = 0; i< fusion_rank; ++i){
+            vector<Integer>& cand_extension = LowParts[iii][i];
+            for(size_t j = 0; j < fusion_rank; ++j){
+                for(size_t k = j; k < fusion_rank; ++k){
+                    MinusLowBound[j][k] +=  cand_extension[j] * cand_extension[k];
+                }
+            }
+        }
         MinusLowBound.scalar_multiplication(MinusOne);
 
         // Bounds.debug_print();
-
-        // LowPartsBounds[iii].debug_print('L');
 
         Matrix<Integer> Remaining = Bounds.add(MinusLowBound);
 
@@ -338,6 +350,7 @@ void Induction<Integer>::from_low_to_full(){
             Integer m_new = v_scalar_product(HighRepresentations[i], fusion_type);
             this_equ.push_back(m_new * m_new);
         }
+        // cout << "FFFFFF " << FPdim_so_far << " " << -FPSquare << " " << (-FPSquare + FPdim_so_far) <<  endl;
         this_equ.push_back(-FPSquare + FPdim_so_far);
         InhomEqu.append(this_equ);
 
@@ -365,9 +378,21 @@ void Induction<Integer>::from_low_to_full(){
         }
     }
 
-    cout << InductionMatrices.size() << " induction matrices found" << endl;
+    set<vector<vector<Integer> > > EquivHelp;
+    vector<Matrix<Integer> > Representatives;
+    for(auto& M: InductionMatrices){
+
+        vector<vector<Integer> >  N = M.get_elements();
+        sort(N.begin(), N. end());
+        if(EquivHelp.find(N) == EquivHelp.end()){
+            Representatives.push_back(M);
+           EquivHelp.insert(N);
+        }
+    }
+    swap(InductionMatrices, Representatives);
 
     for(auto& M: InductionMatrices){
+        //we rteorder the rows by increasing m_i
 
         map<Integer, vector<vector<Integer> > > SortHelp;
         for(size_t i = 0; i < M.nr_of_rows(); ++i){
@@ -382,29 +407,13 @@ void Induction<Integer>::from_low_to_full(){
         }
     }
 
+    if(verbose)
+        verboseOutput() << InductionMatrices.size() << " induction matrices found" << endl;
     for(auto& M: InductionMatrices)
         M.debug_print('$');
-
-    /*
-    Integer FPdim_so_far =0;
-    for(size_t j = 0; j < fusion_rank; ++j)
-        FPdim_so_far += low_m[j] * low_m[j];
-
-    for(size_t i = 0; i < LowParts.size(); ++i){
-
-        extend_matrix(LowParts[i], 0, LowPartsBounds[i], FPdim_so_far);
-    }
-
-    cout << InductionMatrices.size() << " induction matrices found" << endl;
-
-    for(auto& M: InductionMatrices)
-        M.debug_print('$');
-
-    */
-
-
 }
 
+/* Not used anamore
 template<typename Integer>
 void Induction<Integer>::extend_matrix(Matrix<Integer> matrix_so_far, key_t rep_index,
                        Matrix<Integer> bounds_so_far, Integer FPdim_so_far){
@@ -446,7 +455,7 @@ void Induction<Integer>::extend_matrix(Matrix<Integer> matrix_so_far, key_t rep_
 
     }
 }
-
+*/
 
 template class Induction<mpz_class>;
 template class Induction<long long>;

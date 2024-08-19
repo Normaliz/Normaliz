@@ -323,6 +323,7 @@ void ConeProperties::check_lattice_ideal_goals() const{
 
 void ConeProperties::check_fusion_ring_props() const{
     ConeProperties copy(*this);
+    copy.reset(ConeProperty::BigInt);
     copy.reset(ConeProperty::FusionRings);
     copy.reset(ConeProperty::SimpleFusionRings);
     copy.reset(ConeProperty::SingleFusionRing);
