@@ -43,6 +43,8 @@ public:
 
     bool verbose;
 
+    bool mult_of_ev_ok;
+
     Matrix<Integer> F;
 
     size_t fusion_rank;
@@ -83,7 +85,9 @@ public:
     void build_low_matrices(Matrix<Integer> matrix_so_far, Matrix<Integer> bounds_so_far);
     void from_low_to_full();
 
-    void extend_matrix(Matrix<Integer> matrix_so_far, key_t rep_index, Matrix<Integer> bounds_so_far, Integer FPdim_so_far);
+    void compute();
+
+    //void extend_matrix(Matrix<Integer> matrix_so_far, key_t rep_index, Matrix<Integer> bounds_so_far, Integer FPdim_so_far);
 
 }; // class Induction end
 

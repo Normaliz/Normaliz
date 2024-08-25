@@ -46,6 +46,8 @@ Induction<Integer>::Induction(const vector<Integer>& fus_type, const vector<key_
     if(verbose)
         verboseOutput() << "Preparing induction matrices" << endl;
 
+    mult_of_ev_ok = true;
+
     FusBasic = FusionBasic();
     FusBasic.fusion_rank = fus_type.size();
     fusion_rank = FusBasic.fusion_rank;
@@ -107,8 +109,11 @@ Induction<Integer>::Induction(const vector<Integer>& fus_type, const vector<key_
         sum_mult += MultEV[i];
     }
 
-    if(sum_mult < fusion_rank)
-        throw BadInputException("Sum of multiplicities of eigenvalues dividing FPdim < fusion_rank");
+    if(sum_mult < fusion_rank){
+        if(verbose)
+            verboseOutput() << "Sum of multiplicities of eigenvalues dividing FPdim < fusion_rank" << endl;
+        mult_of_ev_ok = false;
+    }
 
    Bounds.resize(fusion_rank, fusion_rank);
 
@@ -125,11 +130,14 @@ Induction<Integer>::Induction(const vector<Integer>& fus_type, const vector<key_
     // Bounds.debug_print('&');
 
     if(verbose)
-        verboseOutput() << "Computing reporesentations of divisors of FPdim i8n terms of type" << endl;
+        verboseOutput() << "Computing reporesentations of divisors of FPdim in terms of type" << endl;
 
     HighRepresentations.resize(0, fusion_rank);
 
     for(auto& t: divisors){
+
+        INTERRUPT_COMPUTATION_BY_EXCEPTION
+
         if(t == FPdim)
             continue;
         LowRepresentations[t].resize(0, fusion_rank);
@@ -204,6 +212,9 @@ Integer Induction<Integer>::N(const key_t i, const key_t j, const key_t k){
 template<typename Integer>
 void Induction<Integer>::start_low_parts(){
 
+    if(!mult_of_ev_ok)
+        return;
+
     if(verbose)
         verboseOutput() << "Computing low parts (rows 1,...,r before sorting)" << endl;
 
@@ -263,6 +274,8 @@ void Induction<Integer>::build_low_matrices(Matrix<Integer> matrix_so_far, Matri
     Integer m_step = low_m[step];
     for(size_t i = 0; i < LowRepresentations[m_step].nr_of_rows(); ++i){
 
+        INTERRUPT_COMPUTATION_BY_EXCEPTION
+
         Matrix<Integer> NewMatrix = matrix_so_far;
 
         vector<Integer> cand_extension = LowRepresentations[m_step][i];
@@ -298,6 +311,10 @@ void Induction<Integer>::build_low_matrices(Matrix<Integer> matrix_so_far, Matri
 template<typename Integer>
 void Induction<Integer>::from_low_to_full(){
 
+
+    if(!mult_of_ev_ok)
+        return;
+
     if(verbose)
         verboseOutput() << "Extending low parts to full induction matrices" << endl;
 
@@ -309,6 +326,9 @@ void Induction<Integer>::from_low_to_full(){
     Integer MinusOne = -1;
 
     for(size_t iii = 0; iii < LowParts.size(); ++iii){
+
+        INTERRUPT_COMPUTATION_BY_EXCEPTION
+
         // LowParts[iii].debug_print('#');
         // LowPartsBounds[iii].debug_print('B');
 
@@ -356,8 +376,14 @@ void Induction<Integer>::from_low_to_full(){
 
         // InhomEqu.debug_print('&');
 
+        // we use inequalitiesqualities to avoid coordinate transformation
+        Matrix<Integer> Copy = InhomEqu;
+        Integer MinusOne = -1;
+        Copy.scalar_multiplication(MinusOne);
+        InhomEqu.append(Copy);
+
         Matrix<Integer> Unit(HighRepresentations.nr_of_rows());
-        Cone<Integer> C(Type::inhom_equations, InhomEqu, Type::inequalities, Unit);
+        Cone<Integer> C(Type::inhom_inequalities, InhomEqu, Type::inequalities, Unit);
         C.setVerbose(false);
         C.compute(ConeProperty::HilbertBasis, ConeProperty::Projection);
         Matrix<Integer> LP = C.getLatticePointsMatrix();
@@ -411,6 +437,16 @@ void Induction<Integer>::from_low_to_full(){
         verboseOutput() << InductionMatrices.size() << " induction matrices found" << endl;
     for(auto& M: InductionMatrices)
         M.debug_print('$');
+}
+
+
+template<typename Integer>
+void Induction<Integer>::compute(){
+
+    if(!mult_of_ev_ok)
+        return;
+    start_low_parts();
+    from_low_to_full();
 }
 
 /* Not used anamore

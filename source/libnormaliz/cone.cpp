@@ -7171,13 +7171,43 @@ void Cone<Integer>::make_induction_matrices(ConeProperties& ToCompute){
     for(size_t i = 0; i < our_dual.size(); ++i){
         type_stram >> our_type[i];
     }
+    InductionMatrices.resize(ChosenFusionRings.nr_of_rows());
 
-    for(size_t i = 0; i < ChosenFusionRings.nr_of_rows(); ++i){
+    if(change_integer_type){
+        try{
+            vector<MachineInteger> our_type_MI;
+            convert(our_type_MI, our_type);
 
-        Induction<Integer> Indu(our_type, our_dual, ChosenFusionRings[i], verbose);
-        Indu.start_low_parts();
-        Indu.from_low_to_full();
-        InductionMatrices.push_back(Indu.InductionMatrices);
+            for(size_t i = 0; i < ChosenFusionRings.nr_of_rows(); ++i){
+
+                vector<MachineInteger> Chosen_FR_MI;
+                convert(Chosen_FR_MI, ChosenFusionRings[i]);
+
+                Induction<MachineInteger> Indu(our_type_MI, our_dual, Chosen_FR_MI, verbose);
+                Indu.compute();
+
+                Matrix<Integer> Transfer;
+                for(auto& M: Indu.InductionMatrices){
+                    convert(Transfer, M);
+                    InductionMatrices[i].push_back(Transfer);
+                }
+            }
+        } catch (const ArithmeticException& e) {
+            if (verbose) {
+                verboseOutput() << e.what() << endl;
+                verboseOutput() << "Restarting with a bigger type." << endl;
+            }
+            change_integer_type = false;
+        }
+    }
+
+    if(!change_integer_type){
+
+        for(size_t i = 0; i < ChosenFusionRings.nr_of_rows(); ++i){
+            Induction<Integer> Indu(our_type, our_dual, ChosenFusionRings[i], verbose);
+            Indu.compute();
+            InductionMatrices[i] = Indu.InductionMatrices;
+        }
     }
 
     setComputed(ConeProperty::InductionMatrices);

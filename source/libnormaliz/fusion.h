@@ -412,7 +412,7 @@ void FusionBasic::make_gradings(const vector<Integer>& d){
     if(group_order == 3){
         group_type = "C3";
         if(duality[1] != 2)
-            throw BadInputException("Group for modular grading has wrong guality");
+            throw BadInputException("Group " + group_type + " has wrong duality");
     }
     if(group_order == 4){
         if(duality[1] == 1 && duality[2] == 2)
