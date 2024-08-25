@@ -435,6 +435,16 @@ void Induction<Integer>::from_low_to_full(){
 
     if(verbose)
         verboseOutput() << InductionMatrices.size() << " induction matrices found" << endl;
+
+    vector<Matrix<Integer> > InductionMatWithType;
+    for(auto& M: InductionMatrices){
+        InductionMatWithType.push_back(M);
+        vector<Integer> type = M.MxV(fusion_type);
+        InductionMatWithType.push_back(Matrix<Integer>(type));
+    }
+
+    swap(InductionMatrices, InductionMatWithType);
+
     for(auto& M: InductionMatrices)
         M.debug_print('$');
 }

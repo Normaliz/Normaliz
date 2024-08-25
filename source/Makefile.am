@@ -61,6 +61,7 @@ libnormaliz_la_SOURCES = \
   libnormaliz/fusion.cpp \
   libnormaliz/general.cpp \
   libnormaliz/HilbertSeries.cpp \
+  libnormaliz/induction.cpp \
   libnormaliz/input.cpp \
   libnormaliz/lattice_ideal.cpp \
   libnormaliz/matrix.cpp \
@@ -87,6 +88,7 @@ noinst_HEADERS = \
   libnormaliz/cone_dual_mode.h \
   libnormaliz/face_lattice.h \
   libnormaliz/full_cone.h \
+  libnormaliz/induction.h \
   libnormaliz/lattice_ideal.h \
   libnormaliz/nmz_hash.h \
   libnormaliz/offload_handler.h \
