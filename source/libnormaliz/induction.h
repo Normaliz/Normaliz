@@ -52,7 +52,7 @@ public:
     string fusion_type_string;
     vector<key_t> duality;
 
-    vector<Integer> FusRing;
+    vector<Integer> ImageRing;
 
     Integer FPdim;
     Integer FPSquare;

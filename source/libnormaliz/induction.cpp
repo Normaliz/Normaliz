@@ -47,6 +47,8 @@ Induction<Integer>::Induction(const vector<Integer>& fus_type, const vector<key_
         verboseOutput() << "Preparing induction matrices" << endl;
 
     mult_of_ev_ok = true;
+    
+    ImageRing = FusRing;
 
     FusBasic = FusionBasic();
     FusBasic.fusion_rank = fus_type.size();
@@ -437,6 +439,8 @@ void Induction<Integer>::from_low_to_full(){
         verboseOutput() << InductionMatrices.size() << " induction matrices found" << endl;
 
     vector<Matrix<Integer> > InductionMatWithType;
+    // cout << "FFFFFFFFFFF " << ImageRing;
+    InductionMatWithType.push_back(ImageRing);
     for(auto& M: InductionMatrices){
         InductionMatWithType.push_back(M);
         vector<Integer> type = M.MxV(fusion_type);
