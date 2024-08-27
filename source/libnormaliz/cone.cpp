@@ -7191,6 +7191,8 @@ void Cone<Integer>::make_induction_matrices(ConeProperties& ToCompute){
                     convert(Transfer, M);
                     InductionMatrices[i].push_back(Transfer);
                 }
+                // Transfer  = Matrix<Integer>(ChosenFusionRings[i]);
+                // InductionMatrices[i].push_back(Transfer);
             }
         } catch (const ArithmeticException& e) {
             if (verbose) {
@@ -7207,6 +7209,7 @@ void Cone<Integer>::make_induction_matrices(ConeProperties& ToCompute){
             Induction<Integer> Indu(our_type, our_dual, ChosenFusionRings[i], verbose);
             Indu.compute();
             InductionMatrices[i] = Indu.InductionMatrices;
+            // InductionMatrices[i].push_back(ChosenFusionRings[i]);
         }
     }
 
