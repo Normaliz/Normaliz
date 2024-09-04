@@ -619,6 +619,10 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
             RestrictablePolyInequsKey.push_back(i);
         }
 
+        /* Matrix<IntegerRet> ExtraEquations = reconstruct_equations(ExtraInequalities);
+
+        ExtraEquations.debug_print('E');*/
+
         for(size_t i = 0; i < ExtraInequalities.nr_of_rows(); ++i){
             AllPolyInequs[coord].push_back(OurPolynomial<IntegerRet>(ExtraInequalities[i]));
         }

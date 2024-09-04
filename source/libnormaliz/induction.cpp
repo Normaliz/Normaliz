@@ -47,7 +47,7 @@ Induction<Integer>::Induction(const vector<Integer>& fus_type, const vector<key_
         verboseOutput() << "Preparing induction matrices" << endl;
 
     mult_of_ev_ok = true;
-    
+
     ImageRing = FusRing;
 
     FusBasic = FusionBasic();
@@ -310,6 +310,38 @@ void Induction<Integer>::build_low_matrices(Matrix<Integer> matrix_so_far, Matri
     }
 }
 
+
+template<typename Integer>
+Matrix<Integer> Induction<Integer>::make_allowed_transpositions(Matrix<Integer> FusionMap){
+
+    vector<Integer> type = FusionMap.MxV(fusion_type);
+
+    Matrix<Integer> AllowedTranspositions(0,2);
+
+    size_t rank_ZR = FusionMap.nr_of_rows();
+    for(long i = 1; i < rank_ZR; ++i){
+        for(long j = i; j < rank_ZR; ++j){
+            if(type[i] != type[j])
+                continue;
+            bool allowed =true;
+            for(long k = 0; k < fusion_rank; ++k){
+                if(FusionMap[i][duality[k]] != FusionMap[j][k]){
+                    allowed = false;
+                    break;
+                }
+            }
+            if(allowed){
+                vector<long> Help = {i,j};
+                vector<Integer> HelpInt;
+                convert(HelpInt, Help);
+                AllowedTranspositions.append(HelpInt);
+            }
+
+        }
+    }
+    return AllowedTranspositions;
+}
+
 template<typename Integer>
 void Induction<Integer>::from_low_to_full(){
 
@@ -445,12 +477,14 @@ void Induction<Integer>::from_low_to_full(){
         InductionMatWithType.push_back(M);
         vector<Integer> type = M.MxV(fusion_type);
         InductionMatWithType.push_back(Matrix<Integer>(type));
+        Matrix<Integer> AllowedTranspositions = make_allowed_transpositions(M);
+        InductionMatWithType.push_back(AllowedTranspositions);
     }
 
     swap(InductionMatrices, InductionMatWithType);
 
-    for(auto& M: InductionMatrices)
-        M.debug_print('$');
+    /* for(auto& M: InductionMatrices)
+        M.debug_print('$');*/
 }
 
 

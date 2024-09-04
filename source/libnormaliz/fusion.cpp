@@ -85,16 +85,21 @@ vector<vector<shortkey_t> > make_all_permutations(const size_t n){
     return Perms[n-1];
 }
 
-vector<vector<shortkey_t> > make_all_permutations(const vector<shortkey_t>& v, const vector<key_t>& duality){
+template <typename Integer>
+vector<vector<shortkey_t> > make_all_permutations(const vector<shortkey_t>& v, const vector<key_t>& duality,
+                                                  const  Matrix<Integer>& fusion_ring_map){
 
-    vector<vector<shortkey_t> >Perms = make_all_permutations(v.size());
+    // the key contains the indices of a given FPdim (as indicated) in the coincidence pattern
+    // The permutaions permute the key.
+
+    vector<vector<shortkey_t> >Perms = make_all_permutations(v.size()); // prmutations of 0,...,v.size()-1
     vector<vector<shortkey_t> > KeyPerms;
-    vector<shortkey_t> v_inv(duality.size());
+    vector<shortkey_t> v_inv(duality.size()); // inv = inverse
     for(size_t i = 0; i < v.size(); ++i)
         v_inv[v[i]] = i;
     vector<shortkey_t> dual(v.size());
     for(size_t i = 0; i < v.size(); ++i)
-        dual [i] = v_inv[duality[v[i]]];
+        dual[i] = v_inv[duality[v[i]]];
     for(auto& w: Perms){
 
         INTERRUPT_COMPUTATION_BY_EXCEPTION
@@ -112,6 +117,17 @@ vector<vector<shortkey_t> > make_all_permutations(const vector<shortkey_t>& v, c
         vector<shortkey_t> w_new(v.size());
         for(size_t i = 0; i< w.size(); ++i)
             w_new[i] = v[w[i]];
+        // we must check whether the paermutation leaves the images in fusion_ring_map invariant
+        if(fusion_ring_map.nr_of_rows() > 0){
+            for(size_t i = 0; i < v.size(); ++i){
+                if(fusion_ring_map[v[i]] != fusion_ring_map[w_new[i]]){
+                    comp = false;
+                    break;
+                }
+            }
+            if(!comp)
+                continue;
+            }
         KeyPerms.push_back(w_new);
     }
     return KeyPerms;
@@ -170,7 +186,9 @@ vector<vector<shortkey_t> > super_impose(const vector<vector<shortkey_t> >& set_
 }
 */
 
-vector<vector<shortkey_t> > make_all_full_permutations(const vector<key_t>& type,const vector<key_t>& duality){
+template <typename Integer>
+vector<vector<shortkey_t> > make_all_full_permutations(const vector<key_t>& type,const vector<key_t>& duality,
+                                                  const  Matrix<Integer>& fusion_ring_map){
 
     auto type_1 = type;
     type_1[0] = 0; // to single out the unit
@@ -180,7 +198,7 @@ vector<vector<shortkey_t> > make_all_full_permutations(const vector<key_t>& type
 
     for(auto& co: coincidence_keys){
         vector<vector<shortkey_t> > ThisFullPerms;
-        auto Perms = make_all_permutations(co, duality);
+        auto Perms = make_all_permutations(co, duality, fusion_ring_map);
         vector<shortkey_t> FullPerm(type.size());
         for(auto& p: Perms){
             for(size_t i = 0; i< p.size(); ++i){
@@ -256,6 +274,16 @@ FusionBasic::FusionBasic(const FusionComp<Integer>& FC){
     subring_base_key = FC.subring_base_key;
     type_automs_made = FC.type_automs_made;
     type_automs = FC.type_automs;
+    if(FC.fusion_ring_map.nr_of_rows() > 0){
+        assert(!using_renf<Integer>());
+        convert(fusion_image_type, FC.fusion_image_type);
+        convert(fusion_image_ring, FC.fusion_image_ring);
+        convert(fusion_ring_map, FC.fusion_ring_map);
+        fusion_image_duality = FC.fusion_image_duality;
+        fusion_image_commutative = FC.fusion_image_commutative;
+        fusion_image_type_string = FC.fusion_image_type_string;
+    }
+
     //Automorphisms = FC.Automorphisms; // not needed at pressent
     //type_automs = F:type_automs;
     // automorphisms_mde = FC.automorphisms_mde;
@@ -323,7 +351,7 @@ void FusionBasic::make_type_automs(){
         return;
     if(libnormaliz::verbose)
         verboseOutput() << "Making type automorphisms" << endl;
-    type_automs = make_all_full_permutations(fusion_type,duality);
+    type_automs = make_all_full_permutations(fusion_type,duality, fusion_ring_map);
     if(verbose)
         verboseOutput() << type_automs.size() << " type automorphisms made" << endl;
     type_automs_made = true;
@@ -809,6 +837,15 @@ FusionComp<Integer>::FusionComp(const FusionBasic& basic){
     type_automs_made = basic.type_automs_made;
     // automorphisms_mde = basic.automorphisms_mde;
     chosen_modular_grading = basic.chosen_modular_grading;
+    if(basic.fusion_ring_map.nr_of_rows() > 0){
+        assert(!using_renf<Integer>());
+        convert(fusion_image_type, basic.fusion_image_type);
+        convert(fusion_image_ring, basic.fusion_image_ring);
+        convert(fusion_ring_map, basic.fusion_ring_map);
+        fusion_image_duality = basic.fusion_image_duality;
+        fusion_image_commutative = basic.fusion_image_commutative;
+        fusion_image_type_string = basic.fusion_image_type_string;
+    }
 }
 
 template <typename Integer>
@@ -843,7 +880,7 @@ void FusionComp<Integer>::make_automorphisms(){
     if(!type_automs_made){
         if(libnormaliz::verbose)
             verboseOutput() << "Making type automorphisms" << endl;
-        type_automs = make_all_full_permutations(fusion_type,duality);
+        type_automs = make_all_full_permutations(fusion_type,duality, fusion_ring_map);
         if(libnormaliz::verbose)
             verboseOutput() << type_automs.size() << " type automorphisms" << endl;
         type_automs_made =true;
@@ -1404,6 +1441,9 @@ Matrix<Integer> FusionComp<Integer>::make_linear_constraints(const vector<Intege
     for(key_t i = 1; i < fusion_rank; ++i){
         indices[0] = i;
         for(key_t j = 1; j < fusion_rank; ++j){
+
+            INTERRUPT_COMPUTATION_BY_EXCEPTION
+
             indices[1] = j;
             vector<Integer> this_equ(nr_coordinates + 1);
             this_equ.back() = - d[i]*d[j];
@@ -1430,6 +1470,95 @@ Matrix<Integer> FusionComp<Integer>::make_linear_constraints(const vector<Intege
 }
 
 template <typename Integer>
+Matrix<Integer> FusionComp<Integer>::make_homomorphism_constraints(){
+
+    if(libnormaliz::verbose)
+        verboseOutput() << "Making homomorphism constraints for map of fusion rings" << endl;
+
+    make_CoordMap();
+
+    size_t fusion_image_rank = fusion_image_type.size();
+
+    FusionBasic Image;
+    Image.fusion_type = fusion_image_type;
+    Image.duality = fusion_image_duality;
+    Image.fusion_rank = fusion_image_rank;
+    Image.commutative = commutative;
+
+    FusionComp<Integer> ImageComp(Image);
+    ImageComp.make_CoordMap();
+    auto Tables = ImageComp.make_all_data_tables(fusion_image_ring);
+
+    /* for(auto& M: Tables)
+        M.debug_print();
+    exit(0);*/
+
+    vector<vector<vector<Integer> > > RHS;
+    RHS.resize(fusion_rank);
+    for(auto& r: RHS){
+        r.resize(fusion_rank);
+        for(auto& s: r)
+            s.resize(fusion_image_rank);
+    }
+
+    for(size_t i = 0; i < fusion_rank; ++i){
+        for(size_t j = 0; j < fusion_rank; ++j){
+            for(size_t t = 0; t < fusion_image_rank; ++t){
+
+                INTERRUPT_COMPUTATION_BY_EXCEPTION
+
+                Integer S = 0;
+                for(size_t l = 0; l < fusion_image_rank; ++l){
+                    for(size_t s = 0; s < fusion_image_rank; ++s)
+                        S += fusion_ring_map[i][l] * fusion_ring_map[j][s] * Tables[l][s][t];
+                }
+                RHS[i][j][t] = S;
+            }
+        }
+    }
+
+    Matrix<Integer> Equ(0, nr_coordinates + 1); // mudst accomodate right hand side in last coordinate
+
+    vector<key_t> indices(3);
+
+    // the nneutral element is always mapped to the neutral element
+    // So we can start the loops at 1.
+    for(size_t i = 1; i < fusion_rank; ++i){
+        indices[0] = i;
+        for(size_t j = 1; j < fusion_rank; ++j){
+            indices[1] = j;
+            for(size_t t = 0; t < fusion_image_rank; ++t){
+
+                INTERRUPT_COMPUTATION_BY_EXCEPTION
+
+                vector<Integer> this_equ(nr_coordinates + 1);
+                this_equ.back() = - RHS[i][j][t];
+                for(size_t k = 0; k < fusion_rank; ++k){
+
+
+                    if(k==0){
+                        if( i == duality[j])
+                            this_equ.back() += fusion_ring_map[k][t];
+                    }
+                    else{
+                        indices[2] = k;
+                        this_equ[coord_cone(indices)] += fusion_ring_map[k][t];
+                    }
+                }
+                Equ.append(this_equ);
+            }
+        }
+    }
+    // Equ.debug_print();
+
+    Matrix<Integer> Help = Equ;
+    Integer MinusOne = -1;
+    Help.scalar_multiplication(MinusOne);
+    Equ.append(Help);
+    return Equ;
+}
+
+template <typename Integer>
 Matrix<Integer> FusionComp<Integer>::make_linear_constraints_partition(const vector<Integer>& d,
                                                                        const vector<long>& card){
     make_CoordMap();
@@ -1446,6 +1575,9 @@ Matrix<Integer> FusionComp<Integer>::make_linear_constraints_partition(const vec
     for(key_t i = 1; i < fusion_rank; ++i){
         indices[0] = i;
         for(key_t j = 1; j < fusion_rank; ++j){
+
+            INTERRUPT_COMPUTATION_BY_EXCEPTION
+
             indices[1] = j;
             vector<Integer> this_equ(nr_coordinates + 1);
             this_equ.back() = - d[i]*d[j]*card[i]*card[j];
@@ -1560,6 +1692,9 @@ set<map<vector<key_t>, Integer> > FusionComp<Integer>::make_associativity_constr
     for(key_t i = 1; i< fusion_rank; ++i){
         for(key_t j = 1; j < fusion_rank; ++j){
             for(key_t k = 1; k < fusion_rank; ++k){
+
+                INTERRUPT_COMPUTATION_BY_EXCEPTION
+
                 for(key_t t = 0; t < fusion_rank; ++t){
                     map<vector<key_t>, Integer> P;
                     for(key_t s = 0; s < fusion_rank; ++s){ // the poly is a sium over s
@@ -1603,7 +1738,6 @@ set<map<vector<key_t>, Integer> > FusionComp<Integer>::make_associativity_constr
 
     return Polys;
 }
-
 
 void FusionBasic::do_write_input_file(InputMap<mpq_class>&  input) const{
     string name = global_project + ".in";

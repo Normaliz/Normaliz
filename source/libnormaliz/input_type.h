@@ -94,6 +94,10 @@ enum InputType {
     fusion_duality,
     candidate_subring,
     fusion_type_for_partition,
+    fusion_ring_map,
+    fusion_image_type,
+    fusion_image_ring,
+    fusion_image_duality,
     //
     // precomputed data
     //
@@ -355,6 +359,18 @@ inline InputType to_type(const string& type_string) {
     if (type_string == "candidate_subring") {
         return Type::candidate_subring;
     }
+    if (type_string == "fusion_image_type") {
+        return Type::fusion_image_type;
+    }
+    if (type_string == "fusion_image_duality") {
+        return Type::fusion_image_duality;
+    }
+    if (type_string == "fusion_image_ring") {
+        return Type::fusion_image_ring;
+    }
+    if (type_string == "fusion_ring_map") {
+        return Type::fusion_ring_map;
+    }
 
     throw BadInputException("Unknown type \"" + type_string + "\"!");
     return Type::integral_closure;
@@ -378,7 +394,8 @@ inline bool type_is_vector(InputType type) {
         type == Type::offset || type == Type::open_facets || type == Type::projection_coordinates
         || type == Type::scale || type == Type::rational_offset || type == Type::gb_weight
          || type == Type::fusion_type || type == Type::fusion_duality || type == Type::fusion_type_for_partition
-        || type == Type::candidate_subring) {
+        || type == Type::candidate_subring || type == Type::fusion_image_duality || type == Type::fusion_image_ring
+        || type == Type::fusion_image_type) {
         return true;
     }
     return false;

@@ -33,6 +33,7 @@
 #include "libnormaliz/general.h"
 #include "libnormaliz/matrix.h"
 #include "libnormaliz/input_type.h"
+#include "libnormaliz/list_and_map_operations.h"
 
 namespace libnormaliz {
 using std::vector;
@@ -68,6 +69,13 @@ public:
     string group_type;
     vector<vector<int> > GradMultTable;
     vector<dynamic_bitset> chosen_modular_grading;
+
+    vector<key_t> fusion_image_type;
+    vector<key_t> fusion_image_duality;
+    string fusion_image_type_string;
+    vector<long> fusion_image_ring;
+    Matrix<long> fusion_ring_map;
+    bool fusion_image_commutative;
 
     vector<vector<shortkey_t> > type_automs; // permutations of the basis vectors
     bool type_automs_made;
@@ -132,6 +140,13 @@ public:
     vector<key_t> fusion_type; // only coincidence pattern
     string fusion_type_string;
     vector<key_t> duality;
+
+    vector<key_t> fusion_image_type;
+    vector<key_t> fusion_image_duality;
+    string fusion_image_type_string;
+    vector<Integer> fusion_image_ring;
+    Matrix<Integer> fusion_ring_map;
+    bool fusion_image_commutative;
 
     vector<dynamic_bitset> chosen_modular_grading;
     vector<vector<int> > GradMultTable;
@@ -201,6 +216,8 @@ public:
     void tables_for_all_rings(const Matrix<Integer>& rings);
     vector<Matrix<Integer> > make_all_data_tables(const vector<Integer>& ring);
     Matrix<Integer> data_table(const vector<Integer>& ring, const size_t i);
+
+    Matrix<Integer> make_homomorphism_constraints();
 };
 
 // helpers
@@ -224,8 +241,12 @@ void make_partition_input_from_fusion_data(const FusionBasic& FusionInput, Input
 vector<dynamic_bitset> make_all_subsets(const size_t card);
 vector<vector<shortkey_t> > make_all_permutations(size_t n);
 vector<vector<shortkey_t> > collect_coincidence_subset_keys(const vector<key_t>& type);
-vector<vector<shortkey_t> > make_all_permutations(const vector<key_t>& v, const vector<key_t>& duality);
-vector<vector<shortkey_t> > make_all_permutations(const vector<key_t>& type, const vector<key_t>& duality);
+template <typename Integer>
+vector<vector<shortkey_t> > make_all_permutations(const vector<key_t>& v, const vector<key_t>& duality,
+                                                  const  Matrix<Integer>& fusion_ring_map);
+template <typename Integer>
+vector<vector<shortkey_t> > make_all_permutations(const vector<key_t>& type, const vector<key_t>& duality,
+                                                  const  Matrix<Integer>& fusion_ring_map);
 
 template <typename Integer>
 void write_vec_vec_Mat(vector<vector<Matrix<Integer> > > AllTables, ostream& table_out);
@@ -233,6 +254,15 @@ void write_vec_vec_Mat(vector<vector<Matrix<Integer> > > AllTables, ostream& tab
 // void remove_global_fusion_data();
 
 // void post_process_fusion(const vector<string>& command_line_items);
+
+template <typename Integer>
+void string_to_type(vector<Integer>& our_type, const string& our_type_string){
+
+    istringstream type_stram(our_type_string);
+    for(size_t i = 0; i < our_type.size(); ++i){
+        type_stram >> our_type[i];
+    }
+}
 
 template <typename Integer>
 vector<key_t> fusion_coincidence_pattern(const vector<Integer>& v);
@@ -338,6 +368,56 @@ void FusionBasic::read_data_from_input(InputMap<Integer>& input_data){
     }
 
     type_and_duality_set = true;
+
+    bool has_fusion_image = false;
+    if(contains(input_data, Type::fusion_image_ring)) {
+        if(!contains(input_data, Type::fusion_image_type)
+            || !contains(input_data, Type::fusion_image_duality)
+            || !contains(input_data, Type::fusion_ring_map) )
+            throw BadInputException("Incomplete fusion umage data");
+        has_fusion_image = true;
+    }
+
+    if(!has_fusion_image)
+        return;
+
+
+    convert(fusion_image_ring,input_data[Type::fusion_image_ring][0]);
+    convert(fusion_ring_map, input_data[Type::fusion_ring_map]);
+
+    InputMap<Integer> Help;
+    Help[Type::fusion_type]= input_data[Type::fusion_image_type][0];
+    Help[Type::fusion_duality] = input_data[Type::fusion_image_duality][0];
+    FusionBasic HB;
+    HB.read_data_from_input(Help);
+    fusion_image_type = HB.fusion_type;
+    fusion_image_type_string = HB.fusion_type_string;
+    fusion_image_duality = HB.duality;
+    fusion_image_commutative = HB.commutative;
+
+    if(fusion_image_type.size() != fusion_ring_map.nr_of_columns()
+        || fusion_image_duality.size() != fusion_ring_map.nr_of_columns()
+        || fusion_type.size() != fusion_ring_map.nr_of_rows())
+        throw BadInputException("Formats of image data don't fit");
+
+    for(size_t i = 0; i < fusion_ring_map.nr_of_rows(); ++i){
+        for(size_t j =  0; j < fusion_ring_map.nr_of_columns(); ++j){
+            if(fusion_ring_map[i][fusion_image_duality[j]] != fusion_ring_map[duality[i]][j])
+                throw BadInputException("Fusion ring map not compatible with dualities:" + to_string(i) + "* = "
+                        +to_string(duality[i]) + " not allowed");
+        }
+    }
+
+    vector<long> full_image_type(fusion_image_duality.size());
+    string our_type_string = fusion_image_type_string;
+    string_to_type(full_image_type, our_type_string);
+
+    vector<long> full_type_long(duality.size());
+    convert(full_type_long, full_type);
+
+    vector<long> test_type = fusion_ring_map.MxV(full_image_type);
+    if(test_type != full_type_long)
+        throw BadInputException("Fusion type does not fit fusion ring map");
 }
 
 template <typename Integer>
@@ -361,8 +441,6 @@ void make_full_input(FusionBasic& FusionInput, InputMap<Integer>& input_data) {
     input_data.clear();
     input_data[Type::inhom_inequalities] = InEqu;
     input_data[Type::inequalities] = Matrix<Integer>(InEqu.nr_of_columns()-1);
-
-    // Polys = OurFusion.make_associativity_constraints(); now later
 
 }
 

@@ -281,6 +281,10 @@ bool denominator_allowed(InputType input_type) {
         case Type::monoid:
         case Type::fusion_type:
         case Type::fusion_duality:
+        case Type::fusion_image_duality:
+        case Type:: fusion_image_type:
+        case Type::fusion_image_ring:
+        case Type::fusion_ring_map:
             return false;
             break;
         default:
@@ -815,7 +819,6 @@ void Cone<Integer>::process_multi_input_inner(InputMap<Integer>& multi_input_dat
     }
 
     if(contains(multi_input_data, Type::fusion_type)) {
-        set<map<vector<key_t>, Integer> > Polys;
         fusion_type_input =multi_input_data[Type::fusion_type][0];
         make_full_input(FusionBasicCone, multi_input_data);
         // only linear equations done here, associativity later
@@ -9835,6 +9838,23 @@ void Cone<Integer>::add_fusion_ass_and_grading_constraints(ConeProperties& ToCom
     Polys = OurFusion.make_associativity_constraints();
     PolynomialEquations = OurPolynomialSystem<Integer>(Polys,getEmbeddingDim());
     PolynomialEquations.shift_coordinates(-1); // now we have cone coordinates
+
+    if(OurFusion.fusion_image_type.size() > 0){
+        Matrix<Integer> Whow = OurFusion.make_homomorphism_constraints();
+        if(verbose)
+            verboseOutput() << Whow.nr_of_rows()/2 <<" equations for checking ring homomorphism made" << endl;
+        Inequalities.append(Whow);
+    }
+
+    // Inequalities.debug_print('+');
+
+    // cout << "IIIIIIIIIII " << Inequalities.nr_of_rows() << endl;
+
+    Inequalities.remove_duplicate_and_zero_rows();
+    // Test.remove_duplicate_and_zero_rows();
+    // cout << "TTTTTTTTTTT " << Test.nr_of_rows() << endl;
+
+    // Zyklisch tauschen "" ????????
 }
 
 //---------------------------------------------------------------------------

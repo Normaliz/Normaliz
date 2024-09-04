@@ -1103,8 +1103,35 @@ InputMap<Number> readNormalizInput(istream& in,
                     set_thread_limit(nr_threads);
                     continue;
                 }
-
+                
                 input_type = to_type(type_string);
+                
+                if(type_string == "fusion_image_type" || type_string == "fusion_image_duality"
+                    || type_string == "fusion_image_ring"){
+                    
+                    in >> std::ws;  // eat up any leading white spaces
+                    c = in.peek();
+                    if(c != '[')
+                        throw BadInputException("Fusion image data must be formatted vectors");
+                    vector<Number> input_vec;
+                    read_formatted_vector(in, input_vec);
+                    save_matrix(input_map, input_type, Matrix<Number>(input_vec));
+                    continue;
+                }
+                
+                if(type_string == "fusion_ring_map"){
+                    
+                    in >> std::ws;  // eat up any leading white spaces
+                    c = in.peek();
+                    if(c != '[')
+                        throw BadInputException("Fusion ring map musat be formatted matrix");
+                
+                    Matrix<Number> input_mat;
+                    read_formatted_matrix(in, input_mat, false);
+                    save_matrix(input_map, input_type, input_mat);
+                    continue;
+                }
+
 
                 if(type_string == "monoid")
                     monoid_read = true;
@@ -1154,8 +1181,8 @@ InputMap<Number> readNormalizInput(istream& in,
 
                         Matrix<Number> e_i = Matrix<Number>(vector<Number>(nr_columns, 0));
                         if (pos < 1 || pos > static_cast<long>(e_i[0].size())) {
-                            throw BadInputException("Error while reading " + type_string + " as a unit_vector " + toString(pos) +
-                                                    "!");
+                            throw BadInputException("Error while reading " + type_string + " as a unit_vector " + toString(pos)
+                             +    "!");
                         }
                         pos--;  // in input file counting starts from 1
                         e_i[0].at(pos) = 1;
