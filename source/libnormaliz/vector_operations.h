@@ -1491,6 +1491,16 @@ inline vector<string> to_string_vector(int argc, char* argv[]){
      return ret;
 }
 
+template<typename Val, typename Ret>
+void convert_vector_via_string(vector<Ret>& V, const vector<Val>& W){
+
+    stringstream bridge;
+    bridge << W;
+    V.resize(W.size());
+    for(size_t i = 0; i < W.size(); ++i)
+        bridge >> V[i];
+}
+
 
 }  // namespace libnormaliz
 

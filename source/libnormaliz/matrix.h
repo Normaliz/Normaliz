@@ -784,6 +784,14 @@ void convert(Matrix<ToType>& to_mat, const Matrix<FromType>& from_mat) {
             convert(to_mat[i][j], from_mat[i][j]);
 }
 
+template<typename Val, typename Ret>
+void convert_matrix_via_string(Matrix<Ret>& V, const Matrix<Val>& W){
+
+    V.resize(W.nr_of_rows(), W.nr_of_columns());
+    for(size_t i = 0; i < W.nr_of_rows(); ++i)
+        convert_vector_via_string(V[i], W[i]);
+}
+
 //---------------------------------------------------------------------------
 //                  Matrix related functions
 //---------------------------------------------------------------------------

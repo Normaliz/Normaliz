@@ -678,6 +678,14 @@ inline renf_elem_class lcm<renf_elem_class>(const renf_elem_class& a, const renf
 }
 #endif
 
+template<typename Val, typename Ret>
+void convert_via_string(Ret& V, const Val& W){
+
+    stringstream bridge;
+    bridge << W;
+    bridge >> V;
+}
+
 //---------------------------------------------------------------------------
 
 template <typename Integer>

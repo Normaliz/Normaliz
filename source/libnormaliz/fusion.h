@@ -374,16 +374,15 @@ void FusionBasic::read_data_from_input(InputMap<Integer>& input_data){
         if(!contains(input_data, Type::fusion_image_type)
             || !contains(input_data, Type::fusion_image_duality)
             || !contains(input_data, Type::fusion_ring_map) )
-            throw BadInputException("Incomplete fusion umage data");
+            throw BadInputException("Incomplete fusion image data");
         has_fusion_image = true;
     }
 
     if(!has_fusion_image)
         return;
 
-
-    convert(fusion_image_ring,input_data[Type::fusion_image_ring][0]);
-    convert(fusion_ring_map, input_data[Type::fusion_ring_map]);
+    convert_vector_via_string(fusion_image_ring,input_data[Type::fusion_image_ring][0]);
+    convert_matrix_via_string(fusion_ring_map, input_data[Type::fusion_ring_map]);
 
     InputMap<Integer> Help;
     Help[Type::fusion_type]= input_data[Type::fusion_image_type][0];
@@ -413,7 +412,7 @@ void FusionBasic::read_data_from_input(InputMap<Integer>& input_data){
     string_to_type(full_image_type, our_type_string);
 
     vector<long> full_type_long(duality.size());
-    convert(full_type_long, full_type);
+    convert_vector_via_string(full_type_long, full_type);
 
     vector<long> test_type = fusion_ring_map.MxV(full_image_type);
     if(test_type != full_type_long)
