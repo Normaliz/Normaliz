@@ -204,6 +204,7 @@ public:
     vector<Integer> norrmal_form(const vector<Integer> lattice_point);
 
     Matrix<Integer> make_linear_constraints(const vector<Integer>& d);
+    vector<Integer> make_linear_equation(const map<vector<key_t>, Integer>& components, const Integer& rhs);
     Matrix<Integer> make_linear_constraints_partition(const vector<Integer>& d,
                                             const vector<long>& card);
     pair<Integer, vector<key_t> >  term(const key_t& i, const key_t& j, const key_t& k);

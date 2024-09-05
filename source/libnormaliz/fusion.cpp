@@ -1422,9 +1422,23 @@ void write_inhom_eq_as_lp(const Matrix<Integer>& Equ){
     lp_out << "x" << to_string(lhs_dim) << ";" << endl;
 }
 
+template <typename Integer>
+vector<Integer> FusionComp<Integer>::make_linear_equation(const map<vector<key_t>, Integer>& components, const Integer& rhs){
 
-
-
+    vector<Integer> this_equ(nr_coordinates + 1);
+    this_equ.back() = - rhs;
+    for(auto& c: components){
+        auto indices = c.first;
+        auto coeff = c.second;
+        if(indices[2] == 0){
+            if(indices[0] == duality[indices[1]])
+                this_equ.back() += coeff;
+            continue;
+        }
+        this_equ[coord_cone(indices)] += coeff;
+    }
+    return this_equ;
+}
 
 template <typename Integer>
 Matrix<Integer> FusionComp<Integer>::make_linear_constraints(const vector<Integer>& d){
@@ -1445,6 +1459,25 @@ Matrix<Integer> FusionComp<Integer>::make_linear_constraints(const vector<Intege
             INTERRUPT_COMPUTATION_BY_EXCEPTION
 
             indices[1] = j;
+            map<vector<key_t>, Integer> components;
+            Integer rhs = d[i] * d[j];
+            for(key_t k = 0; k < fusion_rank; ++k){
+                indices[2] = k;
+                components[indices] = d[k];
+            }
+            auto this_equ = make_linear_equation(components, rhs);
+
+            Equ.append(this_equ);
+        }
+    }
+
+        /*for(key_t i = 1; i < fusion_rank; ++i){
+        indices[0] = i;
+        for(key_t j = 1; j < fusion_rank; ++j){
+
+            INTERRUPT_COMPUTATION_BY_EXCEPTION
+
+            indices[1] = j;
             vector<Integer> this_equ(nr_coordinates + 1);
             this_equ.back() = - d[i]*d[j];
             if(i == duality[j])
@@ -1455,7 +1488,7 @@ Matrix<Integer> FusionComp<Integer>::make_linear_constraints(const vector<Intege
             }
             Equ.append(this_equ);
         }
-    }
+    }*/
 
     if(write_lp_file)
         write_inhom_eq_as_lp(Equ);
@@ -1465,7 +1498,7 @@ Matrix<Integer> FusionComp<Integer>::make_linear_constraints(const vector<Intege
     if(libnormaliz::verbose)
         verboseOutput() << "Made " << Equ.nr_of_rows() << " inhom linear equations in " << Equ.nr_of_columns() -1 << " unknowns " << endl;
 
-    // Equ.pretty_print(cout);
+    Equ.debug_print();
     return Equ;
 }
 
