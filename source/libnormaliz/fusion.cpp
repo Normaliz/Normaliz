@@ -1471,25 +1471,6 @@ Matrix<Integer> FusionComp<Integer>::make_linear_constraints(const vector<Intege
         }
     }
 
-        /*for(key_t i = 1; i < fusion_rank; ++i){
-        indices[0] = i;
-        for(key_t j = 1; j < fusion_rank; ++j){
-
-            INTERRUPT_COMPUTATION_BY_EXCEPTION
-
-            indices[1] = j;
-            vector<Integer> this_equ(nr_coordinates + 1);
-            this_equ.back() = - d[i]*d[j];
-            if(i == duality[j])
-                this_equ.back() += 1;
-            for(key_t k = 1; k < fusion_rank; ++k){
-                indices[2] = k;
-                this_equ[coord_cone(indices)] += d[k];
-            }
-            Equ.append(this_equ);
-        }
-    }*/
-
     if(write_lp_file)
         write_inhom_eq_as_lp(Equ);
     // Equ.print(global_project,"equ");
@@ -1498,7 +1479,7 @@ Matrix<Integer> FusionComp<Integer>::make_linear_constraints(const vector<Intege
     if(libnormaliz::verbose)
         verboseOutput() << "Made " << Equ.nr_of_rows() << " inhom linear equations in " << Equ.nr_of_columns() -1 << " unknowns " << endl;
 
-    Equ.debug_print();
+    // Equ.debug_print();
     return Equ;
 }
 
@@ -1564,25 +1545,20 @@ Matrix<Integer> FusionComp<Integer>::make_homomorphism_constraints(){
 
                 INTERRUPT_COMPUTATION_BY_EXCEPTION
 
-                vector<Integer> this_equ(nr_coordinates + 1);
-                this_equ.back() = - RHS[i][j][t];
+                Integer rhs = RHS[i][j][t];
+                map<vector<key_t>, Integer> components;
                 for(size_t k = 0; k < fusion_rank; ++k){
-
-
-                    if(k==0){
-                        if( i == duality[j])
-                            this_equ.back() += fusion_ring_map[k][t];
-                    }
-                    else{
-                        indices[2] = k;
-                        this_equ[coord_cone(indices)] += fusion_ring_map[k][t];
-                    }
+                    indices[2] = k;
+                    components[indices] = fusion_ring_map[k][t];
                 }
+
+                auto this_equ = make_linear_equation(components, rhs);
                 Equ.append(this_equ);
             }
         }
     }
-    // Equ.debug_print();
+
+    // Equ.debug_print('+');
 
     Matrix<Integer> Help = Equ;
     Integer MinusOne = -1;
