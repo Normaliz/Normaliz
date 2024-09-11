@@ -71,6 +71,8 @@ public:
     vector<Matrix<Integer> > LowParts;
     // vector<Matrix<Integer> > LowPartsBounds;
 
+    size_t iupper_bound;
+
 
     Integer N(const key_t i, const key_t j, const key_t k);
 
@@ -83,7 +85,8 @@ public:
 
     void start_low_parts();
     void build_low_matrices(Matrix<Integer> matrix_so_far, Matrix<Integer> bounds_so_far);
-    void from_low_to_full();
+    void from_low_to_full(const Matrix<Integer>& ThisLowPart);
+    void augment_induction_matrices();
 
     Matrix<Integer> make_allowed_transpositions(Matrix<Integer> FusionMap);
 
