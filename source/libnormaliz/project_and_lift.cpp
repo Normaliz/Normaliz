@@ -2185,8 +2185,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
             Matrix<IntegerRet> FoundSolutions(check);
             if(FoundSolutions.nr_of_rows() > 0){
                 FoundSolutions.cyclic_shift_left(FoundSolutions.nr_of_columns()-1); // to get final coordinates
-                if(fusion.use_automorphisms)
-                    fusion.do_iso_classes(FoundSolutions); // to use the natural order of coordiantes for lex
+                /* if(fusion.use_automorphisms)
+                    fusion.do_iso_classes(FoundSolutions); // to use the natural order of coordiantes for lex */
             }
 
             prel_data << "found_solutions" << endl;

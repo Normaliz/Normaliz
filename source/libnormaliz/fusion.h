@@ -191,9 +191,10 @@ public:
     void make_all_base_keys();
     void prepare_simplicity_check();
     Matrix<Integer> do_select_simple_inner(const Matrix<Integer>& LattPoints);
-    Matrix<Integer> do_iso_classes_inner(const Matrix<Integer>& LattPoints);
+    // Matrix<Integer> do_iso_classes_inner(const Matrix<Integer>& LattPoints);
     Matrix<Integer> do_select_simple(const Matrix<Integer>& LattPoints) const;
-    Matrix<Integer> do_iso_classes(const Matrix<Integer>& LattPoints) const;
+    // Matrix<Integer> do_iso_classes(const Matrix<Integer>& LattPoints) const;
+    vector<Integer> normal_form_of(const vector<Integer>& solution) const;
     bool simplicity_check(const vector<key_t>& subring, const vector<Integer>& sol);
     bool simplicity_check(const vector<vector<key_t> >& subrings, const vector<Integer>& sol);
     bool automs_compatible(const vector<key_t>& cand) const;

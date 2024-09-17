@@ -1222,6 +1222,7 @@ Matrix<Integer> FusionComp<Integer>::do_select_simple(const Matrix<Integer>& Lat
     return work_fusion.do_select_simple_inner(LattPoints);
 }
 
+/*
 template <typename Integer>
 Matrix<Integer> FusionComp<Integer>::do_iso_classes_inner(const Matrix<Integer>& LattPoints){
 
@@ -1272,9 +1273,11 @@ Matrix<Integer> FusionComp<Integer>::do_iso_classes_inner(const Matrix<Integer>&
     return IsoClasses;
 }
 
+*/
+
 // We work with final format (last coordinate is homogenizing)
 // This function protects *this
-template <typename Integer>
+/* template <typename Integer>
 Matrix<Integer> FusionComp<Integer>::do_iso_classes(const Matrix<Integer>& LattPoints)const {
 
     if(LattPoints.nr_of_rows() == 0)
@@ -1283,7 +1286,7 @@ Matrix<Integer> FusionComp<Integer>::do_iso_classes(const Matrix<Integer>& LattP
     FusionComp<Integer> work_fusion = *this;
 
     return work_fusion.do_iso_classes_inner(LattPoints);
-}
+} */
 
 template <typename Integer>
 Matrix<Integer> FusionComp<Integer>::make_add_constraints_for_grading(){
