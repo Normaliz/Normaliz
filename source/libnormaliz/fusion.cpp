@@ -1222,6 +1222,26 @@ Matrix<Integer> FusionComp<Integer>::do_select_simple(const Matrix<Integer>& Lat
     return work_fusion.do_select_simple_inner(LattPoints);
 }
 
+template <typename Integer>
+vector<Integer> FusionComp<Integer>::normal_form_of(const vector<Integer>& solution) const{
+
+    vector<Integer> min_conjugate = solution;
+    bool first = true;
+    for(auto& aa: Automorphisms){
+        vector<Integer> conjugate(solution.size());
+        for(size_t j = 0; j < aa.size(); ++ j){
+            conjugate[j] = solution[aa[j]];
+        }
+        conjugate[0] = 1;
+        if(first || conjugate < min_conjugate){
+            min_conjugate = conjugate;
+            first = false;
+        }
+    }
+
+    return min_conjugate;;
+}
+
 /*
 template <typename Integer>
 Matrix<Integer> FusionComp<Integer>::do_iso_classes_inner(const Matrix<Integer>& LattPoints){

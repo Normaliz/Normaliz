@@ -2751,7 +2751,7 @@ bool ProjectAndLift<IntegerPL, IntegerRet>::fiber_interval(IntegerRet& MinInterv
 
 ///---------------------------------------------------------------------------
 template <typename IntegerPL, typename IntegerRet>
-void ProjectAndLift<IntegerPL, IntegerRet>::finalize_latt_point(const vector<IntegerRet>& NewPoint, const int tn) {
+void ProjectAndLift<IntegerPL, IntegerRet>::finalize_latt_point(vector<IntegerRet> NewPoint, const int tn) {
 
     if(only_single_point && single_point_found)
         return;
@@ -2772,6 +2772,10 @@ void ProjectAndLift<IntegerPL, IntegerRet>::finalize_latt_point(const vector<Int
         if(!PolyInequalities.check(NewPoint, false, false)) // false = inequlities, fasle = any length
             return;
     }
+
+    if(fusion.use_automorphisms)
+        NewPoint = fusion.normal_form_of(NewPoint);
+
     if(only_single_point || !first_solution_printed){
 #pragma omp critical(FINALSOL)
         {

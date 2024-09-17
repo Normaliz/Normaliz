@@ -206,7 +206,7 @@ class ProjectAndLift {
     void find_single_point();
     void compute_latt_points();
     void compute_latt_points_float();
-    void finalize_latt_point(const vector<IntegerRet>& NewPoint, const int tn);
+    void finalize_latt_point(vector<IntegerRet> NewPoint, const int tn);
     void collect_results(list<vector<IntegerRet> >& Deg1PointsComputed);
     void splice_into_short_deg1_points(list<vector<IntegerRet> >& Deg1PointsComputed);
 
