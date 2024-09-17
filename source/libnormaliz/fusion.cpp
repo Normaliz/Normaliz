@@ -962,11 +962,7 @@ void FusionComp<Integer>::set_options(const ConeProperties& ToCompute, const boo
 
     verbose = verb;
     check_simplicity= ToCompute.test(ConeProperty::SimpleFusionRings);
-    // select_simple = ToCompute.test(ConeProperty::SelectSimple);
     use_automorphisms = ToCompute.test(ConeProperty::FusionRings) || ToCompute.test(ConeProperty::SimpleFusionRings);
-    // select_iso_classes = ToCompute.test(ConeProperty::FusionIsoClasses);
-    /* if(check_simplicity || use_automorphisms)
-        activated = true;*/
     if(check_simplicity)
         prepare_simplicity_check();
     if(use_automorphisms)
@@ -1235,15 +1231,16 @@ Matrix<Integer> FusionComp<Integer>::do_iso_classes_inner(const Matrix<Integer>&
     Matrix<Integer> IsoClasses;
     IsoClasses.resize(0,LattPoints.nr_of_columns());
 
-    for(auto& aa: Automorphisms){  // homogenizing coordinate is the last now
-        vector<shortkey_t> modified = aa;
-        v_cyclic_shift_left(modified, modified.size() -1);
-        modified.resize(modified.size()-1);
-        for(auto& c: modified)
-            c--;
-        aa = modified;
-    }
-
+   // if(cone_coord){ // homogenizing coordinate is the last now
+        for(auto& aa: Automorphisms){  // and we are allowed to destroy the original Automorphisms
+            vector<shortkey_t> modified = aa;
+            v_cyclic_shift_left(modified, modified.size() -1);
+            modified.resize(modified.size()-1);
+            for(auto& c: modified)
+                c--;
+            aa = modified;
+        }
+    // }
     set<vector<Integer> > Classes;
 
     for(size_t i = 0; i < LattPoints.nr_of_rows(); ++i){
@@ -2040,6 +2037,8 @@ Matrix<Integer> fusion_iso_classes(const Matrix<Integer>& LattPoints, const Cone
 }
 */
 
+/*
+
 Matrix<long long> extract_latt_points_from_out(ifstream& in_out){
 
     size_t nr_points;
@@ -2182,6 +2181,7 @@ void post_process_fusion(const vector<string>& command_line_items){
         post_process_fusion_file(command_line_items, our_project);
      }
 }
+*/
 
 /*
 pair<bool, bool>  FusionBasic::read_data() {
