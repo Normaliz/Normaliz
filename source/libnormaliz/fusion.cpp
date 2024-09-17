@@ -1277,7 +1277,7 @@ Matrix<Integer> FusionComp<Integer>::do_iso_classes_inner(const Matrix<Integer>&
 template <typename Integer>
 Matrix<Integer> FusionComp<Integer>::do_iso_classes(const Matrix<Integer>& LattPoints)const {
 
-    if(LattPoints.nr_of_rows() == 0 || !select_iso_classes)
+    if(LattPoints.nr_of_rows() == 0)
         return LattPoints;
 
     FusionComp<Integer> work_fusion = *this;

@@ -131,7 +131,6 @@ public:
     bool type_automs_made;
 
     bool use_automorphisms;
-    bool select_iso_classes;
     bool write_mult_tables;
 
     size_t nr_coordinates;
