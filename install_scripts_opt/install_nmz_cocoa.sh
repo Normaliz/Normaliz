@@ -20,7 +20,8 @@ fi
 
 ## COCOA_VERSION="0.99800"
 COCOA_VERSION="0.99818"
-COCOA_URL="https://cocoa.dima.unige.it/cocoa/cocoalib/tgz/CoCoALib-${COCOA_VERSION}.tgz"
+## COCOA_URL="https://cocoa.dima.unige.it/cocoa/cocoalib/tgz/CoCoALib-${COCOA_VERSION}.tgz"
+COCOA_URL="https://github.com/Normaliz/Normaliz/releases/download/v3.10.3/CoCoALib-0.99818.tgz"
 ## COCOA_SHA256=f8bb227e2e1729e171cf7ac2008af71df25914607712c35db7bcb5a044a928c6
 COCOA_SHA256=7c7d6bb0bc3004ea76caaeb5f8de10ed09c8052a9131fd98716c36c6fc96d1ea
 
