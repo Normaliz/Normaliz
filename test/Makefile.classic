@@ -38,6 +38,8 @@ TEST_FILES_PR = $(patsubst %.in,%.diff,$(wildcard test-pr/*.in))
 TEST_FILES_PR_PROJCONE = $(patsubst %.in,%.ProjectCone.diff,$(wildcard test-pr/*.in))
 TEST_FILES_SPECIAL = $(patsubst %.in,%.diff,$(wildcard test-Special/*.in))
 TEST_FILES_LARGE = $(patsubst %.in,%.diff,$(wildcard test-LARGE/*.in))
+TEST_FILES_FUS = $(patsubst %.in,%.diff,$(wildcard test-fus/*.in))
+TEST_FILES_PATCH = $(patsubst %.in,%.diff,$(wildcard test-patch/*.in))
 
 TEST_FILES_NF = $(patsubst %.in,%.diff,$(wildcard test-nf/*.in))
 TEST_FILES_NF_HH = $(patsubst %.in,%.diff,$(wildcard test-nf-hh/*.in))
@@ -72,12 +74,13 @@ TEST_FILES_MRK_MRK = $(patsubst %.in,%.mrk.diff,$(wildcard test-mrk/*.in))
 TEST_FILES_GRB = $(patsubst %.in,%.diff,$(wildcard test-grb/*.in))
 TEST_FILES_GRB_GRB = $(patsubst %.in,%.grb.diff,$(wildcard test-grb/*.in))
 
-TEST_FILES_FUS = $(patsubst %.in,%.diff,$(wildcard test-fus/*.in))
+TEST_FILES_IND = $(patsubst %.in,%.diff,$(wildcard test-ind/*.in))
+TEST_FILES_IND_IND = $(patsubst %.in,%.ind.diff,$(wildcard test-ind/*.in))
 
-TEST_FILES_PATCH = $(patsubst %.in,%.diff,$(wildcard test-patch/*.in))
 
 
-all: tests testv testn test1 testN testq testp testd testh testdefault testd1 testdnn testr1 testM testw testH testpr testdeg testDec testStDec testFac testInc testgen testcst testSpecial testclo testmrk testgrb testfus
+
+all: tests testv testn test1 testN testq testp testd testh testdefault testd1 testdnn testr1 testM testw testH testpr testdeg testDec testStDec testFac testInc testgen testcst testSpecial testclo testmrk testgrb testfus testind
 
 ## Don't include testLARGE into all! It requires the optional libraries and runs very long.
 
@@ -104,6 +107,9 @@ testSpecial: $(TEST_FILES_SPECIAL)
 testLARGE: $(TEST_FILES_LARGE)
 testfus: $(TEST_FILES_FUS)
 
+# testpatch takes very long. Mut be run separately.
+testpatch: $(TEST_FILES_PATCH)
+
 testH: $(TEST_FILES_HH) $(TEST_FILES_HH_INTHULL)
 testDec: $(TEST_FILES_DEC) $(TEST_FILES_DEC_TRI)
 testpr: $(TEST_FILES_PR) $(TEST_FILES_PR_PROJCONE)
@@ -117,8 +123,7 @@ testgen: $(TEST_FILES_GEN) $(TEST_FILES_GEN_GEN)
 testcst: $(TEST_FILES_CST) $(TEST_FILES_CST_CST)
 testmrk: $(TEST_FILES_MRK) $(TEST_FILES_MRK_MRK)
 testgrb: $(TEST_FILES_GRB) $(TEST_FILES_GRB_GRB)
-
-testpatch: $(TEST_FILES_PATCH)
+testind: $(TEST_FILES_IND) $(TEST_FILES_IND_IND)
 
 # the next test is only inderted for code coverage
 # calling all "new" command line options
@@ -241,6 +246,8 @@ test-mrk/%.out test-mrk/%.mrk: $(NORMALIZ) test-mrk/%.in
 	$(NICE) $(NORMALIZ) $(NORMPARA) test-mrk/$*
 test-grb/%.out test-grb/%.grb: $(NORMALIZ) test-grb/%.in
 	$(NICE) $(NORMALIZ) $(NORMPARA) test-grb/$*
+test-ind/%.out test-ind/%.ind: $(NORMALIZ) test-ind/%.in
+	$(NICE) $(NORMALIZ) $(NORMPARA) test-ind/$*
 
 test-patch/%.out: $(NORMALIZ) test-patch/%.in
 	$(NICE) $(NORMALIZ) $(NORMPARA) test-patch/$*
@@ -297,6 +304,8 @@ distclean: clean
 .PRECIOUS: test-mrk/%.mrk
 .PRECIOUS: test-grb/%.out
 .PRECIOUS: test-grb/%.grb
+.PRECIOUS: test-ind/%.ind
+.PRECIOUS: test-ind/%.out
 .PRECIOUS: test-clopt/whow.out
 .PRECIOUS: test-nf/%.out test-nf-hh/%.out  test-nf-hh/%.IntHull.out test-Qdegenerate/%.out
 .PRECIOUS: test-patch/%.out
