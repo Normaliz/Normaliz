@@ -7157,15 +7157,15 @@ void Cone<Integer>::make_induction_matrices(ConeProperties& ToCompute){
     if(!ToCompute.test(ConeProperty::InductionMatrices) || isComputed(ConeProperty::InductionMatrices))
         return;
 
-    Matrix<Integer> ChosenFusionRings(0,ModuleGenerators.nr_of_columns());
+    Matrix<Integer> ChosenFusionRings(0,FusionRings.nr_of_columns());
 
     if(chosen_fusion_ring > 0){
-        if(chosen_fusion_ring > ModuleGenerators.nr_of_rows())
+        if(chosen_fusion_ring > FusionRings.nr_of_rows())
             throw BadInputException("Chosen fusion ring index too large");
-        ChosenFusionRings.append(ModuleGenerators[chosen_fusion_ring -1]);
+        ChosenFusionRings.append(FusionRings[chosen_fusion_ring -1]);
     }
     else
-        ChosenFusionRings = ModuleGenerators;
+        ChosenFusionRings = FusionRings;
 
     vector<key_t> our_dual = FusionBasicCone.duality;
     vector<Integer> our_type(our_dual.size());
