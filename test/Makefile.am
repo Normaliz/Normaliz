@@ -1588,6 +1588,10 @@ NMZTESTS +=						\
 	test-fus/pet_fus_simple.ref			\
 	test-fus/pet_fus_single.ref			\
 	test-fus/pet_fus_single_fus.ref			\
+	test-fus/mini_ind.in				\
+	test-fus/mini_ind.ref				\
+	test-fus/midi_ind.in				\
+	test-fus/midi_ind.ref				\
 	test-Int/[1,5,5,5,6,7,7][0,1,2,3,4,5,6].in	\
 	test-Int/[1,5,5,5,6,7,7][0,1,2,3,4,5,6].ref	\
 	test-Int/[1,5,5,5,6,7,7][-1,1,2,3,4,5,6].in	\
@@ -1816,6 +1820,24 @@ NMZTESTS +=						\
 	test-/n8_feas_single.in				\
 	test-/n8_feas_single.ref			\
 	test-/n8_feas_single_nop.in			\
-	test-/n8_feas_single_nop.ref
+	test-/n8_feas_single_nop.ref			\
+	test-ind/[1,1][0,1].in     			\
+	test-ind/[1,1][0,1].ind.ref 			\
+	test-ind/[1,1][0,1].ref 			\
+	test-ind/[1,1,1,1][0,1,3,2].in  		\
+	test-ind/[1,1,1,1][0,1,3,2].ind.ref 		\
+	test-ind/[1,1,1,1][0,1,3,2].ref 		\
+	test-ind/[1,1,2,3,3][0,1,2,3,4].in  		\
+	test-ind/[1,1,2,3,3][0,1,2,3,4].ind.ref 	\
+	test-ind/[1,1,2,3,3][0,1,2,3,4].ref 		\
+	test-ind/[1,1,2,6][0,1,2,3].in 			\
+	test-ind/[1,1,2,6][0,1,2,3].ind.ref 		\
+	test-ind/[1,1,2,6][0,1,2,3].ref 		\
+	test-ind/chosen_1.in 				\
+	test-ind/chosen_1.ind.ref 			\
+	test-ind/chosen_1.ref 				\
+	test-ind/chosen_2.in 				\
+	test-ind/chosen_2.ind.ref 				\
+	test-ind/chosen_2.ref
 
 EXTRA_DIST += $(NMZTESTS)

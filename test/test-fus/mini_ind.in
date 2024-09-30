@@ -1,0 +1,16 @@
+amb_space auto
+fusion_type
+[1,1,1,1]
+fusion_ring_map
+[
+    [1,0],
+    [1,0],
+    [0,1],
+    [0,1]
+]
+fusion_image_type
+[1, 1]
+fusion_image_duality
+[0, 1]
+fusion_image_ring
+[0,1]
