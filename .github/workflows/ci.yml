@@ -302,7 +302,7 @@ jobs:
 
 
   macos_installscript-check:
-    runs-on: macos-12
+    runs-on: macos-latest
     env:
       BUILDSYSTEM: "check"
       ## NORMPARA: "-x=1"
