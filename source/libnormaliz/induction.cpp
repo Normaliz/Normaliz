@@ -117,6 +117,7 @@ Induction<Integer>::Induction(const vector<Integer>& fus_type, const vector<key_
         if(verbose)
             verboseOutput() << "Sum of multiplicities of eigenvalues dividing FPdim < fusion_rank" << endl;
         mult_of_ev_ok = false;
+        return;
     }
 
    Bounds.resize(fusion_rank, fusion_rank);
