@@ -143,7 +143,9 @@ EXTRA_DIST =					\
 	pet_new.in				\
 	split_demo.zip				\
 	[1,1][0,1].in				\
-	chosen_2.in
+	chosen_2.in				\
+	mini_ind.in				\
+	moidi_ind.in
 
 EXTRA_DIST +=					\
 	600cell-dual.in				\
