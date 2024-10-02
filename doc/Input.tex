@@ -622,13 +622,19 @@ See Sections~\ref{inhom_eq_ex}, \verb|NumSemi.in|, \ref{ChinRem}, \verb|InhomCon
 
 The interpretation of homogeneity follows the same rules as for tabular constraints. The variant \verb|hom_constraints| is allowed and works as for tabular constraints.
 
-\subsection{Converting equations to inequalities}
+\subsection{Blocking the coordinate transformation}
+
+If there are equations or congruences in the input in the input, Normaliz computes a change of coordinates already in the construction phase. However, computation of lattice points by project-and-lift is carried out in the coordinate system of the input so that the coordinate transformation is superfluous.  When the coordinate transformation  is computed, Normaliz does not know whether it will be needed. One can suppress it by the directive
+\begin{itemize}
+	\itemtt[no\_lattice\_data]
+\end{itemize}
+The directive has no effect if the input contains lattice generators.
 
 The directive
 \begin{itemize}
 	\itemtt[convert\_equations]
 \end{itemize}
-tells Normaliz to replace eevery equation in the input file by a pair of equations. It is meant for very large computations of lattice points by project-and-lift since it avoids a coordinate transformation that is not needed. The default choice of \verb|nonnegative| in the absence of explicit inequalities is left untouched by \verb|convert_equationst|. See \verb|pet.in| and \verb|baby.in| (for which the coordinate transformation would be harmless).
+converts equations into pairs of inequalities and has almost the same effect, but congruences in the input trigger the coordinate transformation nevertheless. Requires the addiion of \verb|nonnegative| if no other inequalities are present.
 
 \subsection{Polynomial constraints}\label{poly_const_input}
 

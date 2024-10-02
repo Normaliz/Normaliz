@@ -1884,8 +1884,13 @@ void Cone<Integer>::process_lattice_data(const Matrix<Integer>& LatticeGenerator
     if (!BC_set)
         compose_basis_change(Sublattice_Representation<Integer>(dim));
 
-    if(no_lattice_data)
+    if(LatticeGenerators.nr_of_rows() > 0) // in this case we must compute the coordinate transformation here
+        no_lattice_data = false;
+
+    if(no_lattice_data){
+        no_lattice_data = false;
         return;
+    }
 
     bool no_constraints = (Congruences.nr_of_rows() == 0) && (Equations.nr_of_rows() == 0);
     bool only_cone_gen = (Generators.nr_of_rows() != 0) && no_constraints && (LatticeGenerators.nr_of_rows() == 0);

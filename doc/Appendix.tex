@@ -667,6 +667,10 @@ fusion_type,
 fusion_duality,
 candidate_subring,
 fusion_type_for_partition,
+fusion_ring_map,
+fusion_image_type,
+fusion_image_ring,
+fusion_image_duality,
 //
 // precomputed data
 //
@@ -826,6 +830,7 @@ void Cone<Integer>::setBlocksizeHollowTri(long block_size)
 void Cone<Integer>::setGBDegreeBound(const long degree_bound)
 void Cone<Integer>::setGBMinDegree(const long min_degree)
 void Cone<Integer>::setModularGraing(long mod_gr)
+void Cone<Integer>::setChosenFusionRing(long fus_r)
 \end{Verbatim}
 There common default value of \verb|degree| is $-1$, signaling no expansion, all coefficients or no codimension bound etc. One can reset the values after a computation. Then they will delete the computation results that depend on them. Modular Gradings are counted from $1$ (as in the input file).
 %However, there is no point in changing the codimension bounds for the exploitation of the automorphism group after the computations to that they refer have been finished.
@@ -845,6 +850,7 @@ autom_codim_bound_vectors,  // not yet used
 block_size_hollow_tri,
 decimal_digits,
 modular_grading,
+chosen_fusion_ring,
 not_a_num_param
 };
 } //end namespace NumParam
@@ -914,7 +920,9 @@ MarkovBasis,
 Representations,
 SimpleFusionRings,
 NonsimpleFusionRings,
-FusionRings,
+FusionRings,    
+FusionData,
+InductionMatrices,
 END_ENUM_RANGE(LAST_MATRIX),
 
 START_ENUM_RANGE(FIRST_MATRIX_FLOAT),
@@ -1785,12 +1793,19 @@ One can also retrieve the full fusion data:
 \begin{Verbatim}
 const vector<vector<Matrix<Integer> > >& Cone<Integer>::getFusionDataMatrix()
 \end{Verbatim}
+and the induction matrices:
+\begin{Verbatim}
+const vector<vector<Matrix<Integer> > >& Cone<Integer>::getInductionMatrices()
+\end{Verbatim}
 
 If there are several modular gradings, then for \verb*|UseModzlarGrading| you must pick one by
 \begin{Verbatim}
 void Cone<Integer>::setModularGraing(long mod_gr)
 \end{Verbatim}
-counting from $1$ (also see \ref{num_params}).
+counting from $1$ (also see \ref{num_params}). Similarly
+\begin{Verbatim}
+void Cone<Integer>::setChosenFusionRing(long fus_r)
+\end{Verbatim}
 
 \subsubsection{Boolean valued results}
 
@@ -3411,7 +3426,7 @@ A \emph{fusion ring} $R$ is an associative free $\ZZ$-algebra with a fixed $\ZZ$
 $$
 b_i b_j = \sum_{i=1}^r N_{ij}^k b_k, \qquad N_{ij}^k\in \ZZ.
 $$
-One of the  distinctive features of fusion rings: $N_{ij}^k\ge 0$ for all $i,j,k$. The other is the existence of a \emph{duality}, an involution of the set $\{b_1,\dots,b_r\}$, $b_i\mapsto b_{i^*}$ that extends to an antiautomorphism of $R$, and satisfies the condition $N_{ij}^1 = 1$ if $i=j*$, and $N_{ij}^1 = 0$ else.
+One of the  distinctive features of fusion rings: $N_{ij}^k\ge 0$ for all $i,j,k$. The other is the existence of a \emph{duality}, an involution of the set $\{b_1,\dots,b_r\}$, $b_i\mapsto b_{i^*}$ that extends to an antiautomorphism of $R$, and satisfies the condition $N_{ij}^1 = 1$ if $i=j^*$, and $N_{ij}^1 = 0$ else.
 
 In total the coefficients $N_{ij}^k$ must satisfy the following conditions (in addition to nonnegativity): for all $i,j,k,t$
 \begin{itemize}
@@ -3435,7 +3450,7 @@ The fundamental property of fusion rings is given by the \emph{Frobenius--Perron
 \item it is the only ring homomorphism $R\to \RR$ that has nonnegative values on $b_1,\dots,b_r$.
 \end{itemize}
 
-One calls $d_i$ the  \label{FPdim} \emph{Ftobenius--Perron dimension $\FPdim(b_i)$ of $b_i$}, and sets $\FPdim(R) = \sum_i d_i^2$.
+One calls $d_i$ the  \label{FPdim} \emph{Frobenius--Perron dimension $\FPdim(b_i)$ of $b_i$}, and sets $\FPdim(R) = \sum_i d_i^2$.
 
 By definition $d_1,\dots,d_r$ are algebraic integers. We concentrate on the case in which they belong to $\ZZ$. The task to be solved is the computation of all fusion rings of a given \emph{type} $(d_1,\dots,d_r)$ and a given duality $(1^*,\dots,r^*)$ (possibly with the additional condition that $R$ is commutative).
 
@@ -3715,7 +3730,7 @@ fusion_type
 fusion_duality
 [-1,1,2,3,4,5,6,7,8,9,11,10]
 \end{Verbatim}
-This somewhat strange way to communicate commutativity is necessary because Normaliz must know it altready at the time of construction. It would come too late as an algorithmic variant.
+This somewhat strange way to communicate commutativity is necessary because Normaliz must know it already at the time of construction. It would come too late as an algorithmic variant.
 
 Note that forcing commutativity is superfluous if the duality is the identity. However, in other cases it can speed up computations significantly. 
 
@@ -3790,9 +3805,9 @@ has told Normaliz  to use the chosen modular grading. If there is only one modul
 
 Let $R$ be a fusion ring with fusion data $(N_{i,j}^k)$ and basis $\{a_1, \ldots, a_r\}$, where $a_1$ is the unit. For simplicity, we restrict ourselves  to integral and commutative $R$. Both these properties are essential for the discussion below.
 
-Assume that $R$ admits a categorification into a fusion category $\mathcal{C}$ over the complex field. ($\mathcal{C}$ is not necessarily uniquely determined.) Then the Drinfeld center $Z(\mathcal{C})$ of $\mathcal{C}$ is an integral modular fusion category see \cite[Section 9.2]{EGNO} for the mathematics). Let $ZR$ be the Grothendieck ring of $Z(\mathcal{C})$ Let $\{b_1, \ldots, b_n\}$ be the basis of $ZR$, where $n \geq r$. By the propertties of the Drionfeld center, $ZR$ is an integral commutative $1/2$-Frobenius fusion ring: this means that $\FPdim(b_i)^2$ divides $\FPdim(ZR)$ in $\ZZ$ ($\FPdim$ was introduced on p.~\pageref{FPdim}).
+Assume that $R$ admits a categorification into a fusion category $\mathcal{C}$ over the complex field. ($\mathcal{C}$ is not necessarily uniquely determined.) Then the Drinfeld center $Z(\mathcal{C})$ of $\mathcal{C}$ is an integral modular fusion category see \cite[Section 9.2]{EGNO} for the mathematics). Let $ZR$ be the Grothendieck ring of $Z(\mathcal{C})$ Let $\{b_1, \ldots, b_n\}$ be the basis of $ZR$, where $n \geq r$. By the properties of the Drionfeld center, $ZR$ is an integral commutative $1/2$-Frobenius fusion ring: this means that $\FPdim(b_i)^2$ divides $\FPdim(ZR)$ in $\ZZ$ ($\FPdim$ was introduced on p.~\pageref{FPdim}).
 
-Let $d_i = \FPdim(a_i)$ and $m_i = \FPdim(b_i)$. Then, $\FPdim(R) = \sum_i d_i^2$ and $\FPdim(ZR) = \sum_i m_i^2$. There is a theorem stating that $\FPdim(ZR) = \FPdim(R)^2$. By the $1/2$-Frobenius property, $m_i^2$ divides $\FPdim(ZR)$, so $m_i$ divides $\FPdim(R)$.
+Let $d_i = \FPdim(a_i)$ and $m_i = \FPdim(b_i)$. Then, $\FPdim(R) = \sum_i d_i^2$ and $\FPdim(ZR) = \sum_i m_i^2$. There is a theorem stating that $\FPdim(ZR) = \FPdim(R)^2$ \cite[Thm. 7.16.6]{EGNO}. By the $1/2$-Frobenius property, $m_i^2$ divides $\FPdim(ZR)$, so $m_i$ divides $\FPdim(R)$.
 
 There is a ring morphism $F: ZR \to R$ preserving $\FPdim$, induced by the (so-called) forgetful functor $Z(\mathcal{C}) \to \mathcal{C}$. Thus
 \[ F(b_i) = \sum_j F_{i,j} a_j, \]
@@ -3808,7 +3823,7 @@ There can be zero, one or several possible induction matrices. If none, then the
 
 In general, for a given fusion ring $R$, several $ZR$ are possible, and several $n$ ( = rank($ZR$)) are possible. Hence, the rank $n$ of $ZR$ is also a variable.
 
-A theorem states that, for all $j$,
+A theorem \cite[Prop. 9.2.2]{EGNO} states that, for all $j$,
 \[ F(I(a_j)) = \sum_t a_t a_j a_{t^*}. \]
 
 But
@@ -3822,7 +3837,7 @@ We get the following equation:
 \end{equation}
 
 
-The left multiplication matrix for $F(I(a_1)) = \sum_t a_t a_{t^*}$ admits eigenvalues $(f_i)_{i=1,..,r}$ called the formal codegrees, which by a theorem, must be integers dividing $\FPdim(R)$. Moreover, for $i \in \{1,..,r\}$, we can choose $m_i = \FPdim(R)/f_i$. Note thaat this is a negative criterion: if the sum of the multiplicities of these eigenvalues is $< r$, then there is no induction matrix.
+The left multiplication matrix for $F(I(a_1)) = \sum_t a_t a_{t^*}$ admits eigenvalues $(f_i)_{i=1,..,r}$ called formal codegrees, which by a theorem \cite[Cor. 2.14]{Ost}, must be integers dividing $\FPdim(R)$. Moreover, for $i \in \{1,..,r\}$, we can choose $m_i = \FPdim(R)/f_i$. Note that this is a negative criterion: if the sum of the multiplicities of these eigenvalues is $< r$, then there is no induction matrix.
 
 Note that
 \[ F(I(a_1)) = \sum_t a_t a_{t^*} = \sum_k \left( \sum_t N_{t,t^*}^k \right) a_k, \]
@@ -3886,7 +3901,7 @@ For our example it is  \verb*|[1,1][0,1].ind|:
 ]
 \end{Verbatim}
  
-The additional data are meant as a help for setting up the input file for the next step that we discuss below. Note that the matrix F does not define the duality of ZR. The list of pairs $(i,i^*)$ is meant as a help for finding suitable dualities. 
+The rows of $F$ are ordered by ascending $m_i$. The additional data are meant as a help for setting up the input file for the next step that we discuss below. Note that the matrix F does not define the duality of $ZR$. The list of pairs $(i,i^*)$ is meant as a help for finding suitable dualities. 
 
 Our example defines only a single fusion ring. In general there are more than one. In this case one can either produce induction matrices for all fusion rings or pick one by
 \begin{itemize}
@@ -3951,7 +3966,7 @@ dehomogenization
 0 0 0 0 1 0 0 0 0 0 1
 \end{Verbatim}
 
-Rhe input as in \verb*|mini_ind.in| makes Normaliz compute only those fusion rings fot the given \verb*|fusion_type| and \verb*|fusion_duality| for which the matrix $F$ defines a homomorphism to the image defined by \verb*|fusion_image_type|, \verb*|fusion_image_duality| and fixed ion \verb*|fusion_image_ring|.
+The input as in \verb*|mini_ind.in| makes Normaliz compute only those fusion rings for the given \verb*|fusion_type| and \verb*|fusion_duality| for which the matrix $F$ defines a homomorphism to the image defined by \verb*|fusion_image_type|, \verb*|fusion_image_duality| and fixed in \verb*|fusion_image_ring|.
 
 A necessary condition is $F_{ij^*} = F_{i*j}$ for $i=1,\dots,n$ and $j= 1,\dots,r$ where $j*$ is defined by the duality on $R$ and $i^*$ by the duality on $ZR$. It is easy to check that $F$ defines a homomorphism if and only if
 $$
@@ -3961,4 +3976,4 @@ $$
 $$
 This system of linear equations for $M_{i,j}^k$ is added to the constraints defining $ZR$.
 
-\emph{Remark.}\enspace All computations above only verify necessary conditions for a Drinfeld center. The fusion rings $ZR$ that are defined by an induction matrix and a compatible duality and for which $F$ is a homomorphism to $R$ are not necessarily Drinfeld centers of the categorifications $\mathcal C$ of $R$. A simple example: if one changes the \verb*|fusion_image_duality| in \verb*|mini_ind.in| to $[0,1,3,2]$, one obtains the group ring of the cyclic group $C_4$ as $ZR$. But the Drinfeld centers of the categorifications of $C_2$ all have the group ring of $C_2\times C_2$ as their Grothendieck ring.
+\emph{Remark.}\enspace All computations above only verify necessary conditions for a Drinfeld center. The fusion rings $ZR$ that are defined by an induction matrix and a compatible duality and for which $F$ is a homomorphism to $R$ are not necessarily Grothrnfieck rings of Drinfeld centers of the categorifications $\mathcal C$ of $R$. A simple example: if one changes the \verb*|fusion_image_duality| in \verb*|mini_ind.in| to $[0,1,3,2]$, one obtains the group ring of the cyclic group $C_4$ as $ZR$. But the Drinfeld centers of the categorifications of $C_2$ all have the group ring of $C_2\times C_2$ as their Grothendieck ring (as we got it for the duality $[0,1,2,3$]).
