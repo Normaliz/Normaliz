@@ -5,6 +5,7 @@ set -x # print commands and their arguments as they are executed
 if [[ $BUILDSYSTEM != *static* ]]; then
     if [[ $OSTYPE == darwin* ]]; then
         export NMZ_COMPILER=clang++
+        echo 'export PATH="/opt/homebrew/opt/llvm@17/bin:$PATH"' >> /Users/runner/.bash_profile
     fi
 fi
 
