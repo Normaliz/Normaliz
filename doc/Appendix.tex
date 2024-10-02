@@ -3435,11 +3435,13 @@ The fundamental property of fusion rings is given by the \emph{Frobenius--Perron
 \item it is the only ring homomorphism $R\to \RR$ that has nonnegative values on $b_1,\dots,b_r$.
 \end{itemize}
 
+One calls $d_i$ the  \label{FPdim} \emph{Ftobenius--Perron dimension $\FPdim(b_i)$ of $b_i$}, and sets $\FPdim(R) = \sum_i d_i^2$.
+
 By definition $d_1,\dots,d_r$ are algebraic integers. We concentrate on the case in which they belong to $\ZZ$. The task to be solved is the computation of all fusion rings of a given \emph{type} $(d_1,\dots,d_r)$ and a given duality $(1^*,\dots,r^*)$ (possibly with the additional condition that $R$ is commutative).
 
 Given the type $(d_1,\dots,d_r)$ and the duality, we must find all nonnegative solutions to the linear equations
 $$
-N_{ij}^1d_1 +\dots N_{ij}^rd_r = d_id_j, \qquad i,j = 1,\dots,r
+N_{ij}^1d_1 +\dots + N_{ij}^rd_r = d_id_j, \qquad i,j = 1,\dots,r
 $$
 that reflect the homomorphism condition of the assignment $b_i\mapsto d_i$. Furthermore the associativity condition (Ass) must be satisfied that is given by polynomial equations of degree~$2$.
 
@@ -3659,6 +3661,46 @@ dehomogenization
 0 nonsimple fusion rings up to isomorphism:
 \end{Verbatim}
 
+\subsection{Full fusion data}
+
+The output for fusion rings shown in the previous section is the short form that uses Frobenius reciprocity, (Dual)  and (Unit). However, Normaliz can also provide the fusion data $(N_{ij}^k)$ in full form. For a  single fusion ring it is a list of Matrices $M_i$. The matrix $M_i$ contains the numbers $N_{ij}^k$ where $j$ is the row index and $k$ is the column index. (The transpose is the matrix of left multiplication by the basis element $b_i$.)
+The option
+\begin{itemize}
+	\itemtt[FusionData]
+\end{itemize}
+asks for the additional output file
+\begin{itemize}
+	\itemtta[<project>.fus]{project.fus}
+\end{itemize}
+It contains a list of lists, one inner list for every computed fusion ring. As an example we take \verb*|pet_new.in| that produces $2$ fusion rings. The usual output file is \verb*|pet_new.out|:
+\begin{Verbatim}
+	...
+	2 simple fusion rings up to isomorphism:
+	1 1 0 0 1 1 0 0 1 1 1 1 1 1 1 1 1 1  ...  1 1 2 1 2 1 2 2 1 1
+	1 1 0 0 1 1 0 0 1 1 1 1 1 1 1 1 1 1 ... 1 1 1 2 1 2 2 1 3 0 1
+	...
+\end{Verbatim}
+With the option \verb*|FusionData| in \verb*|pet_new.in| we run
+\begin{Verbatim}
+	./normaliz -c example/pet_new
+\end{Verbatim}
+and  get the additional file \verb*|pet_new.fus| (with comments \verb|<--- ...|):
+\begin{Verbatim}
+	[      <--------------  start of list of fusion rings 
+	[    <--------------  fusion ring 1
+	[  <--------------  matrix 1
+	[1,0,0,0,0,0,0],  <---- row 1
+	[0,1,0,0,0,0,0],
+	...
+	[0,0,0,0,0,0,1]  <---- last row
+	], <--------------  end of matrix 1
+	...
+	],   <------------- end of fusion ruing 1     
+	...
+	]     <------------- end of outer list
+\end{Verbatim}
+
+
 \subsection{Necessary conditions for modular categorification}\label{modular}
 
 Fusion rings that allow modular categorification (see \cite{ABPP} and \cite{EGNO}) must satisfy certain conditions. Normaliz can be asked to compute only fusion rings that satisfy them.
@@ -3744,45 +3786,179 @@ The option
 \end{itemize}
 has told Normaliz  to use the chosen modular grading. If there is only one modular grading, the choice is superfluous.
 
-\subsection{Full fusion data}
+\subsubsection{Induction to the center}
 
-The output for fusion rings shown in the previous section is the short form that uses Frobenius reciprocity, (Dual)  and (Unit). However, Normaliz can also provide the fusion data $(N_{ij}^k)$ in full form. For a  single fusion ring it is a list of Matrices $M_i$. The matrix $M_i$ contains the numbers $N_{ij}^k$ where $j$ is the row index and $k$ is the column index. (The transpose is the matrix of left multiplication by the basis element $b_i$.)
-The option
+Let $R$ be a fusion ring with fusion data $(N_{i,j}^k)$ and basis $\{a_1, \ldots, a_r\}$, where $a_1$ is the unit. For simplicity, we restrict ourselves  to integral and commutative $R$. Both these properties are essential for the discussion below.
+
+Assume that $R$ admits a categorification into a fusion category $\mathcal{C}$ over the complex field. ($\mathcal{C}$ is not necessarily uniquely determined.) Then the Drinfeld center $Z(\mathcal{C})$ of $\mathcal{C}$ is an integral modular fusion category see \cite[Section 9.2]{EGNO} for the mathematics). Let $ZR$ be the Grothendieck ring of $Z(\mathcal{C})$ Let $\{b_1, \ldots, b_n\}$ be the basis of $ZR$, where $n \geq r$. By the propertties of the Drionfeld center, $ZR$ is an integral commutative $1/2$-Frobenius fusion ring: this means that $\FPdim(b_i)^2$ divides $\FPdim(ZR)$ in $\ZZ$ ($\FPdim$ was introduced on p.~\pageref{FPdim}).
+
+Let $d_i = \FPdim(a_i)$ and $m_i = \FPdim(b_i)$. Then, $\FPdim(R) = \sum_i d_i^2$ and $\FPdim(ZR) = \sum_i m_i^2$. There is a theorem stating that $\FPdim(ZR) = \FPdim(R)^2$. By the $1/2$-Frobenius property, $m_i^2$ divides $\FPdim(ZR)$, so $m_i$ divides $\FPdim(R)$.
+
+There is a ring morphism $F: ZR \to R$ preserving $\FPdim$, induced by the (so-called) forgetful functor $Z(\mathcal{C}) \to \mathcal{C}$. Thus
+\[ F(b_i) = \sum_j F_{i,j} a_j, \]
+where $F_{i,j}$ are nonnegative integers and
+\[ m_i = \FPdim(\sum F_{i,j} a_j) = \sum_j F_{i,j}d_j. \]
+
+There is an additive morphism $I: R \to ZR$ (not preserving $\FPdim$, so not multiplicative) induced by the adjoint of the forgetful functor. As a matrix, $I$ is just the transpose of $F$, i.e.,
+\[ I(a_j) = \sum_i F_{i,j} b_i = \sum_i F_{i,j} b_i. \]
+
+The $r \times n$ matrix of $I$ is usually called the \emph{induction matrix}. It satisfies a list of properties implying that for a given fusion ring, there are only finitely many possible induction matrices. Normaliz can compute them---at least in principle since the computation may need an astronomical time.
+
+There can be zero, one or several possible induction matrices. If none, then the fusion ring $R$ is excluded from categorification, which is very useful. If there are induction matrices but no $ZR$ compatible with them, then $R$ is excluded as well from categorification. Idem if there are compatible $ZR$ but no modular data. 
+
+In general, for a given fusion ring $R$, several $ZR$ are possible, and several $n$ ( = rank($ZR$)) are possible. Hence, the rank $n$ of $ZR$ is also a variable.
+
+A theorem states that, for all $j$,
+\[ F(I(a_j)) = \sum_t a_t a_j a_{t^*}. \]
+
+But
+\[ F(I(a_j)) = \sum_k \left( \sum_i F_{i,j} F_{i,k} \right) a_k, \]
+and
+\[ \sum_t a_t a_j a_{t^*} = \sum_k \left( \sum_{s,t} N_{t,j}^s N_{s,t^*}^k \right) a_k. \]
+
+We get the following equation:
+\begin{equation}
+\sum_i F_{i,j} F_{i,k} = \sum_{s,t} N_{t,j}^s N_{s,t^*}^k\quad\text{for all}\quad j,k = 1,\dots,n. \ \label{indequ}
+\end{equation}
+
+
+The left multiplication matrix for $F(I(a_1)) = \sum_t a_t a_{t^*}$ admits eigenvalues $(f_i)_{i=1,..,r}$ called the formal codegrees, which by a theorem, must be integers dividing $\FPdim(R)$. Moreover, for $i \in \{1,..,r\}$, we can choose $m_i = \FPdim(R)/f_i$. Note thaat this is a negative criterion: if the sum of the multiplicities of these eigenvalues is $< r$, then there is no induction matrix.
+
+Note that
+\[ F(I(a_1)) = \sum_t a_t a_{t^*} = \sum_k \left( \sum_t N_{t,t^*}^k \right) a_k, \]
+so the left multiplication matrix for $F(I(a_1))$ is
+\[ \left( \sum_{t,k} N_{t,t^*}^k N_{k,l}^s \right) _{s,l}. \]
+
+Finally:
+\begin{gather*}
+ F(b_1) = a_1, \text{ so } F_{1,j} = \delta_{1,j}, \\
+ F_{i,1} = 1, \text{ for all } i \in \{1,..,r\}, \\
+ F_{i,1} = 0 \text{ for all } i \in \{r+1,\ldots,n\}.
+\end{gather*} 
+
+The rows of the matrix $F = (F_{ij})$ must satisfy the condition
+$$
+t = \sum_{j} F_{ij} d_j, \qquad t\mid \FPdim(R).
+$$
+The starting point of the computation therefore is to find all solutions to the equation $t = \sum_{j} F_{ij} d_j$ for the divisors $t$ of $\FPdim(R)$ that satisfy the additional conditions just mentioned. Then we must assemble $F$ from these rows so that Equation \eqref{indequ} is satisfied as well as $\sum_{i=1}^n m_i^2 = \FPdim(R)^2$. 
+
+Our computation goal is
 \begin{itemize}
-	\itemtt[FusionData]
+\itemtt[InductionMatrices]
 \end{itemize}
-asks for the additional output file
+As an example we take \verb*|[1,1][0,1].in|:
+\begin{Verbatim}
+amb_space 2
+fusion_type
+1 1
+fusion_duality
+0 1
+InductionMatrices
+\end{Verbatim}
+The induction matrices are contained in 
 \begin{itemize}
-	\itemtta[<project>.fus]{project.fus}
+\itemtta[<project>.ind]{project.ind}
 \end{itemize}
-It contains a list of lists, one inner list for every computed fusion ring. As an example we take \verb*|pet_new.in| that produces $2$ fusion rings. The usual output file is \verb*|pet_new.out|:
+They are printed with the conventions for $F$ above.
+For our example it is  \verb*|[1,1][0,1].ind|:
 \begin{Verbatim}
-...
-2 simple fusion rings up to isomorphism:
-1 1 0 0 1 1 0 0 1 1 1 1 1 1 1 1 1 1  ...  1 1 2 1 2 1 2 2 1 1
-1 1 0 0 1 1 0 0 1 1 1 1 1 1 1 1 1 1 ... 1 1 1 2 1 2 2 1 3 0 1
-...
+[     <----- begin outer list over the fusion rings computed
+  [   <----- inner list of vdata for the current fusion ring 
+    [
+      [0,1] <----- the fusion rfing in the format of <project>.out
+    ],
+    [  < first matrix F for the current fusion rfing
+      [1,0],
+      [1,0],
+      [0,1],
+      [0,1]
+    ],
+    [
+      [1,1,1,1] <---- type of the potential ZR
+    ],
+    [ <---- list of pairs (i,i*) that are possible
+      [1,1],
+      [2,2],
+      [2,3],
+      [3,3]
+    ]
+  ]
+]
 \end{Verbatim}
-With the option \verb*|FusionData| in \verb*|pet_new.in| we run
+ 
+The additional data are meant as a help for setting up the input file for the next step that we discuss below. Note that the matrix F does not define the duality of ZR. The list of pairs $(i,i^*)$ is meant as a help for finding suitable dualities. 
+
+Our example defines only a single fusion ring. In general there are more than one. In this case one can either produce induction matrices for all fusion rings or pick one by
+\begin{itemize}
+\itemtt[chosen\_fusion\_ring <s>] 
+\end{itemize}
+where \verb*|<s>| is a number between $1$ and the number of fusion rings computed. Example \verb*|chosen_2,in|:
 \begin{Verbatim}
-./normaliz -c example/pet_new
+amb_space 5
+fusion_type
+1 1 2 3 3
+fusion_duality
+0 1 2 3 4
+InductionMatrices
+chosen_fusion_ring 2
 \end{Verbatim}
-and  get the additional file \verb*|pet_new.fus| (with comments \verb|<--- ...|):
+You can vary the file by choosing fusion ring 1 (no induction matrix) or omit the choice completely.
+
+The second step is computing the potential centers  defined by the matrices $F$. Example \verb*|mini_ind.in| is
 \begin{Verbatim}
-[      <--------------  start of list of fusion rings 
-  [    <--------------  fusion ring 1
-    [  <--------------  matrix 1
-      [1,0,0,0,0,0,0],  <---- row 1
-      [0,1,0,0,0,0,0],
-      ...
-      [0,0,0,0,0,0,1]  <---- last row
-    ], <--------------  end of matrix 1
-    ...
-  ],   <------------- end of fusion ruing 1     
-  ...
- ]     <------------- end of outer list
+amb_space auto
+fusion_type
+[1,1,1,1]
+fusion_ring_map
+[
+[1,0],
+[1,0],
+[0,1],
+[0,1]
+]
+fusion_image_type
+[1, 1]
+fusion_image_duality
+[0, 1]
+fusion_image_ring
+[0,1]
+\end{Verbatim}
+Important: The input types
+\begin{itemize}
+\itemtt[fusion\_image\_type]
+\itemtt[fusion\_image\_duality]
+\itemtt[fusion\_image\_ring]
+\itemtt[fusion\_ring\_map]
+\end{itemize}
+must be \emph{formatted} matrices. 
+
+\verb*|mini_ind.out| is
+\begin{Verbatim}
+1 fusion rings up to isomorphism
+0 simple fusion rings up to isomorphism
+1 nonsimple fusion rings up to isomorphism
+
+Embedding dimension = 11
+
+dehomogenization
+0 0 0 0 0 0 0 0 0 0 1 
+
+***********************************************************************
+
+0 simple fusion rings up to isomorphism:
+
+1 nonsimple fusion rings up to isomorphism:
+0 0 0 0 1 0 0 0 0 0 1
 \end{Verbatim}
 
+Rhe input as in \verb*|mini_ind.in| makes Normaliz compute only those fusion rings fot the given \verb*|fusion_type| and \verb*|fusion_duality| for which the matrix $F$ defines a homomorphism to the image defined by \verb*|fusion_image_type|, \verb*|fusion_image_duality| and fixed ion \verb*|fusion_image_ring|.
 
+A necessary condition is $F_{ij^*} = F_{i*j}$ for $i=1,\dots,n$ and $j= 1,\dots,r$ where $j*$ is defined by the duality on $R$ and $i^*$ by the duality on $ZR$. It is easy to check that $F$ defines a homomorphism if and only if
+$$
+%\begin{equation} \label{eq:Zdata}
+\sum_{k=1}^n M_{i,j}^k F_{k,t} = \sum_{l,s = 1}^r F_{i,l} F_{j,s} N_{l,s}^t, \qquad i,j = 1,\dots,n, \ t = 1,\dots, r.
+%\end{equation}
+$$
+This system of linear equations for $M_{i,j}^k$ is added to the constraints defining $ZR$.
 
- 	
+\emph{Remark.}\enspace All computations above only verify necessary conditions for a Drinfeld center. The fusion rings $ZR$ that are defined by an induction matrix and a compatible duality and for which $F$ is a homomorphism to $R$ are not necessarily Drinfeld centers of the categorifications $\mathcal C$ of $R$. A simple example: if one changes the \verb*|fusion_image_duality| in \verb*|mini_ind.in| to $[0,1,3,2]$, one obtains the group ring of the cyclic group $C_4$ as $ZR$. But the Drinfeld centers of the categorifications of $C_2$ all have the group ring of $C_2\times C_2$ as their Grothendieck ring.
