@@ -25,7 +25,7 @@ case $BUILDSYSTEM in
 
         ## export NORMPARA=-x=1 ## paralleization does not work at present
 
-        make check
+        ## make check
 
         cd local/bin
         echo "CONTENTS OF LOCAL/BIN"

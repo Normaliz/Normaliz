@@ -3460,13 +3460,13 @@ N_{ij}^1d_1 +\dots + N_{ij}^rd_r = d_id_j, \qquad i,j = 1,\dots,r
 $$
 that reflect the homomorphism condition of the assignment $b_i\mapsto d_i$. Furthermore the associativity condition (Ass) must be satisfied that is given by polynomial equations of degree~$2$.
 
-To set up these equations and to interpret the solutions one must fix coordinates. We do this as follows.  The $N_{ij}^k$ with $1\in \{i,j,k\}$ are inserted into the equations with their fixed values $\in \{0,1\}$. Each tuple $(i,j,k)$ with $1\notin \{i,j,k\}$ belongs to a set $FR(i,j,k)$ defined by the $6$-rem identity (or the $12$-term identity). This set is represented by its lexicographic smallest member and the sets are ordered lexicographically by these members.
+To set up these equations and to interpret the solutions one must fix coordinates. We do this as follows.  The $N_{ij}^k$ with $1\in \{i,j,k\}$ are inserted into the equations with their fixed values $\in \{0,1\}$. Each tuple $(i,j,k)$ with $1\notin \{i,j,k\}$ belongs to a set $FR(i,j,k)$ defined by the $6$-term identity (or the $12$-term identity). This set is represented by its lexicographic smallest member and the sets are ordered lexicographically by these members.
 
 Examples of input files containing the systems of equations are \verb*|pet.in| and \verb*|baby.in|. \emph{Normaliz can produce the system of equations itself,} and we explain the necessary input types in Section \ref{fusion_input}.
 
 The computation uses the patching variant of project-and-lift (see \ref{positive_systems}).The options that control the insertion order of patches can be applied (see \ref{patch_order}).
 
-\subsection{Input types and computation gaols}\label{fusion_input}
+\subsection{Input types and computation goals}\label{fusion_input}
 
 \emph{Note that we count types and dualities from $0$ in the following.}
 
@@ -3531,7 +3531,7 @@ fusion_type
 candidate_subring
 [1,1,0,0,0,0,0,0,0,0,0,0]
 \end{Verbatim}
-If a \verb*|candidate_subring| is given, the default computation goal is changed to \verb*|SingleLatiicePoint|. If another computation goal is set explicitly, then the \verb*|candidate_subring| is disregarded.
+If a \verb*|candidate_subring| is given, the default computation goal is changed to \verb*|SingleLattiicePoint|. If another computation goal is set explicitly, then the \verb*|candidate_subring| is disregarded.
 
 If you only want to find out whether there is a fusion ring for your type and duality, you can use the option
 \begin{itemize}
@@ -3594,7 +3594,7 @@ Lattice point:
 Note that the single lattice point is not uniquely determined. 
 There are $300$ lattice points in the polytope. 
 
-The system of degree $2$ polynomial equations resulting from the associativity condition is highly overdetermined. For example, \verb*|pet_new.in| generates $240$ equations, but a run with \verb*|MinimizePolyEquations| reduces them to $50$. Using \verb*|MinimizePpolyEquations| is usually not a good idea since the formal minimization takes much more time than a run without it. Normaliz uses \emph{heuristic minimization} by counting how often a vector that has passed all preceding equations is not a solution. If an equation has ``never'' failed after a certain number $n$ of vectors passing it, it is declared ineffective and skipped latter on. The number $n$ depends on the FPdim of the fusion ring. However, a vector is only declared a final solution after checking all equations on it. So there is no danger of false results. But if an equation gets discarded prematurely, the computation time can explode. As a prevention, Normaliz offers the option
+The system of degree $2$ polynomial equations resulting from the associativity condition is highly overdetermined. For example, \verb*|pet_new.in| generates $240$ equations, but a run with \verb*|MinimizePolyEquations| reduces them to $50$. Using \verb*|MinimizePolyEquations| is usually not a good idea since the formal minimization takes much more time than a run without it. Normaliz uses \emph{heuristic minimization} by counting how often a vector that has passed all preceding equations is not a solution. If an equation has ``never'' failed after a certain number $n$ of vectors passing it, it is declared ineffective and skipped latter on. The number $n$ depends on the FPdim of the fusion ring. However, a vector is only declared a final solution after checking all equations on it. So there is no danger of false results. But if an equation gets discarded prematurely, the computation time can explode. As a prevention, Normaliz offers the option
 \begin{itemize}
 \itemtt[NoHeuristicMinimization, -{-NHM}]
 \end{itemize}
@@ -3805,7 +3805,7 @@ has told Normaliz  to use the chosen modular grading. If there is only one modul
 
 Let $R$ be a fusion ring with fusion data $(N_{i,j}^k)$ and basis $\{a_1, \ldots, a_r\}$, where $a_1$ is the unit. For simplicity, we restrict ourselves  to integral and commutative $R$. Both these properties are essential for the discussion below.
 
-Assume that $R$ admits a categorification into a fusion category $\mathcal{C}$ over the complex field. ($\mathcal{C}$ is not necessarily uniquely determined.) Then the Drinfeld center $Z(\mathcal{C})$ of $\mathcal{C}$ is an integral modular fusion category see \cite[Section 9.2]{EGNO} for the mathematics). Let $ZR$ be the Grothendieck ring of $Z(\mathcal{C})$ Let $\{b_1, \ldots, b_n\}$ be the basis of $ZR$, where $n \geq r$. By the properties of the Drionfeld center, $ZR$ is an integral commutative $1/2$-Frobenius fusion ring: this means that $\FPdim(b_i)^2$ divides $\FPdim(ZR)$ in $\ZZ$ ($\FPdim$ was introduced on p.~\pageref{FPdim}).
+Assume that $R$ admits a categorification into a fusion category $\mathcal{C}$ over the complex field. ($\mathcal{C}$ is not necessarily uniquely determined.) Then the Drinfeld center $Z(\mathcal{C})$ of $\mathcal{C}$ is an integral modular fusion category see \cite[Section 9.2]{EGNO} for the mathematics). Let $ZR$ be the Grothendieck ring of $Z(\mathcal{C})$ Let $\{b_1, \ldots, b_n\}$ be the basis of $ZR$, where $n \geq r$. By the properties of the Drinfeld center, $ZR$ is an integral commutative $1/2$-Frobenius fusion ring: this means that $\FPdim(b_i)^2$ divides $\FPdim(ZR)$ in $\ZZ$ ($\FPdim$ was introduced on p.~\pageref{FPdim}).
 
 Let $d_i = \FPdim(a_i)$ and $m_i = \FPdim(b_i)$. Then, $\FPdim(R) = \sum_i d_i^2$ and $\FPdim(ZR) = \sum_i m_i^2$. There is a theorem stating that $\FPdim(ZR) = \FPdim(R)^2$ \cite[Thm. 7.16.6]{EGNO}. By the $1/2$-Frobenius property, $m_i^2$ divides $\FPdim(ZR)$, so $m_i$ divides $\FPdim(R)$.
 
@@ -3976,4 +3976,4 @@ $$
 $$
 This system of linear equations for $M_{i,j}^k$ is added to the constraints defining $ZR$.
 
-\emph{Remark.}\enspace All computations above only verify necessary conditions for a Drinfeld center. The fusion rings $ZR$ that are defined by an induction matrix and a compatible duality and for which $F$ is a homomorphism to $R$ are not necessarily Grothrnfieck rings of Drinfeld centers of the categorifications $\mathcal C$ of $R$. A simple example: if one changes the \verb*|fusion_image_duality| in \verb*|mini_ind.in| to $[0,1,3,2]$, one obtains the group ring of the cyclic group $C_4$ as $ZR$. But the Drinfeld centers of the categorifications of $C_2$ all have the group ring of $C_2\times C_2$ as their Grothendieck ring (as we got it for the duality $[0,1,2,3$]).
+\emph{Remark.}\enspace All computations above only verify necessary conditions for a Drinfeld center. The fusion rings $ZR$ that are defined by an induction matrix and a compatible duality and for which $F$ is a homomorphism to $R$ are not necessarily Grothendieck rings of Drinfeld centers of the categorifications $\mathcal C$ of $R$. A simple example: if one changes the default \verb*|fusion_duality| $[0,1,2,3]$ in \verb*|mini_ind.in| to $[0,1,3,2]$, one obtains the group ring of the cyclic group $C_4$ as $ZR$. But the Drinfeld centers of the categorifications of $C_2$ all have the group ring of $C_2\times C_2$ as their Grothendieck ring (as we got it for the duality $[0,1,2,3$]).
