@@ -119,7 +119,7 @@ NORMALIZ_DLL_EXPORT extern bool int_max_value_dual_long_long_computed;
 NORMALIZ_DLL_EXPORT extern bool int_max_value_primary_long_computed;
 NORMALIZ_DLL_EXPORT extern bool int_max_value_primary_long_long_computed;
 NORMALIZ_DLL_EXPORT extern bool no_output_on_interrupt;
-NORMALIZ_DLL_EXPORT extern bool no_lattice_data;
+NORMALIZ_DLL_EXPORT extern bool no_coord_transf;
 NORMALIZ_DLL_EXPORT extern bool write_lp_file;
 
 #ifdef NMZ_EXTENDED_TESTS
@@ -178,6 +178,7 @@ void MeasureTime(bool verbose, const std::string& step);
 double TimeSinceStart();
 void MeasureGlobalTime(bool verbose);
 void PrintTime(const struct timeval var_TIME_begin, bool verbose, const std::string& step);
+void noCoordTransf(bool onoff);
 
 void Check_Stop();
 

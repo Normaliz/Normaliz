@@ -1,5 +1,12 @@
 # ChangeLog
 
+
+## [3.10.4]  2024-10-13
+
+-- Computation goal InductionMatrices for fuasion rings
+-- Ring homomorphiams dereived from induction matrices
+-- directive suppress_coord_trans
+
 ## [3.10.3]  2024-05-31
 
 -- computation goals SingleFusionRing and ModularGradings.

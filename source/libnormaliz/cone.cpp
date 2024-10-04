@@ -1885,10 +1885,10 @@ void Cone<Integer>::process_lattice_data(const Matrix<Integer>& LatticeGenerator
         compose_basis_change(Sublattice_Representation<Integer>(dim));
 
     if(LatticeGenerators.nr_of_rows() > 0) // in this case we must compute the coordinate transformation here
-        no_lattice_data = false;
+        no_coord_transf = false;
 
-    if(no_lattice_data){
-        no_lattice_data = false;
+    if(no_coord_transf){
+        no_coord_transf = false;
         return;
     }
 
@@ -6675,6 +6675,8 @@ void Cone<Integer>::setModularGraing(long mod_gr) {
 
 template <typename Integer>
 void Cone<Integer>::setChosenFusionRing(long fus_r) {
+    if(fus_r != chosen_fusion_ring)
+        is_Computed.reset(ConeProperty::InductionMatrices);
     chosen_fusion_ring = fus_r;
 }
 
@@ -7475,7 +7477,7 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
 
     // Support hyperplanes etc. prepared now
     Matrix<Integer> CongOri;
-    if(no_lattice_data)
+    if(no_coord_transf)
         CongOri = Congruences;
     else
         CongOri = BasisChange.getCongruencesMatrix();

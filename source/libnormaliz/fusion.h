@@ -373,7 +373,6 @@ void FusionBasic::read_data_from_input(InputMap<Integer>& input_data){
     bool has_fusion_image = false;
     if(contains(input_data, Type::fusion_image_ring)) {
         if(!contains(input_data, Type::fusion_image_type)
-            || !contains(input_data, Type::fusion_image_duality)
             || !contains(input_data, Type::fusion_ring_map) )
             throw BadInputException("Incomplete fusion image data");
         has_fusion_image = true;
@@ -384,6 +383,12 @@ void FusionBasic::read_data_from_input(InputMap<Integer>& input_data){
 
     convert_vector_via_string(fusion_image_ring,input_data[Type::fusion_image_ring][0]);
     convert_matrix_via_string(fusion_ring_map, input_data[Type::fusion_ring_map]);
+
+    if(!contains(input_data, Type::fusion_image_duality)){ // take the default
+        input_data[Type::fusion_image_duality].resize(1);
+        convert_vector_via_string(input_data[Type::fusion_image_duality][0],
+                                  identity_key(fusion_ring_map.nr_of_columns()));
+    }
 
     InputMap<Integer> Help;
     Help[Type::fusion_type]= input_data[Type::fusion_image_type][0];

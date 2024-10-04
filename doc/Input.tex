@@ -626,7 +626,7 @@ The interpretation of homogeneity follows the same rules as for tabular constrai
 
 If there are equations or congruences in the input in the input, Normaliz computes a change of coordinates already in the construction phase. However, computation of lattice points by project-and-lift is carried out in the coordinate system of the input so that the coordinate transformation is superfluous.  When the coordinate transformation  is computed, Normaliz does not know whether it will be needed. One can suppress it by the directive
 \begin{itemize}
-	\itemtt[no\_lattice\_data]
+	\itemtt[no\_coord\_transf]
 \end{itemize}
 The directive has no effect if the input contains lattice generators.
 

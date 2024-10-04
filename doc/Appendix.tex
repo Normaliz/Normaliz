@@ -320,6 +320,8 @@ Certain local properties of affine monoid algebras $R$ depend only on the underl
 
 Suitable properfties are regularity and normality. For regularity we  have realized the computation of the singular locus, i.e., the set of prime ideals for which the corresponding localization is not regular. See Section \ref{SingularLocus}.
 
+\newpage
+
 \section{Annotated console output}\label{Console}
 
 Somewhat outdated, but not much has changed in the shown computations since~3.2.0.
@@ -512,6 +514,8 @@ Round 400
 Round 500
 \end{Verbatim}
 
+\newpage
+
 \section{Normaliz~2 input syntax}\label{OldSyntax}
 
 A Normaliz~2 input file contains a sequence of matrices. Comments or options are not allowed in it. A matrix has the format
@@ -528,6 +532,8 @@ where \verb|<m>| denotes the number of rows, \verb|<n>| is the number of columns
 Note that algebraic polyhedra cannot be defined by input files in this format.
 
 The optional output files with suffix \verb|cst| are still in this format. Just create one and inspect it.
+
+\newpage
 
 \section{libnormaliz}\label{libnorm}
 
@@ -1571,6 +1577,14 @@ const vector<vector<Integer> >& getCongruences() const
 \end{Verbatim}
 
 But see Section~\ref{SHC} above for a more direct access.
+
+\subsubsection{Suppressing the coordinate transformation}
+
+The project-and-lift algorithm uses the coordinate system of the cone constructor. For other algorithms it is necessary to pas to a sublattice or even a quotient lattice. At construction time Normaliz does not know what algorithm will be used later, and therefore computes a coordinate transformation if the input contains lattice generators or constraints. If there are only constraints, the coordinate transformation can be suppressed by
+\begin{Verbatim}
+void noCoordTransf(bool onoff)
+\end{Verbatim}
+This can be useful if the number of coordinates is extremely large, as it happens in the computation of fusion rings. Of course, you must be sure that the coordinate transformation will not be needed. The function applies only until a cone construction has taken place.
 
 \subsubsection{Coordinate transformations for precomputed data}\label{coord_pre}
 
@@ -2871,7 +2885,7 @@ For this simple input there is only one fusion ring. It is of course also return
 \end{Verbatim} 
 as a vector.
 
-Wec can also ask for \verb*|SimpleFusionRings|, \verb*|NonSimpleFusionRings|, \verb*|LatticePoints|, \verb*|SingleLatticePoint| and \verb*|FusionData|. For our example we get the fusion data (line breaks inserted) 
+Wec can also ask for \verb*|SimpleFusionRings|, \verb*|NonSimpleFusionRings|, \verb*|LatticePoints|, \verb*|SingleLatticePoint|, \verb*|InductionMatrices| and \verb*|FusionData|. For our example we get the fusion data (line breaks inserted) 
 \begin{Verbatim}
 [[[[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]],
   [[0, 1, 0, 0], [1, 0, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]],
@@ -2879,7 +2893,7 @@ Wec can also ask for \verb*|SimpleFusionRings|, \verb*|NonSimpleFusionRings|, \v
   [[0, 0, 0, 1], [0, 0, 0, 1], [0, 0, 1, 1], [1, 1, 1, 0]]]]
 \end{Verbatim}
 
-For suitable input it make sense to ask for \verb*|ModularGradings|. Then the algorithmic variant \verb*|UseModularGrading| can be applied via the collective compute command discussed below. If there is more than one modular grading, you must pick one by the function \verb*|setModularGrading(<g>)| where  \verb*|<g>| is the number of the grading you want to pick, counted from 1.
+For suitable input it make sense to ask for \verb*|ModularGradings|. Then the algorithmic variant \verb*|UseModularGrading| can be applied via the collective compute command discussed below. If there is more than one modular grading, you must pick one by the function \verb*|SetModularGrading(<g>)| where  \verb*|<g>| is the number of the grading you want to pick, counted from 1. The same applies to \verb*|SSetChosenFusionRing(<r>)| by which we can pick a fusion ring for \verb*|InductionMatrices|.
 
 \subsubsection{The collective compute command and algorithmic variants}\label{CollComp}
 So far we have asked Normaliz for a single cone property. It is also possible to bundle several computation goals and options in a single compute command:
@@ -2988,7 +3002,7 @@ True
 \end{Verbatim}
 Now you should find a file \verb|Wonderful.out| in the current directory.
 
-One can also write a file for the inout of precomputed data:
+One can also write a file for the input of precomputed data:
 \begin{Verbatim}
 >>> C.WritePrecompData("Wonderful")
 True
@@ -3155,6 +3169,8 @@ Numbers of type \verb|mpq_class| are represented by a \verb|list| with two compo
 An algebraic number is represented by a \verb|list| whose members are rational numbers each of which is a \verb|list| with two members. They are the coefficients of the polynomial representing the algebraic number.
 
 \end{small}
+
+\newpage
 
 \section{Distributed computation}
 
@@ -3348,6 +3364,8 @@ The computation goals \verb*|SingleLatticePoint| and \verb*|SingleFusionRing| as
 \end{itemize}
 This file is deleted by \verb*|CollectLat|.
 
+\newpage
+
 
 \section{Lists of input files}\label{input_list}
 
@@ -3415,6 +3433,8 @@ time ../normaliz -c InList --List -A=${SLURM_ARRAY_TASK_ID} -Z=100
 The operations started by \verb*|DistributedComp| or \verb*|CollectLat| can also be performed on an input list.
 
 The time bound set by \verb*|normaliz.time| is shared by all files in siuch a way that each file gets the same amount of time.
+
+\newpage
 
 \section{Fusion rings}\label{fusion_rings}
 
@@ -3924,6 +3944,8 @@ The second step is computing the potential centers  defined by the matrices $F$.
 amb_space auto
 fusion_type
 [1,1,1,1]
+fusion_duality
+[0,1,2,3]
 fusion_ring_map
 [
 [1,0],
@@ -3945,7 +3967,7 @@ Important: The input types
 \itemtt[fusion\_image\_ring]
 \itemtt[fusion\_ring\_map]
 \end{itemize}
-must be \emph{formatted} matrices. 
+must be \textbf{formatted} matrices. If the \verb*|fusion_image_type| is missing, it is set to the identity (like \verb*|fusion_duality|).
 
 \verb*|mini_ind.out| is
 \begin{Verbatim}
@@ -3976,4 +3998,4 @@ $$
 $$
 This system of linear equations for $M_{i,j}^k$ is added to the constraints defining $ZR$.
 
-\emph{Remark.}\enspace All computations above only verify necessary conditions for a Drinfeld center. The fusion rings $ZR$ that are defined by an induction matrix and a compatible duality and for which $F$ is a homomorphism to $R$ are not necessarily Grothendieck rings of Drinfeld centers of the categorifications $\mathcal C$ of $R$. A simple example: if one changes the default \verb*|fusion_duality| $[0,1,2,3]$ in \verb*|mini_ind.in| to $[0,1,3,2]$, one obtains the group ring of the cyclic group $C_4$ as $ZR$. But the Drinfeld centers of the categorifications of $C_2$ all have the group ring of $C_2\times C_2$ as their Grothendieck ring (as we got it for the duality $[0,1,2,3$]).
+\emph{Remark.}\enspace All computations above only verify necessary conditions for a Drinfeld center. The fusion rings $ZR$ that are defined by an induction matrix and a compatible duality and for which $F$ is a homomorphism to $R$ are not necessarily Grothendieck rings of Drinfeld centers of the categorifications $\mathcal C$ of $R$. A simple example: if one changes the \verb*|fusion_duality| $[0,1,2,3]$ in \verb*|mini_ind.in| to $[0,1,3,2]$, one obtains the group ring of the cyclic group $C_4$ as $ZR$. But the Drinfeld centers of the categorifications of $C_2$ all have the group ring of $C_2\times C_2$ as their Grothendieck ring (as we got it for the duality $[0,1,2,3$]).
