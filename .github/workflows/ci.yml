@@ -13,7 +13,7 @@ jobs:
   ## Build "static" Mac binary distribution and deploy to Normaliz-bindist
   ## (thus we set  NO_COVERAGE=1)
   cocoa-eantic-nauty-static:
-    runs-on: macos-13
+    runs-on: macos-14
     env:
       BUILDSYSTEM: "cocoa-eantic-nauty-static"
       CONFIGURE_FLAGS: "--enable-openmp"
@@ -50,7 +50,7 @@ jobs:
 
 
   macos_installscript-check:
-    runs-on: macos-latest
+    runs-on: macos-15
     env:
       BUILDSYSTEM: "check"
       ## NORMPARA: "-x=1"
