@@ -243,6 +243,43 @@ jobs:
           name: MacOSbinary.zip
           path: local/bin/MacOSbinary.zip
 
+  cocoa-eantic-nauty-static-Intel:
+    runs-on: macos-13
+    env:
+      BUILDSYSTEM: "cocoa-eantic-nauty-static"
+      CONFIGURE_FLAGS: "--enable-openmp"
+      NO_COVERAGE: "1"
+      INTEL: "1"
+    steps:
+      - uses: actions/checkout@v3
+      - name: "Install homebrew packages"
+        run: |
+          brew install autoconf automake libtool gmp llvm libomp boost diffutils
+      - name: "Install prerequisites"
+        run: |
+          ./install_scripts_opt/install_nmz_nauty.sh
+          ./install_scripts_opt/install_eantic_with_prerequisites.sh
+          ./install_scripts_opt/install_nmz_cocoa.sh
+      # - name: "Setup tmate session"
+      #   uses: mxschmitt/action-tmate@v3
+      - name: "Configure"
+        run: .github/workflows/.github-ci-build_configure.sh
+      # - name: "Setup tmate session"
+      #   uses: mxschmitt/action-tmate@v3
+      - name: "Build"
+        run: .github/workflows/.github-ci-build_make.sh
+      # - name: "Setup tmate session"
+      #   uses: mxschmitt/action-tmate@v3
+      - name: "Run tests"
+        run: .github/workflows/.github-ci-build_check.sh
+      # - name: "Setup tmate session"
+      #   uses: mxschmitt/action-tmate@v3
+      - name: "Archive MacOS binary"
+        uses: actions/upload-artifact@v4
+        with:
+          name: MacOSbinary.zip
+          path: local/bin/MacOSbinary.zip
+
   eantic:
     runs-on: macos-latest
     env:
