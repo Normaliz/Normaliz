@@ -30,7 +30,12 @@ case $BUILDSYSTEM in
         cd local/bin
         echo "CONTENTS OF LOCAL/BIN"
         ls .
-        zip MacOSbinary.zip *
+        if [ "x$INTEL" != x ]; then
+            zip MacOSbinary-Intel.zip *
+        else
+            zip MacOSbinary.zip *
+        fi
+
         ;;
 
     *makedistcheck*)
