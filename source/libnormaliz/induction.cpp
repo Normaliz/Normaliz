@@ -103,7 +103,7 @@ Induction<Integer>::Induction(const vector<Integer>& fus_type, const vector<key_
 
     MultEV.resize(divisors.size());
 
-    Integer sum_mult = 0;
+    size_t sum_mult = 0;
     if(verbose)
         verboseOutput() << "eigenvalues and their multiplicities" << endl;
     for(size_t i = 0; i< divisors.size(); ++i){
