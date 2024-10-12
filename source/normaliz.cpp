@@ -603,6 +603,16 @@ int process_data(OptionsHandler& options, const string& command_line) {
             pair<bool, bool> result = test_fusion.data_from_string(global_project, true);
             standard_fusion_name = result.first;
             only_partition = result.second;
+            if(no_empty_output && standard_fusion_name && only_partition){
+                set<unsigned long> test_dupl;
+                for(auto& t: test_fusion.fusion_type)
+                    test_dupl.insert(t);
+                if(test_dupl.size() == test_fusion.fusion_type.size()){
+                    only_partition = false;
+                    test_fusion.duality = identity_key(test_fusion.fusion_type.size());
+                }
+            }
+
             if(!standard_fusion_name){
                 cerr << "error: Failed to open file " << name_in << "." << endl;
                 return 1;
@@ -710,7 +720,7 @@ int process_data(OptionsHandler& options, const string& command_line) {
     } catch (const TimeBoundException& e) {
         cerr << e.what() << endl;
         cerr << "Time bound exceeded for " << global_project << " exiting." << endl;
-        if(!is_split_patching){
+        if(!is_split_patching && !no_empty_output){
             cerr << "Creating signal file with suffix exc" << endl;
             string exc_name = options.getProjectName() + ".exc";
             ofstream exc_file(exc_name.c_str());

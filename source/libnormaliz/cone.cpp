@@ -7711,6 +7711,15 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
     // single first
 
     if(ToCompute.test(ConeProperty::SingleLatticePoint)){
+
+        if(ToCompute.test(ConeProperty::NoEmptyOutput)){
+            if(ModuleGenerators.nr_of_rows() >0){
+                ofstream Lop(global_project + ".out");
+                Lop << "1 lat point" << endl;
+                Lop.close();
+            }
+            throw NoComputationException("No empty output");
+        }
         if(inhomogeneous && ModuleGenerators.nr_of_rows() >0){
             SingleLatticePoint = ModuleGenerators[0];
             ModuleGenerators.resize(0,dim);

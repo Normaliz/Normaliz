@@ -156,6 +156,7 @@ ConeProperties all_options() {
     ret.set(ConeProperty::TestLinearAlgebraGMP);
     ret.set(ConeProperty::TestSimplexParallel);
     ret.set(ConeProperty::TestLibNormaliz);
+    ret.set(ConeProperty::NoEmptyOutput);
     ret.set(ConeProperty::NoDescent);
     ret.set(ConeProperty::Descent);
     ret.set(ConeProperty::NoGradingDenom);
@@ -344,6 +345,7 @@ void ConeProperties::check_fusion_ring_props() const{
     copy.reset(ConeProperty::MinimizePolyEquations);
     copy.reset(ConeProperty::ModularGradings);
     copy.reset(ConeProperty::UseModularGrading);
+    copy.reset(ConeProperty::NoEmptyOutput);
 
 
     if (copy.any()) {
@@ -445,6 +447,11 @@ void ConeProperties::set_fusion_partition_default() {
 
 /* add preconditions */
 void ConeProperties::set_preconditions(bool inhomogeneous, bool numberfield) {
+
+    if(CPs.test(ConeProperty::NoEmptyOutput) && CPs.test(ConeProperty::FusionRings)){
+        CPs.reset(ConeProperty::FusionRings);
+        CPs.set(ConeProperty::SingleLatticePoint);
+    }
 
     if(CPs.test(ConeProperty::NonsimpleFusionRings)){
         CPs.set(ConeProperty::FusionRings);
@@ -1163,6 +1170,7 @@ vector<string> initializeCPN() {
     CPN.at(ConeProperty::TestLinearAlgebraGMP) = "TestLinearAlgebraGMP";
     CPN.at(ConeProperty::TestSimplexParallel) = "TestSimplexParallel";
     CPN.at(ConeProperty::TestLibNormaliz) = "TestLibNormaliz";
+    CPN.at(ConeProperty::NoEmptyOutput) = "NoEmptyOutput";
     CPN.at(ConeProperty::Descent) = "Descent";
     CPN.at(ConeProperty::NoDescent) = "NoDescent";
     CPN.at(ConeProperty::NoGradingDenom) = "NoGradingDenom";
@@ -1215,7 +1223,7 @@ vector<string> initializeCPN() {
     CPN.at(ConeProperty::UseModularGrading) = "UseModularGrading";
 
     // detect changes in size of Enum, to remember to update CPN!
-    static_assert(ConeProperty::EnumSize == 166,"ConeProperties Enum size does not fit! Update cone_property.cpp!");
+    static_assert(ConeProperty::EnumSize == 167,"ConeProperties Enum size does not fit! Update cone_property.cpp!");
     // assert all fields contain an non-empty string
     for (size_t i = 0; i < ConeProperty::EnumSize; i++) {
         // bstd::cout << "iii " << i << "  " << CPN.at(i) << endl;

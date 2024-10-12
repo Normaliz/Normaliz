@@ -457,6 +457,11 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
             write_all_files = true;
             continue;
         }
+        if(LongOption == "NoEmptyOutput"){
+            to_compute.set(ConeProperty::NoEmptyOutput);
+            no_empty_output = true;
+            continue;
+        }
         if(LongOption == "UWP"){
             to_compute.set(ConeProperty::UseWeightsPatching);
             continue;
