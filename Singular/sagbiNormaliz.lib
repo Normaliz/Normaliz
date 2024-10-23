@@ -842,11 +842,12 @@ RETURN:   An ideal whose generators form the Sagbi basis of the algebra generate
           given by the numerator and the denominator.
 
           If sorting is set, the  compouted elements are degrevlex sorted before a round of the algorithm.
-                    The optional parameter verb sets the terminal output. Fefault is 1 = on.
+          The optional parameter verb sets the terminal output. Fefault is 1 = on.
 
-          The component has a second integer component. Its possible values are: 0, if the full Sagbi basis has
+          The return value has a second integer component. Its possible values are: 0, if the full Sagbi basis has
           not been reached, 1 if this is unknown, and 2 if the full Sagbi basis has been computed.
-EXAMPLE:  sagbiHilbControlled; shows an example
+
+EXAMPLE:  example sagbiHilbControlled; shows an example
 "
 {
 
@@ -904,10 +905,10 @@ proc sagbiByDegree(ideal Q, int Sagbi_degree_bound, list #)
 RETURN:   RETURN:   An ideal whose generators form the Sagbi basis of the algebra generated
           by the polynomials inin degrwees <= Sagbi_degree_bound.
 
-           If sorting is set, the  compouted elements are degrevlex sorted before a round of the algorithm.
+          If sorting is set, the  compouted elements are degrevlex sorted before a round of the algorithm.
           The optional parameter verb sets the terminal output. Fefault is 1 = on.
 
-          The component has a second integer component. Its possible values are: 0, if the full Sagbi basis has
+          The return value has a second integer component. Its possible values are: 0, if the full Sagbi basis has
           not been reached, 1 if this is unknown, and 2 if the full Sagbi basis has been computed.
 
 EXAMPLE:  example sagbiByDegree; shows an example
@@ -973,7 +974,7 @@ RETURN:   An ideal whose generators form the Sagbi basis of the algebra generate
           If sorting is set, the  compouted elements are degrevlex sorted before a round of the algorithm.
           The optional parameter verb sets the terminal output. Fefault is 1 = on.
 
-          The component has a second integer component. Its possible values are: 0, if the full Sagbi basis has
+          The return value has a second integer component. Its possible values are: 0, if the full Sagbi basis has
           not been reached, 1 if this is unknown, and 2 if the full Sagbi basis has been computed.
 
 EXAMPLE:  example agbiGeneral; shows an example
