@@ -1,6 +1,6 @@
 /*
  * Normaliz
- * Copyright (C) 2007-2022  W. Bruns, B. Ichim, Ch. Soeger, U. v. d. Ohe
+ * Copyright (C) 2007-2024  W. Bruns, B. Ichim, Ch. Soeger, U. v. d. Ohe
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -32,7 +32,7 @@ using std::endl;
 using std::ifstream;
 
 static void printCopying() {
-    cout << "Copyright (C) 2007-2022  The Normaliz Team, University of Osnabrueck." << endl
+    cout << "Copyright (C) 2007-2024  The Normaliz Team, University of Osnabrueck." << endl
          << "This program comes with ABSOLUTELY NO WARRANTY; This is free software," << endl
          << "and you are welcome to redistribute it under certain conditions;" << endl
          << "See COPYING for details." << endl;
