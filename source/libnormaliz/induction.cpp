@@ -1,6 +1,6 @@
 /*
  * Normaliz
- * Copyright (C) 2007-2024  W. Bruns, B. Ichim, Ch. Soeger, U. v. d. Ohe
+ * Copyright (C) 2007-2022  W. Bruns, B. Ichim, Ch. Soeger, U. v. d. Ohe
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -103,7 +103,7 @@ Induction<Integer>::Induction(const vector<Integer>& fus_type, const vector<key_
 
     MultEV.resize(divisors.size());
 
-    size_t sum_mult = 0;
+    Integer sum_mult = 0;
     if(verbose)
         verboseOutput() << "eigenvalues and their multiplicities" << endl;
     for(size_t i = 0; i< divisors.size(); ++i){
@@ -117,7 +117,6 @@ Induction<Integer>::Induction(const vector<Integer>& fus_type, const vector<key_
         if(verbose)
             verboseOutput() << "Sum of multiplicities of eigenvalues dividing FPdim < fusion_rank" << endl;
         mult_of_ev_ok = false;
-        return;
     }
 
    Bounds.resize(fusion_rank, fusion_rank);
@@ -139,6 +138,8 @@ Induction<Integer>::Induction(const vector<Integer>& fus_type, const vector<key_
 
     HighRepresentations.resize(0, fusion_rank);
 
+    bool randomize = true;
+
     for(auto& t: divisors){
 
         INTERRUPT_COMPUTATION_BY_EXCEPTION
@@ -158,6 +159,7 @@ Induction<Integer>::Induction(const vector<Integer>& fus_type, const vector<key_
                               Type::inhom_inequalities, NeutralInEqu);
         RepCone.setVerbose(false);
         Matrix<Integer> Reps = RepCone.getLatticePointsMatrix();
+        Matrix<Integer> HighReps_this_t(0, Reps.nr_of_columns() -1);
         size_t count_low = 0, count_high = 0;
         for(size_t i = 0; i < Reps.nr_of_rows(); ++i){
             bool too_large = false;
@@ -181,13 +183,30 @@ Induction<Integer>::Induction(const vector<Integer>& fus_type, const vector<key_
                 count_low++;
             }
             if(Reps[i][0] == 0){
-                HighRepresentations.append(new_rep);
+                HighReps_this_t.append(new_rep);
                 count_high++;
             }
 
         }
+
         if(verbose)
             verboseOutput() << "divisor " << t << " has " << count_low <<" low reps and " << count_high << " high" << endl;
+
+        if(count_high > 0){
+            dynamic_bitset to_be_used(count_high);
+            if(randomize){
+                for(size_t r = 0; r < 5;++r)
+                    to_be_used[rand() % count_high] = true;
+            }
+            else{
+                to_be_used.flip();
+            }
+
+            for(size_t i = 0; i < count_high; ++i){
+                if(to_be_used[i])
+                    HighRepresentations.append(HighReps_this_t[i]);
+            }
+        }
 
        // LowRepresentations[t].debug_print('$');
     }
@@ -367,6 +386,7 @@ void Induction<Integer>::from_low_to_full(const Matrix<Integer>& ThisLowPart){
     if(verbose)
         verboseOutput() << "Extending low part to full induction matrices" << endl;
 
+    //First we compute the contribution of the low part to the conditions for induction matrices
 
     Integer FPdim_so_far =0;
     for(size_t j = 0; j < fusion_rank; ++j)
@@ -392,6 +412,9 @@ void Induction<Integer>::from_low_to_full(const Matrix<Integer>& ThisLowPart){
 
         // Bounds.debug_print();
 
+        // Now the conditions for the high part
+        // Remaining: the difference between whe goal and the contribution of the low part
+
         Matrix<Integer> Remaining = Bounds.add(MinusLowBound);
 
         // Remaining.debug_print('R');
@@ -404,13 +427,15 @@ void Induction<Integer>::from_low_to_full(const Matrix<Integer>& ThisLowPart){
             for(size_t k = j; k < fusion_rank; ++k){
                 vector<Integer> this_equ;
                 for(size_t i = 0; i < HighRepresentations.nr_of_rows(); ++i){
-                        this_equ.push_back(HighRepresentations[i][j] * HighRepresentations[i][k]);
+                    this_equ.push_back(HighRepresentations[i][j] * HighRepresentations[i][k]);
                 }
                 this_equ.push_back(-Remaining[j][k]);
                 // cout << j << " " << k << " " << "ttt " <<  this_equ;
                 InhomEqu.append(this_equ);
             }
         }
+
+        // now the eruation for the FPdim of the center
 
         vector<Integer> this_equ;
         for(size_t i = 0; i < HighRepresentations.nr_of_rows(); ++i){
@@ -452,7 +477,7 @@ void Induction<Integer>::from_low_to_full(const Matrix<Integer>& ThisLowPart){
             InductionMatrices.push_back(IndMat);
             if(verbose)
                 IndMat.debug_print('I');
-            if(talkative)
+            if(verbose)
                 verboseOutput() << "I" << endl;
         }
 }
@@ -518,49 +543,6 @@ void Induction<Integer>::compute(){
     augment_induction_matrices();
 }
 
-/* Not used anamore
-template<typename Integer>
-void Induction<Integer>::extend_matrix(Matrix<Integer> matrix_so_far, key_t rep_index,
-                       Matrix<Integer> bounds_so_far, Integer FPdim_so_far){
-
-    if(rep_index >= HighRepresentations.nr_of_rows())
-        return;
-
-    vector<Integer> cand_ext = HighRepresentations[rep_index];
-    Integer new_m = v_scalar_product(cand_ext, fusion_type);
-
-    while(true){
-
-        extend_matrix(matrix_so_far, rep_index +1, bounds_so_far, FPdim_so_far);
-        FPdim_so_far += new_m* new_m;
-        if(FPdim_so_far > FPSquare){
-            return;
-        }
-        bool potential_solution = true;
-        if(FPdim_so_far < FPSquare)
-            potential_solution = false;
-
-        for(size_t j = 0; j < fusion_rank; ++j){
-            for(size_t k = j; k < fusion_rank; ++k){
-                bounds_so_far[j][k] +=  cand_ext[j] * cand_ext[k];
-                if(bounds_so_far[j][k] > Bounds[j][k]){
-                    return;
-                }
-                if(bounds_so_far[j][k] < Bounds[j][k])
-                    potential_solution = false;
-            }
-        }
-        matrix_so_far.append(cand_ext);
-
-        if(potential_solution){
-            InductionMatrices.push_back(matrix_so_far);
-            // matrix_so_far.debug_print('$');
-            return;
-        }
-
-    }
-}
-*/
 
 template class Induction<mpz_class>;
 template class Induction<long long>;

@@ -1,6 +1,6 @@
 /*
  * Normaliz
- * Copyright (C) 2007-2024  W. Bruns, B. Ichim, Ch. Soeger, U. v. d. Ohe
+ * Copyright (C) 2007-2022  W. Bruns, B. Ichim, Ch. Soeger, U. v. d. Ohe
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -62,7 +62,7 @@ public:
     vector<Matrix<Integer> >  Tables;
 
     vector<Integer> divisors;
-    vector<size_t> MultEV;
+    vector<Integer> MultEV;
     Matrix<Integer> EVMat;
 
     vector<Integer> low_m;  // the m_i for i < r
