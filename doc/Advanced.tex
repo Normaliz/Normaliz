@@ -99,7 +99,7 @@ In certain cases you must use \verb|-i| on the command line to override the opti
 
 The files \verb|ChF*.in| and \verb|VdM*.in| are taken from the paper ``On the orthogonality of the Chebyshev-Frolov lattice and applications'' by Ch.~Kacwin, J.~Oettershagen and T.~Ullrich (Monatsh.\ Math.\ 184 (2017), 425--441). The file \verb|VdM_16_1048576.in| is based on the linear map given directly by the Vandermonde matrix. A major point of the paper is a coordinate transformation that simplifies computations significantly, and the files \verb|ChF*.in| are based on it.
 
-The files \verb|pet.in| and \verb|baby.in| have been created in connection with the work on fusion rings. See \cite{ABPP}.
+The files \verb|pet.in| and \verb|baby.in| have been created in connection with the work on fusion rings. See Appendix \ref{fusion_rings} and \cite{ABPP}.
 
 \subsubsection{Project-and-lift}\label{project}
 
@@ -256,11 +256,17 @@ Finally it is possible to define the patching order by hand. To this end one use
 \end{itemize}
 It contains a sequence of numbers: the first is the number \verb|<n>| of patches that follow, and then the first \verb|<n>| patches are inserted in this order. The remaining ones are inserted linearly.
 
-In very rare cases it could be useful to use
+The system of polynomial equations or inequalities  can be highly overdetermined. For example, this true for the associativity conditions of fusion rings (see Appendix \ref{fusion_rings}). In very rare cases it could be useful to use
 \begin{itemize}
 	\itemtt[MinimizePolyEquations]
+\end{itemize} 
+A run oof \verb*|pet_new.in| generates $240$ equations, but \verb*|MinimizePolyEquations| reduces them to $50$. Nevertheless, Using \verb*|MinimizePolyEquations| is usually not a good idea since the formal minimization takes much more time than a run without it. The minimization can take very long. It is only applicable if the polynomials have degree $\le 2$.
+
+ Normaliz uses \emph{heuristic minimization} by counting how often a vector that has passed all preceding equations (or inequalities) is not a solution of the equation (or inequality). If an equation has ``never'' failed after a certain number $n$ of vectors passing it, it is declared ineffective and skipped latter on. However, a vector is only declared a final solution after checking all equations on it. So there is no danger of false results. But if an equation gets discarded prematurely, the computation time can explode. As a prevention, Normaliz offers the option
+\begin{itemize}
+	\itemtt[NoHeuristicMinimization, -{-NHM}]
 \end{itemize}
-The minimization can take very long. It is only applicable if the polynomials have degree $\le 2$.
+Unfortunately, this option often doubles the computation time.
 
 These options must be used with care and may require experimentation. For a first encounter you can try them on the three examples mentioned above. 
 

@@ -838,8 +838,8 @@ void Cone<Integer>::setGBMinDegree(const long min_degree)
 void Cone<Integer>::setModularGraing(long mod_gr)
 void Cone<Integer>::setChosenFusionRing(long fus_r)
 \end{Verbatim}
-There common default value of \verb|degree| is $-1$, signaling no expansion, all coefficients or no codimension bound etc. One can reset the values after a computation. Then they will delete the computation results that depend on them. Modular Gradings are counted from $1$ (as in the input file).
-%However, there is no point in changing the codimension bounds for the exploitation of the automorphism group after the computations to that they refer have been finished.
+There common default value of \verb|degree| is $-1$, signaling no expansion, all coefficients or no codimension bound etc. One can reset the values after a computation. Then they will delete the computation results that depend on them. Modular Gradings are counted from $1$ (as in the input file), as well as chosen fusion rings.
+% However, there is no point in changing the codimension bounds for the exploitation of the automorphism group after the computations to that they refer have been finished.
 
 To set them en bloc you can use
 \begin{Verbatim}
@@ -3614,11 +3614,7 @@ Lattice point:
 Note that the single lattice point is not uniquely determined. 
 There are $300$ lattice points in the polytope. 
 
-The system of degree $2$ polynomial equations resulting from the associativity condition is highly overdetermined. For example, \verb*|pet_new.in| generates $240$ equations, but a run with \verb*|MinimizePolyEquations| reduces them to $50$. Using \verb*|MinimizePolyEquations| is usually not a good idea since the formal minimization takes much more time than a run without it. Normaliz uses \emph{heuristic minimization} by counting how often a vector that has passed all preceding equations is not a solution. If an equation has ``never'' failed after a certain number $n$ of vectors passing it, it is declared ineffective and skipped latter on. The number $n$ depends on the FPdim of the fusion ring. However, a vector is only declared a final solution after checking all equations on it. So there is no danger of false results. But if an equation gets discarded prematurely, the computation time can explode. As a prevention, Normaliz offers the option
-\begin{itemize}
-\itemtt[NoHeuristicMinimization, -{-NHM}]
-\end{itemize}
-Unfortunately, this option often doubles the computation time.
+The user should study Section \ref{patch_order}. It explains several options that control the insertion order of the patches and the heuristic minimization of polynomial equations and inequalities. 
 
 
 \subsection{Standard names and virtual input files}\label{virtual_input}
