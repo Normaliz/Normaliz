@@ -138,8 +138,6 @@ Induction<Integer>::Induction(const vector<Integer>& fus_type, const vector<key_
 
     HighRepresentations.resize(0, fusion_rank);
 
-    bool randomize = true;
-
     for(auto& t: divisors){
 
         INTERRUPT_COMPUTATION_BY_EXCEPTION
@@ -159,7 +157,6 @@ Induction<Integer>::Induction(const vector<Integer>& fus_type, const vector<key_
                               Type::inhom_inequalities, NeutralInEqu);
         RepCone.setVerbose(false);
         Matrix<Integer> Reps = RepCone.getLatticePointsMatrix();
-        Matrix<Integer> HighReps_this_t(0, Reps.nr_of_columns() -1);
         size_t count_low = 0, count_high = 0;
         for(size_t i = 0; i < Reps.nr_of_rows(); ++i){
             bool too_large = false;
@@ -183,30 +180,13 @@ Induction<Integer>::Induction(const vector<Integer>& fus_type, const vector<key_
                 count_low++;
             }
             if(Reps[i][0] == 0){
-                HighReps_this_t.append(new_rep);
+                HighRepresentations.append(new_rep);
                 count_high++;
             }
 
         }
-
         if(verbose)
             verboseOutput() << "divisor " << t << " has " << count_low <<" low reps and " << count_high << " high" << endl;
-
-        if(count_high > 0){
-            dynamic_bitset to_be_used(count_high);
-            if(randomize){
-                for(size_t r = 0; r < 5;++r)
-                    to_be_used[rand() % count_high] = true;
-            }
-            else{
-                to_be_used.flip();
-            }
-
-            for(size_t i = 0; i < count_high; ++i){
-                if(to_be_used[i])
-                    HighRepresentations.append(HighReps_this_t[i]);
-            }
-        }
 
        // LowRepresentations[t].debug_print('$');
     }
@@ -458,6 +438,8 @@ void Induction<Integer>::from_low_to_full(const Matrix<Integer>& ThisLowPart){
         C.setVerbose(false);
         C.compute(ConeProperty::HilbertBasis, ConeProperty::Projection);
         Matrix<Integer> LP = C.getLatticePointsMatrix();
+
+        // LP.debug_print('P');
 
         if(talkative && LP.nr_of_rows() == 0)
             verboseOutput() << "N" << endl;
