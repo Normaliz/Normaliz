@@ -300,6 +300,8 @@ enum Enum {
     TestLinearAlgebraGMP,
     TestSimplexParallel,
     TestLibNormaliz,
+    //
+    NoEmptyOutput,
     END_ENUM_RANGE(LAST_INTERNAL),
 
     EnumSize  // this has to be the last entry, to get the number of entries in the enum

@@ -65,6 +65,7 @@ bool no_output_on_interrupt = false;
 bool no_coord_transf = false;
 bool write_lp_file = false;
 bool save_local_solutions = false;
+bool no_empty_output= false;
 
 // bool test_arithmetic_overflow = false;
 // long overflow_test_modulus = 15401;
