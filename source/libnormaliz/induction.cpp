@@ -121,6 +121,12 @@ Induction<Integer>::Induction(const vector<Integer>& fus_type, const vector<key_
 
    Bounds.resize(fusion_rank, fusion_rank);
 
+   /* for(size_t s = 0; s < fusion_rank; ++s){
+       for(size_t t = 0; t < fusion_rank; ++t)
+           cout << s << " " << t << " " << N(t,0,s) << " " << endl;
+
+   } */
+
     for(size_t j = 0; j< fusion_rank; ++j){
         for(size_t k = 0; k < fusion_rank; ++k){
             Integer S =0;
@@ -144,7 +150,6 @@ Induction<Integer>::Induction(const vector<Integer>& fus_type, const vector<key_
 
         if(t == FPdim)
             continue;
-        LowRepresentations[t].resize(0, fusion_rank);
         Matrix<Integer> InhomEqu(1,fusion_rank +1);
         for(size_t i = 0; i < fusion_rank; ++i)
             InhomEqu[0][i] = fus_type[i];
@@ -157,7 +162,7 @@ Induction<Integer>::Induction(const vector<Integer>& fus_type, const vector<key_
                               Type::inhom_inequalities, NeutralInEqu);
         RepCone.setVerbose(false);
         Matrix<Integer> Reps = RepCone.getLatticePointsMatrix();
-        size_t count_low = 0, count_high = 0;
+        size_t count_high = 0;
         for(size_t i = 0; i < Reps.nr_of_rows(); ++i){
             bool too_large = false;
             for(size_t j = 0; j < fusion_rank; ++j){
@@ -175,10 +180,6 @@ Induction<Integer>::Induction(const vector<Integer>& fus_type, const vector<key_
             vector<Integer> new_rep = Reps[i];
             new_rep.resize(new_rep.size() - 1);
 
-            if(Reps[i][0] == 1){
-                LowRepresentations[t].append(new_rep);
-                count_low++;
-            }
             if(Reps[i][0] == 0){
                 HighRepresentations.append(new_rep);
                 count_high++;
@@ -186,7 +187,7 @@ Induction<Integer>::Induction(const vector<Integer>& fus_type, const vector<key_
 
         }
         if(verbose)
-            verboseOutput() << "divisor " << t << " has " << count_low <<" low reps and " << count_high << " high" << endl;
+            verboseOutput() << "divisor " << t << " has " << count_high << " high" << " representations" << endl;
 
        // LowRepresentations[t].debug_print('$');
     }
@@ -214,7 +215,52 @@ Integer Induction<Integer>::N(const key_t i, const key_t j, const key_t k){
 }
 
 template<typename Integer>
-void Induction<Integer>::start_low_parts(){
+void Induction<Integer>::solve_system_low_parts(){
+
+    Matrix<Integer> our_equs(0,(fusion_rank -1)*(fusion_rank-1) + 1); // +1 for rhs
+
+    for(size_t i = 0; i < fusion_rank -1; ++i){  // make row equations
+        vector<Integer> this_equ((fusion_rank -1)*(fusion_rank-1));
+        for(size_t j = 0; j < fusion_rank -1; ++j){
+            this_equ[i*(fusion_rank -1) +j] = fusion_type[j+1];
+        }
+        this_equ.push_back(-low_m[i+1] +1);
+        our_equs.append(this_equ);
+    }
+
+    for(size_t j = 0; j < fusion_rank - 1; ++j){
+        vector<Integer> this_equ((fusion_rank -1)*(fusion_rank-1));
+        for(size_t i = 0; i < fusion_rank - 1; ++i){
+            this_equ[j + i*(fusion_rank -1)] = 1;
+        }
+        this_equ.push_back(- Bounds[0][j + 1]);
+        our_equs.append(this_equ);
+    }
+
+    // our_equs.debug_print('E');
+
+    Cone<Integer> LP(Type::inhom_equations, our_equs);
+    LP.setVerbose(false);
+    Matrix<Integer> LowPartsRaw = LP.getLatticePointsMatrix();
+    // LowPartsRaw.debug_print('#');
+
+    for(size_t iii = 0; iii < LowPartsRaw.nr_of_rows(); iii++){
+        Matrix<Integer> our_low_part(fusion_rank, fusion_rank);
+        for(size_t i = 0; i < our_low_part.nr_of_rows(); ++i){
+            our_low_part[i][0] = 1;
+        }
+        for(size_t i = 1; i < our_low_part.nr_of_rows(); ++i){
+            for(size_t j = 1; j < our_low_part.nr_of_columns(); ++j){
+                our_low_part[i][j] = LowPartsRaw[iii][(i-1)*(fusion_rank - 1)+ j-1];
+            }
+        }
+        // our_low_part.debug_print('L');
+        LowParts.push_back(our_low_part);
+    }
+}
+
+template<typename Integer>
+void Induction<Integer>::build_low_parts(){
 
     if(!mult_of_ev_ok)
         return;
@@ -231,17 +277,7 @@ void Induction<Integer>::start_low_parts(){
         low_m.push_back(FPdim / t);
     sort(low_m.begin(), low_m.end());
 
-    if(verbose){
-        size_t upperbound = 1;
-        for(size_t i = 0; i < fusion_rank; ++i)
-            upperbound *= LowRepresentations[low_m[i]].nr_of_rows();
-        verboseOutput() << "Number of low parts <= " << upperbound << endl;
-    }
-
-
-    Matrix<Integer> matrix_so_far(0, fusion_rank);
-    Matrix<Integer> bounds_so_far(fusion_rank, fusion_rank);
-    build_low_matrices(matrix_so_far, bounds_so_far);
+    solve_system_low_parts();
 
     vector<Matrix<Integer> >  OrderedLowParts;
     for(auto& M: LowParts){
@@ -267,63 +303,15 @@ void Induction<Integer>::start_low_parts(){
     // cout << "Old " << LowParts.size() << " New " << OrderedLowParts.size() << endl;
     swap(LowParts, OrderedLowParts);
 
-    /* if(verbose)
-        verboseOutput() << "Found " << LowParts.size() << " low parts"  << endl;*/
+    if(verbose)
+        verboseOutput() << "Found " << LowParts.size() << " low parts"  << endl;
 
-    /* for(auto& M: LowParts)
-        M.debug_print('P'); */
+    // for(auto& M: LowParts)
+    //    M.debug_print('P');
     /* for(auto& M: LowPartsBounds)
         M.debug_print('&'); */
 
 }
-
-
-template<typename Integer>
-void Induction<Integer>::build_low_matrices(Matrix<Integer> matrix_so_far, Matrix<Integer> bounds_so_far){
-
-    key_t step = matrix_so_far.nr_of_rows();
-
-    Integer m_step = low_m[step];
-    for(size_t i = 0; i < LowRepresentations[m_step].nr_of_rows(); ++i){
-
-        INTERRUPT_COMPUTATION_BY_EXCEPTION
-
-        Matrix<Integer> NewMatrix = matrix_so_far;
-
-        vector<Integer> cand_extension = LowRepresentations[m_step][i];
-        bool potential_low_part = true;
-
-        Matrix<Integer> check_bounds = bounds_so_far;
-
-        for(size_t j = 0; j < fusion_rank; ++j){
-            for(size_t k = j; k < fusion_rank; ++k){
-                check_bounds[j][k] +=  cand_extension[j] * cand_extension[k];
-                if(check_bounds[j][k] > Bounds[j][k]){
-                   potential_low_part = false;
-                   break;
-                }
-                if(!potential_low_part)
-                    break;
-            }
-        }
-
-        if(!potential_low_part)
-            continue;
-        NewMatrix.append(cand_extension);
-
-        if(NewMatrix.nr_of_rows() == fusion_rank){
-            /* if(verbose && LowParts.size() % 10000 == 0 && LowParts.size() > 0)
-                verboseOutput() << LowParts.size() << " low parts" << endl;
-            LowParts.push_back(NewMatrix);*/
-
-            from_low_to_full(NewMatrix);
-            continue;
-        }
-
-        build_low_matrices(NewMatrix, check_bounds);
-    }
-}
-
 
 template<typename Integer>
 Matrix<Integer> Induction<Integer>::make_allowed_transpositions(Matrix<Integer> FusionMap){
@@ -357,22 +345,24 @@ Matrix<Integer> Induction<Integer>::make_allowed_transpositions(Matrix<Integer> 
 }
 
 template<typename Integer>
-void Induction<Integer>::from_low_to_full(const Matrix<Integer>& ThisLowPart){
+void Induction<Integer>::from_low_to_full(){
 
 
     if(!mult_of_ev_ok)
         return;
 
     if(verbose)
-        verboseOutput() << "Extending low part to full induction matrices" << endl;
+        verboseOutput() << "Extending low parts to full induction matrices" << endl;
 
     //First we compute the contribution of the low part to the conditions for induction matrices
 
-    Integer FPdim_so_far =0;
-    for(size_t j = 0; j < fusion_rank; ++j)
-        FPdim_so_far += low_m[j] * low_m[j];
+    for(auto& ThisLowPart: LowParts){
 
-    Integer MinusOne = -1;
+        Integer FPdim_so_far =0;
+        for(size_t j = 0; j < fusion_rank; ++j)
+            FPdim_so_far += low_m[j] * low_m[j];
+
+        Integer MinusOne = -1;
 
         INTERRUPT_COMPUTATION_BY_EXCEPTION
 
@@ -457,11 +447,13 @@ void Induction<Integer>::from_low_to_full(const Matrix<Integer>& ThisLowPart){
 
             }
             InductionMatrices.push_back(IndMat);
-            if(verbose)
+            if(verbose){
                 IndMat.debug_print('I');
-            if(verbose)
-                verboseOutput() << "I" << endl;
+                verboseOutput() << endl;
+            }
         }
+
+    }
 }
 
 template<typename Integer>
@@ -521,7 +513,8 @@ void Induction<Integer>::compute(){
 
     if(!mult_of_ev_ok)
         return;
-    start_low_parts();
+    build_low_parts();
+    from_low_to_full();
     augment_induction_matrices();
 }
 

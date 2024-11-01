@@ -76,7 +76,7 @@ public:
 
     Integer N(const key_t i, const key_t j, const key_t k);
 
-    map< Integer, Matrix<Integer > > LowRepresentations;  // F_ij for i <= r (counting from 1), F_i1 = 1
+    // map< Integer, Matrix<Integer > > LowRepresentations;  // F_ij for i <= r (counting from 1), F_i1 = 1
     Matrix<Integer > HighRepresentations; // F_ij for i > 1 (counting from 1), F_i1 = 0
     Matrix<Integer> Bounds;
 
@@ -84,8 +84,9 @@ public:
     Induction(const vector<Integer>& fus_type, const vector<key_t>& fus_duality , const vector<Integer>& FusRing, bool verb);
 
     void start_low_parts();
-    void build_low_matrices(Matrix<Integer> matrix_so_far, Matrix<Integer> bounds_so_far);
-    void from_low_to_full(const Matrix<Integer>& ThisLowPart);
+    void build_low_parts();
+    void solve_system_low_parts();
+    void from_low_to_full();
     void augment_induction_matrices();
 
     Matrix<Integer> make_allowed_transpositions(Matrix<Integer> FusionMap);
