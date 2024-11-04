@@ -32,7 +32,7 @@ case $BUILDSYSTEM in
             rm -f ${BREWDIR}/lib/*gmp*.dylib*
             rm -f ${BREWDIR}/lib/*mpfr*.dylib*
             rm -f ${BREWDIR}/lib/*flint*.dylib*
-            ## rm -f ${BREWDIR}/opt/libomp/lib/*.dylib
+            rm -f ${BREWDIR}/opt/libomp/lib/*.dylib
             rm -f  ${BREWDIR}/opt/llvm/lib/libomp.dylib
             LDFLAGS="${LDFLAGS} -L$(brew --prefix)/opt/libomp/lib"
         fi
