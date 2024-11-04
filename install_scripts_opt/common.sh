@@ -22,8 +22,6 @@ elif [[ $OSTYPE == darwin* ]]; then   ## activate Homebrew LLVM
     clang --version
 fi
 
-/opt/homebrew/opt/libomp/lib
-
 if [ "$OSTYPE" == "msys" ]; then
 	export MSYS_STANDARD_LOC=/mingw64
 fi
