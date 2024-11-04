@@ -16,6 +16,11 @@ case $BUILDSYSTEM in
     *static*)
         OPTLIBDIR=${PREFIX}/lib
 
+        echo "&&&&&&&&&&&&"
+        echo ${PREFIX}
+        echo ${OPTLIBDIR}
+        echo "&&&&&&&&&&&"
+
         # Remove shared libraries and libtool *.la files to force static linking
         # ls -laR ${OPTLIBDIR}
         rm -f ${OPTLIBDIR}/*.dylib*
