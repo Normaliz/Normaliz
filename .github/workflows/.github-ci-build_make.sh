@@ -34,8 +34,12 @@ case $BUILDSYSTEM in
             rm -f ${BREWDIR}/lib/*flint*.dylib*
         fi
 
+        LDFLAGS="${LDFLAGS} -L$(brew --prefix)/opt/libomp/lib"
+
         echo "++++++++++"
         echo ${LDFLAGS}
+        echo "++++++++++"
+        ls  /opt/homebrew/opt/libomp/lib
         echo "++++++++++"
 
         make -j2 LDFLAGS="${LDFLAGS}"
