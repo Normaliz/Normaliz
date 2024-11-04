@@ -11,7 +11,7 @@ if [ "x$NMZ_COMPILER" != x ]; then
     export CXX=$NMZ_COMPILER
 elif [[ $OSTYPE == darwin* ]]; then   ## activate Homebrew LLVM
     LLVMDIR="$(brew --prefix)/opt/llvm"
-    export LDFLAGS="${LDFLAGS} -L${LLVMDIR}/lib -Wl,-rpath,${LLVMDIR}/lib"
+    export LDFLAGS="${LDFLAGS} $(brew --prefix)/opt/libomp/lib -L${LLVMDIR}/lib -Wl,-rpath,${LLVMDIR}/lib"
     export CPPFLAGS="${CPPFLAGS} -I ${LLVMDIR}/include"
     export PATH="${LLVMDIR}/bin/:$PATH"
     export CXX=clang++
@@ -21,6 +21,8 @@ elif [[ $OSTYPE == darwin* ]]; then   ## activate Homebrew LLVM
     echo "CLANG VERSION"
     clang --version
 fi
+
+/opt/homebrew/opt/libomp/lib
 
 if [ "$OSTYPE" == "msys" ]; then
 	export MSYS_STANDARD_LOC=/mingw64

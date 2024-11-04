@@ -34,9 +34,9 @@ case $BUILDSYSTEM in
             rm -f ${BREWDIR}/lib/*flint*.dylib*
         fi
 
-        echo "$$$$$$$$$"
+        echo "++++++++++"
         echo ${LDFLAGS}
-        echo "$$$$$$$$$"
+        echo "++++++++++"
 
         make -j2 LDFLAGS="${LDFLAGS}"
         make install
