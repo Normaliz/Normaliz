@@ -16,6 +16,11 @@ case $BUILDSYSTEM in
     *static*)
         OPTLIBDIR=${PREFIX}/lib
 
+        echo "&&&&&&&&&&&&"
+        echo ${PREFIX}
+        echo ${OPTLIBDIR}
+        echo "&&&&&&&&&&&"
+
         # Remove shared libraries and libtool *.la files to force static linking
         # ls -laR ${OPTLIBDIR}
         rm -f ${OPTLIBDIR}/*.dylib*
@@ -27,7 +32,14 @@ case $BUILDSYSTEM in
             rm -f ${BREWDIR}/lib/*gmp*.dylib*
             rm -f ${BREWDIR}/lib/*mpfr*.dylib*
             rm -f ${BREWDIR}/lib/*flint*.dylib*
+            rm -f ${BREWDIR}/opt/libomp/lib/*.dylib
+            rm -f  ${BREWDIR}/opt/llvm/lib/libomp.dylib
+            LDFLAGS="${LDFLAGS} -L$(brew --prefix)/opt/libomp/lib"
         fi
+
+        echo "++++++++++"
+        echo ${LDFLAGS}
+        echo "++++++++++"
 
         make -j2 LDFLAGS="${LDFLAGS}"
         make install
