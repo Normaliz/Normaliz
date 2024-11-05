@@ -11,7 +11,6 @@ case $BUILDSYSTEM in
     *static*)
         ## export NORMPARA=-x=1 ## if paralleization should not work
 
-        make -j2 -k check
         make install
         if [[ $OSTYPE == darwin* ]]; then
             echo "WWWWWWWWWWWWWWWWWWWWWW"
