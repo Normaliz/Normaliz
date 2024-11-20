@@ -461,7 +461,7 @@ InputMap<Integer> Cone<Integer>::mpqclass_input_to_integer(
     // special treatment of polytope. We convert it o cone
     // and define the grading
     if (contains(multi_input_data, Type::polytope)) {
-        size_t dim;
+        size_t dim = 0; // value to mke g++ happy
         if (multi_input_data[Type::polytope].nr_of_rows() > 0) {
             dim = multi_input_data[Type::polytope][0].size() + 1;
             Matrix<Integer> grading(0,dim);
@@ -4944,7 +4944,7 @@ void Cone<Integer>::check_vanishing_of_grading_and_dehom() {
     if (Dehomogenization.size() > 0) {
         vector<Integer> test = BasisMaxSubspace.MxV(Dehomogenization);
         if (test != vector<Integer>(test.size())) {
-            assert(false);
+            // assert(false);
             throw BadInputException("Dehomogenization does not vanish on maximal subspace.");
         }
     }

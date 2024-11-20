@@ -1869,7 +1869,7 @@ bool Matrix<renf_elem_class>::gcd_reduce_column(size_t corner, Matrix<renf_elem_
     assert(corner < nr);
     renf_elem_class d, u, w, z, v;
     for (size_t j = corner + 1; j < nc; ++j) {
-        d = elem[corner][corner], elem[corner];  // ext_gcd(elem[corner][corner],elem[corner][j],u,v);
+        d = elem[corner][corner]; // elem[corner];  // ext_gcd(elem[corner][corner],elem[corner][j],u,v);
         u = 1;
         v = 0;
         w = -elem[corner][j] / d;

@@ -878,8 +878,8 @@ void prepare_inclusion_exclusion_simpl(const STANLEYDATA_int& S,
                                        vector<SIMPLINEXDATA_INT>& inExSimplData) {
     size_t dim = S.key.size();
     vector<key_type> key = S.key;
-    for (size_t i = 0; i < dim; ++i)
-        key[i];
+    // for (size_t i = 0; i < dim; ++i)
+    //    key[i];
 
     dynamic_bitset intersection(dim), Excluded(dim);
 

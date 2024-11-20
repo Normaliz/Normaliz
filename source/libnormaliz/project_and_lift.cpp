@@ -1058,7 +1058,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_covers() {
         dynamic_bitset test_covered_coords(dim);
         dynamic_bitset min_covered_coords(dim);
         bool first = true;
-        size_t min_at;
+        size_t min_at = 0; //value to make g++ happy
         double min_added_weight = 0; // =0 to make gcc happy
 
         for( size_t i = 0; i < covering_equations.size(); ++i){

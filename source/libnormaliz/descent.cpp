@@ -692,7 +692,7 @@ void DescentSystem<Integer>::make_orbits_global() {
     Aut.compute(AutomParam::integral);
     vector<vector<key_t> > GenOrbits = Aut.getGensOrbits();
 
-    size_t min_at, min_size;
+    size_t min_at = 0, min_size = 0; //values to make gcc happy
     for (size_t i = 0; i < GenOrbits.size(); ++i) {
         if (i == 0 || GenOrbits[i].size() < min_size) {
             min_size = GenOrbits[i].size();

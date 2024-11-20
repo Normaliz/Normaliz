@@ -38,5 +38,5 @@ if [ -x "$PYTHON3" ]; then
     rm -rf build
     # Do not invoke setup.py directly. This is deprecated functionality
     # of setuptools.
-    $SUDO $PYTHON3 -m pip install -v -v $PYTHON_USER .
+    $SUDO $PYTHON3 -m pip install -v -v --break-system-packages $PYTHON_USER .
 fi

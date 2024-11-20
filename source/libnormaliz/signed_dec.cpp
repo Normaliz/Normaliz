@@ -87,7 +87,7 @@ void SignedDec<Integer>::next_subfacet(const dynamic_bitset& Subfacet_next,
                                        vector<Integer>& NewDegrees,
                                        const Matrix<Integer>& ValuesGeneric,
                                        Matrix<Integer>& NewValues) {
-    size_t new_vert;
+    size_t new_vert = 0; // value to make g++ happy
     size_t old_place = 0;  // this is the place of i in the ascending sequence of generators in Subfacet_start
     size_t g = 0;
     for (size_t i = 0; i < nr_gen; ++i) {
