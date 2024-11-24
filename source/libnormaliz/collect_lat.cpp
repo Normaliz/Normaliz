@@ -544,10 +544,10 @@ void collect_lat(const string& project, const long given_nr_subsplits) {
     if(verbose)
         verboseOutput() << "Computation of " + global_project + " NOT complete" << endl;
     SplitData new_split_data = our_split;
-    size_t nr_sub_splits = 2; // the minimum
+    size_t nr_sub_splits = 2; // the default minimum
     if(given_nr_subsplits != -1){
-        if(given_nr_subsplits < 2)
-            throw BadInputException("Number of subsplits must be >= 2");
+        if(given_nr_subsplits < 1)
+            throw BadInputException("Number of subsplits must be >= 1");
         nr_sub_splits = given_nr_subsplits;
     }
     else{

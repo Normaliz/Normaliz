@@ -262,6 +262,6 @@ to disable the missing/unwanted ones, and edit nmz_config.h accordingly.
 After successful compilation you will find normaliz.exe in source and  the Normaliz
 directory. libnormaliz is installed in local.
 
-If ecerything has worked out,  normaliz.exe depends on Windows system DLLs.
+If everything has worked out,  normaliz.exe depends on Windows system DLLs.
 
 Tests: do not use STRICT=yes since the 32bit arithmetic creates problems for floating point.
