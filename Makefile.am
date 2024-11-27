@@ -48,7 +48,7 @@ EXTRA_DIST += install_scripts_opt/install_eantic_with_prerequisites.sh
 EXTRA_DIST += install_scripts_opt/cocoa_patches/eterms.h
 EXTRA_DIST += install_scripts_opt/cocoa_patches/SignalWatcher.C
 EXTRA_DIST += install_scripts_opt/cocoa_patches/SignalWatcher.H
-EXTRA_DIST += install_scripts_opt/cocoa_patches/onfigure
+EXTRA_DIST += install_scripts_opt/cocoa_patches/configure
 
 EXTRA_DIST += install_scripts_opt/e-antic_patches/nf_elem.h
 EXTRA_DIST += install_scripts_opt/e-antic_patches/nf_elem_add_fmpq.c

@@ -206,62 +206,34 @@ Installs Normaliz in "local" (including libnormaliz.a and the necessary header f
 **** Compilation for MS Windows ****
 ************************************
 
---- The auxiliary packages have not yet been updated ---
-
-UNDER CONSTRUCTION
-
 Normaliz  can be compiled for MS Windows under MSYS2/MinGW64 with all optional libraries.
 Important restriction: only static build of normaliz.exe and libnormaliz.a possible at this time.
 
 To this end you must install MSYS2 including the MinGW64 toolchain. Additionally the
 cross-compiler package must be installed if you want to compile the packages written in C.
 Add GMP and Boost (for e-antic). Make sure to choose the packages for MinGW64 when
-running pacman
+running pacman.
+
+We got the impression that the tools make.exe, diff.exe and cmp.exe of the gversion in
+November 2025 do not work as expected. Therefore download MSYS_tools.zip from thze Normaliz 3.4.10
+release on GitHub and intip it in /usr/bin of MSYS2. Chcek that they are calles by running "wchich make"
+etc.
 
 Log in under MYS2 MinGW64.
 
 We recommend a separate directory for MSYS builds. Do not use Linux or MacOS
-directories of Normaliz.
+directories of Normaliz. Download the Normaliz source as a tar.gz from GitHub
+and extract it as usual or get in an equivalent way.
 
-Download the Normaliz source as a tar.gz from GitHub and extract it as usual or get in an
-equivalent way. (Later on, tinstall_normaliz.sh will copy version.h and nmz_config.h
-into source/libnormaliz.)
+Install MPFR by pacman -S after finding the MinGW64 version by pacman -Ss MPFR.
 
-WARNING: The installation is extremely delicate in its use of static and shared
-libraries. Therefore do not tamper with PREFIX.
+Then run
 
-Optional packeges that must be preinstalled:
-1) Download MPFR_for_msys.zip from https://github.com/Normaliz/Normaliz/releases/tag/v3.9.2.
-Unzip and run pacman -U on the zst files.
-2) Install Flint from the MSYS repository via pacman -Ss (for finding the best version) and
-install via pacman -S.
-The next step will additionally install static libraries of MPFR and Flint. They are
-necessary for a normaliz.exe that depends only on system DLLs.
+install_scripts/install_mz_xxx.sh
 
-IMPORTANT: Make sure that install_scripts/opt/header_files_for_Makefile.classic contains
-the right version of version.h.
+    with xxx = nauty, cocoa, flint and e-antic
 
-Then we navigate to the Normaliz directory and run ./install_normaliz_with_eantic.sh.
-This will install CoCoA, nauty, hash-library,  arb, antic and e-antic, as well as
-static versions of MPFR and Flint. During the installation of e-antic, the files
-libflint.a and libmpfr.la are hidden in the subdirectory hide of local/lib. Should
-the installation of e-antic crash, copy them back manually.
+Finally run install_normali.sh.
 
-Moreover, the script runs Makefile.classic for making and installing static libnormaliz.a
-and normaliz.exe. (Unfortunately, autotools builds of normaliz.exe do not produce
-a working normaliz.exe.)
-
-Except for CoCoA we use the official releases. For CoCoA we download a pre-release version
-of CoCoALib-0.99710 rom https://github.com/Normaliz/Normaliz/releases/tag/v3.9.2
-that is then patched by the files in install_scripts/cocoa_patches.
-(configure has been modified by adding -fpermissive and -Wconversion to CXXFLAGS.)
-
-Note: if you don't have (or want) all optional packages, edit source/Makefile.configuration
-to disable the missing/unwanted ones, and edit nmz_config.h accordingly.
-
-After successful compilation you will find normaliz.exe in source and  the Normaliz
-directory. libnormaliz is installed in local.
-
-If everything has worked out,  normaliz.exe depends on Windows system DLLs.
-
-Tests: do not use STRICT=yes since the 32bit arithmetic creates problems for floating point.
+Tests can be run as usual. Don't mind the errors "devce ... busy". It is best to add -j4 if
+your machine is strong enough.
