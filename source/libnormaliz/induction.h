@@ -62,7 +62,7 @@ public:
     vector<Matrix<Integer> >  Tables;
 
     vector<Integer> divisors;
-    vector<Integer> MultEV;
+    vector<size_t> MultEV;
     Matrix<Integer> EVMat;
 
     vector<Integer> low_m;  // the m_i for i < r
