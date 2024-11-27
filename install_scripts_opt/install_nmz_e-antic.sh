@@ -16,8 +16,8 @@ fi
 if [ "$OSTYPE" == "msys" ]; then
 	echo "Hiding libmpfr.la and libflint.a"
 	mkdir -p ${PREFIX}/lib/hide
-	mv ${PREFIX}/lib/libmpfr.la ${PREFIX}/lib/hide
-	mv ${PREFIX}/lib/libflint.a ${PREFIX}/lib/hide
+	## mv -f ${PREFIX}/lib/libmpfr.la ${PREFIX}/lib/hide
+	## mv -f ${PREFIX}/lib/libflint.a ${PREFIX}/lib/hide
 fi
 
 ## E_ANTIC_VERSION=1.2.1
@@ -36,9 +36,13 @@ cd ${NMZ_OPT_DIR}/E-ANTIC_source
 ../../download.sh ${E_ANTIC_URL} ${E_ANTIC_SHA256}
 if [ ! -d e-antic-${E_ANTIC_VERSION} ]; then
     tar -xvf e-antic-${E_ANTIC_VERSION}.tar.gz
+	if [ "$OSTYPE" == "msys" ]; then
+		cp ../../install_scripts_opt/e-antic_patches/randtest_irreducible.c \
+		          e-antic-${E_ANTIC_VERSION}/libeantic/src/fmpz_poly_extra
+	fi
 	cd e-antic-${E_ANTIC_VERSION}/libeantic
 	sed -i -e s/fmpq_poly_add_fmpq/fmpq_poly_add_fmpq_eantic/g upstream/patched/fmpq_poly_add_fmpq.c
-        cp ../../../../install_scripts_opt/e-antic_pataches/nf_elem_add_fmpq.c upstream/patched/
+    cp ../../../../install_scripts_opt/e-antic_patches/nf_elem_add_fmpq.c upstream/patched/
 	cd ../..
 fi
 

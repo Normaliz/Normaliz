@@ -50,7 +50,11 @@ fi
 # configure & compile
 cd CoCoALib-${COCOA_VERSION}
 if [ ! -f configuration/autoconf.mk ]; then
-    ./configure --threadsafe-hack --only-cocoalib ${COCOA_CONFIGURE_FLAGS}
+	if [ "$OSTYPE" != "msys" ]; then
+		./configure --threadsafe-hack --only-cocoalib ${COCOA_CONFIGURE_FLAGS}
+	else ## because of old version
+		./configure --threadsafe-hack --no-boost ${COCOA_CONFIGURE_FLAGS}
+	fi
 fi
 make library -j4
 mkdir -p ${PREFIX}/include/CoCoA

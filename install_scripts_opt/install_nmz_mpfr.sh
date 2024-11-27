@@ -41,7 +41,7 @@ fi
 # configure & compile
 cd mpfr-${MPFR_VERSION}
 if [ ! -f config.status ]; then
-    echo "Vor mpdfr configure"
+    echo "Vor mpfr configure"
     echo $CONFIGURE_FLAGS
     ./configure ${CONFIGURE_FLAGS}
 fi
