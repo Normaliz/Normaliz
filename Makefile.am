@@ -38,7 +38,6 @@ EXTRA_DIST += download.sh
 
 EXTRA_DIST += install_scripts_opt/common.sh
 EXTRA_DIST += install_scripts_opt/install_nmz_cocoa.sh
-# EXTRA_DIST += install_scripts_opt/install_nmz_cocoa_old.sh
 EXTRA_DIST += install_scripts_opt/install_nmz_flint.sh
 EXTRA_DIST += install_scripts_opt/install_nmz_mpfr.sh
 EXTRA_DIST += install_scripts_opt/install_nmz_hash-library.sh
@@ -49,11 +48,14 @@ EXTRA_DIST += install_scripts_opt/install_eantic_with_prerequisites.sh
 EXTRA_DIST += install_scripts_opt/cocoa_patches/eterms.h
 EXTRA_DIST += install_scripts_opt/cocoa_patches/SignalWatcher.C
 EXTRA_DIST += install_scripts_opt/cocoa_patches/SignalWatcher.H
+EXTRA_DIST += install_scripts_opt/cocoa_patches/onfigure
 
-EXTRA_DIST += install_scripts_opt/e-antic_pataches/nf_elem.h
-EXTRA_DIST += install_scripts_opt/e-antic_pataches/nf_elem_add_fmpq.c
+EXTRA_DIST += install_scripts_opt/e-antic_patches/nf_elem.h
+EXTRA_DIST += install_scripts_opt/e-antic_patches/nf_elem_add_fmpq.c
+EXTRA_DIST += install_scripts_opt/e-antic_patches/randtest_irreducible.c
 
 EXTRA_DIST += install_scripts_opt/header_files_for_Makefile.classic/nmz_config.h
+EXTRA_DIST += install_scripts_opt/header_files_for_Makefile.classic/version.h
 
 EXTRA_DIST += source/chunk/run_single.sh
 
