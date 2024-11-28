@@ -99,8 +99,8 @@ With OUTPUTCHECK=yes, no comparisons are made and this helps to detect any unwan
 Basic tests
 -----------
 
-The default goal is all. It runs the tests that do not depend on an optional package. The goal
-total runs the tests in total, including those depending on the optional packages (except testLARGE).
+The default goal is "all". It runs the tests that do not depend on an optional package. The goal
+"total" runs the tests in total, including those depending on the optional packages (except large tests).
 The tests depending on the existence of CoCoALib are covered by the goal testInt. Those requiring
 nauty are called by testAut and the tests for algebraic polyhedra depend on several goals:
 
@@ -110,8 +110,6 @@ namely general tests, integer hull tests, tests of degenerate polytopes, and fin
 of automorphism groups, which requires nauty as well.
 
 If diff finds differences, these are recorded in a file with suffix diff and printed to the terminal.
-
-Thwe goal msys asks for all and testAut.
 
 Extended tests
 --------------
@@ -208,6 +206,8 @@ Installs Normaliz in "local" (including libnormaliz.a and the necessary header f
 
 Normaliz  can be compiled for MS Windows under MSYS2/MinGW64 with all optional libraries.
 Important restriction: only static build of normaliz.exe and libnormaliz.a possible at this time.
+More precisely: normaliz.exe does ponly depend on Windows system DLLs that have fixed
+locations in the Windows system.
 
 To this end you must install MSYS2 including the MinGW64 toolchain. Additionally the
 cross-compiler package must be installed if you want to compile the packages written in C.

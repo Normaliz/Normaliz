@@ -47,9 +47,9 @@ The From version 3.9.3 on, MS~Windows executable is compiled with all optional p
 
 Note:
 \begin{enumerate}
-	\item The Linux binary \verb|normaliz| and the MS Windows binary \verb|normaliz.exe| are fully static executables.
+\item The Linux binary \verb|normaliz| is a  fully static executable.
 	
-\item The Mac~OS and the MS Windows binaries cannot be statically linked in the absolute sense. The MS Windows binary depends only on system DLLs. The Mac OS  binary depends only on Mac~OS system libraries and \verb|libomp.dylib| (contained in the zip file) which makes parallelization possible. \emph{This dynamic library must be kept in the same directory as the binary.}
+\item The Mac~OS and the MS Windows binaries cannot be statically linked in the absolute sense. But the MS Windows binary depends only on system DLLs, and he Mac OS  binary depends only on Mac~OS system libraries.
 
 \end{enumerate}
 
@@ -75,19 +75,6 @@ Unzipping creates the following files and subdirectories in the Normaliz directo
 	\item The subdirectory \ttt{lib} contains libraries for
 	jNormaliz.
 \end{itemize}
-
-\subsection{Source package}
-In order to build Normaliz yourself, navigate to our GitHub repository
-\begin{center}
-	\url{https://github.com/Normaliz/Normaliz/releases}.
-\end{center}
-and download the
-source package \ttt{\NmzDir.zip} (also available as \ttt{.tar.gz}) contains the source files, installation scripts, examples, documentation, the test suite and PyNormaliz.
-
-Then unzip the downloaded file in a directory of your choice and expand it. (If you have installed a binary package, choose the same directory.)
-This process will create a directory \ttt{\NmzDir} and several subdirectories in it.
-
-If you build Normaliz yourself, the build process will create further subdirectories \verb|build|, \verb|nmz_opt_lib| and \verb|local| (with the default settings).
 
 \subsection{Conda}
 
@@ -122,17 +109,9 @@ We recommend building Normaliz through the install scripts described below. They
 
 If you don't want to use the Normaliz install scripts, you can of course take the usual configure-make-make install path. The dependencies of Normaliz on external packages are listed in \verb|INSTALL|.
 
-\subsection{Prerequisites}
+\subsection{General Prerequisites}
 
-We require a compiler supporting C++14:
-\begin{itemize}
-	\item GNU~g++~5,
-	\item clang++~3.4,
-	\item Intel~icpc~16.0
-\end{itemize}
-The mentioned compilers are also able to handle OpenMP~3.0, with the exception of clang++, there the first OpenMP support was introduced in~3.7.
-
-For compiling Normaliz the following libraries are needed:
+All up-to-date C++ compilers satisfy the requirements of Normaliz. Independently of any auxiliary package,  the following libraries are needed:
 \begin{itemize}
 	\item GMP including the C++ wrapper (libgmpxx and libgmp)
 \end{itemize}
@@ -140,6 +119,19 @@ For compiling Normaliz the following libraries are needed:
 We will only discuss how to build Normaliz with the install scripts in the distribution. See the file \verb|INSTALL| for additional information.
 
 Any optional package that you want to use, must be installed before the compilation of Normaliz, independently of the method used for building Normaliz. The installation scripts mentioned below make and use directories within the Normaliz directory.
+
+\subsection{Source package}
+In order to build Normaliz yourself, navigate to our GitHub repository
+\begin{center}
+	\url{https://github.com/Normaliz/Normaliz/releases}.
+\end{center}
+and download the
+source package \ttt{\NmzDir.zip} (also available as \ttt{.tar.gz}) contains the source files, installation scripts, examples, documentation, the test suite and PyNormaliz.
+
+Then unzip the downloaded file in a directory of your choice and expand it. (If you have installed a binary package, choose the same directory.)
+This process will create a directory \ttt{\NmzDir} and several subdirectories in it.
+
+If you build Normaliz yourself, the build process will create further subdirectories \verb|build|, \verb|nmz_opt_lib| and \verb|local| (with the default settings).
 
 \subsubsection{Linux}
 The standard compiler choice on Linux is \verb|g++|. We do no not recommend \verb|clang++| since its support for OpenMP is not as comprehensive as that of \verb|g++|.
