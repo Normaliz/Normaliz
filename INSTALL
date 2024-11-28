@@ -214,26 +214,29 @@ cross-compiler package must be installed if you want to compile the packages wri
 Add GMP and Boost (for e-antic). Make sure to choose the packages for MinGW64 when
 running pacman.
 
-We got the impression that the tools make.exe, diff.exe and cmp.exe of the gversion in
-November 2025 do not work as expected. Therefore download MSYS_tools.zip from thze Normaliz 3.4.10
-release on GitHub and intip it in /usr/bin of MSYS2. Chcek that they are calles by running "wchich make"
-etc.
+Always log in under MYS2 MinGW64.
 
-Log in under MYS2 MinGW64.
+We got the impression that the tools make.exe, diff.exe and cmp.exe of the MSYS version in
+November 2025 do not work as expected. Therefore download MSYS_tools.zip from the Normaliz 3.4.10
+release on GitHub and unzip it in /usr/bin of MSYS2. Chcek that the tools from the zip file  are
+called by running "wchich make" etc.
 
 We recommend a separate directory for MSYS builds. Do not use Linux or MacOS
 directories of Normaliz. Download the Normaliz source as a tar.gz from GitHub
 and extract it as usual or get in an equivalent way.
 
 Install MPFR by pacman -S after finding the MinGW64 version by pacman -Ss MPFR.
+(The install scrtipt for MPFR doiesn't find libgmp.a -- no idea why.)
 
 Then run
 
-install_scripts/install_mz_xxx.sh
+install_scripts/install_nmz_xxx.sh
 
     with xxx = nauty, cocoa, flint and e-antic
 
-Finally run install_normali.sh.
+in the Normaliz directory. Finally run
+
+    ./install_normaliz.sh.
 
 Tests can be run as usual. Don't mind the errors "devce ... busy". It is best to add -j4 if
-your machine is strong enough.
+your machine is strong enough. Moreover it makes sense to use the option -k of make.
