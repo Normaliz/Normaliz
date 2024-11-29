@@ -228,6 +228,8 @@ and extract it as usual or get in an equivalent way.
 Install MPFR by pacman -S after finding the MinGW64 version by pacman -Ss MPFR.
 (The install scrtipt for MPFR doiesn't find libgmp.a -- no idea why.)
 
+Also install Flint by pacman.
+
 Then run
 
 install_scripts/install_nmz_xxx.sh
@@ -237,6 +239,19 @@ install_scripts/install_nmz_xxx.sh
 in the Normaliz directory. Finally run
 
     ./install_normaliz.sh.
+
+Remarks:
+
+(1) We install Flint a second time to have a static libflint.a.
+(2) The install script for e-antic hides libflint.a in local/lib by moving it
+to a subdirectory hide. The installation of e-antic uses the preinstalled flint.
+Should it crash, copy libflint.a manually back to local/lib.
+(3) CoCioA usaes a version that has been preserved in the GitHub release 3.9.2 of
+Normaliz. Some of its files will be replaced by modified copies in the subdirectory
+cocoa_patches of install_scripts.
+(4) Similarly we use patches in e-antic_patches.
+(5) Take care that version.h in install_scripts/header_files_for_Makefile.classic is
+up-to-date.
 
 Tests can be run as usual. Don't mind the errors "devce ... busy". It is best to add -j4 if
 your machine is strong enough. Moreover it makes sense to use the option -k of make.
