@@ -1,0 +1,10 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@prefix@/include
+
+Name: @PACKAGE_NAME@
+Description: tool for discrete convex geometry: affine monoids, vector configurations, rational polyhedra and cones
+Version: @PACKAGE_VERSION@
+Libs: -L${libdir} -libnormaliz
+Cflags: -I${includedir}
