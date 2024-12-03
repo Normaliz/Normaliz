@@ -205,7 +205,7 @@ Installs Normaliz in "local" (including libnormaliz.a and the necessary header f
 ************************************
 
 Normaliz  can be compiled for MS Windows under MSYS2/MinGW64 with all optional libraries.
-Important restriction: only static build of normaliz.exe and libnormaliz.a possible at this time.
+Important restriction: only static builds of normaliz.exe and libnormaliz.a possible at this time.
 More precisely: normaliz.exe does ponly depend on Windows system DLLs that have fixed
 locations in the Windows system.
 
