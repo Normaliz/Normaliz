@@ -84,23 +84,7 @@ The platform independent package manager Conda provides executables for all thre
 \end{center}
 In addition to the binaries you get the files that are usually installed: header files and libraries.
 
-\subsection{Cloning the GitHub repository}
 
-Another way to download the Normaliz source is cloning the repository from GitHub by
-\begin{Verbatim}
-git clone https://github.com/Normaliz/Normaliz.git
-\end{Verbatim}
-The Normaliz directory is then called \verb|Normaliz|. You may need
-\begin{Verbatim}
-sudo apt-get install autoconf libtool
-\end{Verbatim}
-if you want to build Normaliz by autotools. To this end change to the Normaliz directory and run
-\begin{Verbatim}
-./bootstrap.sh
-\end{Verbatim}
-After this step you can follow the instruction in the next section.
-
-Note that he GitHub repository Normaliz/Normaliz does not contain PyNormaliz. You can clone them from the repository Normaliz/PyNormaliz.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%  COMPILATION  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Building Normaliz yourself}\label{Compile}
@@ -132,6 +116,15 @@ Then unzip the downloaded file in a directory of your choice and expand it. (If 
 This process will create a directory \ttt{\NmzDir} and several subdirectories in it.
 
 If you build Normaliz yourself, the build process will create further subdirectories \verb|build|, \verb|nmz_opt_lib| and \verb|local| (with the default settings).
+
+Another way to download the Normaliz source is cloning the repository from GitHub by
+\begin{Verbatim}
+	git clone https://github.com/Normaliz/Normaliz.git
+\end{Verbatim}
+The Normaliz directory is then called \verb|Normaliz|.
+After this step you can follow the instruction in the next sections. The last release is in the branch \verb*|release|.
+
+Note that he GitHub repository Normaliz/Normaliz does not contain PyNormaliz. You can clone it from the repository Normaliz/PyNormaliz.
 
 \subsubsection{Linux}
 The standard compiler choice on Linux is \verb|g++|. We do no not recommend \verb|clang++| since its support for OpenMP is not as comprehensive as that of \verb|g++|.
