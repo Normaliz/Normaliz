@@ -21,7 +21,7 @@ fi
 ## script for the installation of Flint for the use in libnormaliz
 
 FLINT_VERSION="3.0.1"
-FLINT_URL="https://flintlib.org/flint-${FLINT_VERSION}.tar.gz"
+FLINT_URL="https://flintlib.org/download/flint-${FLINT_VERSION}.tar.gz"
 FLINT_SHA256=7b311a00503a863881eb8177dbeb84322f29399f3d7d72f3b1a4c9ba1d5794b4
 
 echo "Installing FLINT..."
