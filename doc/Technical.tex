@@ -202,7 +202,7 @@ export NMZ_SHARED=yes
 \end{Verbatim}
 \verb|NMZ_SHARED| is set automatically on Linux if a compiler from the clang family is used since a statically linked binary cannot be built by them (\verb|libomp.a| is missing).
 
-On MacOS there is no choice---the binary is dynamically linked. If you want a binary that is as static as possible, download the MacOS binary distribution from GitHub (see Section \ref{binary}). Its production is a bit tricky.
+On MacOS there is no choice---the binary is dynamically linked. If you want a binary that is as static as possible, download the MacOS binary distribution from GitHub (see Section \ref{binary}).
 
 \item The install scripts can be further customized. Have a look at them or at \verb|INSTALL|.
 
@@ -231,7 +231,7 @@ If you want to use a preinstalled version of CoCoALib: for parallelization it mu
 \begin{Verbatim}
 ./configure --threadsafe-hack --only-cocoalib
 \end{Verbatim}
-\textbf{Make sure that your CoCoALib has been compiled with the option \text{-fPIC}}. If not iz cannot be used in the compilation of a shared library.
+\textbf{Make sure that your CoCoALib has been compiled with the option \text{-fPIC}}. If not it cannot be used in the compilation of a shared library.
 
 \subsubsection{nauty}
 
