@@ -819,7 +819,6 @@ void AutomorphismGroup<Integer>::linform_data_via_incidence() {
     LinFormOrbits = orbits(LinFormPerms, LinFormsRef.nr_of_rows());
 }
 
-/*
 // the next two functions create the orbit of a vector from the action of linear maps
 template <typename Integer>
 void AutomorphismGroup<Integer>::add_images_to_orbit(const vector<Integer>& v, set<vector<Integer> >& orbit) const {
@@ -844,7 +843,6 @@ list<vector<Integer> > AutomorphismGroup<Integer>::orbit_primal(const vector<Int
         orbit_list.push_back(c);
     return orbit_list;
 }
-*/
 
 //-------------------------------------------------------------------------------
 

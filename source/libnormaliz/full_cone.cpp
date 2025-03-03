@@ -560,7 +560,6 @@ bool Full_Cone<Integer>::is_hyperplane_included(FACETDATA<Integer>& hyp) {
 }
 
 //---------------------------------------------------------------------------
-/* not used, but kept
 // produces the linear combination needed for a Fourier-Motzkin step
 template <typename Integer>
 vector<Integer> Full_Cone<Integer>::FM_comb(
@@ -596,7 +595,6 @@ vector<Integer> Full_Cone<Integer>::FM_comb(
 
     return NewFacet;
 }
-*/
 
 //---------------------------------------------------------------------------
 
@@ -5388,7 +5386,7 @@ Matrix<Integer> Full_Cone<Integer>::copy_basic_data_from(const Full_Cone<Integer
 }
 */
 
-/* deactivated at present
+
 //---------------------------------------------------------------------------
 template <typename Integer>
 Matrix<Integer> Full_Cone<Integer>::push_supphyps_to_cone_over_facet(const vector<Integer>& fixed_point, const key_t facet_nr) {
@@ -5662,6 +5660,8 @@ vector<vector<key_t>> Full_Cone<Integer>::get_facet_keys_for_orbits(const vector
     }
     return facet_keys;
 }
+
+/*
 //---------------------------------------------------------------------------
 template <typename Integer>
 void Full_Cone<Integer>::compute_multiplicity_via_automs() {
@@ -5710,18 +5710,17 @@ void Full_Cone<Integer>::compute_multiplicity_via_recession_cone() {
     RecCone.do_multiplicity = true;
     RecCone.verbose = verbose;
     RecCone.copy_autom_params(*this);
-    if (quality_of_automorphisms == AutomParam::ambient) {
+    if (quality_of_automorphisms == AutomParam::ambient_gen) {
         RecCone.Embedding = Level0Sub.getEmbeddingMatrix().multiplication(Embedding);
     }
     RecCone.compute();
     multiplicity = RecCone.multiplicity;
     setComputed(ConeProperty::Multiplicity);
 }
-*/
 
 //---------------------------------------------------------------------------
 
-/* deactivated at present
+
 template <typename Integer>
 mpq_class Full_Cone<Integer>::facet_multiplicity(const vector<key_t>& facet_key) {
     Matrix<Integer> Facet_Gens = Generators.submatrix(facet_key);
@@ -5746,7 +5745,7 @@ mpq_class Full_Cone<Integer>::facet_multiplicity(const vector<key_t>& facet_key)
     Facet.Mother = &(*this);
     Facet.God_Father = God_Father;
     Facet.copy_autom_params(*this);
-    if (quality_of_automorphisms == AutomParam::ambient) {
+    if (quality_of_automorphisms == AutomParam::ambient_gen) {
         Facet.Embedding = Facet_Sub.getEmbeddingMatrix().multiplication(Embedding);
     }
     Facet.inhomogeneous = inhomogeneous;

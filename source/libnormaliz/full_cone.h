@@ -270,7 +270,7 @@ class Full_Cone {
     Matrix<Integer> Embedding;  // temporary solution -- at present used for integration with signed dec
 
     // the absolute top cone in recursive algorithms where faces are evaluated themselves
-    // Full_Cone<Integer>* God_Father; // not used at present
+    Full_Cone<Integer>* God_Father; // not used at present
 
     // data relating a pyramid to its ancestors
     Full_Cone<Integer>* Top_Cone;  // reference to cone on top level relative to pyramid formation
@@ -366,11 +366,11 @@ class Full_Cone {
      */
     void number_hyperplane(FACETDATA<Integer>& hyp, const size_t born_at, const size_t mother);
     bool is_hyperplane_included(FACETDATA<Integer>& hyp);
-    /* vector<Integer> FM_comb(const vector<Integer>& Pos,
+    vector<Integer> FM_comb(const vector<Integer>& Pos,
                             const Integer& PosVal,
                             const vector<Integer>& Neg,
                             const Integer& NegVal,
-                            bool extract_gcd = true); */
+                            bool extract_gcd = true);
     void add_hyperplane(const size_t& new_generator,
                         const FACETDATA<Integer>& positive,
                         const FACETDATA<Integer>& negative,
@@ -516,8 +516,8 @@ class Full_Cone {
 
     void compute_automorphisms(size_t nr_special_gens = 0);
     void compute_by_automorphisms();
-    mpq_class facet_multiplicity(const vector<key_t>& facet_key);
-    void compute_multiplicity_via_automs();
+    // mpq_class facet_multiplicity(const vector<key_t>& facet_key);
+    // void compute_multiplicity_via_automs();
     vector<vector<key_t>> get_facet_keys_for_orbits(const vector<Integer>& fixed_point, bool with_orbit_sizes);
     vector<Integer> get_fixed_point(size_t nr_cone_points);
     void compute_HB_via_automs();
