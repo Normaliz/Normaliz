@@ -97,9 +97,9 @@ class OptionsHandler {
         if (!ignoreInFileOpt)
             no_matrices_output = true;
     }
-    inline void activateNoOutputOnInterrupt() {
+    inline void activateOutputOnInterrupt() {
         if (!ignoreInFileOpt)
-            no_output_on_interrupt = true;
+            output_on_interrupt = true;
     }
 
 
@@ -154,8 +154,8 @@ class OptionsHandler {
     inline bool isBinomialsPacked() const {
         return binomials_packed;
     }
-    inline bool isNoOutputOnInterrupt() const {
-        return no_output_on_interrupt;
+    inline bool isOutputOnInterrupt() const {
+        return output_on_interrupt;
     }
     inline bool isNoMatricesOutput() const {
         return no_matrices_output;

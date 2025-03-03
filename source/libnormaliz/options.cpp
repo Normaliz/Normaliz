@@ -437,8 +437,8 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
             no_matrices_output = true;
             continue;
         }
-        if (LongOption == "NoOutputOnInterrupt") {
-            no_output_on_interrupt = true;
+        if (LongOption == "OutputOnInterrupt" || LongOption == "OOI") {
+            output_on_interrupt = true;
             continue;
         }
         if (LongOption == "NoHilbertBasisOutput") {
@@ -477,7 +477,6 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
         if(LongOption == "DCM"){
             to_compute.set(ConeProperty::DistributedComp);
             continue;
-
         }
         if(LongOption == "NHM"){
             to_compute.set(ConeProperty::NoHeuristicMinimization);

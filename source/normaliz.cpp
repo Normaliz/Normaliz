@@ -436,11 +436,11 @@ void compute_and_output(OptionsHandler& options,
         cout << endl;
         cout << "Computation was interrupted." << endl;
         cout << e.what() << endl;
-        if(no_output_on_interrupt){
-            cout << "No output on interrupt set" << endl;
+        if(!output_on_interrupt){
+            cout << "No output on inmterrupt" << endl;
             exit(10);
         }
-        cout << "Writing only available data." << endl;
+        cout << "Output on interrupt activated. Writing available data." << endl;
     }
 
     if(is_split_patching){
