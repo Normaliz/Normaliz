@@ -5029,9 +5029,9 @@ void Full_Cone<Integer>::deactivate_completed_tasks() {
 
 //---------------------------------------------------------------------------
 
-/* deactivated at present
 
 // do computations using automorphisms
+// Niote: exploit_automs_mult is ALWAYS false at present. Done via descent and ExploitIsosMult
 template <typename Integer>
 void Full_Cone<Integer>::compute_by_automorphisms() {
     if ((!exploit_automs_mult && !exploit_automs_vectors) || no_descent_to_facets)
@@ -5048,7 +5048,7 @@ void Full_Cone<Integer>::compute_by_automorphisms() {
         if (autom_codim_mult < 0)
             autom_codim_mult = min((int)dim / 4, 6);
     }
-
+    /*
     if (exploit_automs_mult && do_multiplicity) {
         if (descent_level < autom_codim_mult && nr_gen >= dim + 4) {  // otherwise direct computation
             if (inhomogeneous)
@@ -5059,6 +5059,7 @@ void Full_Cone<Integer>::compute_by_automorphisms() {
         setComputed(ConeProperty::ExploitIsosMult);
     }
     deactivate_completed_tasks();
+    */
 
     if (exploit_automs_vectors && do_Hilbert_basis) {
         if (descent_level < autom_codim_vectors && nr_gen >= dim + 4) {  // otherwise direct computation
@@ -5077,11 +5078,12 @@ void Full_Cone<Integer>::compute_by_automorphisms() {
     deactivate_completed_tasks();
 }
 
-size_t nr_revlex_simpl = 0;
 
-*/
 
 /* deactivated at present
+ *
+
+ size_t nr_revlex_simpl = 0;
 
 //---------------------------------------------------------------------------
 template <typename Integer>
@@ -5316,7 +5318,7 @@ void Full_Cone<Integer>::compute() {
         deactivate_completed_tasks();
     }
 
-    // compute_by_automorphisms();
+    compute_by_automorphisms();
     deactivate_completed_tasks();
 
     primal_algorithm();  // here plays the music

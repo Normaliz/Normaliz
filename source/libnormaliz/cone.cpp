@@ -3679,16 +3679,15 @@ void Cone<Integer>::compute_full_cone_inner(ConeProperties& ToCompute) {
         FC.quality_of_automorphisms = AutomParam::rational;
     }
 
-    /*
-        // if (ToCompute.test(ConeProperty::ExploitIsosMult)) { DONE VIA DESCENT
-        //    FC.exploit_automs_mult = true;
-        // }
-        if (ToCompute.test(ConeProperty::ExploitAutomsVectors)) {
-            FC.exploit_automs_vectors = true;
-        }
+
+    // if (ToCompute.test(ConeProperty::ExploitIsosMult)) { DONE VIA DESCENT
+    //    FC.exploit_automs_mult = true;
+    // FC.autom_codim_mult = autom_codim_mult;
+    // }
+    if (ToCompute.test(ConeProperty::ExploitAutomsVectors)) {
+        FC.exploit_automs_vectors = true;
         FC.autom_codim_vectors = autom_codim_vectors;
-        FC.autom_codim_mult = autom_codim_mult;
-    }*/
+    }
 
     if (Inequalities.nr_of_rows() != 0 && !isComputed(ConeProperty::SupportHyperplanes)) {
         BasisChangePointed.convert_to_sublattice_dual(FC.Support_Hyperplanes, Inequalities);
