@@ -667,11 +667,11 @@ The last polynomial listed has caused the error.
 
 \subsection{Interruption}\label{interrupt}
 
-During a computation \verb|normaliz| can be interrupted by pressing Ctrl-C on the keyboard. If this happens, Normaliz will stop the current computation and write the already computed data to the output file(s). By
+During a computation \verb|normaliz| can be interrupted by pressing Ctrl-C on the keyboard. If this happens, Normaliz will stop the current computation. If you want to see the results already computed, ask for
 \begin{itemize}
-	\itemtt[NoOutputOnInterrupt]
+	\itemtt[OutputOnInterrupt, -{}-OOU]
 \end{itemize}
-the output of data can be blocked. Can be set in the input file or on the command line as a long option.
+Can be set in the input file or on the command line as a long option.
 
 If Ctrl-C is pressed during the output phase, Normaliz is stopped immediately.
 
