@@ -4819,7 +4819,8 @@ void Full_Cone<Integer>::primal_algorithm_set_computed() {
         setComputed(ConeProperty::HilbertBasis, true);
     }
 
-    if (isComputed(ConeProperty::Grading) && isComputed(ConeProperty::HilbertBasis)) {
+    if (isComputed(ConeProperty::Grading) && isComputed(ConeProperty::HilbertBasis)
+                            && !isComputed(ConeProperty::Deg1Elements)) {
         select_deg1_elements();
         check_deg1_hilbert_basis();
     }
@@ -5045,8 +5046,8 @@ void Full_Cone<Integer>::compute_by_automorphisms() {
 
         if (autom_codim_vectors < 0)  // set default values if not set by Cone
             autom_codim_vectors = 1;
-        if (autom_codim_mult < 0)
-            autom_codim_mult = min((int)dim / 4, 6);
+        /* if (autom_codim_mult < 0)
+            autom_codim_mult = min((int)dim / 4, 6);*/
     }
     /*
     if (exploit_automs_mult && do_multiplicity) {
@@ -5062,7 +5063,7 @@ void Full_Cone<Integer>::compute_by_automorphisms() {
     */
 
     if (exploit_automs_vectors && do_Hilbert_basis) {
-        if (descent_level < autom_codim_vectors && nr_gen >= dim + 4) {  // otherwise direct computation
+        if (descent_level < autom_codim_vectors){ //  && nr_gen >= dim + 4) {  // otherwise direct computation
             compute_HB_via_automs();
         }
         setComputed(ConeProperty::ExploitAutomsVectors);
@@ -5070,7 +5071,7 @@ void Full_Cone<Integer>::compute_by_automorphisms() {
     deactivate_completed_tasks();
 
     if (exploit_automs_vectors && do_deg1_elements) {
-        if (descent_level < God_Father->autom_codim_mult && nr_gen >= dim + 4) {  // otherwise direct computation
+        if (descent_level < God_Father->autom_codim_vectors){ // && nr_gen >= dim + 4) {  // otherwise direct computation
             compute_Deg1_via_automs();
         }
         setComputed(ConeProperty::ExploitAutomsVectors);
@@ -5520,6 +5521,8 @@ void Full_Cone<Integer>::get_cone_over_facet_vectors(const vector<Integer>& fixe
 //---------------------------------------------------------------------------
 template <typename Integer>
 void Full_Cone<Integer>::compute_Deg1_via_automs() {
+    do_automorphisms = true;
+    quality_of_automorphisms =  AutomParam::integral;
     compute_automorphisms(descent_level);
 
     if (!do_deg1_elements || isComputed(ConeProperty::Deg1Elements) || !isComputed(ConeProperty::Automorphisms) ||
@@ -5559,6 +5562,8 @@ void Full_Cone<Integer>::compute_Deg1_via_automs() {
 //---------------------------------------------------------------------------
 template <typename Integer>
 void Full_Cone<Integer>::compute_HB_via_automs() {
+    do_automorphisms = true;
+    quality_of_automorphisms =  AutomParam::integral;
     compute_automorphisms(descent_level);
 
     if (!do_Hilbert_basis || isComputed(ConeProperty::HilbertBasis) || !isComputed(ConeProperty::Automorphisms) ||
@@ -5597,7 +5602,8 @@ void Full_Cone<Integer>::compute_HB_via_automs() {
                 union_of_facets.insert(cc);
         }
     }
-    cout << "Union unique size " << union_of_facets.size() << endl;
+    if(verbose)
+        verboseOutput() << "Union unique size " << union_of_facets.size() << endl;
     for (const auto& v : union_of_facets)
         NewCandidates.push_back(Candidate<Integer>(v, *this));
     update_reducers(true);  // we always want reduction
@@ -7509,7 +7515,7 @@ Full_Cone<Integer>::Full_Cone(const Matrix<Integer>& M, bool do_make_prime) {  /
     pyr_level = -1;
     descent_level = 0;
     Top_Cone = this;
-    // God_Father = this;
+    God_Father = this;
     Top_Key.resize(nr_gen);
     for (size_t i = 0; i < nr_gen; i++)
         Top_Key[i] = static_cast<key_t>(i);

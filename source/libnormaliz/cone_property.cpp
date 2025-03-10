@@ -186,6 +186,7 @@ ConeProperties all_options() {
     ret.set(ConeProperty::MinimizePolyEquations);
     ret.set(ConeProperty::DistributedComp);
     ret.set(ConeProperty::UseModularGrading);
+    ret.set(ConeProperty::ExploitAutomsVectors);
     return ret;
 }
 
@@ -481,11 +482,6 @@ void ConeProperties::set_preconditions(bool inhomogeneous, bool numberfield) {
 
     if(CPs.test(ConeProperty::MaxDegRepresentations))
         CPs.set(ConeProperty::Representations);
-
-    if (CPs.test(ConeProperty::ExploitAutomsVectors)) {
-        errorOutput() << *this << endl;
-        throw BadInputException("At least one of the listed computation goals not yet implemernted");
-    }
 
     if(CPs.test(ConeProperty::SingleLatticePoint))
         CPs.set(ConeProperty::NoGradingDenom);
