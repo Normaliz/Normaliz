@@ -133,7 +133,7 @@ private:
 
     void computeMarkov();
     void computeGroebner(ConeProperties ToCompute);
-    void computeHilbertSeries();
+    void computeHilbertSeries(const ConeProperties& ToCompute);
     bool is_positively_graded;
     bool verbose;
 

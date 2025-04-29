@@ -301,6 +301,7 @@ void HilbertSeries::initialize() {
     nr_coeff_quasipol = -1;  // all coefficients
     expansion_degree = -1;
     period_bounded = true;
+    only_cyclotomic = false;
 }
 
 // Constructor, creates 0/1
@@ -374,6 +375,17 @@ void HilbertSeries::set_period_bounded(bool on_off) const {  // period_bounded i
 bool HilbertSeries::get_period_bounded() const {
     return period_bounded;
 }
+
+void HilbertSeries::set_only_cyclotomic(bool on_off){
+    only_cyclotomic = on_off;
+}
+
+bool HilbertSeries::get_only_cyclotomic() const{
+    return only_cyclotomic;
+}
+
+
+
 // add another HilbertSeries to this
 void HilbertSeries::add(const vector<num_t>& num, const vector<denom_t>& gen_degrees) {
     vector<denom_t> sorted_gd(gen_degrees);
@@ -457,12 +469,30 @@ void HilbertSeries::collectData() const {
 
 // simplify, see class description
 void HilbertSeries::simplify() const {
+
     if (is_simplified)
         return;
     collectData();
-    /*    if (verbose) {
+
+    size_t highest_comp = num.size();
+    bool non_zero = false;
+    // First we remove "leading" 0 from the numerator
+    for(size_t i = 0; i < num.size(); ++i){
+        if(num[i] != 0){
+            highest_comp = i;
+            non_zero = true;
+        }
+    }
+    if(non_zero)
+        num.resize(highest_comp + 1);
+    else
+        num.clear();
+
+    computeDegreeAsRationalFunction();
+
+    if (verbose) {
             verboseOutput() << "Hilbert series before simplification: "<< endl << *this;
-        }*/
+        }
     vector<mpz_class> q, r, poly;  // polynomials
     // In denom_cyclo we collect cyclotomic polynomials in the denominator.
     // During this method the Hilbert series is given by num/(denom*cdenom)
@@ -490,7 +520,6 @@ void HilbertSeries::simplify() const {
         }
         if (denom_i == 0)
             continue;
-
         // decompose (1-t^i) into cyclotomic polynomial
         for (long d = 1; d <= i / 2; ++d) {
             if (i % d == 0)
@@ -501,6 +530,7 @@ void HilbertSeries::simplify() const {
         if (denom_i % 2 == 1)
             v_scalar_multiplication(num, mpz_class(-1));
     }  // end for
+
     denom.clear();
 
     auto it = cdenom.begin();
@@ -534,6 +564,15 @@ void HilbertSeries::simplify() const {
     // save this representation
     cyclo_num = num;
     cyclo_denom = cdenom;
+
+    if(only_cyclotomic){
+        expansion_degree = -1;
+        nr_coeff_quasipol = 0;
+        num.clear();
+        denom.clear();
+        is_simplified = true;
+        return;
+    }
 
     // now collect the cyclotomic polynomials in (1-t^i) factors
     it = cdenom.find(1);
@@ -591,12 +630,11 @@ void HilbertSeries::simplify() const {
         }
     }
     is_simplified = true;
-    computeDegreeAsRationalFunction();
     quasi_poly.clear();
 }
 
 void HilbertSeries::computeDegreeAsRationalFunction() const {
-    simplify();
+    // simplify();
     long num_deg = num.size() - 1 + shift;
     long denom_deg = 0;
     for (auto& it : denom) {
@@ -889,7 +927,6 @@ void HilbertSeries::adjustShift() {
             denom[d] = 1;
  }
 
-/*
 // methods for textual transfer of a Hilbert Series
 string HilbertSeries::to_string_rep() const {
     collectData();
@@ -954,7 +991,7 @@ ostream& operator<<(ostream& out, const HilbertSeries& HS) {
     out << " )" << std::endl;
     return out;
 }
-*/
+
 
 //---------------------------------------------------------------------------
 // polynomial operations, for polynomials repr. as vector of coefficients

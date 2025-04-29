@@ -239,6 +239,7 @@ enum Enum {
     NoNestedTri,  // synonym for NoSubdivision
     KeepOrder,
     HSOP,
+    OnlyCyclotomicHilbSer,
     NoPeriodBound,
     NoLLL,
     NoRelax,

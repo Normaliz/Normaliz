@@ -137,6 +137,7 @@ ConeProperties all_options() {
     ret.set(ConeProperty::PrimalMode);
     ret.set(ConeProperty::KeepOrder);
     ret.set(ConeProperty::HSOP);
+    ret.set(ConeProperty::OnlyCyclotomicHilbSer);
     ret.set(ConeProperty::Symmetrize);
     ret.set(ConeProperty::NoSymmetrization);
     ret.set(ConeProperty::BigInt);
@@ -1119,6 +1120,7 @@ vector<string> initializeCPN() {
     CPN.at(ConeProperty::ExploitIsosMult) = "ExploitIsosMult";
     CPN.at(ConeProperty::StrictIsoTypeCheck) = "StrictIsoTypeCheck";
     CPN.at(ConeProperty::HSOP) = "HSOP";
+    CPN.at(ConeProperty::OnlyCyclotomicHilbSer) = "OnlyCyclotomicHilbSer";
     CPN.at(ConeProperty::NoBottomDec) = "NoBottomDec";
     CPN.at(ConeProperty::PrimalMode) = "PrimalMode";
     CPN.at(ConeProperty::Symmetrize) = "Symmetrize";
@@ -1219,7 +1221,7 @@ vector<string> initializeCPN() {
     CPN.at(ConeProperty::UseModularGrading) = "UseModularGrading";
 
     // detect changes in size of Enum, to remember to update CPN!
-    static_assert(ConeProperty::EnumSize == 167,"ConeProperties Enum size does not fit! Update cone_property.cpp!");
+    static_assert(ConeProperty::EnumSize == 168,"ConeProperties Enum size does not fit! Update cone_property.cpp!");
     // assert all fields contain an non-empty string
     for (size_t i = 0; i < ConeProperty::EnumSize; i++) {
         // bstd::cout << "iii " << i << "  " << CPN.at(i) << endl;

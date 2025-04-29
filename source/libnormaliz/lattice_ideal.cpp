@@ -740,7 +740,7 @@ void LatticeIdeal::computeGroebner(ConeProperties ToCompute){
         verboseOutput()<<"---------------------------------------------------" << endl;
 }
 
-void LatticeIdeal::computeHilbertSeries(){
+void LatticeIdeal::computeHilbertSeries(const ConeProperties& ToCompute){
 
     assert(degree_bound == -1);
     assert(Grading.size() > 0);
@@ -752,6 +752,8 @@ void LatticeIdeal::computeHilbertSeries(){
     vector<long> Grading_long;
     convert(Grading_long, Grading);
     HilbSer = HilbertSeries(numerator, Grading_long);
+    if(ToCompute.test(ConeProperty::OnlyCyclotomicHilbSer))
+        HilbSer.set_only_cyclotomic(true);
     HilbSer.simplify();
     /* if(verbose){
         verboseOutput() << "Hilbert series numerator  " << HilbSer.getNum();
@@ -792,7 +794,7 @@ ConeProperties LatticeIdeal::compute(ConeProperties ToCompute){
     }
 
     if(ToCompute.test(ConeProperty::HilbertSeries)){
-        computeHilbertSeries();
+        computeHilbertSeries(ToCompute);
         setComputed(ConeProperty::HilbertSeries);
         ToCompute.reset(is_Computed);
     }

@@ -3630,6 +3630,10 @@ void Cone<Integer>::compute_full_cone_inner(ConeProperties& ToCompute) {
         FC.do_hsop = true;
     }
 
+    if(ToCompute.test(ConeProperty::OnlyCyclotomicHilbSer)){
+        FC.hseries_only_cyclotomic = true;
+    }
+
     /* Give extra data to FC */
     if (isComputed(ConeProperty::ExtremeRays)) {
         FC.Extreme_Rays_Ind = ExtremeRaysIndicator;
@@ -4203,10 +4207,15 @@ ConeProperties Cone<Integer>::monoid_compute(ConeProperties ToCompute) {
         Cone<Integer> HSCompute(Type::cone_and_lattice, HilbertBasis);
         // HSCompute.setVerbose(false);
         HSCompute.setGrading(Grading);
+        HSCompute.setNrCoeffQuasiPol(HSeries.get_nr_coeff_quasipol());
+        HSCompute.setExpansionDegree(HSeries.get_expansion_degree());
+        ConeProperties HSProp;
+        HSProp.set(ConeProperty::HilbertSeries);
         if(ToCompute.test(ConeProperty::NoGradingDenom))
-            HSCompute.compute(ConeProperty::HilbertSeries, ConeProperty::NoGradingDenom);
-        else
-            HSCompute.compute(ConeProperty::HilbertSeries);
+            HSProp.set(ConeProperty::NoGradingDenom);
+        if(ToCompute.test(ConeProperty::OnlyCyclotomicHilbSer))
+            HSProp.set(ConeProperty::OnlyCyclotomicHilbSer);
+        HSCompute.compute(HSProp);
         HSeries = HSCompute.getHilbertSeries();
         multiplicity = HSCompute.getMultiplicity();
         setComputed(ConeProperty::Multiplicity);
@@ -4225,7 +4234,7 @@ ConeProperties Cone<Integer>::monoid_compute(ConeProperties ToCompute) {
     // the condition HilbertBasis.nr_of_rows() < InputGenerators.nr_of_rows()
     // prevents us from running into an infinite loop!
     // TODO work directly with lattice ideal here or implement variant below.
-    // TODO Take care of degree bound if Hilbert series musr be computed.
+    // TODO Take care of degree bound if Hilbert series must be computed.
     if(ToCompute.test(ConeProperty::HilbertSeries) && HilbertBasis.nr_of_rows() < InputGenerators.nr_of_rows()
         && !ToCompute.test(ConeProperty::MarkovBasis) && !ToCompute.test(ConeProperty::GroebnerBasis) ){
 
@@ -4385,8 +4394,12 @@ ConeProperties Cone<Integer>::lattice_ideal_compute_inner(ConeProperties ToCompu
         setComputed(ConeProperty::MarkovBasis);
     }
     if(LattId.isComputed(ConeProperty::HilbertSeries)){
+        long save_nr_coeff_quasipol = HSeries.get_nr_coeff_quasipol();
+        long save_expansion_degree = HSeries.get_expansion_degree();
         HSeries = LattId.getHilbertSeries();
-        setComputed(ConeProperty::HilbertSeries);
+        HSeries.set_nr_coeff_quasipol(save_nr_coeff_quasipol);
+        HSeries.set_expansion_degree(save_expansion_degree);
+;       setComputed(ConeProperty::HilbertSeries);
     }
 
     ToCompute.reset(is_Computed);
@@ -6485,7 +6498,7 @@ void Cone<Integer>::complete_HilbertSeries_comp(ConeProperties& ToCompute) {
         setComputed(ConeProperty::NumberLatticePoints);
     }
 
-    // we want to be able to convert HS ohr EhrS to hsop denom if
+    // we want to be able to convert HS or EhrS to HSOP denom if
     // they have been computed without
 
     if (!(ToCompute.test(ConeProperty::HSOP) && !isComputed(ConeProperty::HSOP) &&

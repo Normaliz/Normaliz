@@ -158,6 +158,9 @@ class HilbertSeries {
     void set_period_bounded(bool on_off) const;
     bool get_period_bounded() const;
 
+    void set_only_cyclotomic(bool on_off);
+    bool get_only_cyclotomic() const;
+
     vector<mpz_class> getExpansion() const;
     long get_expansion_degree() const;
     void set_expansion_degree(long degree);
@@ -189,7 +192,7 @@ class HilbertSeries {
 
     // contains the expansion up to the given degree
     mutable vector<mpz_class> expansion;
-    long expansion_degree;
+    mutable long expansion_degree;
 
     mutable bool is_simplified;
     mutable long dim;
@@ -202,6 +205,8 @@ class HilbertSeries {
     mutable mpz_class quasi_denom;
     mutable long nr_coeff_quasipol;  // limits the computation of coefficients of the computeHilbertQuasiPolynomial
                                      // <0: all coeff, =0: no coeff
+
+    bool only_cyclotomic;
 
     bool verbose;
 

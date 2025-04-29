@@ -139,6 +139,7 @@ class Full_Cone {
     bool check_semiopen_empty;
 
     bool do_hsop;
+    bool hseries_only_cyclotomic;
     bool do_extreme_rays;
     bool do_pointed;
     bool believe_pointed;  // sometimes set to suppress the check for pointedness

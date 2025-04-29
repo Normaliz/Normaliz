@@ -24,11 +24,11 @@ volume (lattice normalized) = 0
 volume (Euclidean) = 0
 
 Hilbert series:
-0 
+
 denominator with 0 factors:
 
 
-degree of Hilbert Series as rational function = 0
+degree of Hilbert Series as rational function = -1
 
 The numerator of the Hilbert series is symmetric.
 
@@ -37,11 +37,11 @@ Hilbert polynomial:
 with common denominator = 1
 
 Ehrhart series:
-0 
+
 denominator with 0 factors:
 
 
-degree of Ehrhart Series as rational function = 0
+degree of Ehrhart Series as rational function = -1
 
 The numerator of the Ehrhart series is symmetric.
 

@@ -811,17 +811,17 @@ void Output<Integer>::write_inv_file() const {
             inv << "integer number_vertices_polyhedron = " << Result->getNrVerticesOfPolyhedron() << endl;
         }
         if (Result->isComputed(ConeProperty::MarkovBasis)) {
-            inv << "integer number_markov_basis_elemrnts = " << Result->getNrMarkovBasis() << endl;
+            inv << "integer number_markov_basis_elements = " << Result->getNrMarkovBasis() << endl;
         }
         if (Result->isComputed(ConeProperty::GroebnerBasis)) {
-            inv << "integer number_groebner_basis_elemrnts = " << Result->getNrGroebnerBasis() << endl;
+            inv << "integer number_groebner_basis_elements = " << Result->getNrGroebnerBasis() << endl;
         }
         if (Result->isComputed(ConeProperty::Representations)) {
             inv << "integer number_representations = " << Result->getNrRepresentations() << endl;
             vector<key_t> KeyForOutput = Result-> getHilbertBasisKey();
             for(size_t i = 0; i < KeyForOutput.size(); ++i)
                 KeyForOutput[i]++;
-            inv << "vector " << KeyForOutput.size() << "hilbert_basis_key = "
+            inv << "vector " << KeyForOutput.size() << " hilbert_basis_key = "
             << KeyForOutput << endl;
         }
         if (Result->isComputed(ConeProperty::ExtremeRays)) {
@@ -927,7 +927,7 @@ void Output<Integer>::write_inv_file() const {
             inv << "integer grading_denom = " << Result->getGradingDenom() << endl;
             if (Result->isComputed(ConeProperty::Multiplicity)) {
                 mpq_class mult = Result->getMultiplicity();
-                inv << "integer multiplicity = " << mult.get_num() << endl;
+                inv << "integer multiplicity_num = " << mult.get_num() << endl;
                 inv << "integer multiplicity_denom = " << mult.get_den() << endl;
             }
             if (Result->isComputed(ConeProperty::Volume) && !using_renf<Integer>()) {
@@ -975,6 +975,8 @@ void Output<Integer>::write_inv_file() const {
                 const HilbertSeries& HS = Result->getHilbertSeries();
                 vector<mpz_class> HSnum;
                 vector<denom_t> HSdenom;
+                vector<mpz_class> HSCyclonum = HS.getCyclotomicNum();
+                vector<denom_t> HSCyclodenom = to_vector(HS.getCyclotomicDenom());
                 if (Result->isComputed(ConeProperty::HSOP)) {
                     HSnum = HS.getHSOPNum();
                     HSdenom = to_vector(HS.getHSOPDenom());
@@ -983,26 +985,32 @@ void Output<Integer>::write_inv_file() const {
                     HSnum = HS.getNum();
                     HSdenom = to_vector(HS.getDenom());
                 }
-                inv << "vector " << HSnum.size() << " hilbert_series_num = ";
-                inv << HSnum;
-                inv << "vector " << HSdenom.size() << " hilbert_series_denom = ";
-                inv << HSdenom;
-                HS.computeHilbertQuasiPolynomial();
-                if (HS.isHilbertQuasiPolynomialComputed()) {
-                    if (HS.get_nr_coeff_quasipol() >= 0) {
-                        inv << "integer nr_coeff_hilbert_quasipol = " << HS.get_nr_coeff_quasipol() << endl;
+                inv << "vector " << HSCyclonum.size() << " hilbert_series_cyclo_num = ";
+                inv << HSCyclonum;
+                inv << "vector " << HSCyclodenom.size() << " hilbert_series_cyclo_denom = ";
+                inv << HSCyclodenom;
+                if(!HS.get_only_cyclotomic()){
+                    inv << "vector " << HSnum.size() << " hilbert_series_num = ";
+                    inv << HSnum;
+                    inv << "vector " << HSdenom.size() << " hilbert_series_denom = ";
+                    inv << HSdenom;
+                    HS.computeHilbertQuasiPolynomial();
+                    if (HS.isHilbertQuasiPolynomialComputed()) {
+                        if (HS.get_nr_coeff_quasipol() >= 0) {
+                            inv << "integer nr_coeff_hilbert_quasipol = " << HS.get_nr_coeff_quasipol() << endl;
+                        }
+                        vector<vector<mpz_class> > hqp = HS.getHilbertQuasiPolynomial();
+                        inv << "matrix " << hqp.size() << " " << hqp[0].size() << " hilbert_quasipolynomial = ";
+                        inv << endl << hqp;
+                        inv << "integer hilbert_quasipolynomial_denom = " << HS.getHilbertQuasiPolynomialDenom() << endl;
                     }
-                    vector<vector<mpz_class> > hqp = HS.getHilbertQuasiPolynomial();
-                    inv << "matrix " << hqp.size() << " " << hqp[0].size() << " hilbert_quasipolynomial = ";
-                    inv << endl << hqp;
-                    inv << "integer hilbert_quasipolynomial_denom = " << HS.getHilbertQuasiPolynomialDenom() << endl;
+                    if (HS.get_expansion_degree() > -1) {
+                        vector<mpz_class> expansion = HS.getExpansion();
+                        inv << "vector Hilbert_series_expansion " << expansion.size() << " = " << expansion;
+                    }
                 }
-                if (HS.get_expansion_degree() > -1) {
-                    vector<mpz_class> expansion = HS.getExpansion();
-                    inv << "vector Hilbert_series_expansion " << expansion.size() << " = " << expansion;
-                }
-            }
-        }
+            } // cyclotomic
+        } // graded
         if (Result->isComputed(ConeProperty::IsReesPrimary)) {
             if (Result->isReesPrimary()) {
                 inv << "boolean primary = true" << endl;
@@ -1143,35 +1151,38 @@ template <typename Integer>
 void Output<Integer>::writeSeries(ofstream& out, const HilbertSeries& HS, string HilbertOrEhrhart) const {
     vector<mpz_class> HS_Num;
     map<long, long> HS_Denom;
-    if (Result->isComputed(ConeProperty::HSOP)) {
-        HS_Denom = HS.getHSOPDenom();
-        HS_Num = HS.getHSOPNum();
-        string HSOP;
-        if (!HS_Denom.empty())  // we disable the HSOP attribute if the series is a polynomial
-            HSOP = " (HSOP)";
-        out << HilbertOrEhrhart << "series" << HSOP << ":" << endl << HS_Num;
-    }
-    else {
-        HS_Denom = HS.getDenom();
-        HS_Num = HS.getNum();
-        out << HilbertOrEhrhart + "series:" << endl << HS_Num;
-    }
-    long nr_factors = 0;
-    for (auto& it : HS_Denom) {
-        nr_factors += it.second;
-    }
-    out << "denominator with " << nr_factors << " factors:" << endl;
-    out << HS_Denom;
-    out << endl;
-    if (HS.getShift() != 0) {
-        out << "shift = " << HS.getShift() << endl << endl;
+    bool only_cyclotomic = HS.get_only_cyclotomic();
+    if(!only_cyclotomic){
+        if (Result->isComputed(ConeProperty::HSOP)) {
+            HS_Denom = HS.getHSOPDenom();
+            HS_Num = HS.getHSOPNum();
+            string HSOP;
+            if (!HS_Denom.empty())  // we disable the HSOP attribute if the series is a polynomial
+                HSOP = " (HSOP)";
+            out << HilbertOrEhrhart << "series" << HSOP << ":" << endl << HS_Num;
+        }
+        else {
+            HS_Denom = HS.getDenom();
+            HS_Num = HS.getNum();
+            out << HilbertOrEhrhart + "series:" << endl << HS_Num;
+        }
+        long nr_factors = 0;
+        for (auto& it : HS_Denom) {
+            nr_factors += it.second;
+        }
+        out << "denominator with " << nr_factors << " factors:" << endl;
+        out << HS_Denom;
+        out << endl;
+        if (HS.getShift() != 0) {
+            out << "shift = " << HS.getShift() << endl << endl;
+        }
     }
 
     out << "degree of " + HilbertOrEhrhart + "Series as rational function = " << HS.getDegreeAsRationalFunction() << endl << endl;
-    if (v_is_symmetric(HS_Num)) {
+    if(!only_cyclotomic && v_is_symmetric(HS_Num)) {
         out << "The numerator of the " + HilbertOrEhrhart + "series is symmetric." << endl << endl;
     }
-    if (HS.get_expansion_degree() > -1) {
+    if (!only_cyclotomic && HS.get_expansion_degree() > -1) {
         vector<mpz_class> expansion = HS.getExpansion();
         out << "Expansion of " + HilbertOrEhrhart + "series" << endl;
         for (size_t i = 0; i < expansion.size(); ++i)
@@ -1179,7 +1190,7 @@ void Output<Integer>::writeSeries(ofstream& out, const HilbertSeries& HS, string
         out << endl;
     }
     long period = HS.getPeriod();
-    if (period == 1 && (HS_Denom.size() == 0 || HS_Denom.begin()->first == (long)HS_Denom.size())) {
+    if (!only_cyclotomic && period == 1 && (HS_Denom.size() == 0 || HS_Denom.begin()->first == (long)HS_Denom.size())) {
         out << HilbertOrEhrhart + "polynomial:" << endl;
         out << HS.getHilbertQuasiPolynomial()[0];
         out << "with common denominator = ";
@@ -1194,21 +1205,23 @@ void Output<Integer>::writeSeries(ofstream& out, const HilbertSeries& HS, string
         out << HS.getCyclotomicDenom();
         out << endl;
         // Hilbert quasi-polynomial
-        HS.computeHilbertQuasiPolynomial();
-        if (HS.isHilbertQuasiPolynomialComputed()) {
-            out << HilbertOrEhrhart + "quasi-polynomial of period " << period << ":" << endl;
-            if (HS.get_nr_coeff_quasipol() >= 0) {
-                out << "only " << HS.get_nr_coeff_quasipol() << " highest coefficients computed" << endl;
-                out << "their common period is " << HS.getHilbertQuasiPolynomial().size() << "" << endl;
+        if(!only_cyclotomic){
+            HS.computeHilbertQuasiPolynomial();
+            if (HS.isHilbertQuasiPolynomialComputed()) {
+                out << HilbertOrEhrhart + "quasi-polynomial of period " << period << ":" << endl;
+                if (HS.get_nr_coeff_quasipol() >= 0) {
+                    out << "only " << HS.get_nr_coeff_quasipol() << " highest coefficients computed" << endl;
+                    out << "their common period is " << HS.getHilbertQuasiPolynomial().size() << "" << endl;
+                }
+                Matrix<mpz_class> HQP(HS.getHilbertQuasiPolynomial());
+                HQP.pretty_print(out, true);
+                out << "with common denominator = " << HS.getHilbertQuasiPolynomialDenom();
             }
-            Matrix<mpz_class> HQP(HS.getHilbertQuasiPolynomial());
-            HQP.pretty_print(out, true);
-            out << "with common denominator = " << HS.getHilbertQuasiPolynomialDenom();
+            else {
+                out << HilbertOrEhrhart + "quasi-polynomial has period " << period << endl;
+            }
+            out << endl << endl;
         }
-        else {
-            out << HilbertOrEhrhart + "quasi-polynomial has period " << period << endl;
-        }
-        out << endl << endl;
     }
 }
 
