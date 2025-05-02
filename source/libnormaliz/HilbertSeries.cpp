@@ -302,6 +302,7 @@ void HilbertSeries::initialize() {
     expansion_degree = -1;
     period_bounded = true;
     only_cyclotomic = false;
+    allow_quasipoly = true;
 }
 
 // Constructor, creates 0/1
@@ -376,7 +377,7 @@ bool HilbertSeries::get_period_bounded() const {
     return period_bounded;
 }
 
-void HilbertSeries::set_only_cyclotomic(bool on_off){
+void HilbertSeries::set_only_cyclotomic(bool on_off) const{
     only_cyclotomic = on_off;
 }
 
@@ -384,7 +385,21 @@ bool HilbertSeries::get_only_cyclotomic() const{
     return only_cyclotomic;
 }
 
+void HilbertSeries::forbid_quasipol(bool on_off) const{
+    allow_quasipoly = !on_off;
+}
 
+bool HilbertSeries::get_quasipol_allowed() const{
+    return allow_quasipoly;
+}
+
+void HilbertSeries::get_variants(const HilbertSeries& mother){
+    set_expansion_degree(mother.get_expansion_degree());
+    set_nr_coeff_quasipol(mother.get_nr_coeff_quasipol());
+    forbid_quasipol(!mother.get_quasipol_allowed());
+    set_only_cyclotomic(mother.get_only_cyclotomic());
+    //HSOP is extra
+}
 
 // add another HilbertSeries to this
 void HilbertSeries::add(const vector<num_t>& num, const vector<denom_t>& gen_degrees) {
@@ -490,9 +505,10 @@ void HilbertSeries::simplify() const {
 
     computeDegreeAsRationalFunction();
 
-    if (verbose) {
+    /*if (verbose) {
             verboseOutput() << "Hilbert series before simplification: "<< endl << *this;
         }
+    */
     vector<mpz_class> q, r, poly;  // polynomials
     // In denom_cyclo we collect cyclotomic polynomials in the denominator.
     // During this method the Hilbert series is given by num/(denom*cdenom)
@@ -676,7 +692,7 @@ mpz_class HilbertSeries::getHilbertQuasiPolynomialDenom() const {
 }
 
 void HilbertSeries::computeHilbertQuasiPolynomial() const {
-    if (isHilbertQuasiPolynomialComputed() || nr_coeff_quasipol == 0)
+    if (isHilbertQuasiPolynomialComputed() || !allow_quasipoly)
         return;
     simplify();
 

@@ -240,6 +240,7 @@ enum Enum {
     KeepOrder,
     HSOP,
     OnlyCyclotomicHilbSer,
+    NoQuasiPolynomial,
     NoPeriodBound,
     NoLLL,
     NoRelax,

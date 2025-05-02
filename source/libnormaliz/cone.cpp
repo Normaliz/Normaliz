@@ -3557,7 +3557,7 @@ void Cone<Integer>::compute_full_cone_inner(ConeProperties& ToCompute) {
 
     if (ToCompute.test(ConeProperty::HilbertSeries)) {
         FC.do_h_vector = true;
-        FC.Hilbert_Series.set_period_bounded(HSeries.get_period_bounded());
+        FC.Hilbert_Series.get_variants(HSeries);
     }
     if (ToCompute.test(ConeProperty::HilbertBasis)) {
         FC.do_Hilbert_basis = true;
@@ -3628,10 +3628,6 @@ void Cone<Integer>::compute_full_cone_inner(ConeProperties& ToCompute) {
 
     if (ToCompute.test(ConeProperty::HSOP)) {
         FC.do_hsop = true;
-    }
-
-    if(ToCompute.test(ConeProperty::OnlyCyclotomicHilbSer)){
-        FC.hseries_only_cyclotomic = true;
     }
 
     /* Give extra data to FC */
@@ -4394,11 +4390,11 @@ ConeProperties Cone<Integer>::lattice_ideal_compute_inner(ConeProperties ToCompu
         setComputed(ConeProperty::MarkovBasis);
     }
     if(LattId.isComputed(ConeProperty::HilbertSeries)){
-        long save_nr_coeff_quasipol = HSeries.get_nr_coeff_quasipol();
-        long save_expansion_degree = HSeries.get_expansion_degree();
+        // long save_nr_coeff_quasipol = HSeries.get_nr_coeff_quasipol();
+        // long save_expansion_degree = HSeries.get_expansion_degree();
         HSeries = LattId.getHilbertSeries();
-        HSeries.set_nr_coeff_quasipol(save_nr_coeff_quasipol);
-        HSeries.set_expansion_degree(save_expansion_degree);
+        // HSeries.set_nr_coeff_quasipol(save_nr_coeff_quasipol);
+        // HSeries.set_expansion_degree(save_expansion_degree);
 ;       setComputed(ConeProperty::HilbertSeries);
     }
 
@@ -4406,10 +4402,8 @@ ConeProperties Cone<Integer>::lattice_ideal_compute_inner(ConeProperties ToCompu
     return ToCompute;
 }
 
-
 template <typename Integer>
 ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
-
 
 #ifdef NMZ_DEBUG
     if(verbose){
@@ -4429,6 +4423,14 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         possibly_interrupted = true;
     }
 
+    if(ToCompute.test(ConeProperty::NoQuasiPolynomial)){ // necessary because of monoid
+        HSeries.forbid_quasipol(true);
+    }
+
+    if(ToCompute.test(ConeProperty::OnlyCyclotomicHilbSer)){
+        HSeries.forbid_quasipol(true);
+        HSeries.set_only_cyclotomic(true);
+    }
 
     handle_dynamic(ToCompute);
 
@@ -6936,10 +6938,14 @@ void Cone<Integer>::try_symmetrization(ConeProperties& ToCompute) {
     SymmToCompute.set(ConeProperty::NoSignedDec, ToCompute.test(ConeProperty::NoSignedDec));
     SymmToCompute.set(ConeProperty::GradingIsPositive, ToCompute.test(ConeProperty::GradingIsPositive));
     SymmToCompute.set(ConeProperty::FixedPrecision, ToCompute.test(ConeProperty::FixedPrecision));
+    //***************************************
     SymmCone->compute(SymmToCompute);
+    //***************************************
     if (SymmCone->isComputed(ConeProperty::WeightedEhrhartSeries)) {
         long save_expansion_degree = HSeries.get_expansion_degree();  // not given to the symmetrization
         HSeries = SymmCone->getWeightedEhrhartSeries().first;
+        // cout << "Wau wau " << HSeries.getHilbertQuasiPolynomialDenom() << endl;
+        // cout << "Miau " << HSeries.getHilbertQuasiPolynomial();
         HSeries.set_expansion_degree(save_expansion_degree);
         setComputed(ConeProperty::HilbertSeries);
         // setComputed(ConeProperty::ExplicitHilbertSeries);

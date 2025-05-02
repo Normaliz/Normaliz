@@ -158,12 +158,17 @@ class HilbertSeries {
     void set_period_bounded(bool on_off) const;
     bool get_period_bounded() const;
 
-    void set_only_cyclotomic(bool on_off);
+    void set_only_cyclotomic(bool on_off) const;
     bool get_only_cyclotomic() const;
+
+    void forbid_quasipol(bool on_off) const;
+    bool get_quasipol_allowed() const;
 
     vector<mpz_class> getExpansion() const;
     long get_expansion_degree() const;
     void set_expansion_degree(long degree);
+
+    void get_variants(const HilbertSeries& mother);
 
    private:
     void initialize();
@@ -206,7 +211,8 @@ class HilbertSeries {
     mutable long nr_coeff_quasipol;  // limits the computation of coefficients of the computeHilbertQuasiPolynomial
                                      // <0: all coeff, =0: no coeff
 
-    bool only_cyclotomic;
+    mutable bool only_cyclotomic;
+    mutable bool allow_quasipoly;
 
     bool verbose;
 

@@ -4638,7 +4638,6 @@ void Full_Cone<Integer>::primal_algorithm_initialize() {
         SimplexEval[i].set_evaluator_tn(i);
     Results = vector<Collector<Integer>>(omp_get_max_threads(), Collector<Integer>(*this));
     Hilbert_Series.setVerbose(verbose);
-    Hilbert_Series.set_only_cyclotomic(hseries_only_cyclotomic);
 }
 
 //---------------------------------------------------------------------------
@@ -4765,6 +4764,7 @@ void Full_Cone<Integer>::reset_degrees_and_merge_new_candidates() {
 template <typename Integer>
 void Full_Cone<Integer>::finish_Hilbert_series() {
     if (do_h_vector) {
+
         Hilbert_Series.setShift(convertToLong(shift));
         Hilbert_Series.adjustShift();
         // now the shift in the HilbertSeries may change and we would have to adjust
@@ -7574,8 +7574,6 @@ Full_Cone<Integer>::Full_Cone(const Matrix<Integer>& M, bool do_make_prime) {  /
 
     don_t_add_hyperplanes = false;
     take_time_of_large_pyr = false;
-
-    hseries_only_cyclotomic = false;
 
     renf_degree = 2;  // default value to prevent desasters
 }

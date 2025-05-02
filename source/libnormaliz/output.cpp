@@ -1206,6 +1206,7 @@ void Output<Integer>::writeSeries(ofstream& out, const HilbertSeries& HS, string
         out << endl;
         // Hilbert quasi-polynomial
         if(!only_cyclotomic){
+            cout << "Trörö " << HS.isHilbertQuasiPolynomialComputed() << endl;
             HS.computeHilbertQuasiPolynomial();
             if (HS.isHilbertQuasiPolynomialComputed()) {
                 out << HilbertOrEhrhart + "quasi-polynomial of period " << period << ":" << endl;

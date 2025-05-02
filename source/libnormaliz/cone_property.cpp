@@ -138,6 +138,7 @@ ConeProperties all_options() {
     ret.set(ConeProperty::KeepOrder);
     ret.set(ConeProperty::HSOP);
     ret.set(ConeProperty::OnlyCyclotomicHilbSer);
+    ret.set(ConeProperty::NoQuasiPolynomial);
     ret.set(ConeProperty::Symmetrize);
     ret.set(ConeProperty::NoSymmetrization);
     ret.set(ConeProperty::BigInt);
@@ -513,7 +514,7 @@ void ConeProperties::set_preconditions(bool inhomogeneous, bool numberfield) {
         CPs.reset(ConeProperty::RenfVolume);
     }
 
-    // HilbertQuasipolynomial ==> HilbertSeries
+    // HilbertQuasiPolynomial ==> HilbertSeries
     if (CPs.test(ConeProperty::HilbertQuasiPolynomial))
         CPs.set(ConeProperty::HilbertSeries);
 
@@ -526,6 +527,10 @@ void ConeProperties::set_preconditions(bool inhomogeneous, bool numberfield) {
         CPs.set(ConeProperty::HilbertSeries);
         CPs.set(ConeProperty::NoGradingDenom);
         CPs.reset(ConeProperty::EhrhartSeries);
+    }
+
+    if (CPs.test(ConeProperty::WeightedEhrhartSeries)) {
+        CPs.set(ConeProperty::BasicStanleyDec);
     }
 
     // EuclideanVolume ==> Volume
@@ -650,6 +655,10 @@ void ConeProperties::set_preconditions(bool inhomogeneous, bool numberfield) {
         CPs.set(ConeProperty::HilbertSeries);
     }*/
 
+    // OnlyCyclotomicHilbSer ==> NoQuasiPolynomial etc.
+    if(CPs.test(ConeProperty::OnlyCyclotomicHilbSer))
+        CPs.set(ConeProperty::NoQuasiPolynomial);
+
     // ModuleGeneratorsOverOriginalMonoid ==> HilbertBasis
     if (CPs.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid))
         CPs.set(ConeProperty::HilbertBasis);
@@ -705,12 +714,6 @@ void ConeProperties::set_preconditions(bool inhomogeneous, bool numberfield) {
     // WeightedEhrhartQuasiPolynomial ==> WeightedEhrhartSeries
     if (CPs.test(ConeProperty::WeightedEhrhartQuasiPolynomial))
         CPs.set(ConeProperty::WeightedEhrhartSeries);
-
-    // WeightedEhrhart ==> StanleyDec
-    if (CPs.test(ConeProperty::WeightedEhrhartSeries)) {
-        // CPs.set(ConeProperty::Multiplicity);
-        CPs.set(ConeProperty::BasicStanleyDec);
-    }
 
     // Volume + Integral ==> NoGradingDenom
     if (CPs.test(ConeProperty::Volume) || CPs.test(ConeProperty::Integral)) {
@@ -961,6 +964,16 @@ void ConeProperties::check_conflicting_variants() {
     )
         throw BadInputException("Contradictory algorithmic variants in options.");
 
+    if(CPs.test(ConeProperty::OnlyCyclotomicHilbSer) && CPs.test(ConeProperty::HSOP))
+        throw BadInputException("HSOP not allowed with OnlyCyclotomicHilbSer");
+
+    if( CPs.test(ConeProperty::NoQuasiPolynomial) && (
+        CPs.test(ConeProperty::HilbertQuasiPolynomial) ||
+        CPs.test(ConeProperty::EhrhartQuasiPolynomial) ||
+        CPs.test(ConeProperty::WeightedEhrhartQuasiPolynomial) )
+    )
+        throw BadInputException("Computation of quasipoloynomial excluded by other required variant.");
+
     size_t nr_var = 0;
     if (CPs.test(ConeProperty::DualMode))
         nr_var++;
@@ -1121,6 +1134,7 @@ vector<string> initializeCPN() {
     CPN.at(ConeProperty::StrictIsoTypeCheck) = "StrictIsoTypeCheck";
     CPN.at(ConeProperty::HSOP) = "HSOP";
     CPN.at(ConeProperty::OnlyCyclotomicHilbSer) = "OnlyCyclotomicHilbSer";
+    CPN.at(ConeProperty::NoQuasiPolynomial) = "NoQuasiPolynomial";
     CPN.at(ConeProperty::NoBottomDec) = "NoBottomDec";
     CPN.at(ConeProperty::PrimalMode) = "PrimalMode";
     CPN.at(ConeProperty::Symmetrize) = "Symmetrize";
@@ -1221,7 +1235,7 @@ vector<string> initializeCPN() {
     CPN.at(ConeProperty::UseModularGrading) = "UseModularGrading";
 
     // detect changes in size of Enum, to remember to update CPN!
-    static_assert(ConeProperty::EnumSize == 168,"ConeProperties Enum size does not fit! Update cone_property.cpp!");
+    static_assert(ConeProperty::EnumSize == 169,"ConeProperties Enum size does not fit! Update cone_property.cpp!");
     // assert all fields contain an non-empty string
     for (size_t i = 0; i < ConeProperty::EnumSize; i++) {
         // bstd::cout << "iii " << i << "  " << CPN.at(i) << endl;
