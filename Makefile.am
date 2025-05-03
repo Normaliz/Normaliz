@@ -63,6 +63,9 @@ EXTRA_DIST += install_pynormaliz.sh
 
 EXTRA_DIST += COPYING INSTALL
 
+pkgconfigdir       = $(libdir)/pkgconfig
+pkgconfig_DATA     = normaliz.pc
+
 # TODO: directory tools? playground? linear_algebra_test?
 # TODO: jNormaliz? java libs in lib/? documentation (papers)?
 
