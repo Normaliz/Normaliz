@@ -4171,6 +4171,17 @@ ConeProperties Cone<Integer>::monoid_compute(ConeProperties ToCompute) {
     }
     ToCompute.check_monoid_goals();
 
+    ToCompute.preconditions_and_check_series_goals();
+
+    if(ToCompute.test(ConeProperty::NoQuasiPolynomial)){ // necessary because of monoid
+        HSeries.forbid_quasipol(true);
+    }
+
+    if(ToCompute.test(ConeProperty::OnlyCyclotomicHilbSer)){
+        HSeries.forbid_quasipol(true);
+        HSeries.set_only_cyclotomic(true);
+    }
+
     size_t nr_autos = 0;
     if(ToCompute.test(ConeProperty::InputAutomorphisms))
         nr_autos++;
@@ -4181,9 +4192,6 @@ ConeProperties Cone<Integer>::monoid_compute(ConeProperties ToCompute) {
 
     if(nr_autos > 1)
         throw BadInputException("Oly one type of automorphism group can be computed in one run");
-
-    if(ToCompute.test(ConeProperty::HilbertQuasiPolynomial))
-        ToCompute.set(ConeProperty::HilbertSeries);
 
     Matrix<long long> InputGensLL;
     convert(InputGensLL,InputGenerators);
@@ -4423,15 +4431,6 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         possibly_interrupted = true;
     }
 
-    if(ToCompute.test(ConeProperty::NoQuasiPolynomial)){ // necessary because of monoid
-        HSeries.forbid_quasipol(true);
-    }
-
-    if(ToCompute.test(ConeProperty::OnlyCyclotomicHilbSer)){
-        HSeries.forbid_quasipol(true);
-        HSeries.set_only_cyclotomic(true);
-    }
-
     handle_dynamic(ToCompute);
 
     set_parallelization();
@@ -4463,6 +4462,16 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
 
     if(monoid_input){
         LEAVE_CONE  return monoid_compute(ToCompute);
+    }
+
+    // For monoid input dfone in monoid_compute
+    if(ToCompute.test(ConeProperty::NoQuasiPolynomial)){ // necessary because of monoid
+        HSeries.forbid_quasipol(true);
+    }
+    // ditto
+    if(ToCompute.test(ConeProperty::OnlyCyclotomicHilbSer)){
+        HSeries.forbid_quasipol(true);
+        HSeries.set_only_cyclotomic(true);
     }
 
     // We want to make sure that the exckuded faces are shown in the output/can be  returned

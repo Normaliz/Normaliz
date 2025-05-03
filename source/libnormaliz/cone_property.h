@@ -360,6 +360,8 @@ class ConeProperties {
     void set_fusion_default(const bool has_candidate);
     void set_fusion_partition_default();
 
+    void preconditions_and_check_series_goals();
+
     void check_conflicting_variants();
     void check_conflicting_fusion_variants();
     void check_Q_permissible(bool after_implications);

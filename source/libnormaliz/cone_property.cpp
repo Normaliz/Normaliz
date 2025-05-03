@@ -325,6 +325,39 @@ void ConeProperties::check_lattice_ideal_goals() const{
     }
 }
 
+void ConeProperties::preconditions_and_check_series_goals(){
+
+    // OnlyCyclotomicHilbSer ==> NoQuasiPolynomial
+    if(CPs.test(ConeProperty::OnlyCyclotomicHilbSer))
+        CPs.set(ConeProperty::NoQuasiPolynomial);
+
+    // HilbertQuasiPolynomial ==> HilbertSeries
+    if (CPs.test(ConeProperty::HilbertQuasiPolynomial))
+        CPs.set(ConeProperty::HilbertSeries);
+
+    // EhrhartQuasiPolynomial ==> EhrhartSeries
+    if (CPs.test(ConeProperty::EhrhartQuasiPolynomial))
+        CPs.set(ConeProperty::EhrhartSeries);
+
+    // WeightedEhrhartQuasiPolynomial ==> WeightedEhrhartSeries
+    if (CPs.test(ConeProperty::WeightedEhrhartQuasiPolynomial))
+        CPs.set(ConeProperty::WeightedEhrhartSeries);
+
+    if (CPs.test(ConeProperty::WeightedEhrhartSeries)) {
+        CPs.set(ConeProperty::BasicStanleyDec);
+    }
+
+    if(CPs.test(ConeProperty::OnlyCyclotomicHilbSer) && CPs.test(ConeProperty::HSOP))
+        throw BadInputException("HSOP not allowed with OnlyCyclotomicHilbSer");
+
+    if( CPs.test(ConeProperty::NoQuasiPolynomial) && (
+        CPs.test(ConeProperty::HilbertQuasiPolynomial) ||
+        CPs.test(ConeProperty::EhrhartQuasiPolynomial) ||
+        CPs.test(ConeProperty::WeightedEhrhartQuasiPolynomial) )
+    )
+        throw BadInputException("Computation of quasipoloynomial excluded by other required variant.");
+}
+
 void ConeProperties::check_fusion_ring_props() const{
     ConeProperties copy(*this);
     copy.reset(ConeProperty::BigInt);
@@ -451,6 +484,15 @@ void ConeProperties::set_fusion_partition_default() {
 /* add preconditions */
 void ConeProperties::set_preconditions(bool inhomogeneous, bool numberfield) {
 
+    preconditions_and_check_series_goals();
+
+    // homogeneous && EhrhartSeies ==> HilbertSeries
+    if (CPs.test(ConeProperty::EhrhartSeries) && !inhomogeneous) {
+        CPs.set(ConeProperty::HilbertSeries);
+        CPs.set(ConeProperty::NoGradingDenom);
+        CPs.reset(ConeProperty::EhrhartSeries);
+    }
+
     if(CPs.test(ConeProperty::NoEmptyOutput) && CPs.test(ConeProperty::FusionRings)){
         CPs.reset(ConeProperty::FusionRings);
         CPs.set(ConeProperty::SingleLatticePoint);
@@ -512,25 +554,6 @@ void ConeProperties::set_preconditions(bool inhomogeneous, bool numberfield) {
     if (CPs.test(ConeProperty::RenfVolume)) {
         CPs.set(ConeProperty::Volume);
         CPs.reset(ConeProperty::RenfVolume);
-    }
-
-    // HilbertQuasiPolynomial ==> HilbertSeries
-    if (CPs.test(ConeProperty::HilbertQuasiPolynomial))
-        CPs.set(ConeProperty::HilbertSeries);
-
-    // EhrhartQuasiPolynomial ==> EhrhartSeries
-    if (CPs.test(ConeProperty::EhrhartQuasiPolynomial))
-        CPs.set(ConeProperty::EhrhartSeries);
-
-    // homogeneous && EhrhartSeies ==> HilbertSeries
-    if (CPs.test(ConeProperty::EhrhartSeries) && !inhomogeneous) {
-        CPs.set(ConeProperty::HilbertSeries);
-        CPs.set(ConeProperty::NoGradingDenom);
-        CPs.reset(ConeProperty::EhrhartSeries);
-    }
-
-    if (CPs.test(ConeProperty::WeightedEhrhartSeries)) {
-        CPs.set(ConeProperty::BasicStanleyDec);
     }
 
     // EuclideanVolume ==> Volume
@@ -650,15 +673,6 @@ void ConeProperties::set_preconditions(bool inhomogeneous, bool numberfield) {
     if (CPs.test(ConeProperty::ExtremeRays))
         CPs.set(ConeProperty::SupportHyperplanes);
 
-    /*if (CPs.test(ConeProperty::HSOP) && !inhomogeneous){
-        CPs.set(ConeProperty::SupportHyperplanes);
-        CPs.set(ConeProperty::HilbertSeries);
-    }*/
-
-    // OnlyCyclotomicHilbSer ==> NoQuasiPolynomial etc.
-    if(CPs.test(ConeProperty::OnlyCyclotomicHilbSer))
-        CPs.set(ConeProperty::NoQuasiPolynomial);
-
     // ModuleGeneratorsOverOriginalMonoid ==> HilbertBasis
     if (CPs.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid))
         CPs.set(ConeProperty::HilbertBasis);
@@ -703,17 +717,9 @@ void ConeProperties::set_preconditions(bool inhomogeneous, bool numberfield) {
     if (CPs.test(ConeProperty::Rank))
         CPs.set(ConeProperty::Sublattice);
 
-    /* if(CPs.test(ConeProperty::Multiplicity) || CPs.test(ConeProperty::HilbertSeries))
-        CPs.set(ConeProperty::SupportHyperplanes);  // to meke them computed if Symmetrize is used
-    */
-
     // we want an ordinary triangulation if one is asked for
     if (CPs.test(ConeProperty::BasicTriangulation) && !numberfield)
         CPs.set(ConeProperty::NoSubdivision);
-
-    // WeightedEhrhartQuasiPolynomial ==> WeightedEhrhartSeries
-    if (CPs.test(ConeProperty::WeightedEhrhartQuasiPolynomial))
-        CPs.set(ConeProperty::WeightedEhrhartSeries);
 
     // Volume + Integral ==> NoGradingDenom
     if (CPs.test(ConeProperty::Volume) || CPs.test(ConeProperty::Integral)) {
@@ -963,16 +969,6 @@ void ConeProperties::check_conflicting_variants() {
         (CPs.test(ConeProperty::Dynamic) && CPs.test(ConeProperty::Static) )
     )
         throw BadInputException("Contradictory algorithmic variants in options.");
-
-    if(CPs.test(ConeProperty::OnlyCyclotomicHilbSer) && CPs.test(ConeProperty::HSOP))
-        throw BadInputException("HSOP not allowed with OnlyCyclotomicHilbSer");
-
-    if( CPs.test(ConeProperty::NoQuasiPolynomial) && (
-        CPs.test(ConeProperty::HilbertQuasiPolynomial) ||
-        CPs.test(ConeProperty::EhrhartQuasiPolynomial) ||
-        CPs.test(ConeProperty::WeightedEhrhartQuasiPolynomial) )
-    )
-        throw BadInputException("Computation of quasipoloynomial excluded by other required variant.");
 
     size_t nr_var = 0;
     if (CPs.test(ConeProperty::DualMode))
