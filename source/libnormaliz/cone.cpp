@@ -6934,8 +6934,7 @@ void Cone<Integer>::try_symmetrization(ConeProperties& ToCompute) {
     SymmCone = new Cone<Integer>(SymmInput);
     SymmCone->setPolynomial(polynomial);
     SymmCone->setDecimalDigits(decimal_digits);
-    SymmCone->setNrCoeffQuasiPol(HSeries.get_nr_coeff_quasipol());
-    SymmCone->HSeries.set_period_bounded(HSeries.get_period_bounded());
+    SymmCone->HSeries.get_variants(HSeries);
     SymmCone->setVerbose(verbose);
     ConeProperties SymmToCompute;
     SymmToCompute.set(ConeProperty::SupportHyperplanes);
@@ -6947,6 +6946,8 @@ void Cone<Integer>::try_symmetrization(ConeProperties& ToCompute) {
     SymmToCompute.set(ConeProperty::NoSignedDec, ToCompute.test(ConeProperty::NoSignedDec));
     SymmToCompute.set(ConeProperty::GradingIsPositive, ToCompute.test(ConeProperty::GradingIsPositive));
     SymmToCompute.set(ConeProperty::FixedPrecision, ToCompute.test(ConeProperty::FixedPrecision));
+    SymmToCompute.set(ConeProperty::OnlyCyclotomicHilbSer, ToCompute.test(ConeProperty::OnlyCyclotomicHilbSer));
+    SymmToCompute.set(ConeProperty::NoQuasiPolynomial, ToCompute.test(ConeProperty::NoQuasiPolynomial));
     //***************************************
     SymmCone->compute(SymmToCompute);
     //***************************************
@@ -7028,6 +7029,7 @@ void Cone<Integer>::compute_weighted_Ehrhart(ConeProperties& ToCompute) {
         throw BadInputException("Polynomial weight missing");
         /* if(get_rank_internal()==0)
             throw NotComputableException("WeightedEhrhartSeries not computed in dimension 0");*/
+    IntData.weighted_Ehrhart_series.first.get_variants(HSeries);
 #ifdef NMZ_COCOA
     generalizedEhrhartSeries(*this);
     setComputed(ConeProperty::WeightedEhrhartSeries);

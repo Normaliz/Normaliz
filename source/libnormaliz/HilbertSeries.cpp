@@ -398,6 +398,7 @@ void HilbertSeries::get_variants(const HilbertSeries& mother){
     set_nr_coeff_quasipol(mother.get_nr_coeff_quasipol());
     forbid_quasipol(!mother.get_quasipol_allowed());
     set_only_cyclotomic(mother.get_only_cyclotomic());
+    set_period_bounded(mother.get_period_bounded());
     //HSOP is extra
 }
 

@@ -1152,6 +1152,7 @@ void Output<Integer>::writeSeries(ofstream& out, const HilbertSeries& HS, string
     vector<mpz_class> HS_Num;
     map<long, long> HS_Denom;
     bool only_cyclotomic = HS.get_only_cyclotomic();
+    bool no_quasipol = !HS.get_quasipol_allowed();
     if(!only_cyclotomic){
         if (Result->isComputed(ConeProperty::HSOP)) {
             HS_Denom = HS.getHSOPDenom();
@@ -1205,8 +1206,7 @@ void Output<Integer>::writeSeries(ofstream& out, const HilbertSeries& HS, string
         out << HS.getCyclotomicDenom();
         out << endl;
         // Hilbert quasi-polynomial
-        if(!only_cyclotomic){
-            cout << "Trörö " << HS.isHilbertQuasiPolynomialComputed() << endl;
+        if(!no_quasipol){
             HS.computeHilbertQuasiPolynomial();
             if (HS.isHilbertQuasiPolynomialComputed()) {
                 out << HilbertOrEhrhart + "quasi-polynomial of period " << period << ":" << endl;

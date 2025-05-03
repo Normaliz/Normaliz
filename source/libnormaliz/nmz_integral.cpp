@@ -861,7 +861,7 @@ libnormaliz::HilbertSeries nmzHilbertSeries(const CyclRatFunct& H, mpz_class& co
 
     vector<long> denomDeg = denom2degrees(H.denom);
     libnormaliz::HilbertSeries HS(HCoeff3, count_in_map<long, long>(denomDeg));
-    HS.simplify();
+    // HS.simplify();
     return (HS);
 }
 
@@ -1288,9 +1288,11 @@ void generalizedEhrhartSeries(Cone<Integer>& C) {
 
         mpz_class commonDen;  // common denominator of coefficients of numerator of H
         libnormaliz::HilbertSeries HS(nmzHilbertSeries(HRat, commonDen));
-        HS.set_nr_coeff_quasipol(C.getIntData().getWeightedEhrhartSeries().first.get_nr_coeff_quasipol());
+        HS.get_variants(C.getIntData().getWeightedEhrhartSeries().first);
+        HS.simplify();
+        /* HS.set_nr_coeff_quasipol(C.getIntData().getWeightedEhrhartSeries().first.get_nr_coeff_quasipol());
         HS.set_expansion_degree(C.getIntData().getWeightedEhrhartSeries().first.get_expansion_degree());
-        HS.set_period_bounded(C.getIntData().getWeightedEhrhartSeries().first.get_period_bounded());
+        HS.set_period_bounded(C.getIntData().getWeightedEhrhartSeries().first.get_period_bounded()); */
 
         C.getIntData().setWeightedEhrhartSeries(make_pair(HS, commonDen));
 
