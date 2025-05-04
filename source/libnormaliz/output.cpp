@@ -1056,19 +1056,22 @@ void Output<Integer>::write_inv_file() const {
 template <typename Integer>
 void Output<Integer>::writeWeightedEhrhartSeries(ofstream& out) const {
     HilbertSeries HS = Result->getIntData().getWeightedEhrhartSeries().first;
-    out << "Weighted Ehrhart series:" << endl;
-    vector<mpz_class> num(HS.getNum());
-    for (const auto& i : num)
-        out << i << " ";
-    out << endl << "Common denominator of coefficients: ";
-    out << Result->getIntData().getWeightedEhrhartSeries().second << endl;
-    map<long, long> HS_Denom = HS.getDenom();
-    long nr_factors = 0;
-    for (const auto& it : HS_Denom) {
-        nr_factors += it.second;
+
+    if(HS.get_only_cyclotomic()){
+        out << "Weighted Ehrhart series:" << endl;
+        vector<mpz_class> num(HS.getNum());
+        for (const auto& i : num)
+            out << i << " ";
+        out << endl << "Common denominator of coefficients: ";
+        out << Result->getIntData().getWeightedEhrhartSeries().second << endl;
+        map<long, long> HS_Denom = HS.getDenom();
+        long nr_factors = 0;
+        for (const auto& it : HS_Denom) {
+            nr_factors += it.second;
+        }
+        out << "Series denominator with " << nr_factors << " factors:" << endl;
+        out << HS.getDenom();
     }
-    out << "Series denominator with " << nr_factors << " factors:" << endl;
-    out << HS.getDenom();
     if (HS.getShift() != 0) {
         out << "shift = " << HS.getShift() << endl << endl;
     }
@@ -1084,19 +1087,22 @@ void Output<Integer>::writeWeightedEhrhartSeries(ofstream& out) const {
         out << endl;
     }
 
-    long period = HS.getPeriod();
-    if (period == 1) {
-        out << "Weighted Ehrhart polynomial:" << endl;
-        for (const auto& i : HS.getHilbertQuasiPolynomial()[0])
-            out << i << " ";
-        out << endl;
-        out << "with common denominator = ";
-        out << HS.getHilbertQuasiPolynomialDenom() * Result->getIntData().getNumeratorCommonDenom();
+    long period;
+    if(HS.get_quasipol_allowed()){
+        period = HS.getPeriod();
+        if (period == 1) {
+            out << "Weighted Ehrhart polynomial:" << endl;
+            for (const auto& i : HS.getHilbertQuasiPolynomial()[0])
+                out << i << " ";
+            out << endl;
+            out << "with common denominator = ";
+            out << HS.getHilbertQuasiPolynomialDenom() * Result->getIntData().getNumeratorCommonDenom();
+        }
     }
-    else {
+    if(!HS.get_quasipol_allowed() || period != 1 ) {
         // output cyclonomic representation
         out << "Weighted Ehrhart series with cyclotomic denominator:" << endl;
-        num = HS.getCyclotomicNum();
+        vector<mpz_class> num = HS.getCyclotomicNum();
         for (const auto& i : num)
             out << i << " ";
         out << endl << "Common denominator of coefficients = ";
@@ -1104,6 +1110,8 @@ void Output<Integer>::writeWeightedEhrhartSeries(ofstream& out) const {
         out << "Series cyclotomic denominator:" << endl;
         out << HS.getCyclotomicDenom();
         out << endl;
+    }
+    if(HS.get_quasipol_allowed() && period != 1){
         // Weighted Ehrhart quasi-polynomial
         // vector< vector<mpz_class> > hilbert_quasi_poly = HS.getHilbertQuasiPolynomial();
         if (HS.isHilbertQuasiPolynomialComputed()) {
@@ -1116,9 +1124,8 @@ void Output<Integer>::writeWeightedEhrhartSeries(ofstream& out) const {
             HQP.pretty_print(out, true);
             out << "with common denominator: " << Result->getIntData().getWeightedEhrhartQuasiPolynomialDenom() << endl;
         }
-        else {
-            out << "Weighted Ehrhart quasi-polynomial has period " << period << endl;
-        }
+
+        out << "Weighted Ehrhart quasi-polynomial has period " << period << endl;
     }
 
     out << endl << endl;
@@ -1153,7 +1160,20 @@ void Output<Integer>::writeSeries(ofstream& out, const HilbertSeries& HS, string
     map<long, long> HS_Denom;
     bool only_cyclotomic = HS.get_only_cyclotomic();
     bool no_quasipol = !HS.get_quasipol_allowed();
-    if(!only_cyclotomic){
+    long period = HS.getPeriod();
+
+    bool write_series = !only_cyclotomic;
+    bool write_cyclo = only_cyclotomic;
+    bool write_polynomial = !only_cyclotomic && period == 1 && (HS_Denom.size() == 0 || HS_Denom.begin()->first == (long)HS_Denom.size());
+    bool write_quasi_pol = !write_polynomial;
+    write_polynomial &= !no_quasipol;
+    write_cyclo = write_cyclo || !write_polynomial;
+    write_polynomial &= !no_quasipol;
+    write_quasi_pol &= !no_quasipol;
+
+
+
+    if(write_series){
         if (Result->isComputed(ConeProperty::HSOP)) {
             HS_Denom = HS.getHSOPDenom();
             HS_Num = HS.getHSOPNum();
@@ -1180,49 +1200,48 @@ void Output<Integer>::writeSeries(ofstream& out, const HilbertSeries& HS, string
     }
 
     out << "degree of " + HilbertOrEhrhart + "Series as rational function = " << HS.getDegreeAsRationalFunction() << endl << endl;
-    if(!only_cyclotomic && v_is_symmetric(HS_Num)) {
+    if(write_series && v_is_symmetric(HS_Num)) {
         out << "The numerator of the " + HilbertOrEhrhart + "series is symmetric." << endl << endl;
     }
-    if (!only_cyclotomic && HS.get_expansion_degree() > -1) {
+    if (write_series && HS.get_expansion_degree() > -1) {
         vector<mpz_class> expansion = HS.getExpansion();
         out << "Expansion of " + HilbertOrEhrhart + "series" << endl;
         for (size_t i = 0; i < expansion.size(); ++i)
             out << i + HS.getShift() << ": " << expansion[i] << endl;
         out << endl;
     }
-    long period = HS.getPeriod();
-    if (!only_cyclotomic && period == 1 && (HS_Denom.size() == 0 || HS_Denom.begin()->first == (long)HS_Denom.size())) {
+    if (write_polynomial) {
         out << HilbertOrEhrhart + "polynomial:" << endl;
         out << HS.getHilbertQuasiPolynomial()[0];
         out << "with common denominator = ";
         out << HS.getHilbertQuasiPolynomialDenom();
         out << endl << endl;
     }
-    else {
+    if(write_cyclo) {
         // output cyclonomic representation
         out << HilbertOrEhrhart << "series with cyclotomic denominator:" << endl;
         out << HS.getCyclotomicNum();
         out << "cyclotomic denominator:" << endl;
         out << HS.getCyclotomicDenom();
         out << endl;
-        // Hilbert quasi-polynomial
-        if(!no_quasipol){
-            HS.computeHilbertQuasiPolynomial();
-            if (HS.isHilbertQuasiPolynomialComputed()) {
-                out << HilbertOrEhrhart + "quasi-polynomial of period " << period << ":" << endl;
-                if (HS.get_nr_coeff_quasipol() >= 0) {
-                    out << "only " << HS.get_nr_coeff_quasipol() << " highest coefficients computed" << endl;
-                    out << "their common period is " << HS.getHilbertQuasiPolynomial().size() << "" << endl;
-                }
-                Matrix<mpz_class> HQP(HS.getHilbertQuasiPolynomial());
-                HQP.pretty_print(out, true);
-                out << "with common denominator = " << HS.getHilbertQuasiPolynomialDenom();
+    }
+
+    if(write_quasi_pol){
+        HS.computeHilbertQuasiPolynomial();
+        if (HS.isHilbertQuasiPolynomialComputed()) {
+            out << HilbertOrEhrhart + "quasi-polynomial of period " << period << ":" << endl;
+            if (HS.get_nr_coeff_quasipol() >= 0) {
+                out << "only " << HS.get_nr_coeff_quasipol() << " highest coefficients computed" << endl;
+                out << "their common period is " << HS.getHilbertQuasiPolynomial().size() << "" << endl;
             }
-            else {
-                out << HilbertOrEhrhart + "quasi-polynomial has period " << period << endl;
-            }
-            out << endl << endl;
+            Matrix<mpz_class> HQP(HS.getHilbertQuasiPolynomial());
+            HQP.pretty_print(out, true);
+            out << "with common denominator = " << HS.getHilbertQuasiPolynomialDenom();
         }
+        else {
+            out << HilbertOrEhrhart + "quasi-polynomial has period " << period << endl;
+        }
+        out << endl << endl;
     }
 }
 

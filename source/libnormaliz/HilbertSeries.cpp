@@ -582,6 +582,8 @@ void HilbertSeries::simplify() const {
     cyclo_num = num;
     cyclo_denom = cdenom;
 
+    period = lcm_of_keys(cdenom);
+
     if(only_cyclotomic){
         expansion_degree = -1;
         nr_coeff_quasipol = 0;
@@ -594,10 +596,9 @@ void HilbertSeries::simplify() const {
     // now collect the cyclotomic polynomials in (1-t^i) factors
     it = cdenom.find(1);
     if (it != cdenom.end())
-        dim = it->second;
+        dim = it->second; // dim = number of occurrences of 1
     else
         dim = 0;
-    period = lcm_of_keys(cdenom);
     if (period_bounded && period > 10 * PERIOD_BOUND) {
         if (verbose) {
             errorOutput() << "WARNING: Period is too big, the representation of the Hilbert series may have more than dimension "
