@@ -347,8 +347,8 @@ bool MarkovProjectAndLift::lift_next_not_yet_lifted(bool allow_revlex){
     else{
         gr.set_grading(LiftedWeight);
     }
-    binomial_list min_markov = gr.graph_minimize(graph_success);
-    if(!graph_success){
+    binomial_list min_markov; // = gr.graph_minimize(graph_success);
+    if(true){ //!graph_success){
         min_markov = gr.bb_and_minimize(LiftedWeight);
     }
     MinimalMarkov = min_markov.to_matrix();
