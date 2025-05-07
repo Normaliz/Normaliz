@@ -1339,7 +1339,7 @@ binomial_list binomial_list::graph_minimize(bool& success){
 
 binomial_list_by_degrees::binomial_list_by_degrees(const binomial_list& BL){
 
-    grading = BL.mon_ord.get_weight();  // we want bto keep the order in BL as much as possible
+    grading = BL.mon_ord.get_weight();  // we want to keep the order in BL as much as possible
     vector<long long> bounding_grad = BL.grading;
     long long degree_bound = BL.degree_bound;
 
