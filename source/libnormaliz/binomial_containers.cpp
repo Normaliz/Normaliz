@@ -1266,8 +1266,11 @@ binomial_list binomial_list::graph_minimize(bool& success){
     G.sat_support = sat_support;
     G.grading = grading;
     G.degree_bound = degree_bound;
-    if(degree_bound >= 0)
+    G.degree_bound_set = false;
+    if(degree_bound >= 0){
         G.degree_bound_set = true;
+        cout << "RRRRRRRR " << grading;
+    }
 
     binomial_tree G_red_tree(mon_ord, sat_support);
 

@@ -342,47 +342,16 @@ bool MarkovProjectAndLift::lift_next_not_yet_lifted(bool allow_revlex){
     bool graph_success;
     if(degree_bound >= 0){
         gr.set_grading(grading);
-        gr.set_degree_bound(degree_bound);
+        // gr.set_degree_bound(degree_bound); // only by sekection at present
     }
     else{
         gr.set_grading(LiftedWeight);
     }
-    binomial_list min_markov; // = gr.graph_minimize(graph_success);
-    if(true){ //!graph_success){
+    binomial_list min_markov = gr.graph_minimize(graph_success);
+    if(!graph_success){
         min_markov = gr.bb_and_minimize(LiftedWeight);
     }
     MinimalMarkov = min_markov.to_matrix();
-
-    /*binomial_list min_markovGB = gr.bb_and_minimizeGB(LiftedWeight);
-    Matrix<long long> MinimalMarkovGB(0, LiftedWeight.size());
-    MinimalMarkovGB = min_markovGB.to_matrix();
-    cout << "CCCCCCCCCCCC " << min_markov.size() << " GGGGGGGGGG " << min_markovGB.size() << endl;
-
-    vector<long long> OurDegrees;
-    for(size_t i = 0; i< MinimalMarkov.nr_of_rows(); ++i){
-        OurDegrees.push_back(pos_degree(MinimalMarkov[i], LiftedWeight));
-    }
-    map<long long, size_t> DegMap = count_in_map<long long, size_t>(OurDegrees);
-    cout << "Grading " << LiftedWeight;
-    cout << "CCCCCC " << DegMap;
-    cout << endl;
-
-    vector<long long> OurDegreesGB;
-    for(size_t i = 0; i< MinimalMarkovGB.nr_of_rows(); ++i){
-        OurDegreesGB.push_back(pos_degree(MinimalMarkovGB[i], LiftedWeight));
-    };
-    map<long long, size_t> DegMapGB = count_in_map<long long, size_t>(OurDegreesGB);
-    cout << "GGGGGG  " <<  DegMapGB;
-    cout << endl;
-
-    cout << endl << "CCCCCC " << DegMap.size() << " GGGGGG " << DegMapGB.size() << endl;
-
-    for(auto& D: DegMap){
-        if(D.second != DegMapGB[D.first])
-            cout << D.first << " " << D.second << "  ------  " << DegMapGB[D.first] << endl;
-    }
-
-    cout << endl << "=========================================================" << endl;*/
 
     if(verbose)
         verboseOutput() << "Size of minimal Markov basis " << MinimalMarkov.nr_of_rows() << endl;
@@ -634,17 +603,23 @@ void LatticeIdeal::setComputed(ConeProperty::Enum prop, bool value) {
 Matrix<Integer>  LatticeIdeal::getMarkovBasis(){
     if(!isComputed(ConeProperty::MarkovBasis))
         compute(ConeProperty::MarkovBasis);
-    /* vector<long long> OurDegrees;
+    vector<long long> OurDegrees;
     for(size_t i = 0; i< MinimalMarkov.nr_of_rows(); ++i){
         OurDegrees.push_back(pos_degree(MinimalMarkov[i], Grading));
     }
-    map<long long, size_t> DegMap;
-    cout << "Grading " << Grading;
-    cout << "GGGG " << count_in_map<long long, size_t>(OurDegrees);
-    */
+    if(verbose){
+        map<long long, size_t> DegMap = count_in_map<long long, size_t>(OurDegrees);
+        verboseOutput() << "Grading " << Grading;
+        verboseOutput() << "Degrees in minimal Markovbasis " << DegMap;
+        verboseOutput() << "---------------------------------------------------" << endl;
+    }
+
     if(MinimalMarkov.nr_of_rows() >0 ){
         if(degree_bound >= 0 || min_degree >= 0){
             sort_by_pos_degree(MinimalMarkov, Grading);
+            if(verbose){
+                verboseOutput() << "Selecting max deg " << degree_bound << " min deg " << min_degree << endl;
+            }
             return select_by_degree(MinimalMarkov, Grading, degree_bound, min_degree);
         }
         else
@@ -673,9 +648,13 @@ HilbertSeries  LatticeIdeal::getHilbertSeries(){
 
 void LatticeIdeal::computeMarkov(){
 
+    // cout << "IIIIIIIIIIIIIIII " << OurInput.nr_of_rows() << endl;
+    // OurInput.debug_print();
+
     MarkovProjectAndLift PandL(OurInput, verbose);
     if(Grading.size() > 0 && degree_bound != -1){
         PandL.set_grading(Grading);
+        // cout << "BBBBBBBBBBBBB " << degree_bound << endl;
         PandL.set_degree_bound(degree_bound);
     }
     PandL.compute(Markov, MinimalMarkov);
