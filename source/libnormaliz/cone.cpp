@@ -4177,11 +4177,6 @@ ConeProperties Cone<Integer>::monoid_compute(ConeProperties ToCompute) {
         HSeries.forbid_quasipol(true);
     }
 
-    if(ToCompute.test(ConeProperty::OnlyCyclotomicHilbSer)){
-        HSeries.forbid_quasipol(true);
-        HSeries.set_only_cyclotomic(true);
-    }
-
     size_t nr_autos = 0;
     if(ToCompute.test(ConeProperty::InputAutomorphisms))
         nr_autos++;
@@ -4211,21 +4206,29 @@ ConeProperties Cone<Integer>::monoid_compute(ConeProperties ToCompute) {
         Cone<Integer> HSCompute(Type::cone_and_lattice, HilbertBasis);
         // HSCompute.setVerbose(false);
         HSCompute.setGrading(Grading);
-        HSCompute.setNrCoeffQuasiPol(HSeries.get_nr_coeff_quasipol());
-        HSCompute.setExpansionDegree(HSeries.get_expansion_degree());
+        HSCompute.HSeries.get_variants(HSeries);
         ConeProperties HSProp;
         HSProp.set(ConeProperty::HilbertSeries);
         if(ToCompute.test(ConeProperty::NoGradingDenom))
             HSProp.set(ConeProperty::NoGradingDenom);
         if(ToCompute.test(ConeProperty::OnlyCyclotomicHilbSer))
             HSProp.set(ConeProperty::OnlyCyclotomicHilbSer);
+        if(ToCompute.test(ConeProperty::NoQuasiPolynomial))
+            HSProp.set(ConeProperty::NoQuasiPolynomial);
+        if(ToCompute.test(ConeProperty::HSOP))
+            HSProp.set(ConeProperty::HSOP);
+        //*****************************************
         HSCompute.compute(HSProp);
+        //*****************************************
         HSeries = HSCompute.getHilbertSeries();
         multiplicity = HSCompute.getMultiplicity();
         setComputed(ConeProperty::Multiplicity);
         if(ToCompute.test(ConeProperty::HilbertQuasiPolynomial)){
             HSeries.computeHilbertQuasiPolynomial();
             setComputed(ConeProperty::HilbertQuasiPolynomial);
+        }
+        if(ToCompute.test(ConeProperty::HSOP)){
+            setComputed(ConeProperty::HSOP);
         }
         setComputed(ConeProperty::HilbertSeries);
     }
@@ -4385,7 +4388,12 @@ ConeProperties Cone<Integer>::lattice_ideal_compute_inner(ConeProperties ToCompu
         }
     }
 
+    // We use HilbSer to forward the values
+    LattId.HilbSer.get_variants(HSeries);
+
+    //**********************************************
     LattId.compute(ToCompute);
+    //**********************************************
     if(LattId.isComputed(ConeProperty::GroebnerBasis)){
         convert(GroebnerBasis,LattId.getGroebnerBasis());
         setComputed(ConeProperty::GroebnerBasis);
@@ -4398,11 +4406,7 @@ ConeProperties Cone<Integer>::lattice_ideal_compute_inner(ConeProperties ToCompu
         setComputed(ConeProperty::MarkovBasis);
     }
     if(LattId.isComputed(ConeProperty::HilbertSeries)){
-        // long save_nr_coeff_quasipol = HSeries.get_nr_coeff_quasipol();
-        // long save_expansion_degree = HSeries.get_expansion_degree();
         HSeries = LattId.getHilbertSeries();
-        // HSeries.set_nr_coeff_quasipol(save_nr_coeff_quasipol);
-        // HSeries.set_expansion_degree(save_expansion_degree);
 ;       setComputed(ConeProperty::HilbertSeries);
     }
 
@@ -4464,7 +4468,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         LEAVE_CONE  return monoid_compute(ToCompute);
     }
 
-    // For monoid input dfone in monoid_compute
+    // For monoid input done in monoid_compute
     if(ToCompute.test(ConeProperty::NoQuasiPolynomial)){ // necessary because of monoid
         HSeries.forbid_quasipol(true);
     }

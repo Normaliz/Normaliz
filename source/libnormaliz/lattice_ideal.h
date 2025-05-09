@@ -120,11 +120,11 @@ public:
     void set_min_degree(const long deg);
     void set_gb_weight(const vector<long long>& given_weight);
 
+    libnormaliz::HilbertSeries HilbSer;
 
 private:
 
     ConeProperties is_Computed;
-    libnormaliz::HilbertSeries HilbSer;
     Matrix<long long> OurInput;
     vector<long long> Grading;
     Matrix<long long> Markov; // the full MarkovBasis which is a GB for some monomial order

@@ -730,9 +730,18 @@ void LatticeIdeal::computeHilbertSeries(const ConeProperties& ToCompute){
     vector<mpz_class> numerator = bl_HilbertSeries.compute_HilbertSeries(Grading);
     vector<long> Grading_long;
     convert(Grading_long, Grading);
+    long save_nr_coeff_quasipol = HilbSer.get_nr_coeff_quasipol();
+    long save_expansion_degree = HilbSer.get_expansion_degree();
     HilbSer = HilbertSeries(numerator, Grading_long);
-    if(ToCompute.test(ConeProperty::OnlyCyclotomicHilbSer))
+    HilbSer.set_expansion_degree(save_expansion_degree);
+    HilbSer.set_nr_coeff_quasipol(save_nr_coeff_quasipol);
+    if(ToCompute.test(ConeProperty::OnlyCyclotomicHilbSer)){
         HilbSer.set_only_cyclotomic(true);
+        HilbSer.forbid_quasipol(true);
+    }
+    if(ToCompute.test(ConeProperty::NoQuasiPolynomial)){
+        HilbSer.forbid_quasipol(true);
+    }
     HilbSer.simplify();
     /* if(verbose){
         verboseOutput() << "Hilbert series numerator  " << HilbSer.getNum();

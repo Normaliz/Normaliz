@@ -1186,12 +1186,9 @@ void Output<Integer>::writeSeries(ofstream& out, const HilbertSeries& HS, string
     bool write_cyclo = only_cyclotomic;
     bool write_polynomial = !only_cyclotomic && period == 1 && (HS_Denom.size() == 0 || HS_Denom.begin()->first == (long)HS_Denom.size());
     bool write_quasi_pol = !write_polynomial;
-    write_polynomial &= !no_quasipol;
-    write_cyclo = write_cyclo || !write_polynomial;
+    write_cyclo = write_cyclo || write_quasi_pol;
     write_polynomial &= !no_quasipol;
     write_quasi_pol &= !no_quasipol;
-
-
 
     if(write_series){
         if (Result->isComputed(ConeProperty::HSOP)) {
@@ -1232,6 +1229,10 @@ void Output<Integer>::writeSeries(ofstream& out, const HilbertSeries& HS, string
     }
     if (write_polynomial) {
         out << HilbertOrEhrhart + "polynomial:" << endl;
+           if (HS.get_nr_coeff_quasipol() >= 0) {
+                out << "only " << HS.get_nr_coeff_quasipol() << " highest coefficients computed" << endl;
+                // out << "their common period is " << HS.getHilbertQuasiPolynomial().size() << "" << endl;
+        }
         out << HS.getHilbertQuasiPolynomial()[0];
         out << "with common denominator = ";
         out << HS.getHilbertQuasiPolynomialDenom();
