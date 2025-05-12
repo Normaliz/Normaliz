@@ -287,6 +287,7 @@ void ConeProperties::check_monoid_goals() const{
     ConeProperties copy(*this);
     copy = copy.goals();
     copy.reset(ConeProperty::HilbertBasis);
+    // copy.reset(ConeProperty::ExtremeRays);
     copy.reset(ConeProperty::IsIntegrallyClosed);
     copy.reset(ConeProperty::IsSerreR1);
     copy.reset(ConeProperty::Multiplicity);

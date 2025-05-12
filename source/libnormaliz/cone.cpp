@@ -4410,6 +4410,8 @@ ConeProperties Cone<Integer>::lattice_ideal_compute_inner(ConeProperties ToCompu
 ;       setComputed(ConeProperty::HilbertSeries);
     }
 
+    // complete_HilbertSeries_comp(ToCompute);
+
     ToCompute.reset(is_Computed);
     return ToCompute;
 }

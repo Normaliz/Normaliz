@@ -242,7 +242,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
     dynamic_bitset sparse_bounds(nr_all_supps);
 
     for(size_t i = 0; i< nr_all_supps; ++i){
-        if(upper_bounds[i] /* && Indicator[i].count() <= EmbDim/5*/){ // our criterion for sparseness
+        if(upper_bounds[i] && Indicator[i].count() < EmbDim){ // our criterion for sparseness
             union_upper_bounds |= Indicator[i];
             sparse_bounds[i] = 1;
         }
@@ -252,7 +252,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
 
     if(!sparse){
         if(verbose)
-            verboseOutput() << "System not sparse" << endl;
+            verboseOutput() << "System not sparse or only 1 patch" << endl;
         return;
     }
 
