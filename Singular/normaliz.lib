@@ -464,6 +464,41 @@ static proc getInt(string s, int p)
     return(i,p);
 }
 
+static proc getBigInt(string s, int p)
+{
+    string nst;
+    int j,en,sn;
+    bigint i;
+
+    for(;p<=size(s);p++)
+    {
+
+        if(digit(s[p]))
+        {
+            sn=p; break;
+        }
+    }
+    if(not(sn))
+    {
+        return(0,-1); // -1 indicates: no number found
+    }
+    p++;
+    for(;p<=size(s);p++)
+    {
+        if(!digit(s[p]))
+        {
+            en=p-1; break;
+        }
+    }
+    if(p>size(s))
+    {
+        en=size(s);
+    }
+    nst="i="+s[sn,en-sn+1];
+    execute(nst);
+    return(i,p);
+}
+
 
 static proc getRational(string s, int p)
 {
@@ -982,6 +1017,7 @@ static proc runNormaliz(list #)
     }
 
     Num_Invs=getNuminvs();
+
     int gens_computed = 0;
     for( int i = 1; i <= size(Num_Invs); i = i+1){
         if(Num_Invs[i][1] == "hilbert_basis_elements"){
@@ -1048,8 +1084,10 @@ static proc getNuminvs()
     string s;
     list num_invs;
     int p,sw,v_length,i,dummy_int;
+    bigint DummyInt;
     intvec dummy_vec;
     string type_inv,name_inv,dummy_bool;
+    int make_big_int;
 
     link in_f=":r "+ getNmzFile() + "."+"inv";
     s=read(in_f);
@@ -1072,23 +1110,46 @@ static proc getNuminvs()
             {
                 name_inv="h_vector";
             }
+            make_big_int = 0;
+            if(name_inv == "hilbert_series_num" || name_inv == "hilbert_series_cyclo_num"){
+                if(BigNumInvs){
+                    make_big_int = 1;
+                }
+            }
+            if(defined(DummyMat)){
+                kill(DummyMat);
+            }
+            bigintmat DummyMat[1][v_length];
             if(name_inv!="hilbert_polynomial"
               && name_inv!="hilbert_quasipolynomial")
             {
                 for(i=1;i<=v_length;i++)
                 {
-                    if(i==1)
+                    if(i==1 && !make_big_int)
                     {
-                        (dummy_int,p)=getInt(s,p);
-                        dummy_vec=dummy_int;
+                        if(!make_big_int){
+                            (dummy_int,p)=getInt(s,p);
+                            dummy_vec=dummy_int;
+                        }
                     }
                     else
                     {
-                        (dummy_int,p)=getInt(s,p);
-                        dummy_vec=dummy_vec,dummy_int;
+                        if(!make_big_int){
+                            (dummy_int,p)=getInt(s,p);
+                            dummy_vec=dummy_vec,dummy_int;
+                        }
+                        else{
+                            (DummyInt,p) = getBigInt(s,p);
+                            DummyMat[1,i] = DummyInt;
+                        }
                     }
                 }
-                num_invs=num_invs+list(list(name_inv,dummy_vec,"intvec"));
+                if(!make_big_int){
+                    num_invs=num_invs+list(list(name_inv,dummy_vec,"intvec"));
+                }
+                else{
+                    num_invs=num_invs+list(list(name_inv,DummyMat,"bigintvec", v_length));
+                }
             }
             else
             {
@@ -1100,8 +1161,14 @@ static proc getNuminvs()
             (sw,p)=nextWord(s,p);
             name_inv=s[sw..p-1];
             if (name_inv!="hilbert_quasipolynomial_denom") {
-              (dummy_int,p)=getInt(s,p);
-              num_invs=num_invs+list(list(name_inv,dummy_int,"int"));
+                if(!BigNumInvs || (name_inv != "multiplicity" && name_inv != "multiplicity_num" && name_inv != "multiplicity_denom")){
+                   (dummy_int,p)=getInt(s,p);
+                    num_invs=num_invs+list(list(name_inv,dummy_int,"int"));
+                }
+                else {
+                    (DummyInt,p)=getBigInt(s,p);
+                    num_invs=num_invs+list(list(name_inv,dummy_int,"bigint"));
+                }
             }
         }
         if(type_inv=="boolean")
@@ -1121,6 +1188,7 @@ static proc getNuminvs()
     }
     return(num_invs);
 }
+
 
 proc showNuminvs()
 "USAGE:   showNuminvs();
@@ -1168,7 +1236,15 @@ EXAMPLE:  example exportNuminvs; shows an example
     for(i=1;i<=size(Num_Invs);i++)
     {
         dummy=Num_Invs[i];
-        s=dummy[3]+" nmz_" + dummy[1] + "=dummy[2]; exportto(Top," + "nmz_" + dummy[1] + ");";
+        if(dummy[3] != "bigintvec"){
+            s=dummy[3]+" nmz_" + dummy[1] + "=dummy[2]; exportto(Top," + "nmz_" + dummy[1] + ");";
+        }
+        else{
+            s = "bigintmat " + "nmz_" + dummy[1] + "[1][";
+            s = s + string(dummy[4]) + "]";
+            s = s + " = dummy[2];  exportto(Top," + "nmz_" + dummy[1] + ");";
+        }
+
         execute(s);
     }
     Exported_Num_Invs = Num_Invs;
@@ -2137,4 +2213,7 @@ static proc mod_init()
     export nmz_options;
     list default_options = nmz_options;
     export default_options;
+
+    int BigNumInvs = 0;
+    exportto(Top, BigNumInvs);
 }

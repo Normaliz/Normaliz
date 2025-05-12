@@ -19,6 +19,13 @@ In addition to the Sagbi bases it can compute a defining ideal for the algebra A
 respect to the given system of generators. (The computation of defining ideals cannot be
 controlled by Hilbert series.)
 
+See the papers
+
+(1) W.Bruns and A. Conca, Sagbi combinatorics of maximal minors and a Sagbi algorithm.
+J. Symb. Comput. 120  (2024), Article ID 102237, 14 p. (arXiv:2302.14345)
+
+(2) W. Bruns, A. Conca and F.Lembo, Sagbi bases, defining ideals and algebras of minors.
+
 Use of this library requires the program Normaliz to be installed and the
 availability of normaliz.lib. You can download both from
 @uref{https://github.com/Normaliz/Normaliz/releases}.
@@ -47,10 +54,11 @@ sagbiHilbControlled(ideal Q, intvec HS_num_algebra, intvec HS_denom_algebra, int
                               is checked again for completion.
 
 sagbiDefIdealGeneral(ideal Q [, int sagbiMaxRounds, int sorting, int verb]) does the same as sagbiGeneral, but additionally
-                             computes as much of a system of generators of the defining idael as it can get before being stopped.
+                             computes as much of a system of generators of the defining idael as it can get before being stopped. Addutionally it returns the list of expressions of the Sagbi elements in terms of the original generators of the aubalgebra, calles the retract.
 
 sagbiDefIdealByDegree(ideal Q, int Sagbi_degree_bound,[,int sorting, int verb]) does the same as sagbiByDegree,
                                but additionally computes the defining ideal up to the degree set by Sagbi_degree_bound.
+                               Addutionally it returns the list of expressions of the Sagbi elements in terms of the original generators of the aubalgebra, calles the retract.
 
 
 ";
@@ -96,15 +104,15 @@ static proc aapplyLaedIdeal(ideal LC){
 
     for(int i = 1; i <= ncols(LC); i++){
             if(LC[i] == 0){
-                @DefIdeal = @DefIdeal, @PreIm[i];
-                @PreIm[i] = 0;
+                @DefIdeal = @DefIdeal, @Retract[i];
+                @Retract[i] = 0;
             }
             else{
-                @PreIm[i] = @PreIm[i]/LC[i];
+                @Retract[i] = @Retract[i]/LC[i];
             }
     }
     @DefIdeal = simplify(@DefIdeal, 3);
-    @PreIm = simplify(@PreIm, 2);
+    @Retract = simplify(@Retract, 2);
 }
 
 
@@ -131,14 +139,14 @@ static proc aapplyLaedIdeal(ideal LC){
 
      for(int i = 1; i <= size(D); i++){
          if(D[i] <= 0){ // constant
-            @DefIdeal = @DefIdeal, @PreIm[i] - LC[i];
-            @PreIm[i] = 0;
+            @DefIdeal = @DefIdeal, @Retract[i] - LC[i];
+            @Retract[i] = 0;
          }
          else{
-            @PreIm[i] = @PreIm[i]/LC[i];
+            @Retract[i] = @Retract[i]/LC[i];
          }
      }
-     @PreIm = simplify(@PreIm, 2);
+     @Retract = simplify(@Retract, 2);
  }
 
 // ------------------------------------------------
@@ -189,7 +197,7 @@ static proc selectNextDegree(intmat saveTete_a_tete, int startTete_tete, intvec 
 
     int endTete_atete = nrows(saveTete_a_tete);
     if(startTete_tete > nrows(saveTete_a_tete))
-{
+    {
         intmat empty[0][ncols(saveTete_a_tete)];
         return (empty, startTete_tete);
     }
@@ -253,22 +261,24 @@ static proc polyProd(intvec F, bigintmat G, int max_degree){
     return(Prod);
 }
 
-static proc cycloRatFunctionExpansion(intvec num_vec, intvec den_vec, int exp_degree){
-// Computes the expansion of a rational function with numerator represented by num_vec
+static proc cycloRatFunctionExpansion(EnumData HS, int exp_degree){
+// Computes the expansion of a rational function with numerator represented by HS.HilbertSeriesNum
 // and denominator a product of terms 1 - t^g_i where zjhe g_i are the entries of den_vec
+
     bigintmat E[1][exp_degree + 1];
-    int to_copy = size(num_vec);
+    int to_copy = ncols(HS.HilbertSeriesNum);
     if(to_copy > exp_degree + 1){
         to_copy = exp_degree + 1;
     }
     int i, j, k;
     for(i = 1; i <= to_copy; i++){
-        E[1, i] = num_vec[i];
+        E[1, i] = HS.HilbertSeriesNum[1,i];
     }
     intvec fac;
     for(i = 1; i <= exp_degree; i++){
         fac = fac, 0;
     }
+    intvec den_vec = HS.HilbertSeriesDenom;
     for( k = 1; k<= size(den_vec); k++){
         for(i = 1; i <= size(fac); i++){
             fac[i] = 0;
@@ -281,11 +291,12 @@ static proc cycloRatFunctionExpansion(intvec num_vec, intvec den_vec, int exp_de
     return(E);
 }
 
-static proc intvec2poly(intvec vec){
+
+static proc intvec2poly(bigintmat  vec){
     poly f = 0;
     poly t = var(1);
-    for(int i = 1; i <= size(vec); i++){
-        f = f + vec[i]*t^(i-1);
+    for(int i = 1; i <= ncols(vec); i++){
+        f = f + vec[1,i]*t^(i-1);
     }
     return(f);
 }
@@ -294,44 +305,67 @@ static proc expandDenom(intvec den){
     poly g = 1;
     poly t = var(1);
     for(int i = 1; i <= size(den); i++){
-        g = g*(1-t^den[i]);
+            g = g*(1-t^den[i]);
     }
-   return(g);
+    return(g);
 }
 
-static proc unifiedRepresentations(intvec num_vec_1, intvec den_vec_1, intvec num_vec_2, intvec den_vec_2){
+static proc unifiedRepresentations(EnumData HS_1, EnumData HS_2){
 
     ring T = 0,t,dp;
     poly num_1, den_1, num_2, den_2;
-    num_1 = intvec2poly(num_vec_1);
-    num_2 = intvec2poly(num_vec_2);
-    den_1 = expandDenom(den_vec_1);
-    den_2 = expandDenom(den_vec_2);
+    num_1 = intvec2poly(HS_1.HilbertSeriesNum);
+    num_2 = intvec2poly(HS_2.HilbertSeriesNum);
+    den_1 = expandDenom(HS_1.HilbertSeriesDenom);
+    den_2 = expandDenom(HS_2.HilbertSeriesDenom);
     if(num_1*den_2 == num_2*den_1){
         return(1);
     }
     return(0);
 }
 
-static proc compareCCycloRatFunctions(intvec num_vec_1, intvec den_vec_1, num_vec_2, den_vec_2){
+static proc fullDenomCCycloRatFunction(EnumData HS){
+// transfer HS from denominator of cyclotomic polynomials p(e)
+// to denominator with denominator of factors (1-t^e)
+
+    ring T = 0,t,dp;
+    poly factor;
+    int expo;
+    poly num_poly = intvec2poly(HS.HilbertSeriesNum);
+    for(int i = 1; i <= size(HS.HilbertSeriesDenom); i++){
+        expo = HS.HilbertSeriesDenom[i];
+        factor = (1 -t^expo)/cyclotomic(expo);
+        num_poly = num_poly * factor;
+    }
+    matrix C = coeffs(num_poly,t);
+    bigintmat D[1][nrows(C)];
+    for(i = 1; i<= nrows(C); i++){
+        D[1,i] = bigint(C[i,1]);
+    }
+    HS.HilbertSeriesNum = D;
+    return(HS);
+}
+
+static proc compareCCycloRatFunctions(EnumData HS_1, EnumData HS_2){
 // Compares the expansions of rational functions as in cycloRatFunctionExpansion
 // It must be made sure that the rational functions agree if and only they agree in
 // numerator and denominator
 
-    if(num_vec_1 == num_vec_2 && den_vec_1 == den_vec_2){
-        return(-1,0);
-    }
-    if(unifiedRepresentations(num_vec_1, den_vec_1, num_vec_2, den_vec_2) ){
+    // if(HS_1.HilbertSeriesNum == HS_2.HilbertSeriesNum && HS_1.HilbertSeriesDenom == HS_2.HilbertSeriesDenom){
+    //     return(-1,0);
+    // }
+
+    if(unifiedRepresentations(HS_1, HS_2) ){
          return(-1,0);
     }
 
-    int expansion_deg = size(num_vec_1);
+    int expansion_deg = ncols(HS_1.HilbertSeriesNum);
     bigintmat expansion_1, expansion_2;
     int u;
     while(1)
-{
-        expansion_1 = cycloRatFunctionExpansion(num_vec_1, den_vec_1, expansion_deg);
-        expansion_2 = cycloRatFunctionExpansion(num_vec_2, den_vec_2, expansion_deg);
+    {
+        expansion_1 = cycloRatFunctionExpansion(HS_1, expansion_deg);
+        expansion_2 = cycloRatFunctionExpansion(HS_2, expansion_deg);
         if(expansion_1 == expansion_2){
             expansion_deg = 2*expansion_deg;
             continue;
@@ -364,12 +398,44 @@ static proc HilbertSeriesMonoid(intmat U, int min_degree){
         dbprint(our_printlevel,"Not normal");
         swallow = setNmzOption("MRK",1);
     }
+    int saveBigNumInvs = BigNumInvs;
+    BigNumInvs = 1;
     swallow = setNmzOption("only_hvect",1);
+    if(Cyclotomic){
+        swallow = setNmzOption("cyclo", 1);
+    }
+    else{
+        swallow = setNmzOption("noquasi", 1);
+    }
+    // swallow = setNmzOption("verbose", 1);
     V = normaliz(U, "monoid", min_degree, "gb_min_degree");
     swallow = setNmzOption("only_hvect",0);
     swallow = setNmzOption("MRK",0);
+    if(Cyclotomic){
+        swallow = setNmzOption("cyclo", 0);
+    }
+    else{
+        swallow = setNmzOption("noquasi", 0);
+    }
+    // swallow = setNmzOption("verbose", 0);
     exportNuminvs();
-    return(nmz_hilbert_series_num, nmz_hilbert_series_denom, is_normal);
+    BigNumInvs = saveBigNumInvs;
+    EnumData HSeries;
+    bigintmat Transfer;
+    if(Cyclotomic){
+        HSeries.HilbertSeriesDenom = nmz_hilbert_series_cyclo_denom;
+        Transfer = nmz_hilbert_series_cyclo_num;
+    }
+    else{
+        HSeries.HilbertSeriesDenom = nmz_hilbert_series_denom;
+        Transfer = nmz_hilbert_series_num;
+    }
+    HSeries.HilbertSeriesNum = Transfer;
+    if(Cyclotomic){
+        HSeries = fullDenomCCycloRatFunction(HSeries);
+    }
+
+    return(HSeries, is_normal);
 }
 
 static proc HilbertSeriesMonAlgebra(ideal P, int min_degree)
@@ -455,7 +521,7 @@ static proc Subduction(ideal Pgiven, bigint nr_generators_needed){
 
     if(@do_def_ideal){
         setring @S;
-        map g = S,@PreIm;
+        map g = S,@Retract;
         ideal Pre_modify = g(Bl);
         ideal LCC = fetch(our_ring, LC);
         for(i = 1; i <= nrows(V); i++){
@@ -464,18 +530,18 @@ static proc Subduction(ideal Pgiven, bigint nr_generators_needed){
                             break;
                     }
             }
-            @PreIm[j] = Pre_modify[i];
+            @Retract[j] = Pre_modify[i];
             if(D[j] <= 0){
-                @DefIdeal = @DefIdeal, @PreIm[j] - LCC[j];
-                @PreIm[j] = 0;
+                @DefIdeal = @DefIdeal, @Retract[j] - LCC[j];
+                @Retract[j] = 0;
             }
             else{
-                @PreIm[j] = @PreIm[j]/LCC[j];
+                @Retract[j] = @Retract[j]/LCC[j];
             }
         }
-        @PreIm = simplify(@PreIm, 2); // removes 0, DON'T MAKE MONIC
-        if(check != ncols(@PreIm)){
-            "P ncols", check, " PreIm ncols ", ncols(@PreIm);
+        @Retract = simplify(@Retract, 2); // removes 0, DON'T MAKE MONIC
+        if(check != ncols(@Retract)){
+            "P ncols", check, " PreIm ncols ", ncols(@Retract);
             ERROR("Preimage doesn' fit. Inform the authors!");
         }
     }
@@ -519,7 +585,8 @@ static proc completeSubduction(ideal Q){
             def our_ring = basering;
             if(@do_def_ideal){
                 setring @S;
-                "Size defining ideal so far (not minimized)", size(@DefIdeal);
+                output = "Size defining ideal so far (not minimized) " + string(size(@DefIdeal));
+                dbprint(our_printlevel,output);
                 setring our_ring;
             }
             return(Q);
@@ -534,7 +601,7 @@ static proc completeSubduction(ideal Q){
 static proc Tete_A_TeteHilbControlled(ideal P, int crit_degree, int is_normal)
 // Computes the terte-a-ztete of a system of polynomials (termonology of
 // Robbiano-Sweedler). Control by Hilbert series: only the crit degree is
-// evaluated and normalioty is exploited. Genereal version below.
+// evaluated and normalioty is exploited. General version below.
 {
     dbprint(our_printlevel,"Start Tete-a-tete ");
     string output;
@@ -553,6 +620,10 @@ static proc Tete_A_TeteHilbControlled(ideal P, int crit_degree, int is_normal)
     intvec SGrad = gradVector(Q, GradingDenom);
     intmat U = mons2intmat(Q);
 
+    // ideal Bla = lead(Q);
+    // Bla;
+    // mons2intmat(Bla);
+
     def our_ring = basering;
     int p = size(Q);
     list baseringlist = ringlist(basering);
@@ -562,9 +633,11 @@ static proc Tete_A_TeteHilbControlled(ideal P, int crit_degree, int is_normal)
     ideal B, Bfull;
     if(is_normal){ // in the normal case we don't have the Markov basis yet
         int swallow = setNmzOption("MRK",1);
+        // swallow = setNmzOption("verbose",1);
         intmat Bl = normaliz(U, "monoid", crit_degree, "gb_min_degree", crit_degree, "gb_degree_bound");
         exportNuminvs();
         swallow = setNmzOption("MRK",0);
+        // swallow = setNmzOption("verbose",0);
         V = readNmzData("mrk");
         dbprint(our_printlevel,"Evaluating tete-a-tete");
         output = "Computing " + string(nrows(V)) +  " binomials";
@@ -580,6 +653,7 @@ static proc Tete_A_TeteHilbControlled(ideal P, int crit_degree, int is_normal)
         int our_deg, u;
         V = readNmzData("mrk");
         dbprint(our_printlevel,"Evaluating tete-a-tete");
+        // V;
         output = "Selecting from " + string(nrows(V)) + " binomials";
         dbprint(our_printlevel,output);
         Bfull = intmat2binomials(V);
@@ -625,6 +699,9 @@ static proc Tete_A_TeteGeneral(ideal P, int current_degree, int Sagbi_degree_bou
 
     intmat U = mons2intmat(Q);
 
+    // ideal Bla = lead(Q);
+    // Bla;
+
     def our_ring = basering;
     int p = size(Q);
     list baseringlist = ringlist(basering);
@@ -644,6 +721,7 @@ static proc Tete_A_TeteGeneral(ideal P, int current_degree, int Sagbi_degree_bou
                 // U;
                 // "---------------";
                 // transpose(U);
+                // "CCCCCCCCCCCCCCCCCC ",  current_degree;
                 Dummy = normaliz(U, "monoid", current_degree, "gb_min_degree");
                 // exportNuminvs();
                 // showNuminvs();
@@ -711,13 +789,13 @@ static proc Tete_A_TeteGeneral(ideal P, int current_degree, int Sagbi_degree_bou
 
     if(@do_def_ideal){
         setring @S;
-        map g = S,@PreIm;
-        @PreIm = @PreIm, g(B);
+        map g = S,@Retract;
+        @Retract = @Retract, g(B);
         ideal LCC = fetch(our_ring, LC);
         // aapplyLaedIdeal(LCC);
         preparePreIm(D, LCC);
-        if(check != ncols(@PreIm)){
-            "Q ncols", check, " PreIm ncols ", ncols(@PreIm);
+        if(check != ncols(@Retract)){
+            "Q ncols", check, " PreIm ncols ", ncols(@Retract);
             ERROR("Preimage doesn'tfit. Inform the authors!");
         }
     }
@@ -733,6 +811,21 @@ static proc dosagbiHilbControlled(ideal Q, intvec HS_num_algebra, intvec HS_deno
                                   int Sagbi_degree_bound, int finalCheck, int sorting){
 // The code would allow Sagbi_degree_bound = -, meaning no bound
 
+    if(HS_denom_algebra[1] < 0){
+        Cyclotomic = 1;
+        HS_denom_algebra[1] = -HS_denom_algebra[1];
+    }
+    EnumData AlgebraHilbData;
+    AlgebraHilbData.HilbertSeriesDenom = HS_denom_algebra;
+    bigintmat Transfer[1][size(HS_num_algebra)];
+    for(int i = 1; i <= size(HS_num_algebra); i++){
+        Transfer[1,i] = HS_num_algebra[i];
+    }
+    AlgebraHilbData.HilbertSeriesNum = Transfer;
+    if(Cyclotomic){
+        AlgebraHilbData = fullDenomCCycloRatFunction(AlgebraHilbData);
+    }
+
     int has_positive_degree = 0;
     for(int i = 1; i <= ncols(Q); i++){
         if(deg(Q[i]) >= 1){
@@ -741,7 +834,7 @@ static proc dosagbiHilbControlled(ideal Q, intvec HS_num_algebra, intvec HS_deno
         }
     }
     if(!has_positive_degree){
-        ERROR("At least one generetor miust have positive degree");
+        ERROR("At least one generator must have positive degree");
     }
     string output;
 
@@ -767,6 +860,8 @@ static proc dosagbiHilbControlled(ideal Q, intvec HS_num_algebra, intvec HS_deno
 
     crit_degree = 0;
 
+    EnumData CandData;
+
 
     while(1){
         if(round > 0){
@@ -778,11 +873,17 @@ static proc dosagbiHilbControlled(ideal Q, intvec HS_num_algebra, intvec HS_deno
             L = sort(P,"dp");
             P = L[1];
         }
+        (CandData, is_normal) = HilbertSeriesMonAlgebra(P, crit_degree+1);
 
-        (HS_num_cand, HS_denom_cand, is_normal) = HilbertSeriesMonAlgebra(P, crit_degree+1);
+        // (HS_num_cand, HS_denom_cand, is_normal) = HilbertSeriesMonAlgebra(P, crit_degree+1);
 
-        (crit_degree, HF_difference) = compareCCycloRatFunctions(HS_num_algebra, HS_denom_algebra,
-                        HS_num_cand, HS_denom_cand);
+        (crit_degree, HF_difference) = compareCCycloRatFunctions(AlgebraHilbData, CandData);
+
+
+        //(crit_degree, HF_difference) = compareCCycloRatFunctions(HS_num_algebra, HS_denom_algebra,
+        //                 HS_num_cand, HS_denom_cand);
+
+        // quit;
 
         if(crit_degree > Sagbi_degree_bound && Sagbi_degree_bound != -1){
         output =  "critical degree = " + string(crit_degree) +  " > Sagbi_degree_bound = " + string(Sagbi_degree_bound);
@@ -849,11 +950,13 @@ static proc dosagbiHilbControlled(ideal Q, intvec HS_num_algebra, intvec HS_deno
             P = P + Phigh;
             P = completeSubduction(P);
         }
+
+        // lead(P);
     }
 }
 // ---------------------------------------------------------------
 
-static proc doSagbiGeneral(ideal Q, int dcefining_ideal, int Sagbi_degree_bound, int Sagbi_max_rounds, int sorting)
+static proc doSagbiGeneral(ideal Q, int defining_ideal, int Sagbi_degree_bound, int Sagbi_max_rounds, int sorting)
 {
     int i;
     int has_positive_degree = 0;
@@ -864,7 +967,7 @@ static proc doSagbiGeneral(ideal Q, int dcefining_ideal, int Sagbi_degree_bound,
         }
     }
     if(!has_positive_degree){
-        ERROR("At least one generetor miust have positive degree");
+        ERROR("At least one generator must have positive degree");
     }
 
 
@@ -875,12 +978,11 @@ static proc doSagbiGeneral(ideal Q, int dcefining_ideal, int Sagbi_degree_bound,
         degreeByDegree = 1;
     }
 
-    // if(degreeByDegree == 0 && dcefining_ideal == 1){
+    // if(degreeByDegree == 0 && defining_ideal == 1){
     //     ERROR("Defining ideal only computed gegree by degree");
     // }
 
-    int @do_def_ideal = dcefining_ideal;
-    export(@do_def_ideal);
+    @do_def_ideal = defining_ideal;
 
     ideal P;
     int GradingDenom;
@@ -909,19 +1011,19 @@ static proc doSagbiGeneral(ideal Q, int dcefining_ideal, int Sagbi_degree_bound,
         P = removeConstants(P); // PreIm will be gtaken care below
         P = simplify(P,1); // make monic
         ring @S = (baseringlist[1]),(y(1.. p)),wp(D);
-        ideal @PreIm =(y(1..p));
+        ideal @Retract =(y(1..p));
         ideal @DefIdeal;
-        ideal @PreIm_low;
-        ideal @PreIm_high;
+        ideal @Retract_low;
+        ideal @Retract_high;
         export(@S);
-        export(@PreIm);
+        export(@Retract);
         export(@DefIdeal);
-        export(@PreIm_low);
-        export(@PreIm_high);
+        export(@Retract_low);
+        export(@Retract_high);
         ideal LCC = fetch(our_ring, LC);
         preparePreIm(D, LCC); // takes care of constants in P, makes moic
         // for(i = 1; i <= ncols(LCC); i++){
-        //             @PreIm[i] = @PreIm[i]/LCC[i];
+        //             @Retract[i] = @Retract[i]/LCC[i];
         // }
         setring our_ring;
     }
@@ -974,8 +1076,8 @@ static proc doSagbiGeneral(ideal Q, int dcefining_ideal, int Sagbi_degree_bound,
 
         if(@do_def_ideal){
             setring @S;
-            @PreIm_high = 0;
-            @PreIm_low = 0;
+            @Retract_high = 0;
+            @Retract_low = 0;
         }
 
         setring our_ring;
@@ -1002,16 +1104,16 @@ static proc doSagbiGeneral(ideal Q, int dcefining_ideal, int Sagbi_degree_bound,
                     setring @S;
                     for(i = 1; i <=size(D); i++){
                         if(D[i] <= uu * GradingDenom){
-                            @PreIm_low = @PreIm_low + @PreIm[i];
+                            @Retract_low = @Retract_low + @Retract[i];
                         }
                         else{
-                            @PreIm_high = @PreIm_high + @PreIm[i];
+                            @Retract_high = @Retract_high + @Retract[i];
                         }
                     }
-                    if(size(@PreIm_low) != check_low || size(@PreIm_high) != check_high){
-                      "Problem ", size(@PreIm_low), check_low, size(@PreIm_high), check_high;
+                    if(size(@Retract_low) != check_low || size(@Retract_high) != check_high){
+                      "Problem ", size(@Retract_low), check_low, size(@Retract_high), check_high;
                     }
-                    @PreIm = @PreIm_low;
+                    @Retract = @Retract_low;
                 }
                 setring our_ring;
                 // 2 = strictly degree by degree
@@ -1135,7 +1237,7 @@ static proc doSagbiGeneral(ideal Q, int dcefining_ideal, int Sagbi_degree_bound,
         our_ring = basering;
         if(@do_def_ideal){
             setring @S;
-            @PreIm = @PreIm + @PreIm_high;
+            @Retract = @Retract + @Retract_high;
         }
 
         setring our_ring;
@@ -1326,7 +1428,7 @@ proc sagbiDefIdealByDegree(ideal Q, int Sagbi_degree_bound, list #)
 "USAGE:   defIdealByDegree(ideal Q, int sagbiDegreeBound [,int sorting, int verb]);
 RETURN:   An instance of
 
-          newstruct("sagbiResult","int success, ideal sagbiBasis, ideal defIdeal");
+          newstruct("sagbiResult","int success, ideal sagbiBasis, ideal defIdeal,, ideal retract");
 
           success has the value 0, if the full Sagbi basis has not been reached,
           1 if this is unknown, and 2 if the full Sagbi basis has been computed.
@@ -1334,7 +1436,7 @@ RETURN:   An instance of
           sagbiBasis is the Sagbi basis encodeed as an ideal in the polynomial ring that was
           active when sagbiDefIdealByDegree was called.
 
-          defIdeal contains the defining ideal (as far as computed). It lives in the ring
+          defIdeal contains the defining ideal and the retract (as far as computed). They live in the ring
           (name of the result).r_defIdeal; See example for the activation of this ring.
           The defining ideal has been minimized.
 
@@ -1389,6 +1491,7 @@ EXAMPLE:  example sagbiDefIdealByDegree; shows an example
     def our_ring = basering;
     setring @S;
     res.defIdeal = minbase(@DefIdeal);
+    res.retract = @Retract;
     setring our_ring;
     return(res);
 }
@@ -1407,13 +1510,15 @@ example
     setring motherRing;
     "defining ideal";
     Result.defIdeal;
+    "retract";
+    Result.retract;
 }
 
 proc sagbiDefIdealGeneral(ideal Q, list #)
 "USAGE:   defIdealGeneral(ideal Q [, int sagbiMaxRounds, int sorting, int verb]));
 RETURN:    An instance of
 
-          newstruct("sagbiResult","int success, ideal sagbiBasis, ideal defIdeal");
+          newstruct("sagbiResult","int success, ideal sagbiBasis, ideal defIdeal, ideal retract");
 
           success has the value 0, if the full Sagbi basis has not been reached,
           1 if this is unknown, and 2 if the full Sagbi basis has been computed.
@@ -1421,8 +1526,9 @@ RETURN:    An instance of
           sagbiBasis is the Sagbi basis encodeed as an ideal in the polynomial ring that was
           active when sagbiDefIdealByDegree was called.
 
-          defIdeal contains the defining ideal (as far as computed). It lives in the ring
+          defIdeal contains the defining ideal and the retract (as far as computed). They live in the ring
           (name of the result).r_defIdeal; See example for the activation of this ring.
+          The defining ideal has been minimized.
 
           Note: sorting, if set at all, must be 0.
 
@@ -1454,6 +1560,7 @@ EXAMPLE:  example sagbiDefIdealGeneral; shows an example
     def our_ring = basering;
     setring @S;
     res.defIdeal = @DefIdeal;
+    res.retract = @Retract;
     setring our_ring;
     return(res);
 }
@@ -1469,6 +1576,8 @@ example
     setring motherRing;
     "defining ideal";
     Result.defIdeal;
+    "retract";
+    Result.retract;
 }
 // ------------------------------------------------
 // Initialization
@@ -1477,13 +1586,18 @@ example
 static proc mod_init()
 {
     LIB "normaliz.lib";
+    LIB "finvar.lib";
     int swallow;
     addNmzOption("MRK","MarkovBasis");
     addNmzOption("REP","Representations");
     addNmzOption("BPK","BinomialsPacked");
+    addNmzOption("cyclo","OnlyCyclotomicHilbSer");
+    swallow =addNmzOption("noquasi","NoQuasiPolynomial");
     swallow = setNmzOption("BPK", 1);
     swallow = setNmzOption("MRK",0);
     swallow =setNmzOption("REP",0);
+    swallow =setNmzOption("cyclo",0);
+    swallow =setNmzOption("noquasi",0);
     setNmzFilename("NmzSagbiExchange");
     intmat saveTete_a_tete;
     int startTete_tete;
@@ -1491,5 +1605,12 @@ static proc mod_init()
     export(startTete_tete);
     int our_printlevel = 1;
     export(our_printlevel);
-    newstruct("sagbiResult","int success, ideal sagbiBasis, ideal defIdeal");
+    int @do_def_ideal = 0;
+    export(@do_def_ideal);
+    newstruct("EnumData", "bigintmat HilbertSeriesNum, intvec HilbertSeriesDenom, bigint MultiplicityNum, bigint NultiplicityDenom");
+    newstruct("GradingData", "int GradingDenom, intvec GradingVec");
+    newstruct("sagbiResult","int success, ideal sagbiBasis, ideal defIdeal, ideal retract");
+    int Cyclotomic = 0;
+    export(Cyclotomic);
 }
+
