@@ -1118,7 +1118,13 @@ void Output<Integer>::writeWeightedEhrhartSeries(ofstream& out) const {
                 out << i << " ";
             out << endl;
             out << "with common denominator = ";
-            out << HS.getHilbertQuasiPolynomialDenom() * Result->getIntData().getNumeratorCommonDenom();
+            out << HS.getHilbertQuasiPolynomialDenom() * Result->getIntData().getNumeratorCommonDenom() << endl << endl;
+
+            long deg = HS.getHilbertQuasiPolynomial()[0].size() - 1;
+            out << "Degree of (quasi)polynomial: " << deg << endl;
+
+            long virtDeg = Result->getRank() + Result->getIntData().getDegreeOfPolynomial() - 1;
+            out << endl << "Expected degree = " << virtDeg << endl;
         }
     }
     if(write_cyclo) {
@@ -1144,18 +1150,19 @@ void Output<Integer>::writeWeightedEhrhartSeries(ofstream& out) const {
             }
             Matrix<mpz_class> HQP(HS.getHilbertQuasiPolynomial());
             HQP.pretty_print(out, true);
-            out << "with common denominator: " << Result->getIntData().getWeightedEhrhartQuasiPolynomialDenom() << endl;
+            out << "with common denominator: " << Result->getIntData().getWeightedEhrhartQuasiPolynomialDenom() << endl << endl;
+
+            long deg = HS.getHilbertQuasiPolynomial()[0].size() - 1;
+            out << "Degree of (quasi)polynomial: " << deg << endl;
+
+            long virtDeg = Result->getRank() + Result->getIntData().getDegreeOfPolynomial() - 1;
+            out << endl << "Expected degree = " << virtDeg << endl;
+        }
+        else{
+                out << "Weighted Ehrhart quasi-polynomial has period " << period << endl;
         }
 
-        out << "Weighted Ehrhart quasi-polynomial has period " << period << endl;
-
-        out << endl << endl;
-
-        long deg = HS.getHilbertQuasiPolynomial()[0].size() - 1;
-        out << "Degree of (quasi)polynomial: " << deg << endl;
-
-        long virtDeg = Result->getRank() + Result->getIntData().getDegreeOfPolynomial() - 1;
-        out << endl << "Expected degree = " << virtDeg << endl;
+        out << endl;
     }
 
     if (Result->isComputed(ConeProperty::VirtualMultiplicity)) {
@@ -1163,7 +1170,7 @@ void Output<Integer>::writeWeightedEhrhartSeries(ofstream& out) const {
         if (Result->isComputed(ConeProperty::FixedPrecision))
             virtual_mult_string += " (fixed precision)";
         virtual_mult_string += " = ";
-        out << endl << virtual_mult_string;
+        out <<endl << virtual_mult_string;
         out << Result->getIntData().getVirtualMultiplicity() << endl;
         if (Result->getIntData().getVirtualMultiplicity().get_den() != 1)
             out << "Virtual multiplicity (float) = " << std::setprecision(12)

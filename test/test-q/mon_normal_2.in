@@ -1,0 +1,16 @@
+amb_space 3
+monoid 4
+0 0 1
+1 0 1
+0 1 1
+1 1 1
+grading 0 0 1
+
+HilbertSeries
+nr_coeff_quasipol 2
+expansion_degree 10
+OnlyCyclotomicHilbSer
+/* NoGradingDenom */
+/* NoQuasiPolynomial */
+/* HilbertQuasiPolynomial */
+/* HSOP */

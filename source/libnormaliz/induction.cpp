@@ -418,7 +418,7 @@ void Induction<Integer>::from_low_to_full(){
 
         // InhomEqu.debug_print('&');
 
-        // we use inequalitiesqualities to avoid coordinate transformation
+        // we use inequalities to avoid coordinate transformation
         Matrix<Integer> Copy = InhomEqu;
         Copy.scalar_multiplication(MinusOne);
         InhomEqu.append(Copy);

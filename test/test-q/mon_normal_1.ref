@@ -1,0 +1,51 @@
+4 Hilbert basis elements
+4 support hyperplanes
+
+embedding dimension = 3
+rank = 3 (maximal)
+external index = 1
+internal index = 1
+original monoid is integrally closed in chosen lattice
+
+grading:
+0 0 1 
+
+
+multiplicity = 2
+
+Hilbert series:
+1 1 
+denominator with 3 factors:
+1:3  
+
+degree of Hilbert Series as rational function = -2
+
+The numerator of the Hilbert series is symmetric.
+
+Expansion of Hilbert series
+0: 1
+1: 4
+2: 9
+3: 16
+4: 25
+5: 36
+6: 49
+7: 64
+8: 81
+9: 100
+10: 121
+
+***********************************************************************
+
+4 Hilbert basis elements:
+ 0 0 1
+ 0 1 1
+ 1 0 1
+ 1 1 1
+
+4 support hyperplanes:
+ -1  0 1
+  0 -1 1
+  0  1 0
+  1  0 0
+

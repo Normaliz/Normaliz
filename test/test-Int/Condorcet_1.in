@@ -1,0 +1,13 @@
+amb_space 24
+inequalities 3
+1 1 1 1 1 1      -1 -1 -1 -1 -1 -1   1 1 -1 -1 1 -1     1 1 -1 -1 1 -1
+1 1 1 1 1 1       1 1 -1 -1 1 -1    -1 -1 -1 -1 -1 -1   1 1 1 -1 -1 -1
+1 1 1 1 1 1       1 1 1 -1 -1 -1     1 1 1 -1 -1 -1    -1 -1 -1 -1 -1 -1
+nonnegative
+total_degree
+HilbertSeries
+/* NoQuasiPolynomial */
+NoSymmetrization
+/* OnlyCyclotomicHilbSer*/
+nr_coeff_quasipol 2
+

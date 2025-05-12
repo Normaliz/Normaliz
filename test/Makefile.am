@@ -964,6 +964,18 @@ NMZTESTS = test-/23.in					\
 	test-q/lowrank.ref				\
 	test-q/medium.in				\
 	test-q/medium.ref				\
+	test-q/mon.in					\
+	test-q/mon.ref					\
+	test-q/mon_1.in					\
+	test-q/mon_1.ref				\
+	test-q/mon_2.in					\
+	test-q/mon_2.ref				\
+	test-q/mon_normal.in				\
+	test-q/mon_normal.ref				\
+	test-q/mon_normal_1.in				\
+	test-q/mon_normal_1.ref				\
+	test-q/mon_normal_2.in				\
+	test-q/mon_normal_2.ref				\
 	test-q/NonCMDiv.in				\
 	test-q/NonCMDiv.ref				\
 	test-q/notpointed.in				\
@@ -1486,6 +1498,12 @@ NMZTESTS +=						\
 	test-nf-Aut/icosahedron_prec_comb.aut.ref	\
 	test-Int/Condorcet-q.in				\
 	test-Int/Condorcet-q.ref			\
+	test-Int/Condorcet_1.in				\
+	test-Int/Condorcet_1.ref			\
+	test-Int/Condorcet_2.in				\
+	test-Int/Condorcet_2.ref			\
+	test-Int/Condorcet_3.in				\
+	test-Int/Condorcet_3.ref			\
 	test-Int/Condorcet-v.in				\
 	test-Int/Condorcet-v.ref			\
 	test-Int/Condorcet-v-sd.in			\
