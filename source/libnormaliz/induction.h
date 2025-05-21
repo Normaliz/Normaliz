@@ -26,6 +26,7 @@
 
 #include <vector>
 #include <list>
+#include <utility>
 
 #include "libnormaliz/general.h"
 #include "libnormaliz/matrix.h"
@@ -44,6 +45,7 @@ public:
     bool verbose;
 
     bool mult_of_ev_ok;
+    bool commutative;
 
     Matrix<Integer> F;
 
@@ -62,7 +64,8 @@ public:
     vector<Matrix<Integer> >  Tables;
 
     vector<Integer> divisors;
-    vector<size_t> MultEV;
+    // In the next line the first size_t is the multiplicity, the second the n_i
+    map<Integer,pair<size_t, size_t> > MultCodeg;
     Matrix<Integer> EVMat;
 
     vector<Integer> low_m;  // the m_i for i < r
@@ -72,6 +75,7 @@ public:
     // vector<Matrix<Integer> > LowPartsBounds;
 
     size_t iupper_bound;
+    size_t nr_rows_low_part;
 
 
     Integer N(const key_t i, const key_t j, const key_t k);
@@ -82,6 +86,9 @@ public:
 
     Induction();
     Induction(const vector<Integer>& fus_type, const vector<key_t>& fus_duality , const vector<Integer>& FusRing, bool verb);
+
+    void eigenvalues_and_mult_commutative();
+    void eigenvalues_and_mult_noncommutative();
 
     void start_low_parts();
     void build_low_parts();

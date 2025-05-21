@@ -26,6 +26,7 @@
 
 #include "libnormaliz/cone.h"
 #include "libnormaliz/induction.h"
+#include "libnormaliz/normaliz_exception.h"
 
 namespace libnormaliz{
 using std::vector;
@@ -70,6 +71,14 @@ Induction<Integer>::Induction(const vector<Integer>& fus_type, const vector<key_
     /* for(auto& T: Tables)
         T.debug_print();*/
 
+    commutative = true;
+    for(auto& T: Tables){
+        if(!T.equal(T.transpose())){
+            commutative = false;
+            break;
+        }
+    }
+
     FPdim = 0;
     for(auto& f: fus_type)
         FPdim += f*f;
@@ -101,25 +110,16 @@ Induction<Integer>::Induction(const vector<Integer>& fus_type, const vector<key_
     }
     // EVMat.debug_print();
 
-    MultEV.resize(divisors.size());
+    cout << "dddddddd " << divisors.size() << endl;
 
-    size_t sum_mult = 0;
-    if(verbose)
-        verboseOutput() << "eigenvalues and their multiplicities" << endl;
-    for(size_t i = 0; i< divisors.size(); ++i){
-        MultEV[i] = EVMat.mult_of_eigenvalue(divisors[i]);
-        if(MultEV[i] > 0 && verbose)
-            verboseOutput() << divisors[i] << " mult " <<  MultEV[i] << endl;
-        sum_mult += MultEV[i];
+    if(commutative){
+        eigenvalues_and_mult_commutative();
+    }
+    else{
+        eigenvalues_and_mult_noncommutative();
     }
 
-    if(sum_mult < fusion_rank){
-        if(verbose)
-            verboseOutput() << "Sum of multiplicities of eigenvalues dividing FPdim < fusion_rank" << endl;
-        mult_of_ev_ok = false;
-    }
-
-   Bounds.resize(fusion_rank, fusion_rank);
+    Bounds.resize(fusion_rank, fusion_rank);
 
    /* for(size_t s = 0; s < fusion_rank; ++s){
        for(size_t t = 0; t < fusion_rank; ++t)
@@ -203,6 +203,117 @@ Induction<Integer>::Induction(const vector<Integer>& fus_type, const vector<key_
 
 }
 
+template<typename Integer>
+void Induction<Integer>::eigenvalues_and_mult_commutative(){
+
+    nr_rows_low_part = fusion_rank;
+
+    size_t sum_mult = 0;
+    if(verbose)
+        verboseOutput() << "eigenvalues and their multiplicities in the commutative case" << endl;
+    for(size_t i = 0; i< divisors.size(); ++i){
+        size_t mult_ev = EVMat.mult_of_eigenvalue(divisors[i]);
+        sum_mult += mult_ev;
+        if(mult_ev > 0){
+            MultCodeg[divisors[i]] = make_pair(mult_ev,1);
+            if(verbose){
+                verboseOutput() << divisors[i] << " mult " <<  MultCodeg[divisors[i]].first << endl;
+            }
+        }
+    }
+    if(sum_mult < fusion_rank){
+        if(verbose)
+            verboseOutput() << "Sum of multiplicities of eigenvalues dividing FPdim < fusion_rank" << endl;
+        mult_of_ev_ok = false;
+    }
+}
+
+
+template<typename Integer>
+void Induction<Integer>::eigenvalues_and_mult_noncommutative(){
+
+    if(fusion_rank > 8){
+        throw BadInputException("Fusion rank must be <= 8 for induction matrices in the noncommutative case!");
+    }
+
+    nr_rows_low_part = fusion_rank -3;
+
+    map<Integer,size_t> MultEV;
+    set<Integer> already_tested;
+    size_t sum_mult = 0;
+
+    for(int i = 1; i <= fusion_rank; ++i){
+        for(size_t j = 0; j < divisors.size(); ++j){
+            Integer ev_cand = i*divisors[j];
+            if(already_tested.find(ev_cand) != already_tested.end())
+                continue;
+            size_t mult_ev = EVMat.mult_of_eigenvalue(ev_cand);
+            if(mult_ev > 0)
+                cout << "mmm " << ev_cand <<" " <<   mult_ev << endl;
+            sum_mult+= mult_ev;
+            if(mult_ev > 0){
+                 MultEV[ev_cand] = mult_ev;
+            }
+            already_tested.insert(ev_cand);
+        }
+    }
+
+    cout << "VVVVVVVVV " << sum_mult << endl;
+
+    for(auto& mult_this: MultEV){
+        cout << "MMMMM " << mult_this.first << " " << mult_this.second << endl;
+    }
+
+    if(sum_mult < fusion_rank){
+        if(verbose)
+            verboseOutput() << "Sum of multiplicities of eigenvalues dividing FPdim < fusion_rank" << endl;
+        mult_of_ev_ok = false;
+        return;
+    }
+
+    // identify n_id_i of multiplicity >= 4
+    for(auto& ev_x_mult: MultEV){
+        if(ev_x_mult.second < 4){
+            MultCodeg[ev_x_mult.first] = make_pair(ev_x_mult.second,1);
+        }
+        if(ev_x_mult.second >= 4){
+            Integer codeg = ev_x_mult.first/2;
+            MultCodeg[codeg] =make_pair(1, 2);
+
+            size_t k = ev_x_mult.second - 4;
+            if(k > 0)
+                MultCodeg[ev_x_mult.first] = make_pair(k,1);
+        }
+    }
+
+    for(auto& codeg_mult: MultCodeg){
+        cout << "CCCCCC " << codeg_mult.first << " " << codeg_mult.second.first << " " << codeg_mult.second.second << endl;
+
+    }
+
+    exit(0);
+
+    /*
+    size_t sum_mult = 0;
+    if(verbose)
+        verboseOutput() << "eigenvalues and their multiplicities in the commutative case" << endl;
+    for(size_t i = 0; i< divisors.size(); ++i){
+        MultCodeg[i] = EVMat.mult_of_eigenvalue(divisors[i]);
+        if(MultCodeg[i] > 0 && verbose)
+            verboseOutput() << divisors[i] << " mult " <<  MultCodeg[i] << endl;
+        sum_mult += MultCodeg[i];
+    }
+
+    if(sum_mult < fusion_rank){
+        if(verbose)
+            verboseOutput() << "Sum of multiplicities of eigenvalues dividing FPdim < fusion_rank" << endl;
+        mult_of_ev_ok = false;
+    }
+
+    */
+
+}
+
 template<>
 Induction<renf_elem_class>::Induction(const vector<renf_elem_class>& fus_type, const vector<key_t>& fus_duality , const vector<renf_elem_class>& FusRing, bool verbose){
 
@@ -269,9 +380,9 @@ void Induction<Integer>::build_low_parts(){
         verboseOutput() << "Computing low parts (rows 1,...,r before sorting)" << endl;
 
     vector<Integer> EV;
-    for(size_t i = 0; i < divisors.size(); ++i){
-        for(size_t j = 0; j < MultEV[i]; ++j)
-            EV.push_back(divisors[i]);
+    for(auto& EV_mult: MultCodeg){
+        for(size_t j = 0; j < EV_mult.second.first; ++j)
+            EV.push_back(EV_mult.first);
     }
     for(auto& t: EV)
         low_m.push_back(FPdim / t);
