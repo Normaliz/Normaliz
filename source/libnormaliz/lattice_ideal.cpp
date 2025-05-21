@@ -342,7 +342,7 @@ bool MarkovProjectAndLift::lift_next_not_yet_lifted(bool allow_revlex){
     bool graph_success;
     if(degree_bound >= 0){
         gr.set_grading(grading);
-        // gr.set_degree_bound(degree_bound); // only by sekection at present
+        // gr.set_degree_bound(degree_bound); // only by selection now
     }
     else{
         gr.set_grading(LiftedWeight);
