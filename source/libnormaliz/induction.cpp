@@ -105,8 +105,6 @@ Induction<Integer>::Induction(const vector<Integer>& fus_type, const vector<key_
     }
     // EVMat.debug_print();
 
-    cout << "dddddddd " << divisors.size() << endl;
-
     if(commutative){
         eigenvalues_and_mult_commutative();
     }
@@ -440,8 +438,10 @@ void Induction<Integer>::build_low_parts(){
     if(verbose)
         verboseOutput() << "Found " << LowParts.size() << " low parts"  << endl;
 
-    for(auto& M: LowParts)
-        M.debug_print('P');
+    if(verbose){
+        for(auto& M: LowParts)
+            M.debug_print('P');
+    }
     /* for(auto& M: LowPartsBounds)
         M.debug_print('&'); */
 
