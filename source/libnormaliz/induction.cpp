@@ -71,13 +71,7 @@ Induction<Integer>::Induction(const vector<Integer>& fus_type, const vector<key_
     /* for(auto& T: Tables)
         T.debug_print();*/
 
-    commutative = true;
-    for(auto& T: Tables){
-        if(!T.equal(T.transpose())){
-            commutative = false;
-            break;
-        }
-    }
+    test_commutativity();
 
     FPdim = 0;
     for(auto& f: fus_type)
@@ -95,6 +89,7 @@ Induction<Integer>::Induction(const vector<Integer>& fus_type, const vector<key_
     /* for(auto& T: Tables)
         T.debug_print('$'); */
 
+    // For the computation of eigenvalues and multiplicities
     EVMat.resize(fusion_rank, fusion_rank);
     for(size_t s =0; s < fusion_rank; ++s){
         for(size_t l = 0; l < fusion_rank; ++l){
@@ -204,6 +199,22 @@ Induction<Integer>::Induction(const vector<Integer>& fus_type, const vector<key_
 }
 
 template<typename Integer>
+void Induction<Integer>::test_commutativity(){
+
+    for(size_t i = 0; i < Tables.size(); ++i){
+            for(size_t j = i + 1; j < Tables.size(); ++j){
+                Matrix<Integer> Prod_1 = Tables[i].multiplication(Tables[j]);
+                Matrix<Integer> Prod_2 = Tables[j].multiplication(Tables[i]);
+                if(!Prod_1.equal(Prod_2)){
+                    commutative = false;
+                    return;
+                }
+            }
+    }
+    commutative =  true;
+}
+
+template<typename Integer>
 void Induction<Integer>::eigenvalues_and_mult_commutative(){
 
     nr_rows_low_part = fusion_rank;
@@ -215,9 +226,9 @@ void Induction<Integer>::eigenvalues_and_mult_commutative(){
         size_t mult_ev = EVMat.mult_of_eigenvalue(divisors[i]);
         sum_mult += mult_ev;
         if(mult_ev > 0){
-            MultCodeg[divisors[i]] = make_pair(mult_ev,1);
+            EV_mult_n_i[divisors[i]] = make_pair(mult_ev,1);
             if(verbose){
-                verboseOutput() << divisors[i] << " mult " <<  MultCodeg[divisors[i]].first << endl;
+                verboseOutput() << divisors[i] << " mult " <<  EV_mult_n_i[divisors[i]].first << endl;
             }
         }
     }
@@ -238,7 +249,11 @@ void Induction<Integer>::eigenvalues_and_mult_noncommutative(){
 
     nr_rows_low_part = fusion_rank -3;
 
-    map<Integer,size_t> MultEV;
+    // First we must compute the eigenvalues and multiplicities .
+    // Later on they can be distributed in pairs (d_i, n_i)
+    // where the eigenvalue is n_id_i and the problem that we may havre
+    // n_id_i = n_jd_j for i != j.
+    map<Integer,size_t> MultEV_raw;
     set<Integer> already_tested;
     size_t sum_mult = 0;
 
@@ -249,19 +264,19 @@ void Induction<Integer>::eigenvalues_and_mult_noncommutative(){
                 continue;
             size_t mult_ev = EVMat.mult_of_eigenvalue(ev_cand);
             if(mult_ev > 0)
-                cout << "mmm " << ev_cand <<" " <<   mult_ev << endl;
             sum_mult+= mult_ev;
             if(mult_ev > 0){
-                 MultEV[ev_cand] = mult_ev;
+                 MultEV_raw[ev_cand] = mult_ev;
             }
             already_tested.insert(ev_cand);
         }
     }
 
-    cout << "VVVVVVVVV " << sum_mult << endl;
-
-    for(auto& mult_this: MultEV){
-        cout << "MMMMM " << mult_this.first << " " << mult_this.second << endl;
+    if(verbose){
+        verboseOutput() <<  "Eigenvalues and their multiplicities" << endl;
+        for(auto& mult_this: MultEV_raw){
+            verboseOutput() <<  mult_this.first << " multiplicity " << mult_this.second << endl;
+        }
     }
 
     if(sum_mult < fusion_rank){
@@ -271,46 +286,30 @@ void Induction<Integer>::eigenvalues_and_mult_noncommutative(){
         return;
     }
 
+    // now we want to identify the pairs (n_i, d_i) from their products n_id=i = n_jd_j
+    // we do it only in case rank <= 8 where there is a unique solution: n_i = 2 for exactly
+    // one i:
     // identify n_id_i of multiplicity >= 4
-    for(auto& ev_x_mult: MultEV){
+    for(auto& ev_x_mult: MultEV_raw){
         if(ev_x_mult.second < 4){
-            MultCodeg[ev_x_mult.first] = make_pair(ev_x_mult.second,1);
+            EV_mult_n_i[ev_x_mult.first] = make_pair(ev_x_mult.second,1);
         }
         if(ev_x_mult.second >= 4){
             Integer codeg = ev_x_mult.first/2;
-            MultCodeg[codeg] =make_pair(1, 2);
+            EV_mult_n_i[codeg] =make_pair(1, 2);
 
             size_t k = ev_x_mult.second - 4;
             if(k > 0)
-                MultCodeg[ev_x_mult.first] = make_pair(k,1);
+                EV_mult_n_i[ev_x_mult.first] = make_pair(k,1);
         }
     }
 
-    for(auto& codeg_mult: MultCodeg){
-        cout << "CCCCCC " << codeg_mult.first << " " << codeg_mult.second.first << " " << codeg_mult.second.second << endl;
-
+    if(verbose){
+        verboseOutput() << "codegrees with dim of iorreducibles and multiplicities" << endl;
+        for(auto& codeg_mult: EV_mult_n_i){
+            verboseOutput() << codeg_mult.first << " mult " << codeg_mult.second.first << " dim irred " << codeg_mult.second.second << endl;
+        }
     }
-
-    exit(0);
-
-    /*
-    size_t sum_mult = 0;
-    if(verbose)
-        verboseOutput() << "eigenvalues and their multiplicities in the commutative case" << endl;
-    for(size_t i = 0; i< divisors.size(); ++i){
-        MultCodeg[i] = EVMat.mult_of_eigenvalue(divisors[i]);
-        if(MultCodeg[i] > 0 && verbose)
-            verboseOutput() << divisors[i] << " mult " <<  MultCodeg[i] << endl;
-        sum_mult += MultCodeg[i];
-    }
-
-    if(sum_mult < fusion_rank){
-        if(verbose)
-            verboseOutput() << "Sum of multiplicities of eigenvalues dividing FPdim < fusion_rank" << endl;
-        mult_of_ev_ok = false;
-    }
-
-    */
 
 }
 
@@ -328,25 +327,32 @@ Integer Induction<Integer>::N(const key_t i, const key_t j, const key_t k){
 template<typename Integer>
 void Induction<Integer>::solve_system_low_parts(){
 
-    Matrix<Integer> our_equs(0,(fusion_rank -1)*(fusion_rank-1) + 1); // +1 for rhs
+    // foirst row and first column are fixed
+    Matrix<Integer> our_equs(0,(nr_rows_low_part -1)*(fusion_rank-1) + 1); // +1 for rhs
 
-    for(size_t i = 0; i < fusion_rank -1; ++i){  // make row equations
-        vector<Integer> this_equ((fusion_rank -1)*(fusion_rank-1));
+    // make row equations
+    for(size_t i = 0; i < nr_rows_low_part -1; ++i){
+        vector<Integer> this_equ((nr_rows_low_part -1)*(fusion_rank-1));
         for(size_t j = 0; j < fusion_rank -1; ++j){
             this_equ[i*(fusion_rank -1) +j] = fusion_type[j+1];
         }
-        this_equ.push_back(-low_m[i+1] +1);
+        // note: entry in first column is n_i
+        this_equ.push_back(-low_m[i+1].first +low_m[i+1].second);
         our_equs.append(this_equ);
     }
 
+    // make column equations
     for(size_t j = 0; j < fusion_rank - 1; ++j){
-        vector<Integer> this_equ((fusion_rank -1)*(fusion_rank-1));
-        for(size_t i = 0; i < fusion_rank - 1; ++i){
-            this_equ[j + i*(fusion_rank -1)] = 1;
+        vector<Integer> this_equ((nr_rows_low_part -1)*(fusion_rank-1));
+        for(size_t i = 0; i < nr_rows_low_part - 1; ++i){
+            this_equ[j + i*(fusion_rank -1)] = low_m[i+1].second;  // ?????????
         }
-        this_equ.push_back(- Bounds[0][j + 1]);
+        this_equ.push_back(- Bounds[0][j + 1]); // right hand side
         our_equs.append(this_equ);
     }
+
+    // cout << "RRR " << our_equs.nr_of_rows() << endl;
+    // cout << "CCC " << our_equs.nr_of_columns() << endl;
 
     // our_equs.debug_print('E');
 
@@ -356,9 +362,9 @@ void Induction<Integer>::solve_system_low_parts(){
     // LowPartsRaw.debug_print('#');
 
     for(size_t iii = 0; iii < LowPartsRaw.nr_of_rows(); iii++){
-        Matrix<Integer> our_low_part(fusion_rank, fusion_rank);
+        Matrix<Integer> our_low_part(nr_rows_low_part, fusion_rank);
         for(size_t i = 0; i < our_low_part.nr_of_rows(); ++i){
-            our_low_part[i][0] = 1;
+            our_low_part[i][0] = low_m[i].second;
         }
         for(size_t i = 1; i < our_low_part.nr_of_rows(); ++i){
             for(size_t j = 1; j < our_low_part.nr_of_columns(); ++j){
@@ -377,19 +383,36 @@ void Induction<Integer>::build_low_parts(){
         return;
 
     if(verbose)
-        verboseOutput() << "Computing low parts (rows 1,...,r before sorting)" << endl;
+        verboseOutput() << "Computing low parts (rows 1,...,s before sorting)" << endl;
 
-    vector<Integer> EV;
-    for(auto& EV_mult: MultCodeg){
-        for(size_t j = 0; j < EV_mult.second.first; ++j)
-            EV.push_back(EV_mult.first);
+    // Very first we repeat the data accirding to their multiplicities
+    // in second.first and don't need the multiplicities anymore
+
+    vector<pair<Integer, size_t> > EV_n_i;
+
+    for(auto& EV_mult: EV_mult_n_i){
+        for(size_t j = 0; j < EV_mult.second.first; ++j){
+            EV_n_i.push_back(make_pair(EV_mult.first, EV_mult.second.second));
+            // cout << EV_mult.first << " " << EV_mult.second.second << endl;
+        }
     }
-    for(auto& t: EV)
-        low_m.push_back(FPdim / t);
+
+    // First we want to replace eigenvalues by codegrees
+    // Note: eigenvalue n_if_i by f_i si9nce we want m_i = FPdim/f_i
+
+    // convert the n_i to Integer because they are used as such in the following
+    for(auto& t: EV_n_i){
+        Integer dummy = convertTo<Integer>(static_cast<long long>(t.second));
+        low_m.push_back(make_pair(FPdim  / t.first, dummy));
+
+        // cout << "m " << FPdim  / t.first << " mult "  << dummy << endl;
+    }
     sort(low_m.begin(), low_m.end());
 
     solve_system_low_parts();
 
+    // Low parts may come with permuted rows. We select those with
+    // ordered rows
     vector<Matrix<Integer> >  OrderedLowParts;
     for(auto& M: LowParts){
         /* for(size_t i = 0; i < fusion_rank; ++i)
@@ -398,7 +421,7 @@ void Induction<Integer>::build_low_parts(){
         // M.debug_print('C');
         bool ordered = true;
         for(size_t i = 0; i < M.nr_of_rows() - 1; ++i){
-            if(low_m[i] == low_m[i+1]){
+            if(low_m[i].first == low_m[i+1].first){
                 if(M[i] > M[i+1]){
                     // cout << "ord " << i << " " << low_m[i] << " " << low_m[i+1] << endl;
                     ordered = false;
@@ -417,8 +440,8 @@ void Induction<Integer>::build_low_parts(){
     if(verbose)
         verboseOutput() << "Found " << LowParts.size() << " low parts"  << endl;
 
-    // for(auto& M: LowParts)
-    //    M.debug_print('P');
+    for(auto& M: LowParts)
+        M.debug_print('P');
     /* for(auto& M: LowPartsBounds)
         M.debug_print('&'); */
 
@@ -470,8 +493,8 @@ void Induction<Integer>::from_low_to_full(){
     for(auto& ThisLowPart: LowParts){
 
         Integer FPdim_so_far =0;
-        for(size_t j = 0; j < fusion_rank; ++j)
-            FPdim_so_far += low_m[j] * low_m[j];
+        for(size_t j = 0; j < nr_rows_low_part; ++j)
+            FPdim_so_far += low_m[j].first * low_m[j].first;
 
         Integer MinusOne = -1;
 
@@ -481,9 +504,11 @@ void Induction<Integer>::from_low_to_full(){
         // LowPartsBounds[iii].debug_print('B');
 
         Matrix<Integer> MinusLowBound(fusion_rank, fusion_rank);
-        for(size_t i = 0; i< fusion_rank; ++i){
+        for(size_t i = 0; i< nr_rows_low_part; ++i){
             vector<Integer> cand_extension = ThisLowPart[i];
+            // cout << "cccc " << cand_extension.size() << endl;
             for(size_t j = 0; j < fusion_rank; ++j){
+                // cout << "j "  << j << endl;
                 for(size_t k = j; k < fusion_rank; ++k){
                     MinusLowBound[j][k] +=  cand_extension[j] * cand_extension[k];
                 }

@@ -48,8 +48,18 @@ public:
 
     MarkovProjectAndLift(Matrix<Integer>& LatticeIdeal, const bool verb);
     void compute(Matrix<long long>& Mark, Matrix<long long>& MinMark);
-    void set_degree_bound(const long deg_bound);
-    void set_grading(const vector<long long>& grad);
+
+    // The grading and the degree bound were introduced for tze minimization of
+    // Markov bases. This is at present disabled in favor of selecting
+    // tte elements that satisfy the bound from the full minimal
+    // Markov basis in lattice_ideal.cpp.
+    // Reason: the components of the grading would have to be
+    // permuted along with the components of the binomials. This
+    // had been forgotten and has not been implemented now. There is
+    // no essentail loss as many examples show.
+
+    // void set_degree_bound(const long deg_bound);
+    // void set_grading(const vector<long long>& grad);
 
 private:
     bool verbose;
@@ -57,8 +67,8 @@ private:
     size_t rank;
     size_t nr_vars;
 
-    long degree_bound;
-    vector<long long> grading;
+    // long degree_bound;
+    // vector<long long> grading;
 
     Matrix<Integer> LattiiceIdealInput; // the original argument from the constructor (witout any reordering)
     Matrix<Integer> LatticeBasis;  // as computed by row echelon reduce
@@ -75,7 +85,6 @@ private:
     Matrix<Integer> MinimalMarkov;
     vector<Integer> CurrentWeight; // used for Buchberger
     vector<Integer> LiftedWeight; // same as CurrentWeight, but with last coordinate
-    vector<Integer> PreComputedFinalGrading; // to check positively graded a priori
     libnormaliz::dynamic_bitset CurrentSatturationSupport; // for tail criterion
     bool CurrentOrder; // true for revles, false for kex
 

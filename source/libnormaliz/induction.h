@@ -65,18 +65,19 @@ public:
 
     vector<Integer> divisors;
     // In the next line the first size_t is the multiplicity, the second the n_i
-    map<Integer,pair<size_t, size_t> > MultCodeg;
+    map<Integer,pair<size_t, size_t> > EV_mult_n_i;
     Matrix<Integer> EVMat;
 
-    vector<Integer> low_m;  // the m_i for i < r
+    // first: the m_i for i < s = number of irreducible presentations
+    // second: the dimensions of the irreducibles as an Integer
+    vector<pair<Integer, Integer> > low_m;
 
     vector<Matrix<Integer> > InductionMatrices;
     vector<Matrix<Integer> > LowParts;
     // vector<Matrix<Integer> > LowPartsBounds;
 
     size_t iupper_bound;
-    size_t nr_rows_low_part;
-
+    size_t nr_rows_low_part; // = number of irreducibles
 
     Integer N(const key_t i, const key_t j, const key_t k);
 
@@ -87,10 +88,12 @@ public:
     Induction();
     Induction(const vector<Integer>& fus_type, const vector<key_t>& fus_duality , const vector<Integer>& FusRing, bool verb);
 
+    void test_commutativity();
+
     void eigenvalues_and_mult_commutative();
     void eigenvalues_and_mult_noncommutative();
 
-    void start_low_parts();
+    // void start_low_parts();
     void build_low_parts();
     void solve_system_low_parts();
     void from_low_to_full();

@@ -1137,6 +1137,12 @@ void s_poly_insert(binomial_list& G, binomial_list_by_degrees& B){
     }
 }
 
+// The two minimization routines work without degree bound presently.
+// The reson is that the grading in PandL is not handled correctly.:
+// its coordinates are not permuted correctly.
+// Therefore we always compute the full minimal Markov basis.
+// The grading used in the minimization is the lifted weight.
+
 // minimizatiom by trying to connect lead and tail in tghe graph whose edges are defined by
 // previous minimal geneartors
 binomial_list binomial_list::graph_minimize(bool& success){
@@ -1267,9 +1273,11 @@ binomial_list binomial_list::graph_minimize(bool& success){
     G.grading = grading;
     G.degree_bound = degree_bound;
     G.degree_bound_set = false;
+    // The following is not used at present
+    //see comment preceding graph_minimize
     if(degree_bound >= 0){
         G.degree_bound_set = true;
-        cout << "RRRRRRRR " << grading;
+        // cout << "RRRRRRRR " << grading;
     }
 
     binomial_tree G_red_tree(mon_ord, sat_support);

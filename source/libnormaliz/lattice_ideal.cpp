@@ -91,7 +91,7 @@ Matrix<Integer> select_by_degree(const Matrix<Integer>& M,
 MarkovProjectAndLift::MarkovProjectAndLift(Matrix<Integer>& LatticeIdeal, const bool verb){
 
     verbose = verb;
-    degree_bound = -1;
+    // degree_bound = -1;
 
     // cout << "Given lattice ideal in Laurent polynomial ring" << endl;
     // LatticeIdeal.pretty_print(cout);
@@ -340,13 +340,13 @@ bool MarkovProjectAndLift::lift_next_not_yet_lifted(bool allow_revlex){
     binomial_list gr(CurrentMarkov);
     gr.set_verbose(verbose);
     bool graph_success;
-    if(degree_bound >= 0){
-        gr.set_grading(grading);
+    // if(degree_bound >= 0){
+        // gr.set_grading(grading);
         // gr.set_degree_bound(degree_bound); // only by selection now
-    }
-    else{
+    // }
+    // else{
         gr.set_grading(LiftedWeight);
-    }
+    // }
     binomial_list min_markov = gr.graph_minimize(graph_success);
     if(!graph_success){
         min_markov = gr.bb_and_minimize(LiftedWeight);
@@ -547,14 +547,17 @@ void MarkovProjectAndLift::compute(Matrix<long long>& Mark, Matrix<long long>& M
     swap(MinimalMarkov, MinMark);
 }
 
+/*
 void MarkovProjectAndLift::set_degree_bound(const long deg_bound) {
     assert(grading.size() > 0);
     degree_bound = deg_bound;
 }
 
+
 void MarkovProjectAndLift::set_grading(const vector<long long>& grad) {
     grading = grad;
 }
+*/
 
 //---------------------------------------------------------------
 // lattice ideal
@@ -652,11 +655,11 @@ void LatticeIdeal::computeMarkov(){
     // OurInput.debug_print();
 
     MarkovProjectAndLift PandL(OurInput, verbose);
-    if(Grading.size() > 0 && degree_bound != -1){
-        PandL.set_grading(Grading);
+    // if(Grading.size() > 0 && degree_bound != -1){
+        // PandL.set_grading(Grading);
         // cout << "BBBBBBBBBBBBB " << degree_bound << endl;
-        PandL.set_degree_bound(degree_bound);
-    }
+        //PandL.set_degree_bound(degree_bound);
+    // }
     PandL.compute(Markov, MinimalMarkov);
     if(MinimalMarkov.nr_of_rows() > 0){
         is_positively_graded = true;
