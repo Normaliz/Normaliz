@@ -583,10 +583,10 @@ void Induction<Integer>::from_low_to_full(){
 
             }
             InductionMatrices.push_back(IndMat);
-            if(verbose){
+            /*if(verbose){
                 IndMat.debug_print('I');
                 verboseOutput() << endl;
-            }
+            }*/
         }
 
     }

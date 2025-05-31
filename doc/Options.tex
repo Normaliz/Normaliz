@@ -94,6 +94,12 @@ Note that \texttt{VerticesFloat} and \texttt{SuppHypsFloat} are not pure output 
 
 The boolean valued computation goal \verb|IsIntegrallyClosed| is also related to the Hilbert basis; see Section~\ref{bool}.
 
+\begin{itemize}
+	\itemtt[HilbertBasis ExploitAutomsVectors] and
+
+	\itemtt[Deg1Elements ExploitAutomsVectors] exploit the automorphism group of the cone.
+\end{itemize}
+
 \subsubsection{Enumerative data}
 
 The computation goals in this section require a grading. They include \verb|SupportHyperplanes|.
@@ -111,7 +117,11 @@ The computation goals in this section require a grading. They include \verb|Supp
 	
 	\itemtt[NoPeriodBound] This option removes the period bound that Normaliz sets for the computation of the Hilbert quasipolynomial (presently $10^6$).
 	
+	\itemtt[NoQuasiPolynomial] suppresses the out put of the quasipolynomial.
+	
 	\itemtt[NumberLatticePoints] finds the number of lattice points. They are not stored.
+	
+	\itemtt[OnlyCyclotomicHilbSer] restricts the output to the series representation with the cyclotomic denominator. Includes \ttt{NoQuasiPolynomial}.
 \end{itemize}
 
 \subsubsection{Combined computation goals}

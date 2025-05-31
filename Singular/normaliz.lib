@@ -1116,7 +1116,7 @@ static proc getNuminvs()
                     make_big_int = 1;
                 }
             }
-            if(defined(DummyMat)){
+              if(defined(DummyMat)==voice){
                 kill(DummyMat);
             }
             bigintmat DummyMat[1][v_length];

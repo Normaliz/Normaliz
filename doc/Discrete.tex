@@ -609,7 +609,11 @@ by the following fact: $e_i$ is the common period of the
 coefficients $p_{r-i},\dots,p_{r-1}$. The user should prove
 this fact or at least verify it by several examples.
 
-Especially in the case of a simplex the representation of the Hilbert series shown so far may not be the expected one. In fact, there is a representation in which the exponents of $t$ in the denominator are the degrees of the integral extreme generators. So one would expect the denominator to be $(1-t^2)(1-t^3)(1-t^4)$ in our case. The generalization to the nonsimplicial case uses the degrees of a homogeneous system of parameters (see~\cite[p.~200]{BG}). Normaliz can compute such a denominator if the computation goal \verb|HSOP| is set (\verb|rationalHSOP.in|):
+Especially in the case of a simplex the representation of the Hilbert series shown so far may not be the expected one. In fact, there is a representation in which the exponents of $t$ in the denominator are the degrees of the integral extreme generators. So one would expect the denominator to be $(1-t^2)(1-t^3)(1-t^4)$ in our case. The generalization to the nonsimplicial case uses the degrees of a homogeneous system of parameters (see~\cite[p.~200]{BG}). Normaliz can compute such a denominator if the computation goal 
+\begin{itemize}
+	\itemtt[HSOP] 
+\end{itemize}
+is set (\verb|rationalHSOP.in|):
 \begin{Verbatim}
 Hilbert series (HSOP):
 1 1 1 3 4 3 2 

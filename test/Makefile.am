@@ -357,6 +357,8 @@ NMZTESTS = test-/23.in					\
 	test-/zero_polyhedron.ref			\
 	test-1/3x3magic.in				\
 	test-1/3x3magic.ref				\
+	test-1/B3.in					\
+	test-1/B3.ref					\
 	test-1/cross2.in				\
 	test-1/cross2.ref				\
 	test-1/cut.in					\
@@ -778,6 +780,8 @@ NMZTESTS = test-/23.in					\
 	test-n/strip2.ref				\
 	test-nn/2equation_large_simplex.in		\
 	test-nn/2equation_large_simplex.ref		\
+	test-nn/B3.in					\
+	test-nn/B3.ref					\
 	test-nn/binom.in				\
 	test-nn/binom.ref				\
 	test-nn/ChineseRemainder.in			\
@@ -1854,8 +1858,14 @@ NMZTESTS +=						\
 	test-ind/chosen_1.in 				\
 	test-ind/chosen_1.ind.ref 			\
 	test-ind/chosen_1.ref 				\
+	test-ind/noncomm_1.in 				\
+	test-ind/noncomm_1.ind.ref 			\
+	test-ind/noncomm_1.ref 				\
+	test-ind/noncomm_2.in 				\
+	test-ind/noncomm_2.ind.ref 			\
+	test-ind/noncomm_2.ref 				\
 	test-ind/chosen_2.in 				\
-	test-ind/chosen_2.ind.ref 				\
+	test-ind/chosen_2.ind.ref 			\
 	test-ind/chosen_2.ref
 
 EXTRA_DIST += $(NMZTESTS)

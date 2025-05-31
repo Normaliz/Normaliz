@@ -830,7 +830,7 @@ To set them individually, you can use the following functions:
 void Cone<Integer>::setExpansionDegree(long degree)
 void Cone<Integer>::setNrCoeffQuasiPol(long nr_coeff)
 void Cone<Integer>::setFaceCodimBound(long bound)
-void Cone<Integer>::setAutomCodimBoundVectors(long bound) // not yet used
+void Cone<Integer>::setAutomCodimBoundVectors(long bound)
 void Cone<Integer>::setDecimalDigits(long digits)
 void Cone<Integer>::setBlocksizeHollowTri(long block_size)
 void Cone<Integer>::setGBDegreeBound(const long degree_bound)
@@ -926,9 +926,7 @@ MarkovBasis,
 Representations,
 SimpleFusionRings,
 NonsimpleFusionRings,
-FusionRings,    
-FusionData,
-InductionMatrices,
+FusionRings,
 END_ENUM_RANGE(LAST_MATRIX),
 
 START_ENUM_RANGE(FIRST_MATRIX_FLOAT),
@@ -946,7 +944,7 @@ GeneratorOfInterior,
 CoveringFace,
 AxesScaling,
 SingleLatticePoint,
-SingeleFusionRing,
+SingleFusionRing,
 END_ENUM_RANGE(LAST_VECTOR),
 
 // integer valued
@@ -1045,10 +1043,10 @@ FaceLattice,
 DualFaceLattice,
 FVector,
 DualFVector,
-FaceLatticeOrbits,  // experimental, may change
-DualFaceLatticeOrbits,  // experimental, may change
-FVectorOrbits,  // experimental, may change
-DualFVectorOrbits,  // experimental, may change
+FaceLatticeOrbits,
+DualFaceLatticeOrbits,
+FVectorOrbits,
+DualFVectorOrbits,
 Incidence,
 DualIncidence,
 SingularLocus,
@@ -1059,6 +1057,7 @@ ClassGroup,
 //
 ModularGradings,
 FusionData,
+InductionMatrices,
 END_ENUM_RANGE(LAST_COMPLEX_STRUCTURE),
 
 //
@@ -1084,6 +1083,8 @@ NoSubdivision,
 NoNestedTri,  // synonym for NoSubdivision
 KeepOrder,
 HSOP,
+OnlyCyclotomicHilbSer,
+NoQuasiPolynomial,
 NoPeriodBound,
 NoLLL,
 NoRelax,
@@ -1106,6 +1107,7 @@ NoWeights,
 LinearOrderPatches,
 CongOrderPatches,
 MinimizePolyEquations,
+UseModularGrading,
 //
 Dynamic,
 Static,
@@ -1115,6 +1117,9 @@ WritePreComp,
 Lex,
 RevLex,
 DegLex,
+//
+ShortInt,
+NoHeuristicMinimization,
 //
 END_ENUM_RANGE(LAST_PROPERTY),
 //
@@ -2931,7 +2936,7 @@ Descent,
 NoDescent,\\
 NoGradingDenom,
 GradingIsPositive,
-ExploitAutomsVectors (not yet implemented),\\
+ExploitAutomsVectors,
 ExploitIsosMult,
 StrictIsoTypeCheck,
 SignedDec,

@@ -85,6 +85,8 @@
 \DeclareMathOperator{\Cl}{Cl}
 \DeclareMathOperator{\para}{par}
 
+\makeindex
+
 \DeclareMathOperator{\totdeg}{totdeg}
 
 
@@ -126,7 +128,7 @@
 
 \def\ttt{\texttt}
 
-\def\version{3.10.3}
+\def\version{3.10.5}
 \def\NmzDir{normaliz-\version}
 
 \def\ContLine#1{\hyperref[#1]{\large #1}\\[6pt]}
@@ -134,8 +136,6 @@
 \def\SubSubSectStart#1{\subsubsection{#1}\label{#1}}
 
 \def\SectStart#1{\section{#1}\label{#1}\def\SectHead{#1}}
-
-\renewcommand{\indexname}{Index\label{Index}}
 
 %\def\EndOfPage#1{\bigskip\bigskip\par \hyperref[#1]{#1}\qquad\qquad\hyperref[Top]{Top}\qquad\qquad\hyperref[Index]{Index}\newpage}
 
@@ -149,10 +149,11 @@
 
 \hyphenation{semi-open}
 
-\makeindex
 
 \begin{document}
 \vspace*{2cm}
+
+\renewcommand{\indexname}{Index\label{Index}}
 
 
 \label{Top}
@@ -985,9 +986,11 @@ For several computation goals there exist more than a single algorithm in  Norma
 	\itemtt[MinimizePolyEquations] aks for the minimization of the polynomial equations (may take very long).
 	\bigskip
 	
-	\itemtt[BottomDecomposition, -b] tells Normaliz to use bottom decomposition in the primal algorithm.
+	\itemtt[BottomDecomposition, -b] forces the bottom decomposition in the primal algorithm.
 
 	\itemtt[NoBottomDec, -o] forbids Normaliz to use it.
+	
+	\itemtt[ExploitAutomsVectors] exploits the automorphism group for computing Hilbert bases or degree 1 points by the primal algorithm.
 	
 	\itemtt[NoSubdivision] forbids the subdivision of large simplices in the primal algorithm.\bigskip
 	
@@ -1001,7 +1004,11 @@ For several computation goals there exist more than a single algorithm in  Norma
 	
 	\itemtt[HSOP] lets Normaliz compute the degrees in a homogeneous system of parameters and the induced representation of the Hilbert or Ehrhart series series.
 	
-	\itemtt[NoPeriodBound] This option removes the period bound that Normaliz sets for the computation of the Hilbert quasipolynomial (presently $10^6$).\bigskip
+	\itemtt[NoPeriodBound] This option removes the period bound that Normaliz sets for the computation of the Hilbert quasipolynomial (presently $10^6$).
+	
+	\itemtt[NoQuasiPolynomial] suppresses the computation of the Hilbert or Ehrhart quasipolynimial.
+	
+	\itemtt[OnlyCyclotomicHilbSer] restricts the output of the Hilbert or Ehrhart series to the representation with the cyclotomic denominator.	\bigskip
 	
 	\itemtt[NoGradingDenom] forces Normaliz to keep the original grading if it would otherwise divide it by the grading denominator. It is implied by several computation goals for polytopes.
 	

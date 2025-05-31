@@ -18,6 +18,7 @@ EXTRA_DIST =					\
 	A543.in					\
 	A553.in					\
 	A643.in					\
+	B4.in					\
 	baby.in					\
 	both_precomputed.in			\
 	ChineseRemainder.in			\

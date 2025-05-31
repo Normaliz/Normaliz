@@ -1707,7 +1707,7 @@ template <typename Integer>
 set<map<vector<key_t>, Integer> > FusionComp<Integer>::make_associativity_constraints(){
 
     if(libnormaliz::verbose)
-        verboseOutput() << "Making accociativity constraints for fusion rings" << endl;
+        verboseOutput() << "Making associativity constraints for fusion rings" << endl;
 
     make_CoordMap();
 
@@ -1763,7 +1763,7 @@ set<map<vector<key_t>, Integer> > FusionComp<Integer>::make_associativity_constr
     exit(0); */
 
     if(libnormaliz::verbose)
-        verboseOutput() << "Made " << Polys.size() << " accociativity constraints for fusion rings" << endl;
+        verboseOutput() << "Made " << Polys.size() << " associativity constraints for fusion rings" << endl;
 
     return Polys;
 }

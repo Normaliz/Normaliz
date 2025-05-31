@@ -1127,7 +1127,7 @@ Note that \verb|Integral| automatically sets \verb|NoGradingDenom| since the pol
 
 Note: integrals can be computed by signed decomposition, and Normaliz chooses this variant if it seems better. Nevertheless you can control it by \ttt{SignedDec} and \ttt{NoSignedDec}. Fixed precision set by \verb|decimal_digits| is used for integrals as well.
 
-\subsection{Expansion of the Hilbert or weighted Ehrhart series}\label{expansion}
+\subsection{Various options for Hilbert or weighted Ehrhart series and quasipolyn0omials}\label{expansion}
 
 Normaliz can compute the expansion of the Hilbert function or the weighted Ehrhart function up to a given degree. To this end its expands the series. For the Hilbert function there is a second possibility by lattice point computation.
 
@@ -1234,7 +1234,21 @@ By default Normaliz computes the quasipolynomial only if the period does not exc
 NoPeriodBound
 \end{Verbatim}
 
+\subsubsection{Suppressing the quasi polynomial}
 
+In Section \ref{highest_coeff} we have already described an option that can be used to tame the potentially very large output of the Hilbert or Ehrhart quasipolynomial.  Amore radical choice is the variant
+\begin{itemize}
+	\itemtt[NoQuasiPolynomial]
+\end{itemize}
+It does what it says. This option may be especially useful for file based interface since it avoids potentially very large inv files (see Section \ref{opt_hom_case} )whose reading can take long.
+
+\subsubsection{The series only with the cyclotomic denominator}
+
+Even the numerator polynomial of the Hilbert or Ehrhart series can be  very long in a non-standard graded situation. The most economic presentation of the series with coprime numerator and denominator is the choice of the denominator by cyclotomic polynomials. By
+\begin{itemize}
+	\itemtt[OnlyCyclotomicHilbSer]
+\end{itemize}
+one restricts the output in the out and the inv file to this presentation. It includes \ttt{NoQuasiPolynomial} and excludes expansion.
 
 \subsection{Explicit dehomogenization}\label{dehom_ex}
 Inhomogeneous input for data in $\RR^{d}$ is homogenized by an extra $(d+1)$-th coordinate. The dehomogenization sets the last coordinate equal to $1$. Other systems may prefer the first coordinate. By choosing an explicit dehomogenization Normaliz can be adapted to such input. The file \verb|dehomogenization.in|
@@ -3015,6 +3029,31 @@ Hilbert basis elements
 \end{Verbatim}
 
 Try \verb|InputAutomorphism| and \verb|AmbientAutomorphism| for the same input.
+
+\subsubsection{Exploiting automorphisms for Hilbert bases and lattice points}
+
+Let $C$ be a cone and suppose $p\in C$ is a fixed point under the action of the integral automorphism group of $C$ (with respect to the underlying lattice). Then $C$ decomposes into pyramids $P$ with apex in $p$ and bases given by the facets of $C$. For the Hilbert basis it is enough to compute the Hilbert basis of only one pyramid $P$ in the orbit of $P$ under $\Aut C$, and then extend the result by the action of $\Aut C$ on the Hilbert basis elements of $P$. Since the intersections of the pyramids contain not only the origin, we cannot expect to get disjoints sets of Hilbert basis candidates, and moreover, the candidates need not be irreducible in $C$. Nevertheless this approach can save much computation time. It is asked for by the combined options
+\begin{itemize}
+	\itemtt[HilbertBasis ExploitAutomsVectors]
+\end{itemize}
+To see the effect, run \ttt{B4.in} in \ttt{example} (provided by Lukas Katthän) as given and without \ttt{ExploitAutomsVectors}.
+
+It is clear that the same approach can be used for degree $1$ points, and one reaches it by
+\begin{itemize}
+	\itemtt[Deg1Elements ExploitAutomsVectors]
+\end{itemize}
+
+It is of course possible to apply the strategy recursively  to the pyramids $P$. The recursion depth is set to $1$ by default, but can be extended by 
+\begin{itemize}
+	\itemtt[autom\_codim\_bound\_vectors <c>]
+\end{itemize}
+where \verb*|<c>| is the desired recursion depth.
+
+If you want to see the automorphism group in the file \verb|<project>.aut|, you must add the option \verb|Automorphisms|.
+
+It is also clear that the strategy can be applied for volume computation: the intersections of the parymids (with the grading hyperplane) have volume $0$. However, \verb|Descent ExploitIsosMult| uses this idea already. At present we do not offer a variant for the primal algorithm.
+
+Unfortunately there is a catch: a potentially position of the fixed point $p$ over the base of the pyramid. If it has height $> 1$, we cannot get unimodular simplices in the triangulation, and the simplices may indeed have large determinants. \verb|A553.in| is a case for which the use of \verb|ExploitAutomsVectors| is tempting, but not a good idea.
 
 \subsection{Precomputed data}\label{precomputed_data}
 
