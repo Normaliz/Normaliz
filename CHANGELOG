@@ -1,5 +1,12 @@
 # ChangeLog
 
+## 3.10.5]  2025-06-05
+
+-- bugfix in minimization of Markov bases with degree bound
+-- ExploitAutomsVectors activated
+-- NoQuasiPolynomial and OnlyCyclotomicHilbSer introduced
+-- better options for Hilbert series of monoids and symmetrization
+-- induction matrices for noncommutative fusion rings of rank <= 8
 
 ## [3.10.4]  2024-10-13
 
