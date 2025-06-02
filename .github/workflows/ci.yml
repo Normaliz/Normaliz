@@ -39,7 +39,7 @@ jobs:
         run: .github/workflows/.github-ci-build_check.sh
 
   eantic-nauty-cocoa-clang:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     env:
       BUILDSYSTEM: "eantic-nauty-cocoa-clang"
       NO_COVERAGE: "1"
@@ -118,7 +118,7 @@ jobs:
         uses: codecov/codecov-action@v3
 
   eantic-nauty-notls-cocoa:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     env:
       BUILDSYSTEM: "eantic-nauty-notls-cocoa"
       NO_COVERAGE: "1"
