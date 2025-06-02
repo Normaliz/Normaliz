@@ -1,4 +1,3 @@
-48 Hilbert basis elements
 48 lattice points in polytope (Hilbert basis elements of degree 1)
 48 extreme rays
 82 support hyperplanes
@@ -7,7 +6,6 @@ embedding dimension = 10
 rank = 10 (maximal)
 external index = 1
 internal index = 1
-original monoid is integrally closed in chosen lattice
 
 grading:
 0 0 0 0 0 0 0 0 0 1 
@@ -15,8 +13,8 @@ grading:
 degrees of extreme rays:
 1:48  
 
-Hilbert basis elements are of degree 1
-
+Integral automorphism group has order 96 (possibly approximation if very large)
+Automorphisms are integral
 ***********************************************************************
 
 48 lattice points in polytope (Hilbert basis elements of degree 1):
@@ -68,8 +66,6 @@ Hilbert basis elements are of degree 1
  1 1 0 1 1 0 1 1 1 1
  1 1 0 1 1 1 1 1 1 1
  1 1 1 1 1 1 1 1 1 1
-
-0 further Hilbert basis elements of higher degree:
 
 48 extreme rays:
  0 0 0 0 0 0 0 0 0 1
