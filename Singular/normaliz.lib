@@ -1054,6 +1054,12 @@ RETURN:   The function applies Normaliz to the matrix input_mat ofe type nmz_typ
           The function returns the intmat defined by the file ith suffix gen, provided it has been computed. Otherwise it returns the input_mat.
 NOTE:     You will find procedures for many applications of Normaliz in this
           library, so the explicit call of this procedure may not be necessary.
+
+          The function reads the numerical invariants computed by normaliz. The integers among
+          them are converted to the Singular type int. It may to bee too small for
+          the Hilbert function or the multiplicity, especially if computed for a non-standard grading.
+          To prevent a disaster set the predefined global variable BigNumInvs = 1. Returnung to
+          BigNumInvs = 0 switches this feature off.
 SEE ALSO: intclToricRing, normalToricRing, ehrhartRing, intclMonIdeal,
           torusInvariants, diagInvariants, finiteDiagInvariants, intersectionValRings,
              intersectionValRingIdeals
@@ -2168,13 +2174,13 @@ static proc mod_init()
   // int GenGen=1; export GenGen; // indicates whether "gen" is generated // no longer used
   list Num_Invs; export Num_Invs;
   list Exported_Num_Invs; export Exported_Num_Invs;
-// running normaliz (with options)
 
+// options for running normaliz
+//
 // component 1 is name of option
 // 2 is default value
 // 3 is command line option to be passed to Normaliz
-// 4 indicates whether file "gen" is generated
-// value 2 of 4 indicates "no influence"
+// 4 is a potential comment pointing to better use
 
   list nmz_options=
         list("supp",0,"-s"),
