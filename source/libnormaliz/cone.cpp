@@ -4928,7 +4928,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
             throw BadInputException("Binomial relations for cones only allowed if cone is pointed");
         Matrix<long long> HB_LL;
         convert(HB_LL, HilbertBasis);
-        Matrix<long long> LatticeId = HB_LL.transpose().kernel();
+        Matrix<long long> LatticeId = HB_LL.transpose().kernel(!ToCompute.test(ConeProperty::NoLLL));
         vector<long long> ValuesGrading;
         if(isComputed(ConeProperty::Grading) && Grading.size() > 0){
             ValuesGrading.resize(HB_LL.nr_of_rows());

@@ -4482,6 +4482,7 @@ Matrix<renf_elem_class> Matrix<renf_elem_class>::LLL_red(Matrix<renf_elem_class>
 
 template <typename Integer>
 Matrix<Integer> Matrix<Integer>::LLL() const {
+    // cout << "LLLLLLLLLLLLLLLLLLLLL" << endl;
     Matrix<Integer> Dummy1, Dummy2;
     return LLL_red(*this, Dummy1, Dummy2);
 }
@@ -4494,6 +4495,7 @@ Matrix<mpq_class> Matrix<mpq_class>::LLL() const {
 
 template <typename Integer>
 Matrix<Integer> Matrix<Integer>::LLL_transpose() const {
+    // cout << "TTTTTTTTTTTTTTTTTTTTTTTT" << endl;
     return transpose().LLL().transpose();
 }
 
