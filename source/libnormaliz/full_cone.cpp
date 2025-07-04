@@ -367,6 +367,7 @@ chrono::nanoseconds Full_Cone<Integer>::cmp_time() {
 
 template <typename Integer>
 void Full_Cone<Integer>::set_zero_cone() {
+
     assert(dim == 0);
 
     if (verbose) {
@@ -386,6 +387,8 @@ void Full_Cone<Integer>::set_zero_cone() {
     SHORTSIMPLEX<Integer> empty_simpl;
     empty_simpl.key = vector<key_t>();
     empty_simpl.vol = 1;
+    empty_simpl.height = 0;
+    empty_simpl.mult = 1;
     Triangulation.push_back(empty_simpl);
     setComputed(ConeProperty::Triangulation);
     setComputed(ConeProperty::StanleyDec);
@@ -479,7 +482,6 @@ void Full_Cone<renf_elem_class>::set_zero_cone() {
     if (do_automorphisms)
         setComputed(ConeProperty::Automorphisms);
 }
-
 //===========================================================
 
 /* debuggin
