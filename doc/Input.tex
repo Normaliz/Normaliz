@@ -11,7 +11,7 @@ The input file \ttt{<project>.in} consists of items. There are several types of 
 	\item computation goals and algorithmic variants,
 	\item numerical parameters,
 	\item number field definition,
-	\item input types for fusion nrings,
+	\item input types for fusion rings,
 	\item comments.
 \end{arab}
 
@@ -321,7 +321,7 @@ Input items can be combined quite freely, but there are some restrictions:
 	\item The only type that can be combined with \ttt{lattice\_ideal} is \ttt{grading}.
 	\item The following types cannot be combined with inhomogeneous types or \verb|dehomogenization|:
 	\begin{center}
-		\ttt{polytope, rees\_algebra, excluded\_faces}
+		\ttt{polytope, rees\_algebra, excluded\_faces} 
 	\end{center}
 	\item The following types cannot be combined with inhomogeneous types:
 	\begin{center}
@@ -431,7 +431,7 @@ There are $5$ types. With the exception of \ttt{rational\_lattice} and \ttt{satu
 \subsubsection{Affine monoids}
 
 \begin{itemize}
-	\itemtt[monoid] is a matrix with $d$ columns. Every row represents a vector, and they generate a szbmonoid of $\ZZ$. See Section \ref{monoid}, \verb|monoid.in|, \verb|A443monoid.in|.
+	\itemtt[monoid] is a matrix with $d$ columns. Every row represents a vector, and they generate a submonoid of $\ZZ$. See Section \ref{AffMon}, \verb|monoid.in|, \verb|A443monoid.in|.
 \end{itemize}
 
 \subsection{Homogeneous Constraints}
@@ -634,7 +634,7 @@ The directive
 \begin{itemize}
 	\itemtt[convert\_equations]
 \end{itemize}
-converts equations into pairs of inequalities and has almost the same effect, but congruences in the input trigger the coordinate transformation nevertheless. Requires the addiion of \verb|nonnegative| if no other inequalities are present.
+converts equations into pairs of inequalities and has almost the same effect, but congruences in the input trigger the coordinate transformation nevertheless. Requires the addition of \verb|nonnegative| if no other inequalities are present.
 
 \subsection{Polynomial constraints}\label{poly_const_input}
 
@@ -650,16 +650,16 @@ See \verb|pet.in|, \verb|baby.in| and Section \ref{poly_const}.
 
 \subsection{Binomial ideals}\label{relations}
 
-There are three types of input for binomial ideals. The rows of the matrices coming with these input types represent binomials. The representation nof binomials by vecors is discussed at the beginjing of Section n\ref{AffMon}. The mathematics of these input types is discussed in Section \ref{MathAffBin}. 
+There are three types of input for binomial ideals. The rows of the matrices coming with these input types represent binomials. The representation of binomials by vectors is discussed in Section \ref{markov}.
 
-The input types differ in the object computed frtom them.
+The input types differ in the object computed from them.
 
 \begin{itemize}
 	\itemtt[lattice\_ideal] is an integer matrix with $d$ columns. The object computed from the binomials in it is the smallest lattice ideal containing them. Section~\ref{lattice_ideal}, \verb|non_toric.in|.
 	
 	\itemtt[toric\_ideal] is an integer matrix with $d$ columns. The object computed from the binomials in it is the smallest toric ideal containing them and the toric ring whose defining ideal the latter is. Section~\ref{toric_ideal}, \verb|toric_ideal.in|.
 	
-	\itemtt[normal\_toric\_ideal] is an intehger matrix with $d$ columns. The object computed from the binomials in it is the the normalization of the toric ring it defines. Section~\ref{normal_toric_ideal}, \verb|normal_toric_ideal.in|.
+	\itemtt[normal\_toric\_ideal] is an integer matrix with $d$ columns. The object computed from the binomials in it is the the normalization of the toric ring it defines. Section~\ref{normal_toric_ideal}, \verb|normal_toric_ideal.in|.
 \end{itemize}
 
 \subsection{Unit vectors and unit matrix}\label{unit_vectors}
@@ -747,11 +747,11 @@ Section~\ref{dehom_ex}, \verb|dehomogenization.in|.
 
 \subsection{Weight vector for Gröbner bases}
 
-For the computation of Gröbner bases one can specify a weight vedtor by
+For the computation of Gröbner bases one can specify a weight vector by
 \begin{itemize}
 	\itemtt[gb\_weight]
 \end{itemize}
-It is a vecor with nonnegative entries for \verb|Lex| as a tiebrteaker and positive entries for \verb|RevLeX| (default choice). The length derpends on the type of input. See Section \ref{m,arkov} for a discussion and examples.
+It is a vecor with nonnegative entries for \verb|Lex| as a tiebreaker and positive entries for \verb|RevLeX| (default choice). The length depends on the type of input. See Section \ref{markov} for a discussion and examples.
 
 \subsection{Open facets}\label{open_facets}
 
