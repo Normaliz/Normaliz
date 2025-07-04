@@ -188,21 +188,6 @@ int main(int argc, char* argv[]){
         command_line_items.push_back(string(argv[i]));
     }
 
-/*
-    for(auto& s: command_line_items){
-        if(s == "--PostProcessFusion"){
-            try{
-                post_process_fusion(command_line_items);
-            } catch (const BadInputException& e) {
-                cerr << e.what() << endl;
-                cerr << "BadInputException caught... exiting." << endl;
-                exit(1);
-            }
-            exit(0);
-        }
-    }
-*/
-
     string global_command_line = command_line;
 
     // read command line options
@@ -223,7 +208,8 @@ int main(int argc, char* argv[]){
         verboseOutput() << "Command line: " << command_line << endl;
     }
 
-    /* vector<long long> our_type = {1,1,2,6};
+    /*
+     vector<long long> our_type = {1,1,2,6};
     vector<unsigned int> our_dual = {0,1,2,3};
     vector<long long> our_ring = {0,0,0,1,0,1,1,0,2,5,1}; */
 
@@ -263,18 +249,21 @@ int main(int argc, char* argv[]){
     vector<vector<Matrix<long long> > > BB = TT.getFusionDataMatrix();
     BB[0][0].debug_print();
     cout << "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ " << endl;
-    exit(0);*/
+    exit(0);     LL.getModuleGeneratorsMatrix().debug_print('+');
 
-    /*Matrix<long long> CC(3,3);
+
+    Matrix<long long> CC(3,3);
+    vector<long long> TTT ={0,0,1};
     CC[0] = {2,0,1};
     CC[1] = {0,2,1};
     CC[2] = {0,0,1};
     CC.debug_print('/');
-    Cone<long long> LL(Type::vertices, CC);
+    Matrix<long long> Bla = TTT;
+    Cone<long long> LL(Type::vertices, CC, Type::grading, Bla);
     LL.compute(ConeProperty::LatticePoints);
     LL.getSupportHyperplanesMatrix().debug_print('$');
     LL.getLatticePointsMatrix().debug_print();
-    LL.getModuleGeneratorsMatrix().debug_print('+');*/
+    */
 
     set_normaliz_time();
 

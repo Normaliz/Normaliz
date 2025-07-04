@@ -1463,8 +1463,10 @@ vector<Integer> FusionComp<Integer>::make_linear_equation(const map<vector<key_t
 template <typename Integer>
 Matrix<Integer> FusionComp<Integer>::make_linear_constraints(const vector<Integer>& d){
 
-    if(libnormaliz::verbose)
+    if(libnormaliz::verbose){
         verboseOutput() << "Making linear constraints for fusion rings" << endl;
+        verboseOutput() << "Total FPdim " << total_FPdim << endl;
+    }
 
 
     make_CoordMap();
@@ -1595,8 +1597,10 @@ Matrix<Integer> FusionComp<Integer>::make_linear_constraints_partition(const vec
     /* cout << "DDDD " << d;
     cout << "CCCC " << card; */
 
-    if(libnormaliz::verbose)
+    if(libnormaliz::verbose){
         verboseOutput() << "Making linear constraints for fusion rings partition" << endl;
+        verboseOutput() << "Total FPdim " << total_FPdim << endl;
+    }
 
     Matrix<Integer> Equ(0, nr_coordinates + 1); // mudst accomodate right hand side in last coordinate
 
