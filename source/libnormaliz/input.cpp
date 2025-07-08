@@ -1124,7 +1124,7 @@ InputMap<Number> readNormalizInput(istream& in,
                     in >> std::ws;  // eat up any leading white spaces
                     c = in.peek();
                     if(c != '[')
-                        throw BadInputException("Fusion ring map musat be formatted matrix");
+                        throw BadInputException("Fusion ring map must be formatted matrix");
                 
                     Matrix<Number> input_mat;
                     read_formatted_matrix(in, input_mat, false);

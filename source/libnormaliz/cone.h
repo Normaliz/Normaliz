@@ -631,6 +631,13 @@ class Cone {
     //---------------------------------------------------------------------------
 
    private:
+
+    InputMap<Integer>  Standard_Input;
+    bool standard_input_done;
+    void process_standard_input();
+    void finish_standard_input();
+    Matrix<Integer> LatticeGenerators;
+
     size_t dim;
     size_t codim_singular_locus;
 

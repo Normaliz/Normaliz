@@ -1740,14 +1740,14 @@ size_t Cone<Integer>::getCodimSingularLocus()
 bool Cone<Integer>::isSerreR1()
 \end{Verbatim}
 
-\subsubsection{Markov abd Grobner bases, representations}
+\subsubsection{Markov and Grobner bases, representations}
 \begin{Verbatim}
 const  vector<vector<Integer> >& Cone<Integer>::getMarkovBasis()
 const  vector<vector<Integer> >& Cone<Integer>::getGroebnerBasis()
 const  vector<vector<Integer> >& Cone<Integer>::getRepresentations()
 \end{Verbatim}
 For all three there are also the usual variants with \verb|Matrix| and \verb|Nr|.
-Note that they reurn only those binomials for Markov and Gröbner bases that satisfy the degree bounds set by \verb|gb_degree_bound| and \verb|gb_min_degree|.
+Note that they return only those binomials for Markov and Gröbner bases that satisfy the degree bounds set by \verb|gb_degree_bound| and \verb|gb_min_degree|.
 
 
 \subsubsection{Integer hull}
