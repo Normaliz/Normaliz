@@ -740,9 +740,7 @@ Cone<Integer>::~Cone() {
 template <typename Integer>
 void Cone<Integer>::process_multi_input(const InputMap<mpq_class>& multi_input_data_const) {
     initialize();
-    InputMap<Integer> multi_input_data_ZZ = mpqclass_input_to_integer(multi_input_data_const);
-    // process_multi_input_inner(multi_input_data_ZZ);
-    swap(multi_input_data_ZZ, Standard_Input);
+    Standard_Input = mpqclass_input_to_integer(multi_input_data_const);
     standard_input_done = false;
     process_standard_input();
 }
@@ -776,16 +774,15 @@ void check_types_precomputed(InputMap<Integer>& multi_input_data) {
 template <typename Integer>
 void Cone<Integer>::process_multi_input(const InputMap<Integer>& multi_input_data_const) {
     initialize();
-    InputMap<Integer> multi_input_data(multi_input_data_const);
-    if (contains(multi_input_data, Type::scale)) {
+    // InputMap<Integer> multi_input_data(multi_input_data_const);
+    Standard_Input = multi_input_data_const;
+    if (contains(Standard_Input, Type::scale)) {
         if (using_renf<Integer>()) {
-            apply_cale(multi_input_data);
+            apply_cale(Standard_Input);
         }
         else
             throw BadInputException("Explicit input type scale only allowed for field coefficients");
     }
-    // process_multi_input_inner(multi_input_data);
-    swap(multi_input_data, Standard_Input);
     standard_input_done = false;
     process_standard_input();
 }

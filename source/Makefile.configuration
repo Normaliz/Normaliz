@@ -4,7 +4,7 @@
 ##
 CXX = g++
 #CXX = clang++-13
-CXXFLAGS += -std=c++14 -Wall -pedantic -Wno-sign-compare -Wno-deprecated  -funroll-loops -fPIC -g  -fno-stack-protector -fsanitize=address
+CXXFLAGS += -std=c++14 -Wall -pedantic -Wno-sign-compare -Wno-deprecated  -funroll-loops -fPIC -g  #  -fno-stack-protector -fsanitize=address
 #CXXFLAGS += -march=native
 #CXXFLAGS += -pg      ## profiling
 #CXXFLAGS += -DNDEBUG ## disables asserts
