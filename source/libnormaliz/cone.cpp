@@ -7615,10 +7615,10 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
 
     // Support hyperplanes etc. prepared now
     Matrix<Integer> CongOri;
-    // if(no_coord_transf)
+    if(BasisChange.IsIdentity())
         CongOri = Congruences;
-    // else
-     //   CongOri = BasisChange.getCongruencesMatrix();
+    else
+        CongOri = BasisChange.getCongruencesMatrix();
     vector<Integer> GradingOnPolytope;  // used in the inhomogeneous case for Hilbert function
     if (inhomogeneous && isComputed(ConeProperty::Grading) && ToCompute.test(ConeProperty::HilbertSeries))
         GradingOnPolytope = Grading;
