@@ -43,6 +43,7 @@ template <typename Number>
 InputMap<Number> readNormalizInput(istream& in,
                                    OptionsHandler& options,
                                    map<NumParam::Param, long>& num_param_input,
+                                   map<BoolParam::Param, bool>& bool_param_input,
                                    map<PolyParam::Param, vector<string> >&  poly_param_input,
                                    renf_class_shared& number_field);
 

@@ -73,6 +73,7 @@ Cone<Integer>::Cone(const string project) {
     OptionsHandler options;
     map<PolyParam::Param, vector<string> > poly_param_input;
     map<NumParam::Param, long> num_param_input;
+    map<BoolParam::Param, bool> bool_param_input;
     renf_class_shared number_field_ref;
 
     string name_in = project + ".in";
@@ -98,7 +99,7 @@ Cone<Integer>::Cone(const string project) {
 
     in.open(file_in, ifstream::in);
     map<Type::InputType, Matrix<mpq_class> > input;
-    input = readNormalizInput<mpq_class>(in, options, num_param_input, poly_param_input, number_field_ref);
+    input = readNormalizInput<mpq_class>(in, options, num_param_input, bool_param_input, poly_param_input, number_field_ref);
 
     const renf_class_shared number_field = number_field_ref;
     process_multi_input(input);
@@ -112,6 +113,7 @@ template <>
 Cone<renf_elem_class>::Cone(const string project) {
     OptionsHandler options;
     map<NumParam::Param, long> num_param_input;
+    map<BoolParam::Param, bool> bool_param_input;
     map<PolyParam::Param, vector<string> > poly_param_input;
     renf_class_shared number_field_ref;
 
@@ -139,7 +141,7 @@ Cone<renf_elem_class>::Cone(const string project) {
 
     in.open(file_in, ifstream::in);
     map<Type::InputType, Matrix<renf_elem_class> > renf_input;
-    renf_input = readNormalizInput<renf_elem_class>(in, options, num_param_input, poly_param_input, number_field_ref);
+    renf_input = readNormalizInput<renf_elem_class>(in, options, num_param_input, bool_param_input, poly_param_input, number_field_ref);
     const renf_class_shared number_field = number_field_ref.get();
 
     process_multi_input(renf_input);
@@ -1089,13 +1091,23 @@ void Cone<Integer>::process_standard_input() {
     if (isComputed(ConeProperty::Dehomogenization))
         inhomogeneous = true;
 
+}
+
+template <typename Integer>
+void Cone<Integer>::finish_standard_input(){
+
+    if(standard_input_done)
+        return;
+
+    standard_input_done = true;
+
     if (lattice_ideal_input) {
         prepare_input_lattice_ideal(Standard_Input);
     }
 
     INTERRUPT_COMPUTATION_BY_EXCEPTION
 
-    LatticeGenerators.resize(0, dim);
+    Matrix<Integer> LatticeGenerators(0, dim);
     prepare_input_generators(Standard_Input, LatticeGenerators);
 
     INTERRUPT_COMPUTATION_BY_EXCEPTION
@@ -1127,15 +1139,6 @@ void Cone<Integer>::process_standard_input() {
 
     if (precomputed_extreme_rays)
         LatticeGenerators = find_input_matrix(Standard_Input, Type::generated_lattice, dim);
-}
-
-template <typename Integer>
-void Cone<Integer>::finish_standard_input(){
-
-    if(standard_input_done)
-        return;
-
-    standard_input_done = true;
 
     process_lattice_data(LatticeGenerators, Congruences, Equations);
 
@@ -2191,6 +2194,12 @@ void Cone<Integer>::initialize() {
     else {
         change_integer_type = false;
     }
+    make_nonnegative = false;;
+    set_total_degree = false;
+    no_pos_orth_def = false; // sweitchwes off the defaut addition of the pos orth without inequ in input
+    convert_equations = false; // converts equations to pairs of inequalities with the aim to suppress
+                            // coordinate transformations
+    polynomial_verbose = false; // list input polynomials when processed
 
     IntHullCone = NULL;
     SymmCone = NULL;
@@ -6623,72 +6632,6 @@ void Cone<Integer>::setNumericalParams(const map<NumParam::Param, long>& num_par
 }
 
 template <typename Integer>
-void Cone<Integer>::setPolyParams(const map<PolyParam::Param, vector<string>>& poly_params) {
-    auto pp = poly_params.find(PolyParam::polynomial);
-    if (pp != poly_params.end())
-        setPolynomial((*pp).second[0]);
-    pp = poly_params.find(PolyParam::polynomial_equations);
-    if (pp != poly_params.end())
-        setPolynomialEquations(pp->second);
-    pp = poly_params.find(PolyParam::polynomial_inequalities);
-    if (pp != poly_params.end())
-        setPolynomialInequalities(pp->second);
-}
-
-template <typename Integer>
-void Cone<Integer>::setPolynomial(const string& poly) {
-#ifdef NMZ_COCOA
-    IntData = IntegrationData(poly);
-    is_Computed.reset(ConeProperty::WeightedEhrhartSeries);
-    is_Computed.reset(ConeProperty::WeightedEhrhartQuasiPolynomial);
-    is_Computed.reset(ConeProperty::Integral);
-    is_Computed.reset(ConeProperty::EuclideanIntegral);
-    is_Computed.reset(ConeProperty::VirtualMultiplicity);
-#else
-    throw BadInputException("Polynomials only allowed with CoCoALib");
-#endif
-}
-
-template <typename Integer>
-void Cone<Integer>::setPolynomialEquations(const vector<string>& poly_equs) {
-#ifdef NMZ_COCOA
-    if(verbose)
-        verboseOutput() << "Processing polynomial equations (may take a while)" << endl;
-    PolynomialEquations = OurPolynomialSystem<Integer>(poly_equs, dim, verbose && polynomial_verbose);
-    PolynomialEquations.shift_coordinates(-1); // in the input we count coordinates from 1
-    is_Computed.reset(ConeProperty::LatticePoints);
-    is_Computed.reset(ConeProperty::HilbertBasis);
-    is_Computed.reset(ConeProperty::ModuleGenerators);
-    is_Computed.reset(ConeProperty::Deg1Elements);
-    polynomially_constrained = true;
-    if(verbose)
-        verboseOutput() << "----------------------" << endl;
-
-#else
-    throw BadInputException("Polynomials only allowed with CoCoALib");
-#endif
-}
-
-template <typename Integer>
-void Cone<Integer>::setPolynomialInequalities(const vector<string>& poly_inequs) {
-#ifdef NMZ_COCOA
-    if(verbose)
-        verboseOutput() << "Processing polynomial inequalities (may take a while)" << endl;
-    PolynomialInequalities = OurPolynomialSystem<Integer>(poly_inequs, dim,  verbose && polynomial_verbose);
-    PolynomialInequalities.shift_coordinates(-1); // in the input we count coordinates from 1
-    is_Computed.reset(ConeProperty::LatticePoints);
-    is_Computed.reset(ConeProperty::HilbertBasis);
-    is_Computed.reset(ConeProperty::ModuleGenerators);
-    is_Computed.reset(ConeProperty::Deg1Elements);
-    polynomially_constrained = true;
-    if(verbose)
-        verboseOutput() << "----------------------" << endl;
-#else
-    throw BadInputException("Polynomials only allowed with CoCoALib");
-#endif
-}
-
-template <typename Integer>
 void Cone<Integer>::setNrCoeffQuasiPol(long nr_coeff) {
     HSeries.resetHilbertQuasiPolynomial();
     IntData.set_nr_coeff_quasipol(nr_coeff);
@@ -6782,6 +6725,123 @@ void Cone<Integer>::setDecimalDigits(long digits) {
 template <typename Integer>
 void Cone<Integer>::setBlocksizeHollowTri(long block_size) {
     block_size_hollow_tri = block_size;
+}
+
+// end numerical parameters
+
+template <typename Integer>
+void Cone<Integer>::setBoolParams(const map<BoolParam::Param, bool>& bool_params) {
+    auto bp = bool_params.find(BoolParam::verbose);
+    if(bp != bool_params.end())
+        setVerbose(bp->second);
+    bp = bool_params.find(BoolParam::nonnegative);
+    if(bp != bool_params.end())
+        setNonnegative(bp->second);
+    bp = bool_params.find(BoolParam::total_degree);
+    if(bp != bool_params.end())
+        setTotalDegree(bp->second);
+    bp = bool_params.find(BoolParam::no_coord_transf);
+    if(bp != bool_params.end())
+        setNoCoordTransf(bp->second);
+    bp = bool_params.find(BoolParam::list_polynomials);
+    if(bp != bool_params.end())
+        setListPolynomials(bp->second);
+    bp = bool_params.find(BoolParam::no_pos_orth_def);
+    if(bp != bool_params.end())
+        setNoPosOrthDef(bp->second);
+}
+
+template <typename Integer>
+void Cone<Integer>::setNonnegative(bool onoff) {
+    make_nonnegative = onoff;
+}
+
+template <typename Integer>
+void Cone<Integer>::setTotalDegree(bool onoff) {
+    set_total_degree = onoff;
+}
+
+template <typename Integer>
+void Cone<Integer>::setNoPosOrthDef(bool onoff) {
+    no_pos_orth_def = onoff;
+}
+
+template <typename Integer>
+void Cone<Integer>::setNoCoordTransf(bool onoff) {
+    convert_equations = onoff;
+}
+
+template <typename Integer>
+void Cone<Integer>::setListPolynomials(bool onoff) {
+    polynomial_verbose = onoff;
+}
+
+// end boolean parameters
+
+template <typename Integer>
+void Cone<Integer>::setPolyParams(const map<PolyParam::Param, vector<string>>& poly_params) {
+    auto pp = poly_params.find(PolyParam::polynomial);
+    if (pp != poly_params.end())
+        setPolynomial((*pp).second[0]);
+    pp = poly_params.find(PolyParam::polynomial_equations);
+    if (pp != poly_params.end())
+        setPolynomialEquations(pp->second);
+    pp = poly_params.find(PolyParam::polynomial_inequalities);
+    if (pp != poly_params.end())
+        setPolynomialInequalities(pp->second);
+}
+
+template <typename Integer>
+void Cone<Integer>::setPolynomial(const string& poly) {
+#ifdef NMZ_COCOA
+    IntData = IntegrationData(poly);
+    is_Computed.reset(ConeProperty::WeightedEhrhartSeries);
+    is_Computed.reset(ConeProperty::WeightedEhrhartQuasiPolynomial);
+    is_Computed.reset(ConeProperty::Integral);
+    is_Computed.reset(ConeProperty::EuclideanIntegral);
+    is_Computed.reset(ConeProperty::VirtualMultiplicity);
+#else
+    throw BadInputException("Polynomials only allowed with CoCoALib");
+#endif
+}
+
+template <typename Integer>
+void Cone<Integer>::setPolynomialEquations(const vector<string>& poly_equs) {
+#ifdef NMZ_COCOA
+    if(verbose)
+        verboseOutput() << "Processing polynomial equations (may take a while)" << endl;
+    PolynomialEquations = OurPolynomialSystem<Integer>(poly_equs, dim, verbose && polynomial_verbose);
+    PolynomialEquations.shift_coordinates(-1); // in the input we count coordinates from 1
+    is_Computed.reset(ConeProperty::LatticePoints);
+    is_Computed.reset(ConeProperty::HilbertBasis);
+    is_Computed.reset(ConeProperty::ModuleGenerators);
+    is_Computed.reset(ConeProperty::Deg1Elements);
+    polynomially_constrained = true;
+    if(verbose)
+        verboseOutput() << "----------------------" << endl;
+
+#else
+    throw BadInputException("Polynomials only allowed with CoCoALib");
+#endif
+}
+
+template <typename Integer>
+void Cone<Integer>::setPolynomialInequalities(const vector<string>& poly_inequs) {
+#ifdef NMZ_COCOA
+    if(verbose)
+        verboseOutput() << "Processing polynomial inequalities (may take a while)" << endl;
+    PolynomialInequalities = OurPolynomialSystem<Integer>(poly_inequs, dim,  verbose && polynomial_verbose);
+    PolynomialInequalities.shift_coordinates(-1); // in the input we count coordinates from 1
+    is_Computed.reset(ConeProperty::LatticePoints);
+    is_Computed.reset(ConeProperty::HilbertBasis);
+    is_Computed.reset(ConeProperty::ModuleGenerators);
+    is_Computed.reset(ConeProperty::Deg1Elements);
+    polynomially_constrained = true;
+    if(verbose)
+        verboseOutput() << "----------------------" << endl;
+#else
+    throw BadInputException("Polynomials only allowed with CoCoALib");
+#endif
 }
 
 template <typename Integer>

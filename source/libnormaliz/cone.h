@@ -273,7 +273,7 @@ class Cone {
      * The default value for the Cone is the global verbose.
      * returns the old value
      */
-    bool setVerbose(bool v);
+
     bool getVerbose() const;
 
     void deactivateChangeOfPrecision();
@@ -306,6 +306,15 @@ class Cone {
     void setPolynomial(const string& poly);
     void setPolynomialEquations(const vector<string>& poly_equs);
     void setPolynomialInequalities(const vector<string>& poly_inequs);
+
+
+    void setBoolParams(const map<BoolParam::Param, bool>& bool_params);
+    bool setVerbose(bool onoff);
+    void setNonnegative(bool onoff);
+    void setListPolynomials(bool onoff);
+    void setTotalDegree(bool onoff);
+    void setNoPosOrthDef(bool onoff);
+    void setNoCoordTransf(bool onoff);
 
     void setNumericalParams(const map<NumParam::Param, long>& num_params);
     void setNrCoeffQuasiPol(long nr_coeff);
@@ -633,10 +642,19 @@ class Cone {
    private:
 
     InputMap<Integer>  Standard_Input;
-    bool standard_input_done;
+    bool standard_input_done; // true after finish_standard_input and locks it
+    // syntax checking etc.
     void process_standard_input();
+    // unifyingt the various types into generators and/or constraints
     void finish_standard_input();
-    Matrix<Integer> LatticeGenerators;
+
+    // bools that appear as BoolParam and influence finish_standard_input
+    bool make_nonnegative;
+    bool set_total_degree;
+    bool no_pos_orth_def; // sweitchwes off the defaut addition of the pos orth without inequ in input
+    bool convert_equations; // converts equations to pairs of inequalities with the aim to suppress
+                            // coordinate transformations
+    bool polynomial_verbose; // list input polynomials when processed
 
     size_t dim;
     size_t codim_singular_locus;
@@ -854,7 +872,7 @@ class Cone {
     void remove_superfluous_equations();
     void remove_superfluous_congruences();
     void convert_lattice_generators_to_constraints(Matrix<Integer>& LatticeGenerators);
-    void convert_equations_to_inequalties();
+    // void convert_equations_to_inequalties();
 
     // void check_gens_vs_reference();  // to make sure that newly computed generators agree with the previously computed
 

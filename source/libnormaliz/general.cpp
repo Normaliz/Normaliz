@@ -53,7 +53,6 @@ namespace libnormaliz {
 
 bool verbose = false;
 bool constructor_verbose = true;
-bool polynomial_verbose = false;
 bool talkative = false;
 bool running_input_file = false;
 
@@ -151,12 +150,6 @@ bool setTalkativeDefault(bool v) {
     bool old_talk = talkative;
     talkative = v;
     return old_talk;
-}
-
-bool setPolynomialVerbose(bool onoff){
-    bool old = polynomial_verbose;
-    polynomial_verbose = onoff;
-    return old;
 }
 
 void suppressNextConstructorVerbose(){
