@@ -61,7 +61,6 @@ const int default_thread_limit = 8;
 int thread_limit = default_thread_limit;
 bool parallelization_set = false;
 bool output_on_interrupt = false;
-bool no_coord_transf = false;
 bool write_lp_file = false;
 bool save_local_solutions = false;
 bool no_empty_output= false;
@@ -154,11 +153,6 @@ bool setTalkativeDefault(bool v) {
 
 void suppressNextConstructorVerbose(){
         constructor_verbose = false;
-}
-
-void noCoordTransf(bool onoff){
-    no_coord_transf = onoff;
-
 }
 
 int set_thread_limit(int t) {

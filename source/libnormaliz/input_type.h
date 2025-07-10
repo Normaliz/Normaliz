@@ -539,7 +539,7 @@ inline BoolParam::Param to_boolpar(const string& type_string) {
     if (type_string == "nonnegative")
         return BoolParam::total_degree;
     if (type_string == "total_degree")
-        return  BoolParam::no_coord_transf;
+        return  BoolParam::total_degree;
     if (type_string == "list_polynomials")
         return  BoolParam::list_polynomials;
     if (type_string == "no_pos_orth_def")

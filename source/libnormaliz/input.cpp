@@ -856,6 +856,7 @@ void read_num_param(istream& in, map<NumParam::Param, long>& num_param_input,
     num_param_input[numpar] = value;
 }
 
+/*
 template <typename Number>
 void convert_equ_to_inequ(InputMap<Number>& Input, const InputType& equ, const InputType inequ){
 
@@ -892,6 +893,7 @@ void convert_equ_to_inequ(InputMap<Number>& Input,  const long dim){
     Matrix<Number> unit_mat(dim); // must add unit_mat of inequalities to imitate default befavior
     save_matrix(Input, Type::inequalities, unit_mat); // if no inequalities in input
 }
+*/
 
 template <typename Number>
 InputMap<Number> readNormalizInput(istream& in,

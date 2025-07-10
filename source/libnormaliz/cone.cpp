@@ -1101,6 +1101,27 @@ void Cone<Integer>::finish_standard_input(){
 
     standard_input_done = true;
 
+    if(no_pos_orth_def){
+        if(make_nonnegative)
+            throw BadInputException("conficting options nonnegative and no_pos_orth_def");
+        if(Standard_Input.find(Type::inequalities) == Standard_Input.end() )
+            Standard_Input[Type::inequalities] = Matrix<Integer> (0,dim);
+    }
+    if(make_nonnegative){
+        if(Standard_Input.find(Type::inequalities) != Standard_Input.end() )
+            Standard_Input[Type::inequalities].append(Matrix<Integer>(dim));
+        else
+            Standard_Input[Type::inequalities] = Matrix<Integer>(dim);
+    }
+    if(set_total_degree){
+        if(Grading.size() >0)
+            throw BadInputException("Total degree not available if grading has been set.");
+        if(inhomogeneous)
+            setGrading(vector<Integer>(dim-1,1));
+        else
+            setGrading(vector<Integer>(dim,1));
+    }
+
     if (lattice_ideal_input) {
         prepare_input_lattice_ideal(Standard_Input);
     }
@@ -1626,6 +1647,14 @@ void Cone<Integer>::prepare_input_constraints(const InputMap<Integer>& multi_inp
     Inequalities = Help;
 
     insert_default_inequalities(Inequalities);
+    if(convert_equations){
+        Integer MinusOne = -1;
+        Inequalities.append(Equations);
+        Matrix<Integer> Help(0,dim);
+        swap(Equations,Help);
+        Help.scalar_multiplication(MinusOne);
+        Inequalities.append(Help);
+    }
 
     find_lower_and_upper_bounds();
 }
@@ -1902,13 +1931,6 @@ void Cone<Integer>::process_lattice_data(const Matrix<Integer>& LatticeGenerator
     if (!BC_set)
         compose_basis_change(Sublattice_Representation<Integer>(dim));
 
-    if(LatticeGenerators.nr_of_rows() > 0) // in this case we must compute the coordinate transformation here
-        no_coord_transf = false;
-
-    if(no_coord_transf){
-        no_coord_transf = false;
-        return;
-    }
 
     bool no_constraints = (Congruences.nr_of_rows() == 0) && (Equations.nr_of_rows() == 0);
     bool only_cone_gen = (Generators.nr_of_rows() != 0) && no_constraints && (LatticeGenerators.nr_of_rows() == 0);
@@ -6731,6 +6753,9 @@ void Cone<Integer>::setBlocksizeHollowTri(long block_size) {
 
 template <typename Integer>
 void Cone<Integer>::setBoolParams(const map<BoolParam::Param, bool>& bool_params) {
+    for(auto& pp: bool_params){
+        cout << boolpar_to_string(pp.first) << endl;
+    }
     auto bp = bool_params.find(BoolParam::verbose);
     if(bp != bool_params.end())
         setVerbose(bp->second);
@@ -7590,10 +7615,10 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
 
     // Support hyperplanes etc. prepared now
     Matrix<Integer> CongOri;
-    if(no_coord_transf)
+    // if(no_coord_transf)
         CongOri = Congruences;
-    else
-        CongOri = BasisChange.getCongruencesMatrix();
+    // else
+     //   CongOri = BasisChange.getCongruencesMatrix();
     vector<Integer> GradingOnPolytope;  // used in the inhomogeneous case for Hilbert function
     if (inhomogeneous && isComputed(ConeProperty::Grading) && ToCompute.test(ConeProperty::HilbertSeries))
         GradingOnPolytope = Grading;

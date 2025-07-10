@@ -688,7 +688,7 @@ int process_data(OptionsHandler& options, const string& command_line) {
             else {
                 // if(options.getToCompute().test(ConeProperty::Dynamic))
                 add_input = extract_additional_input<mpq_class>(input);
-                compute_and_output<mpz_class>(options, input, num_param_input, poly_param_input, number_field, add_input);
+                compute_and_output<mpz_class>(options, input, num_param_input, bool_param_input, poly_param_input, number_field, add_input);
             }
         }
 
