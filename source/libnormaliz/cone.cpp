@@ -1116,8 +1116,11 @@ void Cone<Integer>::finish_standard_input(){
     if(set_total_degree){
         if(Grading.size() >0)
             throw BadInputException("Total degree not available if grading has been set.");
-        if(inhomogeneous)
-            setGrading(vector<Integer>(dim-1,1));
+        if(inhomogeneous){
+            vector<Integer> lf(dim-1,1);
+            lf.push_back(0);
+            setGrading(lf);
+        }
         else
             setGrading(vector<Integer>(dim,1));
     }
