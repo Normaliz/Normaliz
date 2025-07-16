@@ -6768,9 +6768,9 @@ void Cone<Integer>::setBoolParams(const map<BoolParam::Param, bool>& bool_params
     bp = bool_params.find(BoolParam::total_degree);
     if(bp != bool_params.end())
         setTotalDegree(bp->second);
-    bp = bool_params.find(BoolParam::no_coord_transf);
+    bp = bool_params.find(BoolParam::convert_equations);
     if(bp != bool_params.end())
-        setNoCoordTransf(bp->second);
+        setConverertEquations(bp->second);
     bp = bool_params.find(BoolParam::list_polynomials);
     if(bp != bool_params.end())
         setListPolynomials(bp->second);
@@ -6795,7 +6795,7 @@ void Cone<Integer>::setNoPosOrthDef(bool onoff) {
 }
 
 template <typename Integer>
-void Cone<Integer>::setNoCoordTransf(bool onoff) {
+void Cone<Integer>::setConverertEquations(bool onoff) {
     convert_equations = onoff;
 }
 

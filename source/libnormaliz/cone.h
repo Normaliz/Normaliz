@@ -314,7 +314,7 @@ class Cone {
     void setListPolynomials(bool onoff);
     void setTotalDegree(bool onoff);
     void setNoPosOrthDef(bool onoff);
-    void setNoCoordTransf(bool onoff);
+    void setConverertEquations(bool onoff);
 
     void setNumericalParams(const map<NumParam::Param, long>& num_params);
     void setNrCoeffQuasiPol(long nr_coeff);

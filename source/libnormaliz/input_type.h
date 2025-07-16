@@ -185,7 +185,7 @@ enum Param {
     verbose,
     nonnegative,
     total_degree,
-    no_coord_transf,
+    convert_equations,
     list_polynomials,
     no_pos_orth_def,
     not_a_bool_param
@@ -536,8 +536,10 @@ inline BoolParam::Param to_boolpar(const string& type_string) {
         return BoolParam::verbose;
     if (type_string == "nonnegative")
         return BoolParam::nonnegative;
-    if (type_string == "nonnegative")
-        return BoolParam::total_degree;
+    if (type_string == "convert_equations")
+        return BoolParam::convert_equations;
+    if (type_string == "no_coord_transf")  // synonym of convert_equations
+        return BoolParam::convert_equations;
     if (type_string == "total_degree")
         return  BoolParam::total_degree;
     if (type_string == "list_polynomials")
@@ -555,8 +557,8 @@ inline string boolpar_to_string(const BoolParam::Param& boolpar) {
         return "nonnegative";
     if (boolpar == BoolParam::total_degree)
         return "total_degree";
-    if (boolpar == BoolParam::no_coord_transf)
-        return "no_coord_transf";
+    if (boolpar == BoolParam::convert_equations)
+        return "convert_equations";
     if (boolpar == BoolParam::list_polynomials)
         return "list_polynomials";
     if (boolpar == BoolParam::no_pos_orth_def)
