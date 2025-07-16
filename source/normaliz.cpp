@@ -481,6 +481,7 @@ void compute_and_output(OptionsHandler& options,
 template <typename InputNumberType>
 InputMap<InputNumberType> extract_additional_input(
     InputMap<InputNumberType>& input) {
+
     InputMap<InputNumberType> add_input;
     size_t nr_add_input = 0;
     auto M = input.find(Type::add_inequalities);
@@ -525,6 +526,9 @@ InputMap<InputNumberType> extract_additional_input(
         input.erase(Type::add_vertices);
         nr_add_input++;
     }
+
+    // must make sure that dimension is transferred via *this
+
     return add_input;
 }
 

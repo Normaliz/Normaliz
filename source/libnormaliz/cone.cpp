@@ -1021,9 +1021,17 @@ void Cone<Integer>::process_standard_input() {
     size_t inhom_corr = 0;  // correction in the inhom_input case
     if (inhom_input)
         inhom_corr = 1;
-    if (it->second[0].size() == 0)
+    if (it->second.nr_of_columns() == 0)
         throw BadInputException("Ambient space of dimension 0 not allowed");
-    dim = it->second[0].size() - type_nr_columns_correction(it->first) + inhom_corr;
+    dim = it->second.nr_of_columns() - type_nr_columns_correction(it->first) + inhom_corr;
+
+    // remove tautological inequality if it is the only input matrix
+    if(Standard_Input.size() == 1){
+        if (contains(Standard_Input, Type::inequalities)) {
+            if(Standard_Input[Type::inequalities].equal(Matrix<Integer>(1,dim)) )
+                Standard_Input.erase(Type::inequalities);
+        }
+    }
 
     // We now process input types that are independent of generators, constraints, lattice_ideal
     // check for excluded faces
@@ -1108,8 +1116,11 @@ void Cone<Integer>::finish_standard_input(){
             Standard_Input[Type::inequalities] = Matrix<Integer> (0,dim);
     }
     if(make_nonnegative){
-        if(Standard_Input.find(Type::inequalities) != Standard_Input.end() )
-            Standard_Input[Type::inequalities].append(Matrix<Integer>(dim));
+        if(Standard_Input.find(Type::inequalities) != Standard_Input.end() ){
+            Matrix<Integer> Help = Standard_Input[Type::inequalities];
+            Standard_Input[Type::inequalities] = Matrix<Integer>(dim); // sign inequalities first
+            Standard_Input[Type::inequalities].append(Help);
+        }
         else
             Standard_Input[Type::inequalities] = Matrix<Integer>(dim);
     }
@@ -6756,9 +6767,9 @@ void Cone<Integer>::setBlocksizeHollowTri(long block_size) {
 
 template <typename Integer>
 void Cone<Integer>::setBoolParams(const map<BoolParam::Param, bool>& bool_params) {
-    for(auto& pp: bool_params){
+    /*for(auto& pp: bool_params){
         cout << boolpar_to_string(pp.first) << endl;
-    }
+    }*/
     auto bp = bool_params.find(BoolParam::verbose);
     if(bp != bool_params.end())
         setVerbose(bp->second);

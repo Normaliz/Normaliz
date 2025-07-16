@@ -856,45 +856,6 @@ void read_num_param(istream& in, map<NumParam::Param, long>& num_param_input,
     num_param_input[numpar] = value;
 }
 
-/*
-template <typename Number>
-void convert_equ_to_inequ(InputMap<Number>& Input, const InputType& equ, const InputType inequ){
-
-    Number MinusOne = -1;
-
-    if(Input.find(equ) != Input.end() && Input[equ].nr_of_rows() > 0){
-        if(Input.find(inequ) == Input.end())
-            Input[inequ] = Matrix<Number>(0, Input[equ][0].size());
-        for(size_t i =0; i< Input[equ].nr_of_rows(); ++i){
-            Input[inequ].append(Input[equ][i]);
-            Input[inequ].append(Input[equ][i]);
-            v_scalar_multiplication<Number>(Input[inequ][Input[inequ].nr_of_rows()-1], MinusOne);
-        }
-        Input[equ].resize(0, Input[equ][0].size());
-    }
-
-}
-
-template <typename Number>
-void convert_equ_to_inequ(InputMap<Number>& Input,  const long dim){
-
-    bool exists_default_breaker = false;
-    for(auto& T: Input){
-        if(is_inequalities(T.first) || is_generators(T.first)){
-            exists_default_breaker = true;
-            break;
-        }
-    }
-
-    convert_equ_to_inequ<Number>(Input, Type::equations, Type::inequalities);
-    convert_equ_to_inequ<Number>(Input, Type::inhom_equations, Type::inhom_inequalities);
-    if(exists_default_breaker)
-        return;
-    Matrix<Number> unit_mat(dim); // must add unit_mat of inequalities to imitate default befavior
-    save_matrix(Input, Type::inequalities, unit_mat); // if no inequalities in input
-}
-*/
-
 template <typename Number>
 InputMap<Number> readNormalizInput(istream& in,
                                             OptionsHandler& options,
@@ -930,6 +891,7 @@ InputMap<Number> readNormalizInput(istream& in,
     bool new_input_syntax = !std::isdigit(c);
 
     long dim;
+    bool dim_known = false;
 
     if (new_input_syntax) {
         while (in.peek() == '/') {
@@ -940,7 +902,6 @@ InputMap<Number> readNormalizInput(istream& in,
         if (!in.good() || type_string != "amb_space") {
             throw BadInputException("First entry must be \"amb_space\"!");
         }
-        bool dim_known = false;
         in >> std::ws;
         c = in.peek();
         if (c == 'a') {
@@ -1351,6 +1312,13 @@ InputMap<Number> readNormalizInput(istream& in,
             // check if this type already exists
             save_matrix(input_map, input_type, M);
         }
+    }
+
+    if(!dim_known && new_input_syntax)
+        throw BadInputException("Input file does not define dimension");
+
+    if(input_map.empty() || input_map.begin()->first >= Type::add_cone){ // can happen if only nonnegative is asked for
+        input_map[Type::inequalities] = Matrix<Number>(1,dim); // used to transfer dimension
     }
     return input_map;
 }
