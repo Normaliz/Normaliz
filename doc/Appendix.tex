@@ -2813,7 +2813,7 @@ The last component is $1$ as it must be for lattice points of the polytope.
  3  2 1
 \end{Verbatim}
 
-The other computations that return a cone are \verb|ProjectCone| and \verb|SymmetrizedCone|.
+In the same way as \verb*|IntegerHull| you can get the  \verb|ProjectCone| as the result of the cone projection. The third cone that Normaliz produces is the symmetrized cone. It is only an auxiliary cone that is not a computation goal itself. See Sewction \ref{add_data} how to access it.
 
 \subsubsection{Boolean values}
 
@@ -2898,6 +2898,8 @@ Wec can also ask for \verb*|SimpleFusionRings|, \verb*|NonSimpleFusionRings|, \v
 \end{Verbatim}
 
 For suitable input it make sense to ask for \verb*|ModularGradings|. Then the algorithmic variant \verb*|UseModularGrading| can be applied via the collective compute command discussed below. If there is more than one modular grading, you must pick one by the function \verb*|SetModularGrading(<g>)| where  \verb*|<g>| is the number of the grading you want to pick, counted from 1. The same applies to \verb*|SSetChosenFusionRing(<r>)| by which we can pick a fusion ring for \verb*|InductionMatrices|.
+
+The input types \verb*|fusion_ring_map|, \verb*|fusion_image_type|, \verb*|fusion_image_ring| and \verb*|fusion_image_duality| can of course be used: they are all given by matrices.
 
 \subsubsection{The collective compute command and algorithmic variants}\label{CollComp}
 So far we have asked Normaliz for a single cone property. It is also possible to bundle several computation goals and options in a single compute command:
@@ -3025,7 +3027,18 @@ NmzCone(**kwargs)
 \end{Verbatim}
 The keyword arguments \ttt{kwargs} transport Normaliz input types and the corresponding matrices in Python format. In addition we must use \ttt{number\_field} for algebraic polyhedra. You can use \ttt{polynomial} for computations with a polynomial weight. (There is also an extra function for setting the polynomial; see below.) You can also ask for a \verb|Cone<long long>| by adding \verb|CreateAsLongLong = True|.
 
-\textbf{Once and for all:} in the functions listed in the following that apply to a specific \verb|NmzCone|, this \verb|NmzCone| must be the first argument in \verb|*args|.
+\textbf{Once and for all:} in the functions listed in the following that apply to a specific \verb|NmzCone|, this \verb|NmzCone| must be the first argument in \verb|*args|, apart from obvious exceptions that do not depend on a specific cone. In interactive use one should note that a \verb*|Cone| produced by the high level interface is NOT an \verb*|NmzCone|, but it contains an \verb*|NmzCone|, as shown in the following example:
+\begin{Verbatim}
+>>> from PyNormaliz import *
+>>> C= Cone(cone =  [[1,0]]);
+>>> NmzGetHilbertSeriesExpansion(C,25);
+Traceback (most recent call last):
+File "<stdin>", line 1, in <module>
+PyNormaliz_cpp.NormalizInterfaceError: First argument must be a cone
+>>> NmzGetHilbertSeriesExpansion(C.cone,25);
+[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+>>> 
+\end{Verbatim}
 
 Computations are started by
 \begin{Verbatim}
@@ -3090,7 +3103,7 @@ NmzModifyCone(cone, type, matrix)
 \end{Verbatim}
 This is the PyNormaliz version of the libnormaliz function modifyCone. Please have a look at Section~\ref{Modify}.
 
-\subsubsection{Additional data access}
+\subsubsection{Additional data access}\label{add_data}
 
 Some values cannot be returned as cone properties. For them we have additional access functions.
 
@@ -3101,18 +3114,16 @@ returns the polynomial weight if one has been set.
 
 The functions
 \begin{Verbatim}
-NmzHilbertSeriesExpansion(cone, degree)
-NmzEhrhartSeriesExpansion(cone, degree)
-NmzWeightedEhrhartSeriesExpansion(cone, degree)
+NmzGHetHilbertSeriesExpansion(cone, degree)
+NmzGetEhrhartSeriesExpansion(cone, degree)
+NmzGetWeightedEhrhartSeriesExpansion(cone, degree)
 \end{Verbatim}
 return the expansion of the named series up to the given degree as a list of numbers.
 
 \begin{Verbatim}
-NmzIntegerHullCone(cone)
-NmzProjectCone(cone)
 NmzSymmetrizedCone(cone)
 \end{Verbatim}
-return \verb|NmzCone|.
+returns a \verb|NmzCone|.
 
 \begin{Verbatim}
 NmzGetRenfInfo(cone)
