@@ -779,8 +779,38 @@ The constructor reads the file \verb|<project>.in|. All options in the file and 
 
 \subsection{Setting and changing additional data}
 
-These data must be given to the cone before starting the computation if they are needed.
-The numerical parameters have default values, and the grading can be set when the cone is constructed.
+\subsubsection{Boolean parameters}
+
+The construction of the cone has three phases. The first phase mainly standardizes the types in the input matrices and the second does syntax checks. These two phases are run by the constructor itself. The third phase sorts the input matrices into constraints and generators, roughly speaking, and does preparatory computations. It is started by the first compute command applied to the cone. This allows us to communicate boolean parameters (and potentially others) to libNormaliz that influence the third phase (and potentially subsequent steps). There use can almost completely be avoided in the library interface. They are mainly meant as convenient and for compatibility between the input file interface and the library interface.
+\begin{Verbatim}
+void Cone<Integer>::setNonnegative(bool onoff)
+void Cone<Integer>::setTotalDegree(bool onoff)
+void Cone<Integer>::setNoPosOrthDef(bool onoff)
+void Cone<Integer>::setConverertEquations(bool onoff)
+void Cone<Integer>::setListPolynomials(bool onoff)
+bool Cone<Integer>::setVerbose(bool v)
+\end{Verbatim}
+
+Their default values is \verb*|false|. \verb*|setVerbose| returns the previous value. The (new) \verb*|setVerbose| amkes zthe function \verb*|suppressNextConstructorVerbose()| below superfluous, but the latter has been kept for backward compatibility.
+
+The meaning of these boolean parameters has been explained for their use in input files. The parameters can de set en bloc:
+\begin{Verbatim}
+void Cone<Integer>::setBoolParams(const map<BoolParam::Param, bool>& bool_params)
+\end{Verbatim}
+where \verb*|BoolPara::Param| is an enumeration defined as follows:
+\begin{Verbatim}
+namespace BoolParam {
+enum Param {
+verbose,
+nonnegative,
+total_degree,
+convert_equations,
+list_polynomials,
+no_pos_orth_def,
+not_a_bool_param
+};
+}  // end namespace BoolParam
+\end{Verbatim}
 
 \subsubsection{Polynomials}
 

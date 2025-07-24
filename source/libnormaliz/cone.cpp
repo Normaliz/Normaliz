@@ -2499,6 +2499,8 @@ Cone<Integer>& Cone<Integer>::getProjectCone() const {
 
 template <typename Integer>
 Cone<Integer>& Cone<Integer>::getSymmetrizedCone() const {
+    if(!isComputed(ConeProperty::Symmetrize))
+        throw BadInputException("Symmetrized cone not yet computed");
     return *SymmCone;
 }
 

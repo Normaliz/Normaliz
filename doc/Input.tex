@@ -361,8 +361,12 @@ If the input is inhomogeneous, then Normaliz provides default values for vertice
 	\item If there is an input matrix of type cone, but no \ttt{vertices}, then the vertex $0$ is inserted.
 \end{arab}
 
-\textbf{An important point.}\enspace If the input does not contain any cone generators or inequalities, Normaliz automatically assumes that you want to compute in the positive orthant. In order to avoid this choice you can add an empty matrix of \verb|inequalities|, \verb|inhom_inequalities| or \verb|strict_inequalities|. This will not affect the results, but avoid the sign restriction.
+\textbf{An important point.}\enspace If the input does not contain any cone generators or inequalities, Normaliz automatically assumes that you want to compute in the positive orthant. In order to avoid this you can use the directive
+\begin{itemize}
+	\itemtt[no\_pos\_orth\_def]
+\end{itemize}
 
+Equivalently you can add an empty matrix of \verb|inequalities|, \verb|inhom_inequalities| or \verb|strict_inequalities|. This will not affect the results.
 
 
 \subsubsection{Normaliz takes intersections}
@@ -624,17 +628,17 @@ The interpretation of homogeneity follows the same rules as for tabular constrai
 
 \subsection{Blocking the coordinate transformation}
 
-If there are equations or congruences in the input in the input, Normaliz computes a change of coordinates already in the construction phase. However, computation of lattice points by project-and-lift is carried out in the coordinate system of the input so that the coordinate transformation is superfluous.  When the coordinate transformation  is computed, Normaliz does not know whether it will be needed. One can suppress it by the directive
-\begin{itemize}
-	\itemtt[no\_coord\_transf]
-\end{itemize}
-The directive has no effect if the input contains lattice generators.
-
-The directive
+If there are equations or congruences in the input in the input, Normaliz computes a change of coordinates already in the construction phase. However, computation of lattice points by project-and-lift is carried out in the coordinate system of the input so that the coordinate transformation is superfluous.  When the coordinate transformation  is computed, Normaliz does not know whether it will be needed. One can try to avoid it by the directive
 \begin{itemize}
 	\itemtt[convert\_equations]
 \end{itemize}
-converts equations into pairs of inequalities and has almost the same effect, but congruences in the input trigger the coordinate transformation nevertheless. Requires the addition of \verb|nonnegative| if no other inequalities are present.
+It converts equations into pairs of inequalities. (It does not break the fault choice of the positive orthant if there are no inequalities or generators in the input.)
+
+The directive
+\begin{itemize}
+	\itemtt[no\_coord\_transf]
+\end{itemize}
+is a synonym. 
 
 \subsection{Polynomial constraints}\label{poly_const_input}
 
