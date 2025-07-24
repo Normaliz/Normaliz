@@ -217,7 +217,7 @@ running pacman.
 Always log in under MYS2 MinGW64.
 
 We got the impression that the tools make.exe, diff.exe and cmp.exe of the MSYS version in
-November 2025 do not work as expected. Therefore download MSYS_tools.zip from the Normaliz 3.4.10
+November 2024 do not work as expected. Therefore download MSYS_tools.zip from the Normaliz 3.10.4
 release on GitHub and unzip it in /usr/bin of MSYS2. Chcek that the tools from the zip file  are
 called by running "wchich make" etc.
 
@@ -226,7 +226,7 @@ directories of Normaliz. Download the Normaliz source as a tar.gz from GitHub
 and extract it as usual or get in an equivalent way.
 
 Install MPFR by pacman -S after finding the MinGW64 version by pacman -Ss MPFR.
-(The install scrtipt for MPFR doiesn't find libgmp.a -- no idea why.)
+(The install scrtipt for MPFR doesn't find libgmp.a -- no idea why.)
 
 Also install Flint by pacman.
 
