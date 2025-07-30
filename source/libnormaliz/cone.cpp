@@ -106,6 +106,8 @@ Cone<Integer>::Cone(const string project) {
     setRenf(number_field);
     setProjectName(project);
     setPolyParams(poly_param_input);
+    setBoolParams(bool_param_input);
+    setNumericalParams(num_param_input);
 }
 
 #ifdef ENFNORMALIZ
@@ -148,6 +150,8 @@ Cone<renf_elem_class>::Cone(const string project) {
     setRenf(number_field);
     setProjectName(project);
     setPolyParams(poly_param_input);
+    setBoolParams(bool_param_input);
+    setNumericalParams(num_param_input);
 }
 #endif
 

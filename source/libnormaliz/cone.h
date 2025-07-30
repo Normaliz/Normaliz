@@ -309,12 +309,12 @@ class Cone {
 
 
     void setBoolParams(const map<BoolParam::Param, bool>& bool_params);
-    bool setVerbose(bool onoff);
-    void setNonnegative(bool onoff);
-    void setListPolynomials(bool onoff);
-    void setTotalDegree(bool onoff);
-    void setNoPosOrthDef(bool onoff);
-    void setConverertEquations(bool onoff);
+    bool setVerbose(bool onoff = true);
+    void setNonnegative(bool onoff  = true);
+    void setListPolynomials(bool onoff  = true);
+    void setTotalDegree(bool onoff  = true);
+    void setNoPosOrthDef(bool onoff  = true);
+    void setConverertEquations(bool onoff  = true);
 
     void setNumericalParams(const map<NumParam::Param, long>& num_params);
     void setNrCoeffQuasiPol(long nr_coeff);

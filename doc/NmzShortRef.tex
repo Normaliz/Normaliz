@@ -128,7 +128,7 @@
 
 \def\ttt{\texttt}
 
-\def\version{3.10.5}
+\def\version{3.11.0}
 \def\NmzDir{normaliz-\version}
 
 \def\ContLine#1{\hyperref[#1]{\large #1}\\[6pt]}
@@ -524,7 +524,10 @@ Inhomogeneous constraints:\index{inhomogeneous constraints}\index{constraints!in
 	
 \end{itemize}
 
-If there are no cone generators or inequalities, Normaliz automatically assumes the sign inequalities defining the positive orthant positive orthant. This behavior can be broken by an empty matrix \verb|inequalities 0|.
+If there are no cone generators or inequalities, Normaliz automatically assumes the sign inequalities defining the positive orthant positive orthant. This behavior can be broken by an empty matrix \verb|inequalities 0| or by the directive
+\begin{itemize}
+	\itemtt[no\_pos\_orth\_def]
+\end{itemize}
 
 \EndOfPage
 
