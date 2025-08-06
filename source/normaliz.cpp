@@ -208,6 +208,36 @@ int main(int argc, char* argv[]){
         verboseOutput() << "Command line: " << command_line << endl;
     }
 
+
+    //long long a = 4, b = 14, c = 24;
+    long long a = 3, b = 4, c = 69;
+    vector<long long> tt = {1,a,b,c};
+    Matrix< long long> tt_mat(0,4);
+    tt_mat.append(tt);
+    map<Type::InputType, Matrix<long long> > OurInput;
+    Matrix<long long> InputEq(2,6);
+    InputEq[0][0] = a;
+    InputEq[0][1] = b;
+    InputEq[0][2] = c;
+    InputEq[0][5] = - (a*a-1);
+    InputEq[1][1] = a;
+    InputEq[1][3] = b;
+    InputEq[1][4] = c;
+    InputEq[1][5] = - a*b;
+    Matrix<long long> OurCong(1,7);
+    OurCong[0][2] = a;
+    OurCong[0][4] = b;
+    OurCong[0][6] = c;
+    OurInput[Type::inhom_equations] = InputEq;
+    OurInput[Type::inhom_congruences] = OurCong;
+    Cone<long long> C(OurInput);
+    Matrix<long long> Sol = C.getLatticePointsMatrix();
+    Sol.debug_print();
+    exit(0);
+
+
+
+
     /*
      vector<long long> our_type = {1,1,2,6};
     vector<unsigned int> our_dual = {0,1,2,3};

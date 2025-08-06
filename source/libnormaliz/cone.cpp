@@ -1954,6 +1954,7 @@ void Cone<Integer>::process_lattice_data(const Matrix<Integer>& LatticeGenerator
     bool only_cone_gen = (Generators.nr_of_rows() != 0) && no_constraints && (LatticeGenerators.nr_of_rows() == 0);
 
     bool allow_lll = (dim < 20);
+    // allow_lll = false;
 
     INTERRUPT_COMPUTATION_BY_EXCEPTION
 
@@ -7549,7 +7550,8 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
     }
 
     if (inhomogeneous) {  // exclude that dehomogenization has a gcd > 1
-        vector<Integer> test_dehom = BasisChange.to_sublattice_dual_no_div(Dehomogenization);
+        vector<Integer> test_dehom = Dehomogenization;
+        // cout << "DDDDDDDDDDD " << test_dehom;
         if (v_make_prime(test_dehom) != 1)
             return;
     }

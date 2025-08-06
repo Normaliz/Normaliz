@@ -20,7 +20,7 @@ LINKFLAGS = -L $(PWD)/libnormaliz -L $(OPT_LIB_ROOT)/lib
 # settings for default Linux static
 LIBLINK = libnormaliz/libnormaliz.a
 LIBNAME = libnormaliz.a
-EXENAME = libnormaliz
+EXENAME = normaliz
 
 MPFRLIB = -lmpfr
 FLINTLIB = -lflint
