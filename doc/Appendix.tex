@@ -788,12 +788,13 @@ The construction of the cone has three phases. The first phase mainly standardiz
 void Cone<Integer>::setNonnegative(bool onoff = true)
 void Cone<Integer>::setTotalDegree(bool onoff = true)
 void Cone<Integer>::setNoPosOrthDef(bool onoff = true)
-void Cone<Integer>::setConverertEquations(bool onoff = true)
+void Cone<Integer>::setConvertEquations(bool onoff = true)
+void Cone<Integer>:::setNoCoordTransf(bool onoff = true)
 void Cone<Integer>::setListPolynomials(bool onoff = true)
 bool Cone<Integer>::setVerbose(bool v = true)
 \end{Verbatim}
 
-Their default values is \verb*|false|. \verb*|setVerbose| returns the previous value. The (new) \verb*|setVerbose| amkes the function \verb*|suppressNextConstructorVerbose()| below superfluous, but the latter has been kept for backward compatibility.
+Their default value is \verb*|false|. \verb*|setVerbose| returns the previous value. The (new) \verb*|setVerbose| amkes the function \verb*|suppressNextConstructorVerbose()| below superfluous, but the latter has been kept for backward compatibility.
 
 The meaning of these boolean parameters has been explained for their use in input files. The parameters can de set en bloc:
 \begin{Verbatim}
@@ -807,6 +808,7 @@ verbose,
 nonnegative,
 total_degree,
 convert_equations,
+no_coord_transf,
 list_polynomials,
 no_pos_orth_def,
 not_a_bool_param
@@ -2444,7 +2446,7 @@ C.SetBoolParam("nonnegative")
 \end{Verbatim}
 The function has an optional argument that can be \verb*|True| or \verb*|False| (though\verb*|False| hardly makes sense). The boolean parameter itself is encoded as a string as in the example. These parameters are
 \begin{center}
-	\verb*|verbose|, \verb*|nonnegative|, \verb*|total_degree|, \verb*|list_poilynomials|, \verb*|convert_equations|, \verb*|no_pos_orth_def|
+	\verb*|verbose|, \verb*|nonnegative|, \verb*|total_degree|, \verb*|list_poilynomials|, \verb*|convert_equations|, \verb*|no_coord_transf|, \verb*|no_pos_orth_def|
 \end{center}
 For \verb*|verbose| you can also use \verb*|C.SetVerbose()|.
 

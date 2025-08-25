@@ -1,3 +1,5 @@
+% !TeX spellcheck = en_US
+
 \section{The input file}\label{input}
 
 The input file \ttt{<project>.in} consists of items. There are several types of them:
@@ -628,17 +630,26 @@ The interpretation of homogeneity follows the same rules as for tabular constrai
 
 \subsection{Blocking the coordinate transformation}
 
-If there are equations or congruences in the input in the input, Normaliz computes a change of coordinates already in the construction phase. However, computation of lattice points by project-and-lift is carried out in the coordinate system of the input so that the coordinate transformation is superfluous.  When the coordinate transformation  is computed, Normaliz does not know whether it will be needed. One can try to avoid it by the directive
+For certain tasks Normaliz must perform a coordinate transformation. Without an option blocking it, it is performed if at least one of the following is contained in the input:
+\begin{enumerate}
+	\item[(1)] generators,
+	\item[(3)]equations,
+	\item[(2)] congruemces.
+\end{enumerate}
+
+It is difficult for Normaliz to predict whether the coordinate transformation is really necessary. The main task for which it is superfluous is the computation of lattice points by project-and-lift, provided there are only equations, inequalities and congruences in the input. In case (1) the coordinate transformation cannot be blocked, and an attempt to do it will result in an \ttt{BadInputException}.
+
+You can always ask for
 \begin{itemize}
 	\itemtt[convert\_equations]
 \end{itemize}
-It converts equations into pairs of inequalities. (It does not break the fault choice of the positive orthant if there are no inequalities or generators in the input.)
-
-The directive
+namely into inequalities. This is a harmless step, and it will often block the coordinate transformation in the input phase. This does not completely avoid the coordinate transformation in case (3). Then the directive
 \begin{itemize}
 	\itemtt[no\_coord\_transf]
 \end{itemize}
-is a synonym. 
+can be used. It implies \verb|convert_equations|.
+
+The coordinate transformation tries to simplify the coordinate system by LLL reduction, at least in low dimensions. This can be an arithmetically dangerous step. Adding \ttt{NoLLL} to your cone properties may be useful then.
 
 \subsection{Polynomial constraints}\label{poly_const_input}
 

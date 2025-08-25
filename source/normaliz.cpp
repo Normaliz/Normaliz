@@ -208,7 +208,7 @@ int main(int argc, char* argv[]){
         verboseOutput() << "Command line: " << command_line << endl;
     }
 
-
+    /*
     //long long a = 4, b = 14, c = 24;
     long long a = 3, b = 4, c = 69;
     vector<long long> tt = {1,a,b,c};
@@ -234,8 +234,7 @@ int main(int argc, char* argv[]){
     Matrix<long long> Sol = C.getLatticePointsMatrix();
     Sol.debug_print();
     exit(0);
-
-
+    */
 
 
     /*

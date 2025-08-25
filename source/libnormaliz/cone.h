@@ -314,7 +314,8 @@ class Cone {
     void setListPolynomials(bool onoff  = true);
     void setTotalDegree(bool onoff  = true);
     void setNoPosOrthDef(bool onoff  = true);
-    void setConverertEquations(bool onoff  = true);
+    void setConvertEquations(bool onoff  = true);
+    void setNoCoordTransf(bool onoff = true);
 
     void setNumericalParams(const map<NumParam::Param, long>& num_params);
     void setNrCoeffQuasiPol(long nr_coeff);
@@ -646,7 +647,7 @@ class Cone {
     // syntax checking etc.
     void process_standard_input();
     // unifyingt the various types into generators and/or constraints
-    void finish_standard_input();
+    void finish_standard_input(const ConeProperties& ToCompute);
 
     // bools that appear as BoolParam and influence finish_standard_input
     bool make_nonnegative;
@@ -654,6 +655,7 @@ class Cone {
     bool no_pos_orth_def; // sweitchwes off the defaut addition of the pos orth without inequ in input
     bool convert_equations; // converts equations to pairs of inequalities with the aim to suppress
                             // coordinate transformations
+    bool no_coord_transf;// blocks coordinate transformation in onput phase
     bool polynomial_verbose; // list input polynomials when processed
 
     size_t dim;
@@ -882,7 +884,7 @@ class Cone {
     void checkGrading(bool compute_grading_denom);
     void checkDehomogenization();
     void check_vanishing_of_grading_and_dehom();
-    void process_lattice_data(const Matrix<Integer>& LatticeGenerators, Matrix<Integer>& Congruences, Matrix<Integer>& Equations);
+    void process_lattice_data(const Matrix<Integer>& LatticeGenerators, Matrix<Integer>& Congruences, Matrix<Integer>& Equations, const ConeProperties& ToCompute);
 
     ConeProperties monoid_compute(ConeProperties ToCompute);
     void compute_monoid_basic_data(const Matrix<long long>& InputGensLL, ConeProperties& ToCompute);
@@ -1092,7 +1094,7 @@ void insert_column(Matrix<Integer>& mat, size_t col, Integer entry);
 // q is a rational vector with the denominator in the FIRST component q[0]
 template <typename Integer>
 inline void approx_simplex(const vector<Integer>& q, std::list<vector<Integer> >& approx, const long approx_level) {
-    // ;; << "approximate the point " << q;
+    // ; << "approximate the point " << q;
     long dim = q.size();
     long l = approx_level;
     // if (approx_level>q[0]) l=q[0]; // approximating on level q[0](=grading) is the best we can do

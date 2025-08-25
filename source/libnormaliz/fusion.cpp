@@ -1493,6 +1493,7 @@ Matrix<Integer> FusionComp<Integer>::make_linear_constraints(const vector<Intege
 
             Equ.append(this_equ);
         }
+
     }
 
     if(write_lp_file)
@@ -1503,7 +1504,14 @@ Matrix<Integer> FusionComp<Integer>::make_linear_constraints(const vector<Intege
     if(libnormaliz::verbose)
         verboseOutput() << "Made " << Equ.nr_of_rows() << " inhom linear equations in " << Equ.nr_of_columns() -1 << " unknowns " << endl;
 
-    // Equ.debug_print();
+    /* Equ.debug_print();
+    Cone<Integer> Test(Type::inhom_equations, Equ);
+    Test.setConvertEquations();
+    Test.setConverertEquations
+    size_t NrSol = Test.getNrLatticePoints();
+    cout << "Nr sol " << NrSol << " ====================== " << endl;
+    if(NrSol >0)
+        cout << "Solvable" << endl;*/
     return Equ;
 }
 

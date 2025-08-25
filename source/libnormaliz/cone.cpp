@@ -831,6 +831,8 @@ void Cone<Integer>::process_standard_input() {
     }
 
     if(contains(Standard_Input, Type::fusion_type)) {
+        if(Standard_Input[Type::fusion_type].nr_of_rows() == 0)
+            throw BadInputException("Empty fusion type");
         fusion_type_input =Standard_Input[Type::fusion_type][0];
         make_full_input(FusionBasicCone, Standard_Input);
         // only linear equations done here, associativity later
@@ -841,6 +843,8 @@ void Cone<Integer>::process_standard_input() {
         if(contains(Standard_Input, Type::fusion_type) || contains(Standard_Input, Type::fusion_duality)
             || contains(Standard_Input, Type::candidate_subring))
             throw BadInputException("Illegal combination of input types in connection with fusion");
+        if(Standard_Input[Type::fusion_type_for_partition].nr_of_rows() == 0)
+            throw BadInputException("Empty fusion type for partition");
         make_full_input_partition(Standard_Input);
 
         is_fusion_partition = true;
@@ -1106,7 +1110,7 @@ void Cone<Integer>::process_standard_input() {
 }
 
 template <typename Integer>
-void Cone<Integer>::finish_standard_input(){
+void Cone<Integer>::finish_standard_input(const ConeProperties& ToCompute){
 
     if(standard_input_done)
         return;
@@ -1179,7 +1183,7 @@ void Cone<Integer>::finish_standard_input(){
     if (precomputed_extreme_rays)
         LatticeGenerators = find_input_matrix(Standard_Input, Type::generated_lattice, dim);
 
-    process_lattice_data(LatticeGenerators, Congruences, Equations);
+    process_lattice_data(LatticeGenerators, Congruences, Equations, ToCompute);
 
     // At this point BasisChange has absorbed all input of inequalities coming from cone,
     // the sublattice defined by lattice generators,
@@ -1945,16 +1949,21 @@ void Cone<Integer>::convert_equations_to_inequalties(){
 template <typename Integer>
 void Cone<Integer>::process_lattice_data(const Matrix<Integer>& LatticeGenerators,
                                          Matrix<Integer>& Congruences,
-                                         Matrix<Integer>& Equations) {
+                                         Matrix<Integer>& Equations, const ConeProperties& ToCompute) {
     if (!BC_set)
         compose_basis_change(Sublattice_Representation<Integer>(dim));
+
+    if(no_coord_transf && (Generators.nr_of_rows() != 0 || LatticeGenerators.nr_of_rows() != 0 ) )
+        throw BadInputException("Coordinate transformation cannot be blocked if generators in input");
 
 
     bool no_constraints = (Congruences.nr_of_rows() == 0) && (Equations.nr_of_rows() == 0);
     bool only_cone_gen = (Generators.nr_of_rows() != 0) && no_constraints && (LatticeGenerators.nr_of_rows() == 0);
 
+
     bool allow_lll = (dim < 20);
-    // allow_lll = false;
+    if(ToCompute.test(ConeProperty::NoLLL))
+        allow_lll = false;
 
     INTERRUPT_COMPUTATION_BY_EXCEPTION
 
@@ -1973,7 +1982,7 @@ void Cone<Integer>::process_lattice_data(const Matrix<Integer>& LatticeGenerator
     }
 
     if (Generators.nr_of_rows() != 0) {
-        Equations.append(Generators.kernel(!using_renf<Integer>()));
+        Equations.append(Generators.kernel(!using_renf<Integer>() && allow_lll));
     }
 
     if (LatticeGenerators.nr_of_rows() != 0) {
@@ -1988,7 +1997,7 @@ void Cone<Integer>::process_lattice_data(const Matrix<Integer>& LatticeGenerator
 
     INTERRUPT_COMPUTATION_BY_EXCEPTION
 
-    if (Congruences.nr_of_rows() > 0) {
+    if (Congruences.nr_of_rows() > 0 && !no_coord_transf) {
         bool zero_modulus;
         Matrix<Integer> Ker_Basis = Congruences.solve_congruences(zero_modulus);
         if (zero_modulus) {
@@ -2240,6 +2249,7 @@ void Cone<Integer>::initialize() {
     no_pos_orth_def = false; // sweitchwes off the defaut addition of the pos orth without inequ in input
     convert_equations = false; // converts equations to pairs of inequalities with the aim to suppress
                             // coordinate transformations
+    no_coord_transf = false;
     polynomial_verbose = false; // list input polynomials when processed
 
     IntHullCone = NULL;
@@ -4487,7 +4497,7 @@ ConeProperties Cone<Integer>::lattice_ideal_compute_inner(ConeProperties ToCompu
 template <typename Integer>
 ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
 
-    finish_standard_input(); // Conclude construction
+    finish_standard_input(ToCompute); // Conclude construction
 
 #ifdef NMZ_DEBUG
     if(verbose){
@@ -6788,7 +6798,10 @@ void Cone<Integer>::setBoolParams(const map<BoolParam::Param, bool>& bool_params
         setTotalDegree(bp->second);
     bp = bool_params.find(BoolParam::convert_equations);
     if(bp != bool_params.end())
-        setConverertEquations(bp->second);
+        setConvertEquations(bp->second);
+    bp = bool_params.find(BoolParam::no_coord_transf);
+    if(bp != bool_params.end())
+        setNoCoordTransf(bp->second);
     bp = bool_params.find(BoolParam::list_polynomials);
     if(bp != bool_params.end())
         setListPolynomials(bp->second);
@@ -6813,8 +6826,17 @@ void Cone<Integer>::setNoPosOrthDef(bool onoff) {
 }
 
 template <typename Integer>
-void Cone<Integer>::setConverertEquations(bool onoff) {
+void Cone<Integer>::setConvertEquations(bool onoff) {
     convert_equations = onoff;
+    if(!onoff)
+        no_coord_transf = onoff;
+}
+
+template <typename Integer>
+void Cone<Integer>::setNoCoordTransf(bool onoff) {
+    no_coord_transf = onoff;
+    if(onoff)
+        convert_equations = onoff;
 }
 
 template <typename Integer>
@@ -7816,7 +7838,7 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
         }
     }
     else{ // now the non-split case
-        // special treatment of fusion rings if fully compouted
+        // special treatment of fusion rings if fully computed
         if(ToCompute.test(ConeProperty::FusionRings) || ToCompute.test(ConeProperty::SimpleFusionRings)){
             ToCompute.reset(ConeProperty::LatticePoints);
             is_Computed.reset(ConeProperty::LatticePoints);
