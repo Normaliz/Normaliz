@@ -6574,10 +6574,12 @@ template <typename Integer>
 void Cone<Integer>::complete_HilbertSeries_comp(ConeProperties& ToCompute) {
     if (!isComputed(ConeProperty::HilbertSeries) && !isComputed(ConeProperty::EhrhartSeries))
         return;
-    if (ToCompute.test(ConeProperty::HilbertQuasiPolynomial) || ToCompute.test(ConeProperty::EhrhartQuasiPolynomial))
+    if (ToCompute.test(ConeProperty::HilbertQuasiPolynomial)){
         HSeries.computeHilbertQuasiPolynomial();
-    if (HSeries.isHilbertQuasiPolynomialComputed()) {
         setComputed(ConeProperty::HilbertQuasiPolynomial);
+    }
+    if(ToCompute.test(ConeProperty::EhrhartQuasiPolynomial)){
+        EhrSeries.computeHilbertQuasiPolynomial();
         setComputed(ConeProperty::EhrhartQuasiPolynomial);
     }
 

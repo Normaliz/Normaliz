@@ -714,7 +714,7 @@ void HilbertSeries::computeHilbertQuasiPolynomial() const {
         return;
     }
     if (verbose && period > 1) {
-        verboseOutput() << "Computing Hilbert quasipolynomial of period " << period << " ..." << flush;
+        verboseOutput() << "Computing quasipolynomial of period " << period << " ..." << flush;
     }
     long i, j;
     // period und dim encode the denominator

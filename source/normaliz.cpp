@@ -208,6 +208,18 @@ int main(int argc, char* argv[]){
         verboseOutput() << "Command line: " << command_line << endl;
     }
 
+    /* Matrix<long long> Test(1,3);
+    Test[0] = {1,2,3};
+    Cone<long long> C(Type::vertices, Test);
+    C.compute(ConeProperty::EhrhartSeries);
+    cout << "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$" << endl;
+    C.compute(ConeProperty::EhrhartQuasiPolynomial);
+    cout << "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << endl;
+    C.getEhrhartSeries().getHilbertQuasiPolynomial();
+    cout << "&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&" << endl;
+    C.getEhrhartSeries().getHilbertQuasiPolynomial();
+    exit(0);*/
+
     /*
     //long long a = 4, b = 14, c = 24;
     long long a = 3, b = 4, c = 69;
