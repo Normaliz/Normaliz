@@ -4854,6 +4854,16 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         prepare_volume_computation(ToCompute);
 #endif
 
+    try_approximation_or_projection(ToCompute);
+
+    make_fusion_data(ToCompute);
+    make_induction_matrices(ToCompute);
+
+    ToCompute.reset(is_Computed);
+    if (ToCompute.goals().none()) {
+        LEAVE_CONE return ConeProperties();
+    }
+
     treat_polytope_as_being_hom_defined(ToCompute);  // if necessary
 
     ToCompute.reset(is_Computed);  // already computed
@@ -4861,16 +4871,6 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     complete_HilbertSeries_comp(ToCompute);
 
     complete_sublattice_comp(ToCompute);
-    if (ToCompute.goals().none()) {
-        LEAVE_CONE return ConeProperties();
-    }
-
-    try_approximation_or_projection(ToCompute);
-
-    make_fusion_data(ToCompute);
-    make_induction_matrices(ToCompute);
-
-    ToCompute.reset(is_Computed);
     if (ToCompute.goals().none()) {
         LEAVE_CONE return ConeProperties();
     }
@@ -8998,6 +8998,8 @@ void Cone<Integer>::treat_polytope_as_being_hom_defined(ConeProperties ToCompute
     HomToCompute.reset(ConeProperty::ModuleGenerators);                    //
     HomToCompute.reset(ConeProperty::ModuleGeneratorsOverOriginalMonoid);  //
     HomToCompute.reset(ConeProperty::HilbertBasis);                        // we definitely don't want this
+    HomToCompute.reset(ConeProperty::HilbertSeries);                       // Here we want the EhrhartSeries, dishuised as Hilbert series
+    Hom.is_Computed.reset(ConeProperty::HilbertSeries);                    // for thze same reason
 
     if (ToCompute.test(ConeProperty::HilbertBasis) || ToCompute.test(ConeProperty::ModuleRank) ||
         ToCompute.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid))
