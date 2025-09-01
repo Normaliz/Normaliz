@@ -1507,8 +1507,10 @@ Matrix<Integer> FusionComp<Integer>::make_linear_constraints(const vector<Intege
     /* Equ.debug_print();
     Cone<Integer> Test(Type::inhom_equations, Equ);
     Test.setConvertEquations();
-    Test.setConverertEquations
+    Test.setConvertEquations();
     size_t NrSol = Test.getNrLatticePoints();
+    size_t ad = Test.getAffineDim();
+    cout << "Affine dim " << ad << endl;
     cout << "Nr sol " << NrSol << " ====================== " << endl;
     if(NrSol >0)
         cout << "Solvable" << endl;*/
