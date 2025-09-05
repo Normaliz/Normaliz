@@ -2265,6 +2265,8 @@ void Cone<Integer>::initialize() {
     inequalities_in_input = false;
     rational_lattice_in_input = false;
 
+    always_no_lll = false;
+
     is_fusion = false;
     is_fusion_partition = false;
     is_fusion_candidate_subring = false;
@@ -4497,6 +4499,13 @@ ConeProperties Cone<Integer>::lattice_ideal_compute_inner(ConeProperties ToCompu
 template <typename Integer>
 ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
 
+    if(ToCompute.test(ConeProperty::NoLLL)){
+        always_no_lll = true;
+    }
+    if(always_no_lll){
+        ToCompute.set(ConeProperty::NoLLL);
+    }
+
     finish_standard_input(ToCompute); // Conclude construction
 
 #ifdef NMZ_DEBUG
@@ -5065,6 +5074,9 @@ template <typename Integer>
 void Cone<Integer>::compute_generators(ConeProperties& ToCompute) {
     // create Generators from Inequalities
 
+
+    // cout << "GGGGGGGGGGGGGGGGGGG " << ToCompute << endl;
+
     if (!isComputed(ConeProperty::Generators) && (Inequalities.nr_of_rows() != 0 || inhomogeneous)) {
         if (verbose) {
             verboseOutput() << "Computing extreme rays as support hyperplanes of the dual cone:" << endl;
@@ -5127,6 +5139,8 @@ void Cone<Integer>::compute_generators_inner(ConeProperties& ToCompute) {
         throw ArithmeticException(0);
 #endif
 
+    // cout << "IIIIIIIIIIIIIIIIIIIIi " << ToCompute << endl;
+
     pass_to_pointed_quotient();
 
     // restrict the supphyps to efficient sublattice and push to quotient mod subspace
@@ -5164,6 +5178,9 @@ void Cone<Integer>::compute_generators_inner(ConeProperties& ToCompute) {
 template <typename Integer>
 template <typename IntegerFC>
 void Cone<Integer>::extract_data_dual(Full_Cone<IntegerFC>& Dual_Cone, ConeProperties& ToCompute) {
+
+    // cout << "DDDDDDDDDDDDDDDDDDD " << ToCompute << endl;
+
     if (Dual_Cone.isComputed(ConeProperty::SupportHyperplanes)) {
         if (keep_convex_hull_data) {
             extract_convex_hull_data(Dual_Cone, false);  // false means: dual
@@ -5195,7 +5212,7 @@ void Cone<Integer>::extract_data_dual(Full_Cone<IntegerFC>& Dual_Cone, ConePrope
             // first to full-dimensional pointed
             Matrix<Integer> Help;
             Help = BasisChangePointed.to_sublattice(Generators);  // sublattice of the primal space
-            Sublattice_Representation<Integer> PointedHelp(Help, true);
+            Sublattice_Representation<Integer> PointedHelp(Help, !ToCompute.test(ConeProperty::NoLLL));
             BasisChangePointed.compose(PointedHelp);
             // second to efficient sublattice
             if (BasisMaxSubspace.nr_of_rows() == 0) {  // primal cone is pointed and we can copy
@@ -7500,6 +7517,7 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
         NeededHere.set(ConeProperty::Sublattice);
         NeededHere.set(ConeProperty::MaximalSubspace);
         NeededHere.set(ConeProperty::KeepOrder, ToCompute.test(ConeProperty::KeepOrder));
+        NeededHere.set(ConeProperty::NoLLL, ToCompute.test(ConeProperty::NoLLL));
         if (inhomogeneous)
             NeededHere.set(ConeProperty::AffineDim);
         if (!inhomogeneous) {
@@ -8943,6 +8961,8 @@ void Cone<Integer>::treat_polytope_as_being_hom_defined(ConeProperties ToCompute
     if (!inhomogeneous)
         return;
 
+    // cout << "TTTTTTTTTTTTTTTTTTTTT " << ToCompute << endl;
+
     if (using_renf<Integer>())
         return;
 
@@ -8954,6 +8974,7 @@ void Cone<Integer>::treat_polytope_as_being_hom_defined(ConeProperties ToCompute
     ToComputeFirst.set(ConeProperty::SupportHyperplanes);
     ToComputeFirst.set(ConeProperty::ExtremeRays);
     ToComputeFirst.set(ConeProperty::KeepOrder, ToCompute.test(ConeProperty::KeepOrder));
+    ToComputeFirst.set(ConeProperty::NoLLL, ToCompute.test(ConeProperty::NoLLL));
     compute(ToComputeFirst);
     ToCompute.reset(is_Computed);
 
