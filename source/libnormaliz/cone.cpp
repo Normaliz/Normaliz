@@ -1918,7 +1918,7 @@ void Cone<Integer>::prepare_input_generators(InputMap<Integer>& multi_input_data
 //---------------------------------------------------------------------------
 template <typename Integer>
 void Cone<Integer>::convert_lattice_generators_to_constraints(Matrix<Integer>& LatticeGenerators) {
-    Sublattice_Representation<Integer> GenSublattice(LatticeGenerators, false);
+    Sublattice_Representation<Integer> GenSublattice(LatticeGenerators, false,allow_lll);
     Congruences.append(GenSublattice.getCongruencesMatrix());
     Equations.append(GenSublattice.getEquationsMatrix());
     LatticeGenerators.resize(0);
@@ -1961,14 +1961,14 @@ void Cone<Integer>::process_lattice_data(const Matrix<Integer>& LatticeGenerator
     bool only_cone_gen = (Generators.nr_of_rows() != 0) && no_constraints && (LatticeGenerators.nr_of_rows() == 0);
 
 
-    bool allow_lll = (dim < 20);
+    bool allow_lll_here = (dim < 20);
     if(ToCompute.test(ConeProperty::NoLLL))
-        allow_lll = false;
+        allow_lll_here = false;
 
     INTERRUPT_COMPUTATION_BY_EXCEPTION
 
     if (only_cone_gen) {
-        Sublattice_Representation<Integer> Basis_Change(Generators, true, allow_lll);
+        Sublattice_Representation<Integer> Basis_Change(Generators, true, allow_lll_here);
         compose_basis_change(Basis_Change);
         return;
     }
@@ -1976,17 +1976,17 @@ void Cone<Integer>::process_lattice_data(const Matrix<Integer>& LatticeGenerator
     INTERRUPT_COMPUTATION_BY_EXCEPTION
 
     if (normalization && no_constraints && !inhomogeneous) {
-        Sublattice_Representation<Integer> Basis_Change(Generators, false, allow_lll);
+        Sublattice_Representation<Integer> Basis_Change(Generators, false, allow_lll_here);
         compose_basis_change(Basis_Change);
         return;
     }
 
     if (Generators.nr_of_rows() != 0) {
-        Equations.append(Generators.kernel(!using_renf<Integer>() && allow_lll));
+        Equations.append(Generators.kernel(!using_renf<Integer>() && allow_lll_here));
     }
 
     if (LatticeGenerators.nr_of_rows() != 0) {
-        Sublattice_Representation<Integer> GenSublattice(LatticeGenerators, false, allow_lll);
+        Sublattice_Representation<Integer> GenSublattice(LatticeGenerators, false, allow_lll_here);
         if ((Equations.nr_of_rows() == 0) && (Congruences.nr_of_rows() == 0)) {
             compose_basis_change(GenSublattice);
             return;
@@ -2003,15 +2003,15 @@ void Cone<Integer>::process_lattice_data(const Matrix<Integer>& LatticeGenerator
         if (zero_modulus) {
             throw BadInputException("Modulus 0 in congruence!");
         }
-        Sublattice_Representation<Integer> Basis_Change(Ker_Basis, false, allow_lll);
+        Sublattice_Representation<Integer> Basis_Change(Ker_Basis, false, allow_lll_here);
         compose_basis_change(Basis_Change);
     }
 
     INTERRUPT_COMPUTATION_BY_EXCEPTION
 
     if (Equations.nr_of_rows() > 0) {
-        Matrix<Integer> Ker_Basis = BasisChange.to_sublattice_dual(Equations).kernel(allow_lll && !using_renf<Integer>());
-        Sublattice_Representation<Integer> Basis_Change(Ker_Basis, false, allow_lll); // kernel is saturated
+        Matrix<Integer> Ker_Basis = BasisChange.to_sublattice_dual(Equations).kernel(allow_lll_here && !using_renf<Integer>());
+        Sublattice_Representation<Integer> Basis_Change(Ker_Basis, false, allow_lll_here); // kernel is saturated
         compose_basis_change(Basis_Change);
     }
 }
@@ -2265,7 +2265,7 @@ void Cone<Integer>::initialize() {
     inequalities_in_input = false;
     rational_lattice_in_input = false;
 
-    always_no_lll = false;
+    allow_lll = true;
 
     is_fusion = false;
     is_fusion_partition = false;
@@ -4500,9 +4500,9 @@ template <typename Integer>
 ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
 
     if(ToCompute.test(ConeProperty::NoLLL)){
-        always_no_lll = true;
+        allow_lll = false;
     }
-    if(always_no_lll){
+    if(!allow_lll){
         ToCompute.set(ConeProperty::NoLLL);
     }
 
@@ -5212,7 +5212,7 @@ void Cone<Integer>::extract_data_dual(Full_Cone<IntegerFC>& Dual_Cone, ConePrope
             // first to full-dimensional pointed
             Matrix<Integer> Help;
             Help = BasisChangePointed.to_sublattice(Generators);  // sublattice of the primal space
-            Sublattice_Representation<Integer> PointedHelp(Help, !ToCompute.test(ConeProperty::NoLLL));
+            Sublattice_Representation<Integer> PointedHelp(Help, true, !ToCompute.test(ConeProperty::NoLLL));
             BasisChangePointed.compose(PointedHelp);
             // second to efficient sublattice
             if (BasisMaxSubspace.nr_of_rows() == 0) {  // primal cone is pointed and we can copy
