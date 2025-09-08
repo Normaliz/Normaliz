@@ -425,7 +425,7 @@ void Sublattice_Representation<Integer>::compose_with_passage_to_quotient(Matrix
     Sub.standardize_basis();
     Perp.standardize_basis();
 
-    Sublattice_Representation<Integer> QuotentDual(Perp_L, true);
+    Sublattice_Representation<Integer> QuotentDual(Perp_L, true,useLLL);
 
     compose_dual(QuotentDual);
 }

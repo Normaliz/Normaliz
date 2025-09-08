@@ -18,7 +18,7 @@ dimension of maximal subspace = 1
  1 (-1/2*a+1 ~ 0.29289322) (-a ~ -1.4142136)
 
 1 support hyperplanes:
- (1/2*a-1 ~ -0.29289322) 1 0
+ 1 (a ~ 1.4142136) 1
 
 1 equations:
  1 0 (1/2*a ~ 0.70710678)

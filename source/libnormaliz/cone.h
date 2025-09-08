@@ -1,4 +1,3 @@
-
 /*
  * Normaliz
  * Copyright (C) 2007-2025  W. Bruns, B. Ichim, Ch. Soeger, U. v. d. Ohe
@@ -989,6 +988,7 @@ class Cone {
     void extract_supphyps(Full_Cone<Integer>& FC, Matrix<Integer>& ret, bool dual = true);
 
     void norm_dehomogenization(size_t FC_dim);
+    void take_inequailities_if_posible(size_t FC_dim);
 
     /* set OriginalMonoidGenerators */
     void set_original_monoid_generators(const Matrix<Integer>&);

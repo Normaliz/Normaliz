@@ -5835,7 +5835,7 @@ void Full_Cone<Integer>::compute_hsop() {
         Matrix<Integer> ER = Generators.submatrix(choice);
         Matrix<Integer> SH = getSupportHyperplanes();
         if (inhomogeneous) {
-            Sublattice_Representation<Integer> recession_lattice(ER, true);
+            Sublattice_Representation<Integer> recession_lattice(ER, true,false);
             Matrix<Integer> SH_raw = recession_lattice.to_sublattice_dual(SH);
             Matrix<Integer> ER_embedded = recession_lattice.to_sublattice(ER);
             Full_Cone<Integer> recession_cone(ER_embedded);

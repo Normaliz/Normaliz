@@ -50,12 +50,12 @@ module rank = 1
  14 0 2 0 1 0
 
 6 support hyperplanes of polyhedron (homogenized):
- 0  0   0   0 0 1
- 0  0   0   1 0 0
- 0  0   1   0 0 0
- 0  1   0   0 0 0
- 1  0   0   0 0 0
- 7 27 -25 -38 0 0
+ 0 0 0 0 0 1
+ 0 0 0 0 1 0
+ 0 0 0 1 0 0
+ 0 0 1 0 0 0
+ 0 1 0 0 0 0
+ 1 0 0 0 0 0
 
 2 equations:
  1 1 -5 -4 -4 10

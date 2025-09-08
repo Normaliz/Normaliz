@@ -150,6 +150,9 @@ msys: all testAut
 ## The goal is to print the diff on stdout AND into the diff file.
 ## make would not stop after tee, since tee is successful.
 ## Therefore the second diff
+#
+# Note that we suppress the floating point approximations
+# in comparingt numbers in renf
 %.diff: %.out %.ref
 ifeq ($(OUTPUTCHECK),yes)
 	@ $(DIFF) $*.ref $*.ref > $*.diff

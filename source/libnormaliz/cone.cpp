@@ -5198,7 +5198,7 @@ void Cone<Integer>::extract_data_dual(Full_Cone<IntegerFC>& Dual_Cone, ConePrope
             BasisChangePointed.convert_from_sublattice_dual(SupportHyperplanes, Supp_Hyp);
             if (using_renf<Integer>())
                 SupportHyperplanes.standardize_rows();
-            norm_dehomogenization(BasisChangePointed.getRank());
+            take_inequailities_if_posible(BasisChangePointed.getRank());
             SupportHyperplanes.sort_lex();
             setComputed(ConeProperty::SupportHyperplanes);
             Inequalities = SupportHyperplanes;
@@ -5221,7 +5221,7 @@ void Cone<Integer>::extract_data_dual(Full_Cone<IntegerFC>& Dual_Cone, ConePrope
             else {
                 Help = BasisChange.to_sublattice(Generators);
                 Help.append(BasisChange.to_sublattice(BasisMaxSubspace));
-                Sublattice_Representation<Integer> EmbHelp(Help, true);  // sublattice of the primal space
+                Sublattice_Representation<Integer> EmbHelp(Help, true,!ToCompute.test(ConeProperty::NoLLL));  // sublattice of the primal space
                 compose_basis_change(EmbHelp);
             }
         }
@@ -5304,16 +5304,16 @@ void Cone<Integer>::compute_dual(ConeProperties& ToCompute) {
 //---------------------------------------------------------------------------
 
 template <typename Integer>
-vector<Sublattice_Representation<Integer> > MakeSubAndQuot(const Matrix<Integer>& Gen, const Matrix<Integer>& Ker) {
+vector<Sublattice_Representation<Integer> > MakeSubAndQuot(const Matrix<Integer>& Gen, const Matrix<Integer>& Ker, const bool allow_lll_here) {
     vector<Sublattice_Representation<Integer> > Result;
     Matrix<Integer> Help = Gen;
     Help.append(Ker);
-    Sublattice_Representation<Integer> Sub(Help, true);
+    Sublattice_Representation<Integer> Sub(Help, true, allow_lll_here);
     Sublattice_Representation<Integer> Quot = Sub;
     if (Ker.nr_of_rows() > 0) {
         Matrix<Integer> HelpQuot = Sub.to_sublattice(Ker).kernel(false);  // kernel here to be interpreted as subspace of the dual
                                                                           // namely the linear forms vanishing on Ker
-        Sublattice_Representation<Integer> SubToQuot(HelpQuot, true);     // sublattice of the dual
+        Sublattice_Representation<Integer> SubToQuot(HelpQuot, true, allow_lll_here);     // sublattice of the dual
         Quot.compose_dual(SubToQuot);
     }
     Result.push_back(Sub);
@@ -5414,7 +5414,7 @@ void Cone<Integer>::compute_dual_inner(ConeProperties& ToCompute) {
             // At this point we still have BasisChange==BasisChangePointed
             // now we can pass to a pointed full-dimensional cone
 
-            vector<Sublattice_Representation<IntegerFC> > BothRepFC = MakeSubAndQuot(ConeDM.Generators, ConeDM.BasisMaxSubspace);
+            vector<Sublattice_Representation<IntegerFC> > BothRepFC = MakeSubAndQuot(ConeDM.Generators, ConeDM.BasisMaxSubspace, allow_lll);
             if (!BothRepFC[0].IsIdentity())
                 BasisChange.compose(Sublattice_Representation<Integer>(BothRepFC[0]));
             setComputed(ConeProperty::Sublattice);
@@ -5787,7 +5787,7 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
         extract_supphyps(FC, SupportHyperplanes);
         if (using_renf<Integer>())
             SupportHyperplanes.standardize_rows();
-        norm_dehomogenization(FC.dim);
+        take_inequailities_if_posible(FC.dim);
         SupportHyperplanes.sort_lex();
         Inequalities = SupportHyperplanes;
         setComputed(ConeProperty::SupportHyperplanes);
@@ -6151,6 +6151,26 @@ void Cone<Integer>::extract_supphyps(Full_Cone<Integer>& FC, Matrix<Integer>& re
 }
 
 template <typename Integer>
+void Cone<Integer>::take_inequailities_if_posible(size_t FC_dim) {
+    if(FC_dim >= dim)
+        return;
+    norm_dehomogenization(FC_dim);
+    if(Inequalities.nr_of_rows() == 0)
+        return;
+    map<vector<Integer>, size_t> restrictions;
+    for(size_t i = 0; i <Inequalities.nr_of_rows(); ++i ){
+        restrictions[BasisChangePointed.to_sublattice_dual(Inequalities[i])] = i;
+    }
+    for(size_t j = 0; j < SupportHyperplanes.nr_of_rows(); ++j){
+        vector<Integer> test = BasisChangePointed.to_sublattice_dual(SupportHyperplanes[j]);
+        if(restrictions.find(test) != restrictions.end()){
+            SupportHyperplanes[j] = Inequalities[restrictions[test]];
+            v_make_prime(SupportHyperplanes[j]);
+        }
+    }
+}
+
+template <typename Integer>
 void Cone<Integer>::norm_dehomogenization(size_t FC_dim) {
     if (inhomogeneous && FC_dim < dim) {  // make inequality for the inhomogeneous variable appear as dehomogenization
         vector<Integer> dehom_restricted = BasisChangePointed.to_sublattice_dual(Dehomogenization);
@@ -6363,7 +6383,7 @@ void Cone<Integer>::compute_unit_group_index() {
     compute(ConeProperty::SupportHyperplanes);
     // we want to compute in the maximal linear subspace
     // BasisMaxSubspace generates a saturated lattice in the relevant lattice
-    Sublattice_Representation<Integer> Sub(BasisMaxSubspace, false);
+    Sublattice_Representation<Integer> Sub(BasisMaxSubspace, false, allow_lll);
     Matrix<Integer> origens_in_subspace(0, dim);
 
     // we must collect all original generators that lie in the maximal subspace
