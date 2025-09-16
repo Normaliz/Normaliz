@@ -239,6 +239,10 @@ NMZTESTS = test-/23.in					\
 	test-/notpointed.ref				\
 	test-/NumSemi.in				\
 	test-/NumSemi.ref				\
+	test-/overflow.in				\
+	test-/overflow.ref				\
+	test-/overflow-1.in				\
+	test-/overflow-1.ref				\
 	test-/pet.in					\
 	test-/pet.ref				 	\
 	test-/polyhedron.in				\

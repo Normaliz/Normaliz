@@ -1,0 +1,13 @@
+amb_space 10
+inhom_equations 6
+ 3 30 85  0  0  0  0  0  0  0    -8
+ 0  3  0 30 85  0  0  0  0  0   -90
+ 0  0  3  0 30 85  0  0  0  0  -255
+ 0  0  0  3  0  0 30 85  0  0  -899
+ 0  0  0  0  3  0  0 30 85  0 -2550
+ 0  0  0  0  0  3  0  0 30 85 -7224
+NoLLL
+ convert_equations
+ NumberLatticePoints
+ AffineDim
+ Volume

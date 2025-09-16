@@ -383,6 +383,11 @@ void ConeProperties::check_fusion_ring_props() const{
     copy.reset(ConeProperty::ModularGradings);
     copy.reset(ConeProperty::UseModularGrading);
     copy.reset(ConeProperty::NoEmptyOutput);
+    copy.reset(ConeProperty::NoPatching);
+    copy.reset(ConeProperty::NoCoarseProjection);
+    copy.reset(ConeProperty::SupportHyperplanes);
+    copy.reset(ConeProperty::Sublattice);
+    copy.reset(ConeProperty::AffineDim);
 
 
     if (copy.any()) {

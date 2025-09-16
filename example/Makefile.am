@@ -83,6 +83,7 @@ EXTRA_DIST =					\
 	no_open_facet.in			\
 	normface.in				\
 	open_facet.in				\
+	overflow.in				\
 	pentagon.in				\
 	pedro2.in				\
 	poly_hom_const.in			\
