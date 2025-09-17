@@ -92,6 +92,9 @@ jobs:
       sage_repo: passagemath/passagemath
       sage_ref: main
       upstream_artifact: upstream
+      # Docker targets (stages) to tag
+      docker_targets: "configured with-targets"
+      docker_push_repository: ghcr.io/${{ github.repository }}/
     needs: [dist]
 
   macos:
