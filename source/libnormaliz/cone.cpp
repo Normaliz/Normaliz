@@ -4789,9 +4789,9 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         LEAVE_CONE return ConeProperties();
     }
 
-    if (conversion_done)
+    if (conversion_done){
         compute_generators(ToCompute);
-
+    }
     ToCompute.reset(is_Computed);
     if (ToCompute.none()) {       // IMPORTANT: do not use goals() at this point because it would prevent
         LEAVE_CONE return ConeProperties();  // HSOP if HSOP is applied to an already computed Hilbert series
@@ -4899,6 +4899,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     ToCompute.reset(is_Computed);
     complete_HilbertSeries_comp(ToCompute);
     complete_sublattice_comp(ToCompute);
+
     if (ToCompute.goals().none()) {
         LEAVE_CONE return ConeProperties();
     }
@@ -7773,7 +7774,6 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
         Supps.append(Equs);  // we must add the equations as pairs of inequalities
         Equs.scalar_multiplication(-1);
         Supps.append(Equs);
-        // Supps.debug_print('&');
         project_and_lift<Integer>(*this, ToCompute, Raw, GradGen, Supps, Congs, GradingOnPolytope, primitive, PolyEqus, PolyInequs);
     }
 
@@ -8188,7 +8188,8 @@ void Cone<Integer>::compute_volume(ConeProperties& ToCompute) {
             throw NotComputableException("Volume not computable for polyhedra containing an affine space of dim > 0");
         volume = multiplicity;
         setComputed(ConeProperty::Volume);
-        euclidean_volume = mpq_to_nmz_float(volume) * euclidean_corr_factor();
+        double eucl_corr = euclidean_corr_factor();
+        euclidean_volume = mpq_to_nmz_float(volume) * eucl_corr;
         setComputed(ConeProperty::EuclideanVolume);
         return;
     }
@@ -8267,6 +8268,7 @@ nmz_float Cone<Integer>::euclidean_corr_factor() {
     // First we find a simplex in our space as quickly as possible
 
     Matrix<Integer> Simplex = BasisChangePointed.getEmbeddingMatrix();
+    Simplex.row_echelon_reduce();
     // Matrix<Integer> Simplex=Generators.submatrix(Generators.max_rank_submatrix_lex()); -- numerically bad !!!!
     size_t n = Simplex.nr_of_rows();
     vector<Integer> raw_degrees = Simplex.MxV(Grad);
@@ -10088,8 +10090,6 @@ void Cone<Integer>::add_fusion_ass_and_grading_constraints(ConeProperties& ToCom
             verboseOutput() << Whow.nr_of_rows()/2 <<" equations for checking ring homomorphism made" << endl;
         Inequalities.append(Whow);
     }
-
-    // Inequalities.debug_print('+');
 
     // cout << "IIIIIIIIIII " << Inequalities.nr_of_rows() << endl;
 

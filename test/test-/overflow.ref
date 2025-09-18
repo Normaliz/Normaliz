@@ -14,7 +14,7 @@ dehomogenization:
 module rank = 0
 volume (lattice normalized) = 963211936/477329855712890625
 volume (normalized, float) = 2.01791680213e-09
-volume (Euclidean) = 7.31842957265e+133
+volume (Euclidean) = 38.4510625351
 
 ***********************************************************************
 

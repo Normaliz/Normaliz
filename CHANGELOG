@@ -1,5 +1,12 @@
 # ChangeLog
 
+
+## 3.11.0]  2025-10-15
+
+-- Better choice of linear forms for support hyperplanes in cases of nonuniqueness
+-- Extended effect of \verb*|NoLLL|
+-- Introduction of \verb*|BoolOptions| for \verb*|Cone| in libnormaliz
+
 ## 3.10.5]  2025-06-05
 
 -- bugfix in minimization of Markov bases with degree bound
