@@ -222,6 +222,7 @@ void Sublattice_Representation<Integer>::initialize(const Matrix<Integer>& M, bo
     Matrix<Integer> R_inv(dim);
     success = N.column_trigonalize(rank, R_inv);
     Matrix<Integer> R = R_inv.invert_unprotected(c, success);  // yields c=1 as it should be in this case
+    assert(c==1);
     if (!success)
         return;
 

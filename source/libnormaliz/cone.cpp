@@ -2208,7 +2208,7 @@ void Cone<Integer>::prepare_input_lattice_ideal(InputMap<Integer>& multi_input_d
     // for toric_ideal the dafualt value will be set in monoid computation
     if(Grading.size() == 0 && positive_emebbding && make_normal_monoid){
         if(verbose)
-            verboseOutput() << "Implicit standard grading for oric_ideal" << endl;
+            verboseOutput() << "Implicit standard grading for monoid ring modulo oric_ideal" << endl;
         Grading = vector<Integer>(dim, 1);
         // setComputed(ConeProperty::Grading);
     }
@@ -2432,7 +2432,6 @@ void Cone<Integer>::setGrading(const vector<Integer>& lf, bool compute_grading_d
     }
 
     if (lf.size() != dim) {
-        assert(false);
         throw BadInputException("Grading linear form has wrong dimension " + toString(lf.size()) + " (should be " +
                                 toString(dim) + ")");
     }
