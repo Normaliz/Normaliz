@@ -4391,6 +4391,7 @@ void Full_Cone<Integer>::evaluate_large_simplices() {
     }*/
     assert(LargeSimplices.empty());
 
+
     for (size_t i = 0; i < Results.size(); ++i)
         Results[i].transfer_candidates();  // any remaining ones
 
@@ -4566,7 +4567,6 @@ void Full_Cone<Integer>::set_primal_algorithm_control_variables() {
     // stop_after_cone_dec = false;
     do_evaluation = false;
     // do_only_multiplicity = false;
-    use_bottom_points = true;
     triangulation_is_nested = false;
     triangulation_is_partial = false;
 
@@ -4646,6 +4646,7 @@ void Full_Cone<Integer>::primal_algorithm_initialize() {
 
 template <typename Integer>
 void Full_Cone<Integer>::primal_algorithm_finalize() {
+
     if (isComputed(ConeProperty::Grading) && !deg1_generated) {
         deg1_triangulation = false;
     }
@@ -4792,7 +4793,6 @@ void Full_Cone<Integer>::primal_algorithm_set_computed() {
     if (!pointed) {
         throw NonpointedException();
     }
-
     if (do_triangulation || do_partial_triangulation) {
         setComputed(ConeProperty::TriangulationSize, true);
         if (do_evaluation) {
@@ -7380,6 +7380,7 @@ void Full_Cone<Integer>::reset_tasks() {
     do_Hilbert_basis = false;
     do_deg1_elements = false;
     keep_triangulation = false;
+    use_bottom_points = true;
     pulling_triangulation = false;
     keep_triangulation_bitsets = false;
     do_Stanley_dec = false;

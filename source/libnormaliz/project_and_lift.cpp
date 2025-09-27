@@ -3477,7 +3477,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute(bool all_points, bool liftin
         }
         else{
             if(verbose)
-                verboseOutput() << "for general system" << endl;
+                verboseOutput() << " for general system" << endl;
             compute_projections(EmbDim, 1, StartInd, StartPair, StartParaInPair, StartRank);
         }
         //restrict_congruences();
