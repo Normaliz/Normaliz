@@ -4564,7 +4564,7 @@ void Full_Cone<Integer>::set_primal_algorithm_control_variables() {
     // stop_after_cone_dec = false;
     do_evaluation = false;
     // do_only_multiplicity = false;
-    use_bottom_points = true;
+    // use_bottom_points = true;
     triangulation_is_nested = false;
     triangulation_is_partial = false;
 
@@ -7378,6 +7378,7 @@ void Full_Cone<Integer>::reset_tasks() {
     do_Hilbert_basis = false;
     do_deg1_elements = false;
     keep_triangulation = false;
+    use_bottom_points = true;
     pulling_triangulation = false;
     keep_triangulation_bitsets = false;
     do_Stanley_dec = false;
