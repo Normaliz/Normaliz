@@ -56,6 +56,7 @@ ifeq ($(NMZ_DEVELOP),no)
   STRIP_FLAGS = -Wl,-s
 else
   CXXFLAGS += -DNMZ_DEVELOP # avoids reading version.h
+  CXXFLAGS += -DNMZ_EXTENDED_TESTS ## more tests
 endif
 
 ## use OpenMP?
