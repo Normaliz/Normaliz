@@ -170,7 +170,8 @@ class Full_Cone {
     bool no_descent_to_facets;  // primal algorithm must be applied to God_Father
     bool do_only_supp_hyps_and_aux;
     bool do_all_hyperplanes;  // controls whether all support hyperplanes must be computed
-    bool use_bottom_points;
+    bool allow_simplex_dec;
+    bool no_subdivision;
     ConeProperties is_Computed;
     bool has_generator_with_common_divisor;
 
@@ -579,7 +580,8 @@ class Full_Cone {
     mpq_class getMultiplicity() const;
     Integer getShift() const;
     size_t getModuleRank() const;
-    const Matrix<Integer>& getGenerators() const;
+    const Matrix<Integer>& getInputGenerators() const;
+    const Matrix<Integer>& getAllGenerators() const;
     vector<bool> getExtremeRays() const;
     size_t getNrExtremeRays() const;
     Matrix<Integer> getSupportHyperplanes() const;

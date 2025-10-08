@@ -3671,7 +3671,7 @@ void Cone<Integer>::compute_full_cone_inner(ConeProperties& ToCompute) {
         FC.do_triangulation_size = true;
     }
     if (ToCompute.test(ConeProperty::NoSubdivision)) {
-        FC.use_bottom_points = false;
+        FC.no_subdivision = false;
     }
     if (ToCompute.test(ConeProperty::Deg1Elements) && !using_renf<Integer>()) {
         FC.do_deg1_elements = true;
@@ -5194,7 +5194,7 @@ void Cone<Integer>::extract_data_dual(Full_Cone<IntegerFC>& Dual_Cone, ConePrope
 
         // get minimal set of support_hyperplanes if possible
         if (Dual_Cone.isComputed(ConeProperty::ExtremeRays)) {
-            Matrix<IntegerFC> Supp_Hyp = Dual_Cone.getGenerators().submatrix(Dual_Cone.getExtremeRays());
+            Matrix<IntegerFC> Supp_Hyp = Dual_Cone.getInputGenerators().submatrix(Dual_Cone.getExtremeRays());
             BasisChangePointed.convert_from_sublattice_dual(SupportHyperplanes, Supp_Hyp);
             if (using_renf<Integer>())
                 SupportHyperplanes.standardize_rows();
@@ -5600,9 +5600,9 @@ void Cone<Integer>::extract_convex_hull_data(Full_Cone<IntegerFC>& FC, bool prim
         if (FC.Extreme_Rays_Ind[i]) {
             vector<Integer> v;
             if (primal)
-                BasisChangePointed.convert_from_sublattice(v, FC.getGenerators()[i]);
+                BasisChangePointed.convert_from_sublattice(v, FC.getInputGenerators()[i]);
             else
-                BasisChangePointed.convert_from_sublattice_dual(v, FC.getGenerators()[i]);
+                BasisChangePointed.convert_from_sublattice_dual(v, FC.getInputGenerators()[i]);
             ConvHullData.Generators.append(v);
         }
     }
@@ -5643,7 +5643,7 @@ void Cone<Integer>::extract_convex_hull_data(Full_Cone<IntegerFC>& FC, bool prim
         ConvHullData.Facets.push_back(Ret);
     }
 
-    /* FC.getGenerators().pretty_print(cout);
+    /* FC.getInputGenerators().pretty_print(cout);
     cout << "-----------" << endl;
     ConvHullData.Generators.pretty_print(cout);
     cout << "-----------" << endl;*/
@@ -5703,7 +5703,7 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
     // the generators with which the full cone was constructed. Since the order
     // can change, ExtremeRays is reset. Will be set again below.
     if (FC.isComputed(ConeProperty::Generators)) {
-        BasisChangePointed.convert_from_sublattice(Generators, FC.getGenerators());
+        BasisChangePointed.convert_from_sublattice(Generators, FC.getInputGenerators());
         setComputed(ConeProperty::Generators);
         ExtremeRaysIndicator.resize(0);
         is_Computed.reset(ConeProperty::ExtremeRays);
@@ -5812,7 +5812,8 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
         is_Computed.reset(ConeProperty::UnimodularTriangulation);  // is recomputed
         Triangulation.first.clear();
 
-        BasisChangePointed.convert_from_sublattice(BasicTriangulation.second, FC.getGenerators());
+        BasisChangePointed.convert_from_sublattice(BasicTriangulation.second, FC.getAllGenerators());
+        // BasicTriangulation.second.debug_print('B');
 
         size_t tri_size = FC.Triangulation.size();
         FC.Triangulation.sort(compareKeys<IntegerFC>);  // necessary to make triangulation unique
@@ -5845,7 +5846,7 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
         BasicStanleyDec.first.clear();
         BasicStanleyDec.first.splice(BasicStanleyDec.first.begin(), FC.StanleyDec);
         setComputed(ConeProperty::BasicStanleyDec);
-        BasisChangePointed.convert_from_sublattice(BasicStanleyDec.second, FC.getGenerators());
+        BasisChangePointed.convert_from_sublattice(BasicStanleyDec.second, FC.getAllGenerators());
     }
 
     if (FC.isComputed(ConeProperty::InclusionExclusionData)) {
