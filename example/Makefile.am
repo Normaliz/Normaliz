@@ -75,6 +75,7 @@ EXTRA_DIST =					\
 	hickerson-18.in				\
 	hickerson-18plus1.in			\
 	huge.in					\
+	hyper_crit.in					\
 	j462.in					\
 	knapsack_11_60.in			\
 	lo6.in					\

@@ -3671,7 +3671,7 @@ void Cone<Integer>::compute_full_cone_inner(ConeProperties& ToCompute) {
         FC.do_triangulation_size = true;
     }
     if (ToCompute.test(ConeProperty::NoSubdivision)) {
-        FC.no_subdivision = false;
+        FC.no_subdivision = true;
     }
     if (ToCompute.test(ConeProperty::Deg1Elements) && !using_renf<Integer>()) {
         FC.do_deg1_elements = true;

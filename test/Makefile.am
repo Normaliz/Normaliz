@@ -151,6 +151,8 @@ NMZTESTS = test-/23.in					\
 	test-/hickerson-16plus1.ref			\
 	test-/Hilb_latt_neeg.in				\
 	test-/Hilb_latt_neeg.ref			\
+	test-/hyper_crit.in				\
+	test-/hyper_crit.ref				\
 	test-/InhomCong.in				\
 	test-/InhomCong.ref				\
 	test-/InhomIneq_prec.in				\
