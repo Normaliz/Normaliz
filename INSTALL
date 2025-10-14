@@ -10,9 +10,9 @@ file contains additional information.
 For rational polyhedra:
 
 CoCoALib, https://cocoa.dima.unige.it/cocoa/cocoalib, version 0.99818
-MPFR,  https://www.mpfr.org/, version 4.2.1
-Flint, https://flintlib.org/, version 3.0.1
-nauty, https://users.cecs.anu.edu.au/~bdm/nauty/, version 2_8_8
+MPFR,  https://www.mpfr.org/, version 4.2.2
+Flint, https://flintlib.org/, version 3.3.1
+nauty, https://users.cecs.anu.edu.au/~bdm/nauty/, version 2_9_1
 
 nauty should be configured with --enable-tls.
 
