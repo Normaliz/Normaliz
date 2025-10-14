@@ -915,6 +915,7 @@ void ConeProperties::check_Q_permissible(bool after_implications) {
     copy.reset(ConeProperty::FusionData);
     copy.reset(ConeProperty::ShortInt);
     copy.reset(ConeProperty::NoHeuristicMinimization);
+    copy.reset(ConeProperty::NoSubdivision);
     if (after_implications) {
         copy.reset(ConeProperty::Multiplicity);
         copy.reset(ConeProperty::Grading);

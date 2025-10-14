@@ -1583,12 +1583,15 @@ The original monoid is not integrally closed since the unit group of the integra
 
 \subsection{Exporting the triangulation}\label{Triang}
 
-The primal algorithm of Normaliz is based on ``triangulations''. What we call a ``triangulation'' here, is often only a collection of simplicial cones with properties that come close to those of a triangulation in the strict sense. Without being asked explicitly, Normaliz does not try to store and export its computational tool. In the file \verb|<project>.out| you can sometimes see words ``partial'' and ``nested''. ``Partial'' means that only a subset of the cone has been triangulated, and ``nested'' is explained below.
+The primal algorithm of Normaliz is based on ``triangulations''. What we call a ``triangulation'' here, is often only a collection of simplicial cones with properties that come close to those of a triangulation in the strict sense. ``Strict'' menas: the intersection of faces of two simplices is a face of both of them. Without being asked explicitly, Normaliz does not try to store and export its computational tool. In the file \verb|<project>.out| you can sometimes see words ``partial'' and ``nested''. ``Partial'' means that only a subset of the cone has been ``triangulated'', and ``nested'' is explained below.
 But if the user wants Normaliz to export a triangulation, then a triangulation in the strict sense is computed.
 
-The option \ttt{Triangulation}, \ttt{-T} asks Normaliz to export a triangulation by writing the files
+The option 
+\begin{itemize}
+\itemtt[Triangulation, -T]
+\end{itemize}	
+asks Normaliz to export a triangulation by writing the files
 \ttt{<project>.tgn} and \verb|<project>.tri|:
-
 \begin{itemize}
 	
 	\itemtt[tgn] The file \ttt{tgn} contains a matrix of vectors (in the
@@ -1644,12 +1647,14 @@ In addition to the files \verb|<project>.tgn| and \verb|<project>.tri|, also the
 \textbf{Note:}\enspace Normaliz (now) allows the computation of triangulations for all input. In the homogeneous case it computes a triangulation of the (pointed quotient of the) cone $C$ defined by the input. It can then be interpreted as a triangulation of a cross-section polytope if a grading is given. In the inhomogeneous case for which the input defines a polyhedron $P$, $C$ is the cone over $P$. If $P$ is a polytope, then a triangulation of $C$ can again be identified with a triangulation of $P$. However, if $P$ is unbounded, the the triangulation of $C$ only induces a polyhedral decomposition of $P$ into subpolyhedra whose compact faces are simplices.
 
 \subsubsection{Nested triangulations}\label{nested}
-We explain what we mean by a nested triangulation, even if it cannot be exported.
+We explain what we mean by a nested triangulation, even if it cannot be exported. Normaliz uses (at least) two types of subdivision: recursive pyramid decompositions, as discussed in \cite{BIS}, and subdivisions of ``large'' simplicial cones into simplicial subcones. As lomng as only pyramid decomposition is applied, strictness is not lost; see \cite{BIS}. 
+
 If Normaliz has subdivided a simplicial cone of a triangulation of the cone $C$, the resulting decomposition of $C$ may no longer be a triangulation in the strict sense. It is rather a \emph{nested triangulation}, namely a map from a rooted tree to the set of full-dimensional subcones of $C$ with the following properties:
 \begin{arab}
 	\item the root is mapped to $C$,
-	\item every other node is mapped to a full dimensional simplicial subcone,
-	\item the simplicial subcones corresponding to the branches at a node $x$ form a triangulation of the simplicial cone corresponding to $x$.
+	\item every other node is mapped to a full dimensional subcone,
+	\item the simplicial subcones corresponding to the branches at a node $x$ form a subdivision of the  cone corresponding to $x$,
+	 \item the cones corresponding to the leaves are simplicial.
 \end{arab}
 
 The following figure shows a nested triangulation:
@@ -1663,9 +1668,9 @@ The following figure shows a nested triangulation:
 	\end{tikzpicture}
 \end{center}
 
-For the Normaliz computations, nested triangulations are as good as ordinary triangulations, but in other applications the difference may matter. With the option \verb|-T|, Normaliz prints the leaves of the nested triangulation to the \verb|tri| file. They constitute the simplicial cones that are finally evaluated by Normaliz. The subdivision can be blocked by \verb|NoSubdivision|, independently of the computation goals.
+For the Normaliz computations, nested triangulations are as good as ordinary triangulations, but in other applications the difference may matter. The leaves constitute the simplicial cones that are finally evaluated by Normaliz.
 
-The triangulation is always plain if \verb|-T| is used, or if one of the refined triangulations below is computed.
+The triangulation is always strict if \verb|Triangulation| is used, or if one of the refined triangulations below is computed.
 
 \subsubsection{Disjoint decomposition}\label{Disjoint}
 

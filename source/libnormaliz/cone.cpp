@@ -4064,7 +4064,7 @@ void Cone<Integer>::set_extended_tests(ConeProperties& ToCompute) {
     }
     if (ToCompute.test(ConeProperty::TestSimplexParallel)) {
         test_simplex_parallel = true;
-        ToCompute.set(ConeProperty::NoSubdivision);
+        // ToCompute.set(ConeProperty::NoSubdivision);
         SimplexParallelEvaluationBound = 0;
     }
 

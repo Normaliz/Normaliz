@@ -1872,7 +1872,7 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator, const bool
 
     Whether "this" is of type (i) or (ii) is indicated by do_all_hyperplanes.
 
-    The creation of (sub)pyramids of type (i) can be blocked by setting recursion_allowed=false.
+    The creation of (sub)pyramids of type (i) can be blocked by setting subpyramids_allowed=false.
     (Not done in this version.)
 
     is_pyramid==false for the top_cone and ==true else.
@@ -2909,7 +2909,7 @@ void Full_Cone<Integer>::evaluate_stored_pyramids(const size_t level) {
                 INTERRUPT_COMPUTATION_BY_EXCEPTION
 
                 Full_Cone<Integer> Pyramid(*this, *p);
-                // Pyramid.recursion_allowed=false;
+                // Pyramid.subpyramids_allowed=false;
                 Pyramid.do_all_hyperplanes = false;
                 if (level >= 2 && do_partial_triangulation) {  // limits the descent of do_partial_triangulation
                     Pyramid.do_triangulation = true;
@@ -3066,7 +3066,7 @@ void Full_Cone<Integer>::build_cone() {
     // endl;
 
     if (is_pyramid && pyramids_for_last_built_directly)  // no higher level pyramids in this case
-        recursion_allowed = false;
+        subpyramids_allowed = false;
 
     bool is_new_generator;
 
@@ -3162,7 +3162,7 @@ void Full_Cone<Integer>::build_cone() {
            endl; */
 
         // First we test whether to go to recursive pyramids because of too many supphyps
-        if ((do_all_hyperplanes || (i != last_to_be_inserted)) && recursion_allowed &&
+        if ((do_all_hyperplanes || (i != last_to_be_inserted)) && subpyramids_allowed &&
             ((nr_neg * nr_pos - (nr_neg_simp * nr_pos_simp) >= (long)RecBoundSuppHyp)
 #ifdef NMZ_EXTENDED_TESTS
              || test_small_pyramids
@@ -3184,7 +3184,7 @@ void Full_Cone<Integer>::build_cone() {
         else {  // now we check whether to go to pyramids because of the size of triangulation
                 // once we have done so, we must stay with it
 
-            if (recursion_allowed &&
+            if (subpyramids_allowed &&
                 (tri_recursion || (do_triangulation && (nr_neg * TriangulationBufferSize > RecBoundTriang ||
                                                         3 * omp_get_max_threads() * TriangulationBufferSize >
                                                             EvalBoundTriang)))) {  // go to pyramids because of triangulation
@@ -4614,7 +4614,7 @@ void Full_Cone<Integer>::set_primal_algorithm_control_variables() {
     if(no_subdivision){
         suppress_bottom_dec = true;
         allow_simplex_dec = false;
-        recursion_allowed = false;
+        subpyramids_allowed = false;
     }
 
     assert(!(do_evaluation && do_pure_triang));
@@ -7546,7 +7546,7 @@ Full_Cone<Integer>::Full_Cone(const Matrix<Integer>& M, bool do_make_prime) {  /
     nrPyramids.resize(20, 0);
     Pyramids_scrambled.resize(20, false);
 
-    recursion_allowed = true;
+    subpyramids_allowed = true;
 
     // nextGen=0;
     store_level = 0;
@@ -7887,7 +7887,7 @@ Full_Cone<Integer>::Full_Cone(Full_Cone<Integer>& C, const vector<key_t>& Key) {
     TriangulationBufferSize = 0;  // not used in pyramids
     CandidatesSize = 0;           // ditto
 
-    recursion_allowed = C.recursion_allowed;  // must be reset if necessary
+    subpyramids_allowed = C.subpyramids_allowed;  // must be reset if necessary
     // multithreaded_pyramid=false; // SEE ABOVE
 
     Comparisons.reserve(nr_gen);

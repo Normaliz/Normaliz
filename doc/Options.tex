@@ -457,12 +457,7 @@ In rare cases Normaliz can use symmetrization in the computation of multipliciti
 
 The integration involved in symmetrization can be done by signed decomposition.
 
-\subsubsection{Subdivision of simplicial cones}
 
-Subdivision requires enlarging the set of generators and can lead to a nested triangulation (see Sections~\ref{subdiv} and~\ref{nested}). The subdivision can be blocked by
-\begin{itemize}
-	\itemtt[NoSubdivision]
-\end{itemize}
 
 \subsubsection{Options for the grading}
 
@@ -538,6 +533,16 @@ the following elements of \verb|ConeProperties| control the work flow in \verb|l
 	
 	\itemtt[IsTriangulationNested] controls the indicator of this property.
 	\itemtt[IsTriangulationPartial] similar.
+	
+	\itemtt[NoSubdivision] blocks pyramid decomposition and sudivision of simplices in primal mode.
+	
+	\itemtt[BasicTriangulation] used for the computation of trianglations.
+	itemtt[BasicStanleyDec] the same for Stanley decompositions.
+	
+	
+	\itemtt[PullingTriangulationInternal] used for the computation of pulling triangulations.
+		
+	\itemtt[SingleLatticePointInternal]  quite obvious.
 	
 \end{itemize}
 
@@ -766,4 +771,13 @@ It suppresses all output after the ``preamble''. It is useful in testing large e
 Since Normaliz accumulates options, one cannot get rid of settings in the input file by command line options unless one uses
 \begin{itemize}
 	\itemtt[{-}{-}ignore, -i] This option disables all options in the input file.
+\end{itemize}
+
+\endinput 
+
+\subsubsection{Subdivision of simplicial cones}
+
+Subdivision requires enlarging the set of generators and can lead to a nested triangulation (see Sections~\ref{subdiv} and~\ref{nested}). The subdivision can be blocked by
+\begin{itemize}
+	\itemtt[NoSubdivision]
 \end{itemize}

@@ -968,7 +968,7 @@ const size_t LocalReductionBound = 10000;  // number of candidates in a thread s
 const size_t SuperBlockLength = 1000000;   // number of blocks in a super block
 
 //---------------------------------------------------------------------------
-// The following routiner organizes the evaluation of a single large simplex in parallel trhreads.
+// The following routine organizes the evaluation of a single large simplex in parallel trhreads.
 // This evaluation can be split into "superblocks" whose blocks are then run in parallel.
 // The reason or the existence of superblocks is the joint local reduction of the common results of
 // the individual blocks. Each block gets its parallel thread, and is done sequentially by this thread.
@@ -1161,7 +1161,8 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation() {
     }
 
     if (C_ptr->allow_simplex_dec &&
-        (volume >= SimplexParallelEvaluationBound || (volume > SimplexParallelEvaluationBound / 10 && C_ptr->do_Hilbert_basis)) &&
+        (volume >= SimplexParallelEvaluationBound ||
+        (volume > SimplexParallelEvaluationBound / 10 && C_ptr->do_Hilbert_basis)) &&
         (!C_ptr->deg1_triangulation || !C_ptr->isComputed(ConeProperty::Grading))) {  // try subdivision
 
         Full_Cone<Integer>& C = *C_ptr;

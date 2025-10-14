@@ -293,7 +293,7 @@ class Full_Cone {
     bool is_pyramid;                        // false for top cone
     long top_last_to_be_inserted;           // used for signed dec to avoid storage of hyperplanes that are not needed
     bool pyramids_for_last_built_directly;  // ditto
-    bool recursion_allowed;                 // to allow or block recursive formation of pyramids
+    bool subpyramids_allowed;                 // to allow or block recursive formation of pyramids
     bool multithreaded_pyramid;             // indicates that this cone is computed in parallel threads
     bool tri_recursion;                     // true if we have gone to pyramids because of triangulation
 
