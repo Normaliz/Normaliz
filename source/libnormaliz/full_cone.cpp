@@ -4610,11 +4610,9 @@ void Full_Cone<Integer>::set_primal_algorithm_control_variables() {
     if (do_triangulation)
         do_partial_triangulation = false;
 
-    // no_subdision blocks any subdivision except the classical triangulation
+    // no_subdision blocks simplex decomposaition
     if(no_subdivision){
-        suppress_bottom_dec = true;
         allow_simplex_dec = false;
-        subpyramids_allowed = false;
     }
 
     assert(!(do_evaluation && do_pure_triang));
