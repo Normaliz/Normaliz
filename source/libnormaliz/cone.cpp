@@ -73,6 +73,7 @@ Cone<Integer>::Cone(const string project) {
     OptionsHandler options;
     map<PolyParam::Param, vector<string> > poly_param_input;
     map<NumParam::Param, long> num_param_input;
+    map<BoolParam::Param, bool> bool_param_input;
     renf_class_shared number_field_ref;
 
     string name_in = project + ".in";
@@ -98,13 +99,15 @@ Cone<Integer>::Cone(const string project) {
 
     in.open(file_in, ifstream::in);
     map<Type::InputType, Matrix<mpq_class> > input;
-    input = readNormalizInput<mpq_class>(in, options, num_param_input, poly_param_input, number_field_ref);
+    input = readNormalizInput<mpq_class>(in, options, num_param_input, bool_param_input, poly_param_input, number_field_ref);
 
     const renf_class_shared number_field = number_field_ref;
     process_multi_input(input);
     setRenf(number_field);
     setProjectName(project);
     setPolyParams(poly_param_input);
+    setBoolParams(bool_param_input);
+    setNumericalParams(num_param_input);
 }
 
 #ifdef ENFNORMALIZ
@@ -112,6 +115,7 @@ template <>
 Cone<renf_elem_class>::Cone(const string project) {
     OptionsHandler options;
     map<NumParam::Param, long> num_param_input;
+    map<BoolParam::Param, bool> bool_param_input;
     map<PolyParam::Param, vector<string> > poly_param_input;
     renf_class_shared number_field_ref;
 
@@ -139,13 +143,15 @@ Cone<renf_elem_class>::Cone(const string project) {
 
     in.open(file_in, ifstream::in);
     map<Type::InputType, Matrix<renf_elem_class> > renf_input;
-    renf_input = readNormalizInput<renf_elem_class>(in, options, num_param_input, poly_param_input, number_field_ref);
+    renf_input = readNormalizInput<renf_elem_class>(in, options, num_param_input, bool_param_input, poly_param_input, number_field_ref);
     const renf_class_shared number_field = number_field_ref.get();
 
     process_multi_input(renf_input);
     setRenf(number_field);
     setProjectName(project);
     setPolyParams(poly_param_input);
+    setBoolParams(bool_param_input);
+    setNumericalParams(num_param_input);
 }
 #endif
 
@@ -740,8 +746,9 @@ Cone<Integer>::~Cone() {
 template <typename Integer>
 void Cone<Integer>::process_multi_input(const InputMap<mpq_class>& multi_input_data_const) {
     initialize();
-    InputMap<Integer> multi_input_data_ZZ = mpqclass_input_to_integer(multi_input_data_const);
-    process_multi_input_inner(multi_input_data_ZZ);
+    Standard_Input = mpqclass_input_to_integer(multi_input_data_const);
+    standard_input_done = false;
+    process_standard_input();
 }
 
 template <typename Integer>
@@ -773,21 +780,26 @@ void check_types_precomputed(InputMap<Integer>& multi_input_data) {
 template <typename Integer>
 void Cone<Integer>::process_multi_input(const InputMap<Integer>& multi_input_data_const) {
     initialize();
-    InputMap<Integer> multi_input_data(multi_input_data_const);
-    if (contains(multi_input_data, Type::scale)) {
+    // InputMap<Integer> multi_input_data(multi_input_data_const);
+    Standard_Input = multi_input_data_const;
+    if (contains(Standard_Input, Type::scale)) {
         if (using_renf<Integer>()) {
-            apply_cale(multi_input_data);
+            apply_cale(Standard_Input);
         }
         else
             throw BadInputException("Explicit input type scale only allowed for field coefficients");
     }
-    process_multi_input_inner(multi_input_data);
+    standard_input_done = false;
+    process_standard_input();
 }
 
 
-
 template <typename Integer>
-void Cone<Integer>::process_multi_input_inner(InputMap<Integer>& multi_input_data) {
+void Cone<Integer>::process_standard_input() {
+
+    if(standard_input_done) // Part of the construction. Can only be run once.
+        return;
+
     StartTime();
 
     // cout << "Cone reached" << endl;
@@ -800,43 +812,47 @@ void Cone<Integer>::process_multi_input_inner(InputMap<Integer>& multi_input_dat
     nr_latt_gen = 0, nr_cone_gen = 0;
     inhom_input = false;
 
-    auto it = multi_input_data.begin();
+    auto it = Standard_Input.begin();
     if (using_renf<Integer>()) {
-        for (; it != multi_input_data.end(); ++it) {
+        for (; it != Standard_Input.end(); ++it) {
             if (!renf_allowed(it->first))
                 throw BadInputException("Some input type not allowed for field coefficients");
         }
     }
 
-    if (!using_renf<Integer>() && contains(multi_input_data, Type::scale)) {
-        AxesScaling = multi_input_data[Type::scale][0];  // only possible with rational_lattice
+    if (!using_renf<Integer>() && contains(Standard_Input, Type::scale)) {
+        AxesScaling = Standard_Input[Type::scale][0];  // only possible with rational_lattice
         setComputed(ConeProperty::AxesScaling);
         rational_lattice_in_input = true;
     }
 
-    if(contains(multi_input_data, Type::candidate_subring)) {
+    if(contains(Standard_Input, Type::candidate_subring)) {
         is_fusion_candidate_subring = true;
     }
 
-    if(contains(multi_input_data, Type::fusion_type)) {
-        fusion_type_input =multi_input_data[Type::fusion_type][0];
-        make_full_input(FusionBasicCone, multi_input_data);
+    if(contains(Standard_Input, Type::fusion_type)) {
+        if(Standard_Input[Type::fusion_type].nr_of_rows() == 0)
+            throw BadInputException("Empty fusion type");
+        fusion_type_input =Standard_Input[Type::fusion_type][0];
+        make_full_input(FusionBasicCone, Standard_Input);
         // only linear equations done here, associativity later
         is_fusion = true;
         polynomially_constrained = true;
     }
-    if(contains(multi_input_data, Type::fusion_type_for_partition)){
-        if(contains(multi_input_data, Type::fusion_type) || contains(multi_input_data, Type::fusion_duality)
-            || contains(multi_input_data, Type::candidate_subring))
+    if(contains(Standard_Input, Type::fusion_type_for_partition)){
+        if(contains(Standard_Input, Type::fusion_type) || contains(Standard_Input, Type::fusion_duality)
+            || contains(Standard_Input, Type::candidate_subring))
             throw BadInputException("Illegal combination of input types in connection with fusion");
-        make_full_input_partition(multi_input_data);
+        if(Standard_Input[Type::fusion_type_for_partition].nr_of_rows() == 0)
+            throw BadInputException("Empty fusion type for partition");
+        make_full_input_partition(Standard_Input);
 
         is_fusion_partition = true;
     }
 
     // NEW: Empty matrices have syntactical influence
-    it = multi_input_data.begin();
-    for (; it != multi_input_data.end(); ++it) {
+    it = Standard_Input.begin();
+    for (; it != Standard_Input.end(); ++it) {
         switch (it->first) {
             case Type::inhom_inequalities:
             case Type::strict_inequalities:
@@ -903,18 +919,18 @@ void Cone<Integer>::process_multi_input_inner(InputMap<Integer>& multi_input_dat
     if (nr_cone_gen > 2)
         gen_error = true;
 
-    precomputed_extreme_rays = contains(multi_input_data, Type::extreme_rays);
-    precomputed_support_hyperplanes = contains(multi_input_data, Type::support_hyperplanes);
+    precomputed_extreme_rays = contains(Standard_Input, Type::extreme_rays);
+    precomputed_support_hyperplanes = contains(Standard_Input, Type::support_hyperplanes);
     if (precomputed_extreme_rays != precomputed_support_hyperplanes)
         throw BadInputException("Precomputed extreme rays and support hyperplanes can only be used together");
 
     if (precomputed_extreme_rays)
-        check_types_precomputed(multi_input_data);
+        check_types_precomputed(Standard_Input);
 
     if (!precomputed_extreme_rays && nr_cone_gen == 2 &&
-        (!contains(multi_input_data, Type::subspace) ||
-         !((contains(multi_input_data, Type::cone) && !polytope_in_input) || contains(multi_input_data, Type::cone_and_lattice) ||
-           contains(multi_input_data, Type::integral_closure) || contains(multi_input_data, Type::normalization))))
+        (!contains(Standard_Input, Type::subspace) ||
+         !((contains(Standard_Input, Type::cone) && !polytope_in_input) || contains(Standard_Input, Type::cone_and_lattice) ||
+           contains(Standard_Input, Type::integral_closure) || contains(Standard_Input, Type::normalization))))
         gen_error = true;
 
     if (gen_error) {
@@ -928,28 +944,28 @@ void Cone<Integer>::process_multi_input_inner(InputMap<Integer>& multi_input_dat
     if (lattice_ideal_input || monoid_input) {
         size_t max_nr_types = 3;
         bool normal_tor_id = false;
-        if(lattice_ideal_input && contains(multi_input_data, Type::normal_toric_ideal)){
+        if(lattice_ideal_input && contains(Standard_Input, Type::normal_toric_ideal)){
             max_nr_types = 2;
             normal_tor_id = true;
         }
-        if (multi_input_data.size() > max_nr_types){
+        if (Standard_Input.size() > max_nr_types){
             throw BadInputException("Not all input types llowed with mononid or binomial ideal!");
         }
-        if (normal_tor_id && multi_input_data.size() == 2 && !contains(multi_input_data, Type::grading)){
+        if (normal_tor_id && Standard_Input.size() == 2 && !contains(Standard_Input, Type::grading)){
             throw BadInputException("Only grading allowed as an additional input type for (normal_)toric_ideal");
         }
-        if (multi_input_data.size() == 2 && !(contains(multi_input_data, Type::grading) || contains(multi_input_data, Type::gb_weight))){
+        if (Standard_Input.size() == 2 && !(contains(Standard_Input, Type::grading) || contains(Standard_Input, Type::gb_weight))){
             throw BadInputException("Only grading and gb_weight as additional input types for monoid or binomial ideal");
         }
-        if (multi_input_data.size() == 3 && !(contains(multi_input_data, Type::grading) && contains(multi_input_data, Type::gb_weight))){
+        if (Standard_Input.size() == 3 && !(contains(Standard_Input, Type::grading) && contains(Standard_Input, Type::gb_weight))){
             throw BadInputException("Only grading and gb_weight as additional input types for monoid or binomial ideal");
         }
     }
 
-    if (contains(multi_input_data, Type::open_facets)) {
+    if (contains(Standard_Input, Type::open_facets)) {
         size_t allowed = 0;
-        auto it = multi_input_data.begin();
-        for (; it != multi_input_data.end(); ++it) {
+        auto it = Standard_Input.begin();
+        for (; it != Standard_Input.end(); ++it) {
             switch (it->first) {
                 case Type::open_facets:
                 case Type::cone:
@@ -961,74 +977,82 @@ void Cone<Integer>::process_multi_input_inner(InputMap<Integer>& multi_input_dat
                     break;
             }
         }
-        if (allowed != multi_input_data.size())
+        if (allowed != Standard_Input.size())
             throw BadInputException("Illegal combination of input types with open_facets!");
-        if (contains(multi_input_data, Type::vertices)) {
-            if (multi_input_data[Type::vertices].nr_of_rows() > 1)
+        if (contains(Standard_Input, Type::vertices)) {
+            if (Standard_Input[Type::vertices].nr_of_rows() > 1)
                 throw BadInputException("At most one vertex allowed with open_facets!");
         }
     }
 
     /* if (inhom_input) { // checked in homogenize_input
-        if (contains(multi_input_data, Type::dehomogenization) || contains(multi_input_data, Type::support_hyperplanes) ||
-            contains(multi_input_data, Type::extreme_rays)) {
+        if (contains(Standard_Input, Type::dehomogenization) || contains(Standard_Input, Type::support_hyperplanes) ||
+            contains(Standard_Input, Type::extreme_rays)) {
             throw BadInputException("Some types not allowed in combination with inhomogeneous input!");
         }
     }*/
 
     if (!inhom_input) {
-        if (contains(multi_input_data, Type::hilbert_basis_rec_cone))
+        if (contains(Standard_Input, Type::hilbert_basis_rec_cone))
             throw BadInputException("Type hilbert_basis_rec_cone only allowed with inhomogeneous input!");
     }
 
-    if (inhom_input || contains(multi_input_data, Type::dehomogenization)) {
-        if (contains(multi_input_data, Type::rees_algebra) || contains(multi_input_data, Type::polytope) || polytope_in_input) {
+    if (inhom_input || contains(Standard_Input, Type::dehomogenization)) {
+        if (contains(Standard_Input, Type::rees_algebra) || contains(Standard_Input, Type::polytope) || polytope_in_input) {
             throw BadInputException("Types polytope and rees_algebra not allowed with inhomogeneous input or dehomogenization!");
         }
-        // if (contains(multi_input_data, Type::excluded_faces)) {
+        // if (contains(Standard_Input, Type::excluded_faces)) {
         //    throw BadInputException("Type excluded_faces not allowed with inhomogeneous input or dehomogenization!");
         // }
     }
-    /*if(contains(multi_input_data,Type::grading) && contains(multi_input_data,Type::polytope)){ // now superfluous
+    /*if(contains(Standard_Input,Type::grading) && contains(Standard_Input,Type::polytope)){ // now superfluous
            throw BadInputException("No explicit grading allowed with polytope!");
     }*/
 
     INTERRUPT_COMPUTATION_BY_EXCEPTION
 
     // remove empty matrices
-    it = multi_input_data.begin();
-    for (; it != multi_input_data.end();) {
+    it = Standard_Input.begin();
+    for (; it != Standard_Input.end();) {
         if (it->second.nr_of_rows() == 0)
-            multi_input_data.erase(it++);
+            Standard_Input.erase(it++);
         else
             ++it;
     }
 
-    if (multi_input_data.size() == 0) {
+    if (Standard_Input.size() == 0) {
         throw BadInputException("All matrices empty. Cannot find dimension!");
     }
 
     // determine dimension
-    it = multi_input_data.begin();
+    it = Standard_Input.begin();
     size_t inhom_corr = 0;  // correction in the inhom_input case
     if (inhom_input)
         inhom_corr = 1;
-    if (it->second[0].size() == 0)
+    if (it->second.nr_of_columns() == 0)
         throw BadInputException("Ambient space of dimension 0 not allowed");
-    dim = it->second[0].size() - type_nr_columns_correction(it->first) + inhom_corr;
+    dim = it->second.nr_of_columns() - type_nr_columns_correction(it->first) + inhom_corr;
+
+    // remove tautological inequality if it is the only input matrix
+    if(Standard_Input.size() == 1){
+        if (contains(Standard_Input, Type::inequalities)) {
+            if(Standard_Input[Type::inequalities].equal(Matrix<Integer>(1,dim)) )
+                Standard_Input.erase(Type::inequalities);
+        }
+    }
 
     // We now process input types that are independent of generators, constraints, lattice_ideal
     // check for excluded faces
 
-    ExcludedFaces = find_input_matrix(multi_input_data, Type::excluded_faces);
+    ExcludedFaces = find_input_matrix(Standard_Input, Type::excluded_faces);
     if (ExcludedFaces.nr_of_rows() == 0)
         ExcludedFaces = Matrix<Integer>(0, dim);  // we may need the correct number of columns
-    Matrix<Integer> InhomExcludedFaces = find_input_matrix(multi_input_data, Type::inhom_excluded_faces);
+    Matrix<Integer> InhomExcludedFaces = find_input_matrix(Standard_Input, Type::inhom_excluded_faces);
     if (InhomExcludedFaces.nr_of_rows() != 0)
         ExcludedFaces.append(InhomExcludedFaces);
 
     // check for a grading
-    Matrix<Integer> lf = find_input_matrix(multi_input_data, Type::grading);
+    Matrix<Integer> lf = find_input_matrix(Standard_Input, Type::grading);
     if (lf.nr_of_rows() > 1) {
         throw BadInputException("Bad grading, has " + toString(lf.nr_of_rows()) + " rows (should be 1)!");
     }
@@ -1038,7 +1062,7 @@ void Cone<Integer>::process_multi_input_inner(InputMap<Integer>& multi_input_dat
         setGrading(lf[0]);       // will eventually be set in full_cone.cpp
     }
 
-    Matrix<Integer> lw = find_input_matrix(multi_input_data, Type::gb_weight);
+    Matrix<Integer> lw = find_input_matrix(Standard_Input, Type::gb_weight);
     if (lw.nr_of_rows() > 1) {
         throw BadInputException("Bad gb_weight, has " + toString(lw.nr_of_rows()) + " rows (should be 1)!");
     }
@@ -1049,22 +1073,22 @@ void Cone<Integer>::process_multi_input_inner(InputMap<Integer>& multi_input_dat
 
     // cout << "Dim " << dim <<endl;
 
-    check_consistency_of_dimension(multi_input_data);
+    check_consistency_of_dimension(Standard_Input);
 
-    check_length_of_vectors_in_input(multi_input_data, dim - inhom_corr);
+    check_length_of_vectors_in_input(Standard_Input, dim - inhom_corr);
 
     if (inhom_input)
-        homogenize_input(multi_input_data);
+        homogenize_input(Standard_Input);
 
-    if (contains(multi_input_data, Type::projection_coordinates)) {
+    if (contains(Standard_Input, Type::projection_coordinates)) {
         projection_coord_indicator.resize(dim);
         for (size_t i = 0; i < dim; ++i)
-            if (multi_input_data[Type::projection_coordinates][0][i] != 0)
+            if (Standard_Input[Type::projection_coordinates][0][i] != 0)
                 projection_coord_indicator[i] = true;
     }
 
     // check for dehomogenization
-    lf = find_input_matrix(multi_input_data, Type::dehomogenization);
+    lf = find_input_matrix(Standard_Input, Type::dehomogenization);
     if (lf.nr_of_rows() > 1) {
         throw BadInputException("Bad dehomogenization, has " + toString(lf.nr_of_rows()) + " rows (should be 1)!");
     }
@@ -1083,46 +1107,83 @@ void Cone<Integer>::process_multi_input_inner(InputMap<Integer>& multi_input_dat
     if (isComputed(ConeProperty::Dehomogenization))
         inhomogeneous = true;
 
+}
+
+template <typename Integer>
+void Cone<Integer>::finish_standard_input(const ConeProperties& ToCompute){
+
+    if(standard_input_done)
+        return;
+
+    standard_input_done = true;
+
+    if(no_pos_orth_def){
+        if(make_nonnegative)
+            throw BadInputException("conficting options nonnegative and no_pos_orth_def");
+        if(Standard_Input.find(Type::inequalities) == Standard_Input.end() )
+            Standard_Input[Type::inequalities] = Matrix<Integer> (0,dim);
+    }
+    if(make_nonnegative){
+        if(Standard_Input.find(Type::inequalities) != Standard_Input.end() ){
+            Matrix<Integer> Help = Standard_Input[Type::inequalities];
+            Standard_Input[Type::inequalities] = Matrix<Integer>(dim); // sign inequalities first
+            Standard_Input[Type::inequalities].append(Help);
+        }
+        else
+            Standard_Input[Type::inequalities] = Matrix<Integer>(dim);
+    }
+    if(set_total_degree){
+        if(Grading.size() >0)
+            throw BadInputException("Total degree not available if grading has been set.");
+        if(inhomogeneous){
+            vector<Integer> lf(dim-1,1);
+            lf.push_back(0);
+            setGrading(lf);
+        }
+        else
+            setGrading(vector<Integer>(dim,1));
+    }
+
     if (lattice_ideal_input) {
-        prepare_input_lattice_ideal(multi_input_data);
+        prepare_input_lattice_ideal(Standard_Input);
     }
 
     INTERRUPT_COMPUTATION_BY_EXCEPTION
 
     Matrix<Integer> LatticeGenerators(0, dim);
-    prepare_input_generators(multi_input_data, LatticeGenerators);
+    prepare_input_generators(Standard_Input, LatticeGenerators);
 
     INTERRUPT_COMPUTATION_BY_EXCEPTION
 
     if (!precomputed_extreme_rays)
-        prepare_input_constraints(multi_input_data);  // sets Equations,Congruences,Inequalities
+        prepare_input_constraints(Standard_Input);  // sets Equations,Congruences,Inequalities
 
     INTERRUPT_COMPUTATION_BY_EXCEPTION
 
     // set default values if necessary
-    if (inhom_input && LatticeGenerators.nr_of_rows() != 0 && !contains(multi_input_data, Type::offset)) {
+    if (inhom_input && LatticeGenerators.nr_of_rows() != 0 && !contains(Standard_Input, Type::offset)) {
         vector<Integer> offset(dim);
         offset[dim - 1] = 1;
         LatticeGenerators.append(offset);
     }
-    if (inhom_input && Generators.nr_of_rows() != 0 && !contains(multi_input_data, Type::vertices) &&
-        !contains(multi_input_data, Type::polyhedron)) {
+    if (inhom_input && Generators.nr_of_rows() != 0 && !contains(Standard_Input, Type::vertices) &&
+        !contains(Standard_Input, Type::polyhedron)) {
         vector<Integer> vertex(dim);
         vertex[dim - 1] = 1;
         Generators.append(vertex);
     }
 
     if (Generators.nr_of_rows() > 0 && LatticeGenerators.nr_of_rows() > 0 &&
-        !(contains(multi_input_data, Type::cone_and_lattice) || contains(multi_input_data, Type::normalization)))
+        !(contains(Standard_Input, Type::cone_and_lattice) || contains(Standard_Input, Type::normalization)))
         convert_lattice_generators_to_constraints(
             LatticeGenerators);  // necessary in order that we can perform the intersection
                                  // of the cone with the subspace generated by LatticeGenerators
     // cout << "Ineq " << Inequalities.nr_of_rows() << endl;
 
     if (precomputed_extreme_rays)
-        LatticeGenerators = find_input_matrix(multi_input_data, Type::generated_lattice, dim);
+        LatticeGenerators = find_input_matrix(Standard_Input, Type::generated_lattice, dim);
 
-    process_lattice_data(LatticeGenerators, Congruences, Equations);
+    process_lattice_data(LatticeGenerators, Congruences, Equations, ToCompute);
 
     // At this point BasisChange has absorbed all input of inequalities coming from cone,
     // the sublattice defined by lattice generators,
@@ -1180,7 +1241,7 @@ void Cone<Integer>::process_multi_input_inner(InputMap<Integer>& multi_input_dat
         dual_original_generators = true;
     }
 
-    if (contains(multi_input_data, Type::open_facets)) {
+    if (contains(Standard_Input, Type::open_facets)) {
         // read manual for the computation that follows
         if (!isComputed(ConeProperty::OriginalMonoidGenerators))  // practically impossible, but better to check
             throw BadInputException("Error in connection with open_facets");
@@ -1196,9 +1257,9 @@ void Cone<Integer>::process_multi_input_inner(InputMap<Integer>& multi_input_dat
         Matrix<Integer> NewSupps = BasisChange.from_sublattice_dual(TransformedSupps);
         NewSupps.remove_row(NewSupps.nr_of_rows() - 1);  // must remove the inequality for the homogenizing variable
         for (size_t j = 0; j < NewSupps.nr_of_rows(); ++j) {
-            if (!(multi_input_data[Type::open_facets][0][j] == 0 || multi_input_data[Type::open_facets][0][j] == 1))
+            if (!(Standard_Input[Type::open_facets][0][j] == 0 || Standard_Input[Type::open_facets][0][j] == 1))
                 throw BadInputException("Illegal entry in open_facets");
-            NewSupps[j][dim - 1] -= multi_input_data[Type::open_facets][0][j];
+            NewSupps[j][dim - 1] -= Standard_Input[Type::open_facets][0][j];
         }
         NewSupps.append(BasisChange.getEquationsMatrix());
         Matrix<Integer> Ker = NewSupps.kernel(false);  // gives the new vertex
@@ -1348,12 +1409,12 @@ void Cone<Integer>::process_multi_input_inner(InputMap<Integer>& multi_input_dat
     // read precomputed data
     if (precomputed_extreme_rays) {
         Generators = Matrix<Integer>(0, dim);
-        Generators = find_input_matrix(multi_input_data, Type::extreme_rays,dim);
+        Generators = find_input_matrix(Standard_Input, Type::extreme_rays,dim);
         setComputed(ConeProperty::Generators);
         addition_generators_allowed = true;
         // ExtremeRays.sort_by_weights(WeightsGrad, GradAbs); -- disabled to allow KeepOrder
         set_extreme_rays(vector<bool>(Generators.nr_of_rows(), true));
-        BasisMaxSubspace = find_input_matrix(multi_input_data, Type::maximal_subspace, dim);
+        BasisMaxSubspace = find_input_matrix(Standard_Input, Type::maximal_subspace, dim);
         if (BasisMaxSubspace.nr_of_rows() > 0) {
             Matrix<Integer> Help = BasisMaxSubspace;  // for protection
             Matrix<Integer> Dummy(0, dim);
@@ -1363,7 +1424,7 @@ void Cone<Integer>::process_multi_input_inner(InputMap<Integer>& multi_input_dat
         setComputed(ConeProperty::IsPointed);
         setComputed(ConeProperty::MaximalSubspace);
         setComputed(ConeProperty::Sublattice);
-        SupportHyperplanes = find_input_matrix(multi_input_data, Type::support_hyperplanes, dim);
+        SupportHyperplanes = find_input_matrix(Standard_Input, Type::support_hyperplanes, dim);
         SupportHyperplanes.sort_lex();
         setComputed(ConeProperty::SupportHyperplanes);
         Inequalities = SupportHyperplanes;
@@ -1383,8 +1444,8 @@ void Cone<Integer>::process_multi_input_inner(InputMap<Integer>& multi_input_dat
     // for integer hull cones the maximal subspace is known since it is the same
     // as for the original cone
     if (is_inthull_cone) {
-        if (contains(multi_input_data, Type::subspace)) {
-            BasisMaxSubspace = find_input_matrix(multi_input_data, Type::subspace);
+        if (contains(Standard_Input, Type::subspace)) {
+            BasisMaxSubspace = find_input_matrix(Standard_Input, Type::subspace);
             setComputed(ConeProperty::MaximalSubspace);
             if (BasisMaxSubspace.nr_of_rows() > 0) {
                 Matrix<Integer> Help = BasisMaxSubspace;  // for protection
@@ -1394,7 +1455,7 @@ void Cone<Integer>::process_multi_input_inner(InputMap<Integer>& multi_input_dat
         }
     }
 
-    HilbertBasisRecCone = find_input_matrix(multi_input_data, Type::hilbert_basis_rec_cone);
+    HilbertBasisRecCone = find_input_matrix(Standard_Input, Type::hilbert_basis_rec_cone);
 
     INTERRUPT_COMPUTATION_BY_EXCEPTION
 
@@ -1448,7 +1509,7 @@ void Cone<Integer>::process_multi_input_inner(InputMap<Integer>& multi_input_dat
     BasisChange.get_B().pretty_print(cout);
     cout <<"-----------------------" << endl;
     */
-}
+}   // end of finish_standard_input
 
 //---------------------------------------------------------------------------
 template <typename Integer>
@@ -1608,6 +1669,14 @@ void Cone<Integer>::prepare_input_constraints(const InputMap<Integer>& multi_inp
     Inequalities = Help;
 
     insert_default_inequalities(Inequalities);
+    if(convert_equations){
+        Integer MinusOne = -1;
+        Inequalities.append(Equations);
+        Matrix<Integer> Help(0,dim);
+        swap(Equations,Help);
+        Help.scalar_multiplication(MinusOne);
+        Inequalities.append(Help);
+    }
 
     find_lower_and_upper_bounds();
 }
@@ -1849,7 +1918,7 @@ void Cone<Integer>::prepare_input_generators(InputMap<Integer>& multi_input_data
 //---------------------------------------------------------------------------
 template <typename Integer>
 void Cone<Integer>::convert_lattice_generators_to_constraints(Matrix<Integer>& LatticeGenerators) {
-    Sublattice_Representation<Integer> GenSublattice(LatticeGenerators, false);
+    Sublattice_Representation<Integer> GenSublattice(LatticeGenerators, false,allow_lll);
     Congruences.append(GenSublattice.getCongruencesMatrix());
     Equations.append(GenSublattice.getEquationsMatrix());
     LatticeGenerators.resize(0);
@@ -1880,27 +1949,26 @@ void Cone<Integer>::convert_equations_to_inequalties(){
 template <typename Integer>
 void Cone<Integer>::process_lattice_data(const Matrix<Integer>& LatticeGenerators,
                                          Matrix<Integer>& Congruences,
-                                         Matrix<Integer>& Equations) {
+                                         Matrix<Integer>& Equations, const ConeProperties& ToCompute) {
     if (!BC_set)
         compose_basis_change(Sublattice_Representation<Integer>(dim));
 
-    if(LatticeGenerators.nr_of_rows() > 0) // in this case we must compute the coordinate transformation here
-        no_coord_transf = false;
+    if(no_coord_transf && (Generators.nr_of_rows() != 0 || LatticeGenerators.nr_of_rows() != 0 ) )
+        throw BadInputException("Coordinate transformation cannot be blocked if generators in input");
 
-    if(no_coord_transf){
-        no_coord_transf = false;
-        return;
-    }
 
     bool no_constraints = (Congruences.nr_of_rows() == 0) && (Equations.nr_of_rows() == 0);
     bool only_cone_gen = (Generators.nr_of_rows() != 0) && no_constraints && (LatticeGenerators.nr_of_rows() == 0);
 
-    bool allow_lll = (dim < 20);
+
+    bool allow_lll_here = (dim < 20);
+    if(ToCompute.test(ConeProperty::NoLLL))
+        allow_lll_here = false;
 
     INTERRUPT_COMPUTATION_BY_EXCEPTION
 
     if (only_cone_gen) {
-        Sublattice_Representation<Integer> Basis_Change(Generators, true, allow_lll);
+        Sublattice_Representation<Integer> Basis_Change(Generators, true, allow_lll_here);
         compose_basis_change(Basis_Change);
         return;
     }
@@ -1908,17 +1976,17 @@ void Cone<Integer>::process_lattice_data(const Matrix<Integer>& LatticeGenerator
     INTERRUPT_COMPUTATION_BY_EXCEPTION
 
     if (normalization && no_constraints && !inhomogeneous) {
-        Sublattice_Representation<Integer> Basis_Change(Generators, false, allow_lll);
+        Sublattice_Representation<Integer> Basis_Change(Generators, false, allow_lll_here);
         compose_basis_change(Basis_Change);
         return;
     }
 
     if (Generators.nr_of_rows() != 0) {
-        Equations.append(Generators.kernel(!using_renf<Integer>()));
+        Equations.append(Generators.kernel(!using_renf<Integer>() && allow_lll_here));
     }
 
     if (LatticeGenerators.nr_of_rows() != 0) {
-        Sublattice_Representation<Integer> GenSublattice(LatticeGenerators, false, allow_lll);
+        Sublattice_Representation<Integer> GenSublattice(LatticeGenerators, false, allow_lll_here);
         if ((Equations.nr_of_rows() == 0) && (Congruences.nr_of_rows() == 0)) {
             compose_basis_change(GenSublattice);
             return;
@@ -1929,21 +1997,21 @@ void Cone<Integer>::process_lattice_data(const Matrix<Integer>& LatticeGenerator
 
     INTERRUPT_COMPUTATION_BY_EXCEPTION
 
-    if (Congruences.nr_of_rows() > 0) {
+    if (Congruences.nr_of_rows() > 0 && !no_coord_transf) {
         bool zero_modulus;
         Matrix<Integer> Ker_Basis = Congruences.solve_congruences(zero_modulus);
         if (zero_modulus) {
             throw BadInputException("Modulus 0 in congruence!");
         }
-        Sublattice_Representation<Integer> Basis_Change(Ker_Basis, false, allow_lll);
+        Sublattice_Representation<Integer> Basis_Change(Ker_Basis, false, allow_lll_here);
         compose_basis_change(Basis_Change);
     }
 
     INTERRUPT_COMPUTATION_BY_EXCEPTION
 
     if (Equations.nr_of_rows() > 0) {
-        Matrix<Integer> Ker_Basis = BasisChange.to_sublattice_dual(Equations).kernel(allow_lll && !using_renf<Integer>());
-        Sublattice_Representation<Integer> Basis_Change(Ker_Basis, false, allow_lll); // kernel is saturated
+        Matrix<Integer> Ker_Basis = BasisChange.to_sublattice_dual(Equations).kernel(allow_lll_here && !using_renf<Integer>());
+        Sublattice_Representation<Integer> Basis_Change(Ker_Basis, false, allow_lll_here); // kernel is saturated
         compose_basis_change(Basis_Change);
     }
 }
@@ -2140,7 +2208,7 @@ void Cone<Integer>::prepare_input_lattice_ideal(InputMap<Integer>& multi_input_d
     // for toric_ideal the dafualt value will be set in monoid computation
     if(Grading.size() == 0 && positive_emebbding && make_normal_monoid){
         if(verbose)
-            verboseOutput() << "Implicit standard grading for oric_ideal" << endl;
+            verboseOutput() << "Implicit standard grading for monoid ring modulo oric_ideal" << endl;
         Grading = vector<Integer>(dim, 1);
         // setComputed(ConeProperty::Grading);
     }
@@ -2176,6 +2244,13 @@ void Cone<Integer>::initialize() {
     else {
         change_integer_type = false;
     }
+    make_nonnegative = false;;
+    set_total_degree = false;
+    no_pos_orth_def = false; // sweitchwes off the defaut addition of the pos orth without inequ in input
+    convert_equations = false; // converts equations to pairs of inequalities with the aim to suppress
+                            // coordinate transformations
+    no_coord_transf = false;
+    polynomial_verbose = false; // list input polynomials when processed
 
     IntHullCone = NULL;
     SymmCone = NULL;
@@ -2189,6 +2264,8 @@ void Cone<Integer>::initialize() {
     polytope_in_input = false;
     inequalities_in_input = false;
     rational_lattice_in_input = false;
+
+    allow_lll = true;
 
     is_fusion = false;
     is_fusion_partition = false;
@@ -2438,6 +2515,8 @@ Cone<Integer>& Cone<Integer>::getProjectCone() const {
 
 template <typename Integer>
 Cone<Integer>& Cone<Integer>::getSymmetrizedCone() const {
+    if(!isComputed(ConeProperty::Symmetrize))
+        throw BadInputException("Symmetrized cone not yet computed");
     return *SymmCone;
 }
 
@@ -3592,7 +3671,7 @@ void Cone<Integer>::compute_full_cone_inner(ConeProperties& ToCompute) {
         FC.do_triangulation_size = true;
     }
     if (ToCompute.test(ConeProperty::NoSubdivision)) {
-        FC.use_bottom_points = false;
+        FC.no_subdivision = true;
     }
     if (ToCompute.test(ConeProperty::Deg1Elements) && !using_renf<Integer>()) {
         FC.do_deg1_elements = true;
@@ -3985,7 +4064,7 @@ void Cone<Integer>::set_extended_tests(ConeProperties& ToCompute) {
     }
     if (ToCompute.test(ConeProperty::TestSimplexParallel)) {
         test_simplex_parallel = true;
-        ToCompute.set(ConeProperty::NoSubdivision);
+        // ToCompute.set(ConeProperty::NoSubdivision);
         SimplexParallelEvaluationBound = 0;
     }
 
@@ -4203,9 +4282,9 @@ ConeProperties Cone<Integer>::monoid_compute(ConeProperties ToCompute) {
     if(ToCompute.test(ConeProperty::HilbertSeries) && integrally_closed){
         if(verbose)
             verboseOutput() << "Cimputing Hilbert series via triangulation" << endl;
-        Cone<Integer> HSCompute(Type::cone_and_lattice, HilbertBasis);
+        Cone<Integer> HSCompute(Type::cone_and_lattice, HilbertBasis, Type::grading,Matrix<Integer>(Grading));
         // HSCompute.setVerbose(false);
-        HSCompute.setGrading(Grading);
+        // HSCompute.setGrading(Grading);
         HSCompute.HSeries.get_variants(HSeries);
         ConeProperties HSProp;
         HSProp.set(ConeProperty::HilbertSeries);
@@ -4418,6 +4497,15 @@ ConeProperties Cone<Integer>::lattice_ideal_compute_inner(ConeProperties ToCompu
 
 template <typename Integer>
 ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
+
+    if(ToCompute.test(ConeProperty::NoLLL)){
+        allow_lll = false;
+    }
+    if(!allow_lll){
+        ToCompute.set(ConeProperty::NoLLL);
+    }
+
+    finish_standard_input(ToCompute); // Conclude construction
 
 #ifdef NMZ_DEBUG
     if(verbose){
@@ -4700,9 +4788,9 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         LEAVE_CONE return ConeProperties();
     }
 
-    if (conversion_done)
+    if (conversion_done){
         compute_generators(ToCompute);
-
+    }
     ToCompute.reset(is_Computed);
     if (ToCompute.none()) {       // IMPORTANT: do not use goals() at this point because it would prevent
         LEAVE_CONE return ConeProperties();  // HSOP if HSOP is applied to an already computed Hilbert series
@@ -4774,6 +4862,16 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         prepare_volume_computation(ToCompute);
 #endif
 
+    try_approximation_or_projection(ToCompute);
+
+    make_fusion_data(ToCompute);
+    make_induction_matrices(ToCompute);
+
+    ToCompute.reset(is_Computed);
+    if (ToCompute.goals().none()) {
+        LEAVE_CONE return ConeProperties();
+    }
+
     treat_polytope_as_being_hom_defined(ToCompute);  // if necessary
 
     ToCompute.reset(is_Computed);  // already computed
@@ -4781,16 +4879,6 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     complete_HilbertSeries_comp(ToCompute);
 
     complete_sublattice_comp(ToCompute);
-    if (ToCompute.goals().none()) {
-        LEAVE_CONE return ConeProperties();
-    }
-
-    try_approximation_or_projection(ToCompute);
-
-    make_fusion_data(ToCompute);
-    make_induction_matrices(ToCompute);
-
-    ToCompute.reset(is_Computed);
     if (ToCompute.goals().none()) {
         LEAVE_CONE return ConeProperties();
     }
@@ -4810,6 +4898,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     ToCompute.reset(is_Computed);
     complete_HilbertSeries_comp(ToCompute);
     complete_sublattice_comp(ToCompute);
+
     if (ToCompute.goals().none()) {
         LEAVE_CONE return ConeProperties();
     }
@@ -4928,7 +5017,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
             throw BadInputException("Binomial relations for cones only allowed if cone is pointed");
         Matrix<long long> HB_LL;
         convert(HB_LL, HilbertBasis);
-        Matrix<long long> LatticeId = HB_LL.transpose().kernel();
+        Matrix<long long> LatticeId = HB_LL.transpose().kernel(!ToCompute.test(ConeProperty::NoLLL));
         vector<long long> ValuesGrading;
         if(isComputed(ConeProperty::Grading) && Grading.size() > 0){
             ValuesGrading.resize(HB_LL.nr_of_rows());
@@ -4984,6 +5073,9 @@ void Cone<Integer>::check_vanishing_of_grading_and_dehom() {
 template <typename Integer>
 void Cone<Integer>::compute_generators(ConeProperties& ToCompute) {
     // create Generators from Inequalities
+
+
+    // cout << "GGGGGGGGGGGGGGGGGGG " << ToCompute << endl;
 
     if (!isComputed(ConeProperty::Generators) && (Inequalities.nr_of_rows() != 0 || inhomogeneous)) {
         if (verbose) {
@@ -5047,6 +5139,8 @@ void Cone<Integer>::compute_generators_inner(ConeProperties& ToCompute) {
         throw ArithmeticException(0);
 #endif
 
+    // cout << "IIIIIIIIIIIIIIIIIIIIi " << ToCompute << endl;
+
     pass_to_pointed_quotient();
 
     // restrict the supphyps to efficient sublattice and push to quotient mod subspace
@@ -5084,6 +5178,9 @@ void Cone<Integer>::compute_generators_inner(ConeProperties& ToCompute) {
 template <typename Integer>
 template <typename IntegerFC>
 void Cone<Integer>::extract_data_dual(Full_Cone<IntegerFC>& Dual_Cone, ConeProperties& ToCompute) {
+
+    // cout << "DDDDDDDDDDDDDDDDDDD " << ToCompute << endl;
+
     if (Dual_Cone.isComputed(ConeProperty::SupportHyperplanes)) {
         if (keep_convex_hull_data) {
             extract_convex_hull_data(Dual_Cone, false);  // false means: dual
@@ -5097,11 +5194,11 @@ void Cone<Integer>::extract_data_dual(Full_Cone<IntegerFC>& Dual_Cone, ConePrope
 
         // get minimal set of support_hyperplanes if possible
         if (Dual_Cone.isComputed(ConeProperty::ExtremeRays)) {
-            Matrix<IntegerFC> Supp_Hyp = Dual_Cone.getGenerators().submatrix(Dual_Cone.getExtremeRays());
+            Matrix<IntegerFC> Supp_Hyp = Dual_Cone.getInputGenerators().submatrix(Dual_Cone.getExtremeRays());
             BasisChangePointed.convert_from_sublattice_dual(SupportHyperplanes, Supp_Hyp);
             if (using_renf<Integer>())
                 SupportHyperplanes.standardize_rows();
-            norm_dehomogenization(BasisChangePointed.getRank());
+            take_inequailities_if_posible(BasisChangePointed.getRank());
             SupportHyperplanes.sort_lex();
             setComputed(ConeProperty::SupportHyperplanes);
             Inequalities = SupportHyperplanes;
@@ -5115,7 +5212,7 @@ void Cone<Integer>::extract_data_dual(Full_Cone<IntegerFC>& Dual_Cone, ConePrope
             // first to full-dimensional pointed
             Matrix<Integer> Help;
             Help = BasisChangePointed.to_sublattice(Generators);  // sublattice of the primal space
-            Sublattice_Representation<Integer> PointedHelp(Help, true);
+            Sublattice_Representation<Integer> PointedHelp(Help, true, !ToCompute.test(ConeProperty::NoLLL));
             BasisChangePointed.compose(PointedHelp);
             // second to efficient sublattice
             if (BasisMaxSubspace.nr_of_rows() == 0) {  // primal cone is pointed and we can copy
@@ -5124,7 +5221,7 @@ void Cone<Integer>::extract_data_dual(Full_Cone<IntegerFC>& Dual_Cone, ConePrope
             else {
                 Help = BasisChange.to_sublattice(Generators);
                 Help.append(BasisChange.to_sublattice(BasisMaxSubspace));
-                Sublattice_Representation<Integer> EmbHelp(Help, true);  // sublattice of the primal space
+                Sublattice_Representation<Integer> EmbHelp(Help, true,!ToCompute.test(ConeProperty::NoLLL));  // sublattice of the primal space
                 compose_basis_change(EmbHelp);
             }
         }
@@ -5207,16 +5304,16 @@ void Cone<Integer>::compute_dual(ConeProperties& ToCompute) {
 //---------------------------------------------------------------------------
 
 template <typename Integer>
-vector<Sublattice_Representation<Integer> > MakeSubAndQuot(const Matrix<Integer>& Gen, const Matrix<Integer>& Ker) {
+vector<Sublattice_Representation<Integer> > MakeSubAndQuot(const Matrix<Integer>& Gen, const Matrix<Integer>& Ker, const bool allow_lll_here) {
     vector<Sublattice_Representation<Integer> > Result;
     Matrix<Integer> Help = Gen;
     Help.append(Ker);
-    Sublattice_Representation<Integer> Sub(Help, true);
+    Sublattice_Representation<Integer> Sub(Help, true, allow_lll_here);
     Sublattice_Representation<Integer> Quot = Sub;
     if (Ker.nr_of_rows() > 0) {
         Matrix<Integer> HelpQuot = Sub.to_sublattice(Ker).kernel(false);  // kernel here to be interpreted as subspace of the dual
                                                                           // namely the linear forms vanishing on Ker
-        Sublattice_Representation<Integer> SubToQuot(HelpQuot, true);     // sublattice of the dual
+        Sublattice_Representation<Integer> SubToQuot(HelpQuot, true, allow_lll_here);     // sublattice of the dual
         Quot.compose_dual(SubToQuot);
     }
     Result.push_back(Sub);
@@ -5317,7 +5414,7 @@ void Cone<Integer>::compute_dual_inner(ConeProperties& ToCompute) {
             // At this point we still have BasisChange==BasisChangePointed
             // now we can pass to a pointed full-dimensional cone
 
-            vector<Sublattice_Representation<IntegerFC> > BothRepFC = MakeSubAndQuot(ConeDM.Generators, ConeDM.BasisMaxSubspace);
+            vector<Sublattice_Representation<IntegerFC> > BothRepFC = MakeSubAndQuot(ConeDM.Generators, ConeDM.BasisMaxSubspace, allow_lll);
             if (!BothRepFC[0].IsIdentity())
                 BasisChange.compose(Sublattice_Representation<Integer>(BothRepFC[0]));
             setComputed(ConeProperty::Sublattice);
@@ -5503,9 +5600,9 @@ void Cone<Integer>::extract_convex_hull_data(Full_Cone<IntegerFC>& FC, bool prim
         if (FC.Extreme_Rays_Ind[i]) {
             vector<Integer> v;
             if (primal)
-                BasisChangePointed.convert_from_sublattice(v, FC.getGenerators()[i]);
+                BasisChangePointed.convert_from_sublattice(v, FC.getInputGenerators()[i]);
             else
-                BasisChangePointed.convert_from_sublattice_dual(v, FC.getGenerators()[i]);
+                BasisChangePointed.convert_from_sublattice_dual(v, FC.getInputGenerators()[i]);
             ConvHullData.Generators.append(v);
         }
     }
@@ -5546,7 +5643,7 @@ void Cone<Integer>::extract_convex_hull_data(Full_Cone<IntegerFC>& FC, bool prim
         ConvHullData.Facets.push_back(Ret);
     }
 
-    /* FC.getGenerators().pretty_print(cout);
+    /* FC.getInputGenerators().pretty_print(cout);
     cout << "-----------" << endl;
     ConvHullData.Generators.pretty_print(cout);
     cout << "-----------" << endl;*/
@@ -5606,7 +5703,7 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
     // the generators with which the full cone was constructed. Since the order
     // can change, ExtremeRays is reset. Will be set again below.
     if (FC.isComputed(ConeProperty::Generators)) {
-        BasisChangePointed.convert_from_sublattice(Generators, FC.getGenerators());
+        BasisChangePointed.convert_from_sublattice(Generators, FC.getInputGenerators());
         setComputed(ConeProperty::Generators);
         ExtremeRaysIndicator.resize(0);
         is_Computed.reset(ConeProperty::ExtremeRays);
@@ -5690,7 +5787,7 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
         extract_supphyps(FC, SupportHyperplanes);
         if (using_renf<Integer>())
             SupportHyperplanes.standardize_rows();
-        norm_dehomogenization(FC.dim);
+        take_inequailities_if_posible(FC.dim);
         SupportHyperplanes.sort_lex();
         Inequalities = SupportHyperplanes;
         setComputed(ConeProperty::SupportHyperplanes);
@@ -5715,7 +5812,8 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
         is_Computed.reset(ConeProperty::UnimodularTriangulation);  // is recomputed
         Triangulation.first.clear();
 
-        BasisChangePointed.convert_from_sublattice(BasicTriangulation.second, FC.getGenerators());
+        BasisChangePointed.convert_from_sublattice(BasicTriangulation.second, FC.getAllGenerators());
+        // BasicTriangulation.second.debug_print('B');
 
         size_t tri_size = FC.Triangulation.size();
         FC.Triangulation.sort(compareKeys<IntegerFC>);  // necessary to make triangulation unique
@@ -5748,7 +5846,7 @@ void Cone<Integer>::extract_data(Full_Cone<IntegerFC>& FC, ConeProperties& ToCom
         BasicStanleyDec.first.clear();
         BasicStanleyDec.first.splice(BasicStanleyDec.first.begin(), FC.StanleyDec);
         setComputed(ConeProperty::BasicStanleyDec);
-        BasisChangePointed.convert_from_sublattice(BasicStanleyDec.second, FC.getGenerators());
+        BasisChangePointed.convert_from_sublattice(BasicStanleyDec.second, FC.getAllGenerators());
     }
 
     if (FC.isComputed(ConeProperty::InclusionExclusionData)) {
@@ -6054,6 +6152,26 @@ void Cone<Integer>::extract_supphyps(Full_Cone<Integer>& FC, Matrix<Integer>& re
 }
 
 template <typename Integer>
+void Cone<Integer>::take_inequailities_if_posible(size_t FC_dim) {
+    if(FC_dim >= dim)
+        return;
+    norm_dehomogenization(FC_dim);
+    if(Inequalities.nr_of_rows() == 0)
+        return;
+    map<vector<Integer>, size_t> restrictions;
+    for(size_t i = 0; i <Inequalities.nr_of_rows(); ++i ){
+        restrictions[BasisChangePointed.to_sublattice_dual(Inequalities[i])] = i;
+    }
+    for(size_t j = 0; j < SupportHyperplanes.nr_of_rows(); ++j){
+        vector<Integer> test = BasisChangePointed.to_sublattice_dual(SupportHyperplanes[j]);
+        if(restrictions.find(test) != restrictions.end()){
+            SupportHyperplanes[j] = Inequalities[restrictions[test]];
+            v_make_prime(SupportHyperplanes[j]);
+        }
+    }
+}
+
+template <typename Integer>
 void Cone<Integer>::norm_dehomogenization(size_t FC_dim) {
     if (inhomogeneous && FC_dim < dim) {  // make inequality for the inhomogeneous variable appear as dehomogenization
         vector<Integer> dehom_restricted = BasisChangePointed.to_sublattice_dual(Dehomogenization);
@@ -6266,7 +6384,7 @@ void Cone<Integer>::compute_unit_group_index() {
     compute(ConeProperty::SupportHyperplanes);
     // we want to compute in the maximal linear subspace
     // BasisMaxSubspace generates a saturated lattice in the relevant lattice
-    Sublattice_Representation<Integer> Sub(BasisMaxSubspace, false);
+    Sublattice_Representation<Integer> Sub(BasisMaxSubspace, false, allow_lll);
     Matrix<Integer> origens_in_subspace(0, dim);
 
     // we must collect all original generators that lie in the maximal subspace
@@ -6494,10 +6612,12 @@ template <typename Integer>
 void Cone<Integer>::complete_HilbertSeries_comp(ConeProperties& ToCompute) {
     if (!isComputed(ConeProperty::HilbertSeries) && !isComputed(ConeProperty::EhrhartSeries))
         return;
-    if (ToCompute.test(ConeProperty::HilbertQuasiPolynomial) || ToCompute.test(ConeProperty::EhrhartQuasiPolynomial))
+    if (ToCompute.test(ConeProperty::HilbertQuasiPolynomial)){
         HSeries.computeHilbertQuasiPolynomial();
-    if (HSeries.isHilbertQuasiPolynomialComputed()) {
         setComputed(ConeProperty::HilbertQuasiPolynomial);
+    }
+    if(ToCompute.test(ConeProperty::EhrhartQuasiPolynomial)){
+        EhrSeries.computeHilbertQuasiPolynomial();
         setComputed(ConeProperty::EhrhartQuasiPolynomial);
     }
 
@@ -6605,72 +6725,6 @@ void Cone<Integer>::setNumericalParams(const map<NumParam::Param, long>& num_par
 }
 
 template <typename Integer>
-void Cone<Integer>::setPolyParams(const map<PolyParam::Param, vector<string>>& poly_params) {
-    auto pp = poly_params.find(PolyParam::polynomial);
-    if (pp != poly_params.end())
-        setPolynomial((*pp).second[0]);
-    pp = poly_params.find(PolyParam::polynomial_equations);
-    if (pp != poly_params.end())
-        setPolynomialEquations(pp->second);
-    pp = poly_params.find(PolyParam::polynomial_inequalities);
-    if (pp != poly_params.end())
-        setPolynomialInequalities(pp->second);
-}
-
-template <typename Integer>
-void Cone<Integer>::setPolynomial(const string& poly) {
-#ifdef NMZ_COCOA
-    IntData = IntegrationData(poly);
-    is_Computed.reset(ConeProperty::WeightedEhrhartSeries);
-    is_Computed.reset(ConeProperty::WeightedEhrhartQuasiPolynomial);
-    is_Computed.reset(ConeProperty::Integral);
-    is_Computed.reset(ConeProperty::EuclideanIntegral);
-    is_Computed.reset(ConeProperty::VirtualMultiplicity);
-#else
-    throw BadInputException("Polynomials only allowed with CoCoALib");
-#endif
-}
-
-template <typename Integer>
-void Cone<Integer>::setPolynomialEquations(const vector<string>& poly_equs) {
-#ifdef NMZ_COCOA
-    if(verbose)
-        verboseOutput() << "Processing polynomial equations (may take a while)" << endl;
-    PolynomialEquations = OurPolynomialSystem<Integer>(poly_equs, dim, verbose && polynomial_verbose);
-    PolynomialEquations.shift_coordinates(-1); // in the input we count coordinates from 1
-    is_Computed.reset(ConeProperty::LatticePoints);
-    is_Computed.reset(ConeProperty::HilbertBasis);
-    is_Computed.reset(ConeProperty::ModuleGenerators);
-    is_Computed.reset(ConeProperty::Deg1Elements);
-    polynomially_constrained = true;
-    if(verbose)
-        verboseOutput() << "----------------------" << endl;
-
-#else
-    throw BadInputException("Polynomials only allowed with CoCoALib");
-#endif
-}
-
-template <typename Integer>
-void Cone<Integer>::setPolynomialInequalities(const vector<string>& poly_inequs) {
-#ifdef NMZ_COCOA
-    if(verbose)
-        verboseOutput() << "Processing polynomial inequalities (may take a while)" << endl;
-    PolynomialInequalities = OurPolynomialSystem<Integer>(poly_inequs, dim,  verbose && polynomial_verbose);
-    PolynomialInequalities.shift_coordinates(-1); // in the input we count coordinates from 1
-    is_Computed.reset(ConeProperty::LatticePoints);
-    is_Computed.reset(ConeProperty::HilbertBasis);
-    is_Computed.reset(ConeProperty::ModuleGenerators);
-    is_Computed.reset(ConeProperty::Deg1Elements);
-    polynomially_constrained = true;
-    if(verbose)
-        verboseOutput() << "----------------------" << endl;
-#else
-    throw BadInputException("Polynomials only allowed with CoCoALib");
-#endif
-}
-
-template <typename Integer>
 void Cone<Integer>::setNrCoeffQuasiPol(long nr_coeff) {
     HSeries.resetHilbertQuasiPolynomial();
     IntData.set_nr_coeff_quasipol(nr_coeff);
@@ -6764,6 +6818,138 @@ void Cone<Integer>::setDecimalDigits(long digits) {
 template <typename Integer>
 void Cone<Integer>::setBlocksizeHollowTri(long block_size) {
     block_size_hollow_tri = block_size;
+}
+
+// end numerical parameters
+
+template <typename Integer>
+void Cone<Integer>::setBoolParams(const map<BoolParam::Param, bool>& bool_params) {
+    /*for(auto& pp: bool_params){
+        cout << boolpar_to_string(pp.first) << endl;
+    }*/
+    auto bp = bool_params.find(BoolParam::verbose);
+    if(bp != bool_params.end())
+        setVerbose(bp->second);
+    bp = bool_params.find(BoolParam::nonnegative);
+    if(bp != bool_params.end())
+        setNonnegative(bp->second);
+    bp = bool_params.find(BoolParam::total_degree);
+    if(bp != bool_params.end())
+        setTotalDegree(bp->second);
+    bp = bool_params.find(BoolParam::convert_equations);
+    if(bp != bool_params.end())
+        setConvertEquations(bp->second);
+    bp = bool_params.find(BoolParam::no_coord_transf);
+    if(bp != bool_params.end())
+        setNoCoordTransf(bp->second);
+    bp = bool_params.find(BoolParam::list_polynomials);
+    if(bp != bool_params.end())
+        setListPolynomials(bp->second);
+    bp = bool_params.find(BoolParam::no_pos_orth_def);
+    if(bp != bool_params.end())
+        setNoPosOrthDef(bp->second);
+}
+
+template <typename Integer>
+void Cone<Integer>::setNonnegative(bool onoff) {
+    make_nonnegative = onoff;
+}
+
+template <typename Integer>
+void Cone<Integer>::setTotalDegree(bool onoff) {
+    set_total_degree = onoff;
+}
+
+template <typename Integer>
+void Cone<Integer>::setNoPosOrthDef(bool onoff) {
+    no_pos_orth_def = onoff;
+}
+
+template <typename Integer>
+void Cone<Integer>::setConvertEquations(bool onoff) {
+    convert_equations = onoff;
+    if(!onoff)
+        no_coord_transf = onoff;
+}
+
+template <typename Integer>
+void Cone<Integer>::setNoCoordTransf(bool onoff) {
+    no_coord_transf = onoff;
+    if(onoff)
+        convert_equations = onoff;
+}
+
+template <typename Integer>
+void Cone<Integer>::setListPolynomials(bool onoff) {
+    polynomial_verbose = onoff;
+}
+
+// end boolean parameters
+
+template <typename Integer>
+void Cone<Integer>::setPolyParams(const map<PolyParam::Param, vector<string>>& poly_params) {
+    auto pp = poly_params.find(PolyParam::polynomial);
+    if (pp != poly_params.end())
+        setPolynomial((*pp).second[0]);
+    pp = poly_params.find(PolyParam::polynomial_equations);
+    if (pp != poly_params.end())
+        setPolynomialEquations(pp->second);
+    pp = poly_params.find(PolyParam::polynomial_inequalities);
+    if (pp != poly_params.end())
+        setPolynomialInequalities(pp->second);
+}
+
+template <typename Integer>
+void Cone<Integer>::setPolynomial(const string& poly) {
+#ifdef NMZ_COCOA
+    IntData = IntegrationData(poly);
+    is_Computed.reset(ConeProperty::WeightedEhrhartSeries);
+    is_Computed.reset(ConeProperty::WeightedEhrhartQuasiPolynomial);
+    is_Computed.reset(ConeProperty::Integral);
+    is_Computed.reset(ConeProperty::EuclideanIntegral);
+    is_Computed.reset(ConeProperty::VirtualMultiplicity);
+#else
+    throw BadInputException("Polynomials only allowed with CoCoALib");
+#endif
+}
+
+template <typename Integer>
+void Cone<Integer>::setPolynomialEquations(const vector<string>& poly_equs) {
+#ifdef NMZ_COCOA
+    if(verbose)
+        verboseOutput() << "Processing polynomial equations (may take a while)" << endl;
+    PolynomialEquations = OurPolynomialSystem<Integer>(poly_equs, dim, verbose && polynomial_verbose);
+    PolynomialEquations.shift_coordinates(-1); // in the input we count coordinates from 1
+    is_Computed.reset(ConeProperty::LatticePoints);
+    is_Computed.reset(ConeProperty::HilbertBasis);
+    is_Computed.reset(ConeProperty::ModuleGenerators);
+    is_Computed.reset(ConeProperty::Deg1Elements);
+    polynomially_constrained = true;
+    if(verbose)
+        verboseOutput() << "----------------------" << endl;
+
+#else
+    throw BadInputException("Polynomials only allowed with CoCoALib");
+#endif
+}
+
+template <typename Integer>
+void Cone<Integer>::setPolynomialInequalities(const vector<string>& poly_inequs) {
+#ifdef NMZ_COCOA
+    if(verbose)
+        verboseOutput() << "Processing polynomial inequalities (may take a while)" << endl;
+    PolynomialInequalities = OurPolynomialSystem<Integer>(poly_inequs, dim,  verbose && polynomial_verbose);
+    PolynomialInequalities.shift_coordinates(-1); // in the input we count coordinates from 1
+    is_Computed.reset(ConeProperty::LatticePoints);
+    is_Computed.reset(ConeProperty::HilbertBasis);
+    is_Computed.reset(ConeProperty::ModuleGenerators);
+    is_Computed.reset(ConeProperty::Deg1Elements);
+    polynomially_constrained = true;
+    if(verbose)
+        verboseOutput() << "----------------------" << endl;
+#else
+    throw BadInputException("Polynomials only allowed with CoCoALib");
+#endif
 }
 
 template <typename Integer>
@@ -7352,6 +7538,7 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
         NeededHere.set(ConeProperty::Sublattice);
         NeededHere.set(ConeProperty::MaximalSubspace);
         NeededHere.set(ConeProperty::KeepOrder, ToCompute.test(ConeProperty::KeepOrder));
+        NeededHere.set(ConeProperty::NoLLL, ToCompute.test(ConeProperty::NoLLL));
         if (inhomogeneous)
             NeededHere.set(ConeProperty::AffineDim);
         if (!inhomogeneous) {
@@ -7426,7 +7613,8 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
     }
 
     if (inhomogeneous) {  // exclude that dehomogenization has a gcd > 1
-        vector<Integer> test_dehom = BasisChange.to_sublattice_dual_no_div(Dehomogenization);
+        vector<Integer> test_dehom = Dehomogenization;
+        // cout << "DDDDDDDDDDD " << test_dehom;
         if (v_make_prime(test_dehom) != 1)
             return;
     }
@@ -7512,7 +7700,7 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
 
     // Support hyperplanes etc. prepared now
     Matrix<Integer> CongOri;
-    if(no_coord_transf)
+    if(BasisChange.IsIdentity())
         CongOri = Congruences;
     else
         CongOri = BasisChange.getCongruencesMatrix();
@@ -7586,7 +7774,6 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
         Supps.append(Equs);  // we must add the equations as pairs of inequalities
         Equs.scalar_multiplication(-1);
         Supps.append(Equs);
-        // Supps.debug_print('&');
         project_and_lift<Integer>(*this, ToCompute, Raw, GradGen, Supps, Congs, GradingOnPolytope, primitive, PolyEqus, PolyInequs);
     }
 
@@ -7691,7 +7878,7 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
         }
     }
     else{ // now the non-split case
-        // special treatment of fusion rings if fully compouted
+        // special treatment of fusion rings if fully computed
         if(ToCompute.test(ConeProperty::FusionRings) || ToCompute.test(ConeProperty::SimpleFusionRings)){
             ToCompute.reset(ConeProperty::LatticePoints);
             is_Computed.reset(ConeProperty::LatticePoints);
@@ -8001,7 +8188,8 @@ void Cone<Integer>::compute_volume(ConeProperties& ToCompute) {
             throw NotComputableException("Volume not computable for polyhedra containing an affine space of dim > 0");
         volume = multiplicity;
         setComputed(ConeProperty::Volume);
-        euclidean_volume = mpq_to_nmz_float(volume) * euclidean_corr_factor();
+        double eucl_corr = euclidean_corr_factor();
+        euclidean_volume = mpq_to_nmz_float(volume) * eucl_corr;
         setComputed(ConeProperty::EuclideanVolume);
         return;
     }
@@ -8080,6 +8268,7 @@ nmz_float Cone<Integer>::euclidean_corr_factor() {
     // First we find a simplex in our space as quickly as possible
 
     Matrix<Integer> Simplex = BasisChangePointed.getEmbeddingMatrix();
+    Simplex.row_echelon_reduce();
     // Matrix<Integer> Simplex=Generators.submatrix(Generators.max_rank_submatrix_lex()); -- numerically bad !!!!
     size_t n = Simplex.nr_of_rows();
     vector<Integer> raw_degrees = Simplex.MxV(Grad);
@@ -8794,6 +8983,8 @@ void Cone<Integer>::treat_polytope_as_being_hom_defined(ConeProperties ToCompute
     if (!inhomogeneous)
         return;
 
+    // cout << "TTTTTTTTTTTTTTTTTTTTT " << ToCompute << endl;
+
     if (using_renf<Integer>())
         return;
 
@@ -8805,6 +8996,7 @@ void Cone<Integer>::treat_polytope_as_being_hom_defined(ConeProperties ToCompute
     ToComputeFirst.set(ConeProperty::SupportHyperplanes);
     ToComputeFirst.set(ConeProperty::ExtremeRays);
     ToComputeFirst.set(ConeProperty::KeepOrder, ToCompute.test(ConeProperty::KeepOrder));
+    ToComputeFirst.set(ConeProperty::NoLLL, ToCompute.test(ConeProperty::NoLLL));
     compute(ToComputeFirst);
     ToCompute.reset(is_Computed);
 
@@ -8849,6 +9041,8 @@ void Cone<Integer>::treat_polytope_as_being_hom_defined(ConeProperties ToCompute
     HomToCompute.reset(ConeProperty::ModuleGenerators);                    //
     HomToCompute.reset(ConeProperty::ModuleGeneratorsOverOriginalMonoid);  //
     HomToCompute.reset(ConeProperty::HilbertBasis);                        // we definitely don't want this
+    HomToCompute.reset(ConeProperty::HilbertSeries);                       // Here we want the EhrhartSeries, dishuised as Hilbert series
+    Hom.is_Computed.reset(ConeProperty::HilbertSeries);                    // for thze same reason
 
     if (ToCompute.test(ConeProperty::HilbertBasis) || ToCompute.test(ConeProperty::ModuleRank) ||
         ToCompute.test(ConeProperty::ModuleGeneratorsOverOriginalMonoid))
@@ -9896,8 +10090,6 @@ void Cone<Integer>::add_fusion_ass_and_grading_constraints(ConeProperties& ToCom
             verboseOutput() << Whow.nr_of_rows()/2 <<" equations for checking ring homomorphism made" << endl;
         Inequalities.append(Whow);
     }
-
-    // Inequalities.debug_print('+');
 
     // cout << "IIIIIIIIIII " << Inequalities.nr_of_rows() << endl;
 

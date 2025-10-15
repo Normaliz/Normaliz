@@ -1,4 +1,3 @@
-
 /*
  * Normaliz
  * Copyright (C) 2007-2025  W. Bruns, B. Ichim, Ch. Soeger, U. v. d. Ohe
@@ -273,7 +272,7 @@ class Cone {
      * The default value for the Cone is the global verbose.
      * returns the old value
      */
-    bool setVerbose(bool v);
+
     bool getVerbose() const;
 
     void deactivateChangeOfPrecision();
@@ -306,6 +305,16 @@ class Cone {
     void setPolynomial(const string& poly);
     void setPolynomialEquations(const vector<string>& poly_equs);
     void setPolynomialInequalities(const vector<string>& poly_inequs);
+
+
+    void setBoolParams(const map<BoolParam::Param, bool>& bool_params);
+    bool setVerbose(bool onoff = true);
+    void setNonnegative(bool onoff  = true);
+    void setListPolynomials(bool onoff  = true);
+    void setTotalDegree(bool onoff  = true);
+    void setNoPosOrthDef(bool onoff  = true);
+    void setConvertEquations(bool onoff  = true);
+    void setNoCoordTransf(bool onoff = true);
 
     void setNumericalParams(const map<NumParam::Param, long>& num_params);
     void setNrCoeffQuasiPol(long nr_coeff);
@@ -631,10 +640,28 @@ class Cone {
     //---------------------------------------------------------------------------
 
    private:
+
+    InputMap<Integer>  Standard_Input;
+    bool standard_input_done; // true after finish_standard_input and locks it
+    // syntax checking etc.
+    void process_standard_input();
+    // unifyingt the various types into generators and/or constraints
+    void finish_standard_input(const ConeProperties& ToCompute);
+
+    // bools that appear as BoolParam and influence finish_standard_input
+    bool make_nonnegative;
+    bool set_total_degree;
+    bool no_pos_orth_def; // sweitchwes off the defaut addition of the pos orth without inequ in input
+    bool convert_equations; // converts equations to pairs of inequalities with the aim to suppress
+                            // coordinate transformations
+    bool no_coord_transf;// blocks coordinate transformation in onput phase
+    bool polynomial_verbose; // list input polynomials when processed
+
     size_t dim;
     size_t codim_singular_locus;
 
     bool inhom_input;
+    bool allow_lll;
 
     bool keep_convex_hull_data;  // indicates that data computed in Full_Cone and other data are preserved and can be used again
     CONVEXHULLDATA<Integer> ConvHullData;
@@ -847,7 +874,7 @@ class Cone {
     void remove_superfluous_equations();
     void remove_superfluous_congruences();
     void convert_lattice_generators_to_constraints(Matrix<Integer>& LatticeGenerators);
-    void convert_equations_to_inequalties();
+    // void convert_equations_to_inequalties();
 
     // void check_gens_vs_reference();  // to make sure that newly computed generators agree with the previously computed
 
@@ -857,7 +884,7 @@ class Cone {
     void checkGrading(bool compute_grading_denom);
     void checkDehomogenization();
     void check_vanishing_of_grading_and_dehom();
-    void process_lattice_data(const Matrix<Integer>& LatticeGenerators, Matrix<Integer>& Congruences, Matrix<Integer>& Equations);
+    void process_lattice_data(const Matrix<Integer>& LatticeGenerators, Matrix<Integer>& Congruences, Matrix<Integer>& Equations, const ConeProperties& ToCompute);
 
     ConeProperties monoid_compute(ConeProperties ToCompute);
     void compute_monoid_basic_data(const Matrix<long long>& InputGensLL, ConeProperties& ToCompute);
@@ -961,6 +988,7 @@ class Cone {
     void extract_supphyps(Full_Cone<Integer>& FC, Matrix<Integer>& ret, bool dual = true);
 
     void norm_dehomogenization(size_t FC_dim);
+    void take_inequailities_if_posible(size_t FC_dim);
 
     /* set OriginalMonoidGenerators */
     void set_original_monoid_generators(const Matrix<Integer>&);
@@ -1067,7 +1095,7 @@ void insert_column(Matrix<Integer>& mat, size_t col, Integer entry);
 // q is a rational vector with the denominator in the FIRST component q[0]
 template <typename Integer>
 inline void approx_simplex(const vector<Integer>& q, std::list<vector<Integer> >& approx, const long approx_level) {
-    // ;; << "approximate the point " << q;
+    // ; << "approximate the point " << q;
     long dim = q.size();
     long l = approx_level;
     // if (approx_level>q[0]) l=q[0]; // approximating on level q[0](=grading) is the best we can do

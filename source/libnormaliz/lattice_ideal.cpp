@@ -636,6 +636,7 @@ Matrix<Integer>  LatticeIdeal::getGroebnerBasis(){
     if(!isComputed(ConeProperty::GroebnerBasis))
         compute(ConeProperty::GroebnerBasis);
     if(degree_bound >= 0  || min_degree >= 0){
+        // cout << "GGGGGGGGGGGGGGGGG " << Grading << endl;
         sort_by_pos_degree(Groebner, Grading);
         return select_by_degree(Groebner, Grading, degree_bound, min_degree);
     }

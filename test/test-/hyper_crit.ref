@@ -1,0 +1,58 @@
+541689 lattice points in polytope (Hilbert basis elements of degree 1)
+5 extreme rays
+5 support hyperplanes
+
+embedding dimension = 5
+rank = 5 (maximal)
+external index = 1
+internal index = 200135760
+
+size of nested triangulation   = 6
+resulting sum of |det|s = 11616880
+
+grading:
+1 0 0 0 0 
+
+degrees of extreme rays:
+1:2  2:1  3:2  
+
+multiplicity = 33355960/3
+multiplicity (float) = 11118653.3333
+
+Hilbert series:
+1 541685 5856720 10726152 11118735 11118463 11118763 10577046 5261747 392608 
+denominator with 5 factors:
+1:4  6:1  
+
+degree of Hilbert Series as rational function = -1
+
+Hilbert series with cyclotomic denominator:
+-1 -541686 -6398405 -16582871 -21303201 -15838793 -5654355 -392608 
+cyclotomic denominator:
+1:5  2:1  3:1  
+
+Hilbert quasi-polynomial of period 6:
+ 0:    36 3984 138209 2679416 16677980
+ 1:  1215 3984 138209 2679416 16677980
+ 2:  1108 3984 138209 2679416 16677980
+ 3:    27 3984 138209 2679416 16677980
+ 4:  1224 3984 138209 2679416 16677980
+ 5:  1099 3984 138209 2679416 16677980
+with common denominator = 36
+
+***********************************************************************
+
+5 extreme rays:
+ 1  49   0 225  0
+ 1 200   0 171  0
+ 2 141   0 407 43
+ 3  14 528  14  0
+ 3 190   0 718  0
+
+5 support hyperplanes:
+ -19335888 28512 106993 79728 51216
+         0     0      0     0     1
+         0     0      1     0     0
+       176     1     -1    -1    -2
+       542    -1     -3    -2    -3
+

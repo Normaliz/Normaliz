@@ -54,7 +54,7 @@ using namespace std;
 // Subdivision of large simplices
 //---------------------------------------------------------------------------
 
-long SubDivBound = 1000000;
+long SubDivBound = 1000000; //10000000000;
 
 template <typename Integer>
 bool bottom_points_inner(Matrix<Integer>& gens,
@@ -946,7 +946,8 @@ bool SimplexEvaluator<Integer>::evaluate(SHORTSIMPLEX<Integer>& s) {
     // large simplicies to be postponed for parallel evaluation
     if (volume > SimplexParallelEvaluationBound / 10
         // || (volume > SimplexParallelEvaluationBound/10 && C_ptr->do_Hilbert_basis) )
-        && !C_ptr->do_Stanley_dec && C_ptr->use_bottom_points) {  //&& omp_get_max_threads()>1)
+        && !C_ptr->do_Stanley_dec && C_ptr->allow_simplex_dec
+    ) {  //&& omp_get_max_threads()>1)
         return false;
     }
     if (C_ptr->stop_after_cone_dec)
@@ -967,7 +968,7 @@ const size_t LocalReductionBound = 10000;  // number of candidates in a thread s
 const size_t SuperBlockLength = 1000000;   // number of blocks in a super block
 
 //---------------------------------------------------------------------------
-// The following routiner organizes the evaluation of a single large simplex in parallel trhreads.
+// The following routine organizes the evaluation of a single large simplex in parallel trhreads.
 // This evaluation can be split into "superblocks" whose blocks are then run in parallel.
 // The reason or the existence of superblocks is the joint local reduction of the common results of
 // the individual blocks. Each block gets its parallel thread, and is done sequentially by this thread.
@@ -1159,8 +1160,9 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation() {
         verboseOutput() << "simplex volume " << volume << endl;
     }
 
-    if (C_ptr->use_bottom_points &&
-        (volume >= SimplexParallelEvaluationBound || (volume > SimplexParallelEvaluationBound / 10 && C_ptr->do_Hilbert_basis)) &&
+    if (C_ptr->allow_simplex_dec &&
+        (volume >= SimplexParallelEvaluationBound ||
+        (volume > SimplexParallelEvaluationBound / 10 && C_ptr->do_Hilbert_basis)) &&
         (!C_ptr->deg1_triangulation || !C_ptr->isComputed(ConeProperty::Grading))) {  // try subdivision
 
         Full_Cone<Integer>& C = *C_ptr;
@@ -1174,6 +1176,8 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation() {
 
         for (size_t i = 0; i < dim; ++i)
             Generators[i] = C.Generators[key[i]];
+
+        // Generators.debug_print('G');
 
         list<vector<Integer> > new_points;
         time_t start, end;

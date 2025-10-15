@@ -7,8 +7,8 @@ dnl
 dnl Init autoconf, set package version
 dnl
 m4_define([normaliz_major_version], [3])
-m4_define([normaliz_minor_version], [10])
-m4_define([normaliz_patch_version], [5])
+m4_define([normaliz_minor_version], [11])
+m4_define([normaliz_patch_version], [0])
 m4_define([normaliz_version],
       [normaliz_major_version.normaliz_minor_version.normaliz_patch_version])
 

@@ -53,7 +53,6 @@ namespace libnormaliz {
 
 bool verbose = false;
 bool constructor_verbose = true;
-bool polynomial_verbose = false;
 bool talkative = false;
 bool running_input_file = false;
 
@@ -62,7 +61,6 @@ const int default_thread_limit = 8;
 int thread_limit = default_thread_limit;
 bool parallelization_set = false;
 bool output_on_interrupt = false;
-bool no_coord_transf = false;
 bool write_lp_file = false;
 bool save_local_solutions = false;
 bool no_empty_output= false;
@@ -153,19 +151,8 @@ bool setTalkativeDefault(bool v) {
     return old_talk;
 }
 
-bool setPolynomialVerbose(bool onoff){
-    bool old = polynomial_verbose;
-    polynomial_verbose = onoff;
-    return old;
-}
-
 void suppressNextConstructorVerbose(){
         constructor_verbose = false;
-}
-
-void noCoordTransf(bool onoff){
-    no_coord_transf = onoff;
-
 }
 
 int set_thread_limit(int t) {

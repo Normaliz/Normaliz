@@ -367,6 +367,7 @@ chrono::nanoseconds Full_Cone<Integer>::cmp_time() {
 
 template <typename Integer>
 void Full_Cone<Integer>::set_zero_cone() {
+
     assert(dim == 0);
 
     if (verbose) {
@@ -386,6 +387,8 @@ void Full_Cone<Integer>::set_zero_cone() {
     SHORTSIMPLEX<Integer> empty_simpl;
     empty_simpl.key = vector<key_t>();
     empty_simpl.vol = 1;
+    empty_simpl.height = 0;
+    empty_simpl.mult = 1;
     Triangulation.push_back(empty_simpl);
     setComputed(ConeProperty::Triangulation);
     setComputed(ConeProperty::StanleyDec);
@@ -479,7 +482,6 @@ void Full_Cone<renf_elem_class>::set_zero_cone() {
     if (do_automorphisms)
         setComputed(ConeProperty::Automorphisms);
 }
-
 //===========================================================
 
 /* debuggin
@@ -1870,7 +1872,7 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator, const bool
 
     Whether "this" is of type (i) or (ii) is indicated by do_all_hyperplanes.
 
-    The creation of (sub)pyramids of type (i) can be blocked by setting recursion_allowed=false.
+    The creation of (sub)pyramids of type (i) can be blocked by setting subpyramids_allowed=false.
     (Not done in this version.)
 
     is_pyramid==false for the top_cone and ==true else.
@@ -1890,7 +1892,7 @@ void Full_Cone<Integer>::process_pyramids(const size_t new_generator, const bool
 
     (b) If "this" is processed in a parallelized loop calling process_pyramids, then
     the loop in process_pyramids cannot be interrupted for the evaluation of simplices. As a
-    consequence an extremely long lst of simplices could arise if many small subpyramids of "this"
+    consequence an extremely long list of simplices could arise if many small subpyramids of "this"
     are created in process_pyramids. In order to prevent this dangeous effect, small recursive
     subpyramids are stored for later triangulation if the simplex buffer has reached its
     size bound.
@@ -2907,7 +2909,7 @@ void Full_Cone<Integer>::evaluate_stored_pyramids(const size_t level) {
                 INTERRUPT_COMPUTATION_BY_EXCEPTION
 
                 Full_Cone<Integer> Pyramid(*this, *p);
-                // Pyramid.recursion_allowed=false;
+                // Pyramid.subpyramids_allowed=false;
                 Pyramid.do_all_hyperplanes = false;
                 if (level >= 2 && do_partial_triangulation) {  // limits the descent of do_partial_triangulation
                     Pyramid.do_triangulation = true;
@@ -3064,7 +3066,7 @@ void Full_Cone<Integer>::build_cone() {
     // endl;
 
     if (is_pyramid && pyramids_for_last_built_directly)  // no higher level pyramids in this case
-        recursion_allowed = false;
+        subpyramids_allowed = false;
 
     bool is_new_generator;
 
@@ -3160,7 +3162,7 @@ void Full_Cone<Integer>::build_cone() {
            endl; */
 
         // First we test whether to go to recursive pyramids because of too many supphyps
-        if ((do_all_hyperplanes || (i != last_to_be_inserted)) && recursion_allowed &&
+        if ((do_all_hyperplanes || (i != last_to_be_inserted)) && subpyramids_allowed &&
             ((nr_neg * nr_pos - (nr_neg_simp * nr_pos_simp) >= (long)RecBoundSuppHyp)
 #ifdef NMZ_EXTENDED_TESTS
              || test_small_pyramids
@@ -3182,7 +3184,7 @@ void Full_Cone<Integer>::build_cone() {
         else {  // now we check whether to go to pyramids because of the size of triangulation
                 // once we have done so, we must stay with it
 
-            if (recursion_allowed &&
+            if (subpyramids_allowed &&
                 (tri_recursion || (do_triangulation && (nr_neg * TriangulationBufferSize > RecBoundTriang ||
                                                         3 * omp_get_max_threads() * TriangulationBufferSize >
                                                             EvalBoundTriang)))) {  // go to pyramids because of triangulation
@@ -3443,7 +3445,7 @@ void Full_Cone<Integer>::start_message() {
         verboseOutput() << "starting full cone computation" << endl;
     }
 }
-
+//
 template <typename Integer>
 void Full_Cone<Integer>::end_message() {
     if (verbose) {
@@ -4233,7 +4235,7 @@ void Full_Cone<Integer>::evaluate_triangulation() {
     }
     TriangulationBufferSize = 0;
 
-    if (verbose && use_bottom_points) {
+    if (verbose && allow_simplex_dec) {
         size_t lss = LargeSimplices.size();
         if (lss > 0)
             verboseOutput() << lss << " large simplices stored" << endl;
@@ -4374,7 +4376,7 @@ void Full_Cone<Integer>::evaluate_large_simplices() {
 
     // also new large simplices are possible
     /* if (!LargeSimplices.empty()) {
-        use_bottom_points = false;
+        allow_simplex_dec = false;
         lss += LargeSimplices.size();
         if (verbose) {
             verboseOutput() << "Continue evaluation of " << lss << " large simplices without new decompositions of simplicial
@@ -4388,6 +4390,7 @@ void Full_Cone<Integer>::evaluate_large_simplices() {
         }
     }*/
     assert(LargeSimplices.empty());
+
 
     for (size_t i = 0; i < Results.size(); ++i)
         Results[i].transfer_candidates();  // any remaining ones
@@ -4563,8 +4566,7 @@ void Full_Cone<Integer>::set_primal_algorithm_control_variables() {
     do_partial_triangulation = false;
     // stop_after_cone_dec = false;
     do_evaluation = false;
-    // do_only_multiplicity = false;
-    // use_bottom_points = true;
+
     triangulation_is_nested = false;
     triangulation_is_partial = false;
 
@@ -4599,15 +4601,19 @@ void Full_Cone<Integer>::set_primal_algorithm_control_variables() {
         do_evaluation = true;
 
     if (pulling_triangulation) {
-        recursion_allowed = false;
+        no_subdivision = true;  // see below
         do_triangulation = true;
         do_only_multiplicity = false;
-        // do_evaluation = false; // determinants will be computed separately
     }
 
     // deactivate
     if (do_triangulation)
         do_partial_triangulation = false;
+
+    // no_subdision blocks simplex decomposaition
+    if(no_subdivision){
+        allow_simplex_dec = false;
+    }
 
     assert(!(do_evaluation && do_pure_triang));
 
@@ -4644,6 +4650,7 @@ void Full_Cone<Integer>::primal_algorithm_initialize() {
 
 template <typename Integer>
 void Full_Cone<Integer>::primal_algorithm_finalize() {
+
     if (isComputed(ConeProperty::Grading) && !deg1_generated) {
         deg1_triangulation = false;
     }
@@ -4659,7 +4666,7 @@ void Full_Cone<Integer>::primal_algorithm_finalize() {
     evaluate_triangulation();
     assert(nrPyramids[0] == 0);
     evaluate_large_simplices();   // can produce level 0 pyramids
-    use_bottom_points = false;    // block new attempts for subdivision
+    allow_simplex_dec = false;    // block new attempts for subdivision
     evaluate_stored_pyramids(0);  // in case subdivision took place
     evaluate_triangulation();
     FreeSimpl.clear();
@@ -4790,7 +4797,6 @@ void Full_Cone<Integer>::primal_algorithm_set_computed() {
     if (!pointed) {
         throw NonpointedException();
     }
-
     if (do_triangulation || do_partial_triangulation) {
         setComputed(ConeProperty::TriangulationSize, true);
         if (do_evaluation) {
@@ -4945,7 +4951,7 @@ void Full_Cone<Integer>::set_preconditions() {
     if (do_module_gens_intcl)
         do_Hilbert_basis = true;
     if (do_module_gens_intcl)
-        use_bottom_points = false;  // extra bottom points change the originalmonoid
+        allow_simplex_dec = false;  // extra bottom points change the originalmonoid
     if (do_Stanley_dec)
         keep_triangulation = true;
     if (do_pure_triang)
@@ -5833,7 +5839,7 @@ void Full_Cone<Integer>::compute_hsop() {
         Matrix<Integer> ER = Generators.submatrix(choice);
         Matrix<Integer> SH = getSupportHyperplanes();
         if (inhomogeneous) {
-            Sublattice_Representation<Integer> recession_lattice(ER, true);
+            Sublattice_Representation<Integer> recession_lattice(ER, true,false);
             Matrix<Integer> SH_raw = recession_lattice.to_sublattice_dual(SH);
             Matrix<Integer> ER_embedded = recession_lattice.to_sublattice(ER);
             Full_Cone<Integer> recession_cone(ER_embedded);
@@ -7378,7 +7384,7 @@ void Full_Cone<Integer>::reset_tasks() {
     do_Hilbert_basis = false;
     do_deg1_elements = false;
     keep_triangulation = false;
-    use_bottom_points = true;
+    allow_simplex_dec = true;
     pulling_triangulation = false;
     keep_triangulation_bitsets = false;
     do_Stanley_dec = false;
@@ -7395,10 +7401,13 @@ void Full_Cone<Integer>::reset_tasks() {
     do_pointed = false;
     do_all_hyperplanes = true;
     do_supphyps_dynamic = false;
+    no_subdivision = false;
+    allow_simplex_dec = true;
 
     check_semiopen_empty = false;
 
     do_bottom_dec = false;
+    suppress_bottom_dec = false;
     keep_order = false;
 
     nrSimplicialPyr = 0;
@@ -7535,7 +7544,7 @@ Full_Cone<Integer>::Full_Cone(const Matrix<Integer>& M, bool do_make_prime) {  /
     nrPyramids.resize(20, 0);
     Pyramids_scrambled.resize(20, false);
 
-    recursion_allowed = true;
+    subpyramids_allowed = true;
 
     // nextGen=0;
     store_level = 0;
@@ -7561,10 +7570,6 @@ Full_Cone<Integer>::Full_Cone(const Matrix<Integer>& M, bool do_make_prime) {  /
     UnitMat = Matrix<Integer>(dim);
     WorkMat = vector<Matrix<Integer>>(omp_get_max_threads(), Matrix<Integer>(dim, 2 * dim));
 
-    do_bottom_dec = false;
-    suppress_bottom_dec = false;
-    keep_order = false;
-
     is_global_approximation = false;
 
     PermGens.resize(nr_gen);
@@ -7576,7 +7581,7 @@ Full_Cone<Integer>::Full_Cone(const Matrix<Integer>& M, bool do_make_prime) {  /
     don_t_add_hyperplanes = false;
     take_time_of_large_pyr = false;
 
-    renf_degree = 2;  // default value to prevent desasters
+    renf_degree = 2;  // default value to prevent disasters
 }
 
 //---------------------------------------------------------------------------
@@ -7819,7 +7824,7 @@ Full_Cone<Integer>::Full_Cone(Full_Cone<Integer>& C, const vector<key_t>& Key) {
 
     // now the computation goals
     do_extreme_rays = false;
-    do_triangulation_size = C.do_triangulation;
+    do_triangulation_size = C.do_triangulation_size;
     do_determinants = C.do_determinants;
     do_multiplicity = C.do_multiplicity;
     do_deg1_elements = C.do_deg1_elements;
@@ -7836,6 +7841,8 @@ Full_Cone<Integer>::Full_Cone(Full_Cone<Integer>& C, const vector<key_t>& Key) {
     use_existing_facets = false;
     do_supphyps_dynamic = false;
     pulling_triangulation = false;
+    no_subdivision = C.no_subdivision;
+    allow_simplex_dec = C.allow_simplex_dec;
 
     pyramids_for_last_built_directly = false;
 
@@ -7878,7 +7885,7 @@ Full_Cone<Integer>::Full_Cone(Full_Cone<Integer>& C, const vector<key_t>& Key) {
     TriangulationBufferSize = 0;  // not used in pyramids
     CandidatesSize = 0;           // ditto
 
-    recursion_allowed = C.recursion_allowed;  // must be reset if necessary
+    subpyramids_allowed = C.subpyramids_allowed;  // must be reset if necessary
     // multithreaded_pyramid=false; // SEE ABOVE
 
     Comparisons.reserve(nr_gen);
@@ -7991,8 +7998,15 @@ size_t Full_Cone<Integer>::getModuleRank() const {
 //---------------------------------------------------------------------------
 
 template <typename Integer>
-const Matrix<Integer>& Full_Cone<Integer>::getGenerators() const {
+const Matrix<Integer>& Full_Cone<Integer>::getInputGenerators() const {
     return InputGenerators;
+}
+
+//---------------------------------------------------------------------------
+
+template <typename Integer>
+const Matrix<Integer>& Full_Cone<Integer>::getAllGenerators() const {
+    return Generators;
 }
 
 //---------------------------------------------------------------------------

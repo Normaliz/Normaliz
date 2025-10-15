@@ -292,10 +292,11 @@ FusionBasic::FusionBasic(const FusionComp<Integer>& FC){
 void  FusionBasic::data_from_mpq_input(ifstream& cone_in){
     InputMap<mpq_class> input;
     map<NumParam::Param, long> num_param_input;
+    map<BoolParam::Param, bool> bool_param_input;
     map<PolyParam::Param, vector<string> > poly_param_input;
     OptionsHandler options;
     renf_class_shared number_field;
-    input = readNormalizInput<mpq_class>(cone_in, options, num_param_input, poly_param_input,  number_field);
+    input = readNormalizInput<mpq_class>(cone_in, options, num_param_input, bool_param_input, poly_param_input,  number_field);
     read_data_from_input<mpq_class>(input);
 }
 
@@ -303,10 +304,11 @@ void  FusionBasic::data_from_mpq_input(ifstream& cone_in){
 void  FusionBasic::data_from_renf_input(ifstream& cone_in){
     InputMap<renf_elem_class> input;
     map<NumParam::Param, long> num_param_input;
+    map<BoolParam::Param, bool> bool_param_input;
     map<PolyParam::Param, vector<string> > poly_param_input;
     OptionsHandler options;
     renf_class_shared number_field;
-    input = readNormalizInput<renf_elem_class>(cone_in, options, num_param_input, poly_param_input,  number_field);
+    input = readNormalizInput<renf_elem_class>(cone_in, options, num_param_input, bool_param_input, poly_param_input,  number_field);
     read_data_from_input<renf_elem_class>(input);
 }
 #endif
@@ -1463,8 +1465,10 @@ vector<Integer> FusionComp<Integer>::make_linear_equation(const map<vector<key_t
 template <typename Integer>
 Matrix<Integer> FusionComp<Integer>::make_linear_constraints(const vector<Integer>& d){
 
-    if(libnormaliz::verbose)
+    if(libnormaliz::verbose){
         verboseOutput() << "Making linear constraints for fusion rings" << endl;
+        verboseOutput() << "Total FPdim " << total_FPdim << endl;
+    }
 
 
     make_CoordMap();
@@ -1489,6 +1493,7 @@ Matrix<Integer> FusionComp<Integer>::make_linear_constraints(const vector<Intege
 
             Equ.append(this_equ);
         }
+
     }
 
     if(write_lp_file)
@@ -1499,7 +1504,21 @@ Matrix<Integer> FusionComp<Integer>::make_linear_constraints(const vector<Intege
     if(libnormaliz::verbose)
         verboseOutput() << "Made " << Equ.nr_of_rows() << " inhom linear equations in " << Equ.nr_of_columns() -1 << " unknowns " << endl;
 
-    // Equ.debug_print();
+    /* Equ.debug_print();
+    Cone<Integer> Test(Type::inhom_equations, Equ);
+    Test.setConvertEquations();
+    Test.compute(ConeProperty::NoLLL, ConeProperty::AffineDim);
+    size_t NrSol = Test.getNrLatticePoints();
+    size_t ad = Test.getAffineDim();
+    cout << "Affine dim " << ad << endl;
+    cout << "Nr sol " << NrSol << endl;*/
+    /* if(NrSol >0)
+        cout << "Solvable" << endl;*/
+    /*if(ad != 4){
+        cout << "Counterexamle" << endl;
+        exit(0);
+    }*/
+
     return Equ;
 }
 
@@ -1595,8 +1614,10 @@ Matrix<Integer> FusionComp<Integer>::make_linear_constraints_partition(const vec
     /* cout << "DDDD " << d;
     cout << "CCCC " << card; */
 
-    if(libnormaliz::verbose)
+    if(libnormaliz::verbose){
         verboseOutput() << "Making linear constraints for fusion rings partition" << endl;
+        verboseOutput() << "Total FPdim " << total_FPdim << endl;
+    }
 
     Matrix<Integer> Equ(0, nr_coordinates + 1); // mudst accomodate right hand side in last coordinate
 

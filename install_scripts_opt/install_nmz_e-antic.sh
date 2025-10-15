@@ -20,11 +20,10 @@ if [ "$OSTYPE" == "msys" ]; then
 	## mv -f ${PREFIX}/lib/libflint.a ${PREFIX}/lib/hide
 fi
 
-## E_ANTIC_VERSION=1.2.1
-E_ANTIC_VERSION=2.0.2
+E_ANTIC_VERSION=2.1.0
 E_ANTIC_URL="https://github.com/flatsurf/e-antic/releases/download/${E_ANTIC_VERSION}/e-antic-${E_ANTIC_VERSION}.tar.gz"
 ## E_ANTIC_SHA256=a7bfb92620fd7e42a06efbe89e011abee88f4fbd99bcec34fd8300ae9b1cf543
-E_ANTIC_SHA256=8328e6490129dfec7f4aa478ebd54dc07686bd5e5e7f5f30dcf20c0f11b67f60
+E_ANTIC_SHA256=e3e78701d054b441f95d83b6fb55cd84bfd931f5d4a61a2822dc977a20c46f80
 
 CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --prefix=${PREFIX} --disable-silent-rules --without-byexample --without-doc --without-benchmark --without-pyeantic"
 

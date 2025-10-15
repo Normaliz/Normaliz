@@ -326,7 +326,7 @@ The amount of computations done with infinite precision is usually very small, b
 \begin{itemize}
 	\itemtt[LongLong]
 \end{itemize}
-With this option, Normaliz cannot restart a failed computation.
+With this option, Normaliz cannot restart a failed computation. \verb|LongLong| is not a cone property.
 
 On the other hand, the $64$ bit attempt can be bypassed by
 \begin{itemize}
@@ -335,10 +335,13 @@ On the other hand, the $64$ bit attempt can be bypassed by
 
 Note that Normaliz tries to avoid overflows by intermediate results (even if \verb|LongLong| is set). If such overflow should happen, the computation is repeated locally with infinite precision. (The number of such GMP transitions is shown in the terminal output.) If a final result is too large, Normaliz must restart the computation globally.
 
-\verb|LongLong| is not a cone property.
-
 \emph{Caveat.}\enspace The overflow check of Normaliz is not an absolute guarantee. The probability that it fails is microscopically small, but failure is not totally excluded. Very critical computations for which one has no other confirmation should be redone in \verb|BigInt|.
 
+Normaliz tries to improve bases of sublattices by LLL reduction. This is an arithmetically risky operation, even with \texttt{BigInt}. In case you experience any problems, like a floating point exception ``division by zero'', use 
+\begin{itemize}
+	\itemtt[NoLLL] 
+\end{itemize} 
+Once it has been used once ro a cone in libnormaliz, it is set for all subsequent computations. To see the problem just described, run \verb*|overflow.in| with and without \verb*|NoLLL|.
 
 \subsection{The choice of algorithmic variants}
 
@@ -454,12 +457,7 @@ In rare cases Normaliz can use symmetrization in the computation of multipliciti
 
 The integration involved in symmetrization can be done by signed decomposition.
 
-\subsubsection{Subdivision of simplicial cones}
 
-Subdivision requires enlarging the set of generators and can lead to a nested triangulation (see Sections~\ref{subdiv} and~\ref{nested}). The subdivision can be blocked by
-\begin{itemize}
-	\itemtt[NoSubdivision]
-\end{itemize}
 
 \subsubsection{Options for the grading}
 
@@ -535,6 +533,16 @@ the following elements of \verb|ConeProperties| control the work flow in \verb|l
 	
 	\itemtt[IsTriangulationNested] controls the indicator of this property.
 	\itemtt[IsTriangulationPartial] similar.
+	
+	\itemtt[NoSubdivision] blocks pyramid decomposition and sudivision of simplices in primal mode.
+	
+	\itemtt[BasicTriangulation] used for the computation of trianglations.
+	itemtt[BasicStanleyDec] the same for Stanley decompositions.
+	
+	
+	\itemtt[PullingTriangulationInternal] used for the computation of pulling triangulations.
+		
+	\itemtt[SingleLatticePointInternal]  quite obvious.
 	
 \end{itemize}
 
@@ -763,4 +771,13 @@ It suppresses all output after the ``preamble''. It is useful in testing large e
 Since Normaliz accumulates options, one cannot get rid of settings in the input file by command line options unless one uses
 \begin{itemize}
 	\itemtt[{-}{-}ignore, -i] This option disables all options in the input file.
+\end{itemize}
+
+\endinput 
+
+\subsubsection{Subdivision of simplicial cones}
+
+Subdivision requires enlarging the set of generators and can lead to a nested triangulation (see Sections~\ref{subdiv} and~\ref{nested}). The subdivision can be blocked by
+\begin{itemize}
+	\itemtt[NoSubdivision]
 \end{itemize}

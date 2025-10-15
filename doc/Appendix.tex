@@ -248,7 +248,7 @@ q_{r-1}=\frac{\vol(Q)}{(r-1)!},
 $$
 where $\vol$ is the lattice normalized volume of $Q$ (a lattice simplex of smallest possible volume has volume $1$). The \emph{multiplicity} of $M$, denoted by $e(M)$ is $(r-1)!q_{r-1}=\vol(Q)$.
 
-Suppose now that $P$ is a rational polyhedron in $\RR^d$, $L\subset\ZZ^d$ is an affine lattice, and we consider $N=P\cap L$ as a module over $M=\rec_L(P)$. Then we must give up the condition that $\deg$ takes the value $1$ on $\gp(M)$ (see Section~\ref{sdqm} for an example). But the Hilbert series
+Suppose now that $P$ is a rational polyhedron in $\RR^d$, $L\subset\ZZ^d$ is an affine lattice, and we consider $N=P\cap L$ as a module over $M=\rec_L(P)$. Then we must give up the condition that $\deg$ takes the value $1$ on $\gp(M)$. But the Hilbert series
 $$
 H_N(t)=\sum_{x\in N} t^{\deg x}
 $$
@@ -775,14 +775,48 @@ One can construct a cone also from a Normaliz input file by
 \begin{Verbatim}
 Cone<Integer>::Cone(const string project)
 \end{Verbatim}
-The constructor reads the file \verb|<project>.in|. All options in the file and numerical parameters are disregarded. The polynomials if present are however forwarded to the cone.
+The constructor reads the file \verb|<project>.in|. The boolean parameters defined in Section \ref{bool_param} are transferred to the cone, as well as the polynomial parameters in Section \ref{poly_param} and the numerical parameters of Section \ref{num_params}.
 
 \subsection{Setting and changing additional data}
 
-These data must be given to the cone before starting the computation if they are needed.
-The numerical parameters have default values, and the grading can be set when the cone is constructed.
+The cone constructors allow only matrices as parameters. Input data of other types must be set after the call of a constructor. Moreover, it might be useful to reset (or introduce) the grading or the projection coordinates.
 
-\subsubsection{Polynomials}
+\subsubsection{Boolean parameters}\label{bool_param}
+
+The construction of the cone has three phases. The first phase mainly standardizes the types in the input matrices and the second does syntax checks. These two phases are run by the constructor itself. The third phase sorts the input matrices into constraints and generators, roughly speaking, and does preparatory computations. It is started by the first compute command applied to the cone. This allows us to communicate boolean parameters (and potentially others) to libNormaliz that influence the third phase (and potentially subsequent steps). Their use can almost completely be avoided in the library interface. They are mainly meant as convenient and for compatibility between the input file interface and the library interface.
+\begin{Verbatim}
+void Cone<Integer>::setNonnegative(bool onoff = true)
+void Cone<Integer>::setTotalDegree(bool onoff = true)
+void Cone<Integer>::setNoPosOrthDef(bool onoff = true)
+void Cone<Integer>::setConvertEquations(bool onoff = true)
+void Cone<Integer>:::setNoCoordTransf(bool onoff = true)
+void Cone<Integer>::setListPolynomials(bool onoff = true)
+bool Cone<Integer>::setVerbose(bool v = true)
+\end{Verbatim}
+
+Their default value is \verb*|false|. \verb*|setVerbose| returns the previous value. The (new) \verb*|setVerbose| amkes the function \verb*|suppressNextConstructorVerbose()| below superfluous, but the latter has been kept for backward compatibility.
+
+The meaning of these boolean parameters has been explained for their use in input files. The parameters can de set en bloc:
+\begin{Verbatim}
+void Cone<Integer>::setBoolParams(const map<BoolParam::Param, bool>& bool_params)
+\end{Verbatim}
+where \verb*|BoolParam::Param| is an enumeration defined as follows:
+\begin{Verbatim}
+namespace BoolParam {
+enum Param {
+verbose,
+nonnegative,
+total_degree,
+convert_equations,
+no_coord_transf,
+list_polynomials,
+no_pos_orth_def,
+not_a_bool_param
+};
+}  // end namespace BoolParam
+\end{Verbatim}
+
+\subsubsection{Polynomials}\label{poly_param}
 
 The polynomial needed for integrals and weighted Ehrhart series must be passed to the cone after construction:
 \begin{Verbatim}
@@ -803,23 +837,17 @@ void Cone<Integer>::setPolyParams(const map<PolyParam::Param, vector<string>>& p
 \end{Verbatim}
 Have a look at \verb|cone.cpp|. The single \verb|polynomial| must be disguised as the only member of a vector.
 
-\subsubsection{Grading}
-
-If your computation needs a grading, you should include it into the construction of the cone. However, especially in interactive use via PyNormaliz or other interfaces, it can be useful to add the grading if it was forgotten or to change it later on. The following function allows this:
-
+The enumeration \verb*|PolyParam::Param| is defined by
 \begin{Verbatim}
-void Cone<Integer>::resetGrading(const vector<Integer>& grading)
+namespace PolyParam {
+enum Param {
+polynomial,
+polynomial_equations,
+polynomial_inequalities,
+not_a_poly_param
+};
+}  // end namespace PolyParam
 \end{Verbatim}
-
-Note that it deletes all previously computed results that depend on the grading.
-
-\subsubsection{Projection coordinates}
-
-Similarly to  \verb|resetGrading| we have
-\begin{Verbatim}
-void Cone<Integer>::resetProjectionCoords(const vector<Integer>& lf)
-\end{Verbatim}
-The entries of \verb|lf| must be $0$ or $1$.
 
 \subsubsection{Numerical parameters}\label{num_params}
 
@@ -838,12 +866,11 @@ void Cone<Integer>::setGBMinDegree(const long min_degree)
 void Cone<Integer>::setModularGraing(long mod_gr)
 void Cone<Integer>::setChosenFusionRing(long fus_r)
 \end{Verbatim}
-There common default value of \verb|degree| is $-1$, signaling no expansion, all coefficients or no codimension bound etc. One can reset the values after a computation. Then they will delete the computation results that depend on them. Modular Gradings are counted from $1$ (as in the input file), as well as chosen fusion rings.
-% However, there is no point in changing the codimension bounds for the exploitation of the automorphism group after the computations to that they refer have been finished.
+These functions transfer their arguments to variables defined internally in libnormaliz. The common default value of these variables is $-1$.
 
 To set them en bloc you can use
 \begin{Verbatim}
-void Cone<Integer>::setNumericalParams(const map <NumParam::Param, long >& num_params)
+	void Cone<Integer>::setNumericalParams(const map <NumParam::Param, long >& num_params)
 \end{Verbatim}
 where \verb|NumParam::Param| refers to
 \begin{Verbatim}
@@ -852,7 +879,7 @@ enum Param {
 expansion_degree,
 nr_coeff_quasipol,
 face_codim_bound,
-autom_codim_bound_vectors,  // not yet used
+autom_codim_bound_vectors,
 block_size_hollow_tri,
 decimal_digits,
 modular_grading,
@@ -862,6 +889,24 @@ not_a_num_param
 } //end namespace NumParam
 \end{Verbatim}
 (see \verb|libnormaliz/input_type.h|).
+
+\subsubsection{Grading}
+
+If your computation needs a grading, you should include it into the construction of the cone. However, especially in interactive use via PyNormaliz or other interfaces, it can be useful to add the grading if it was forgotten or to change it later on. The following function allows this:
+
+\begin{Verbatim}
+void Cone<Integer>::resetGrading(const vector<Integer>& grading)
+\end{Verbatim}
+
+Note that it deletes all previously computed results that depend on the grading.
+
+\subsubsection{Projection coordinates}
+
+Similarly to  \verb|resetGrading| we have
+\begin{Verbatim}
+void Cone<Integer>::resetProjectionCoords(const vector<Integer>& lf)
+\end{Verbatim}
+The entries of \verb|lf| must be $0$ or $1$.
 
 \subsection{Modifying a cone after construction}\label{Modify}
 
@@ -1740,14 +1785,14 @@ size_t Cone<Integer>::getCodimSingularLocus()
 bool Cone<Integer>::isSerreR1()
 \end{Verbatim}
 
-\subsubsection{Markov abd Grobner bases, representations}
+\subsubsection{Markov and Grobner bases, representations}
 \begin{Verbatim}
 const  vector<vector<Integer> >& Cone<Integer>::getMarkovBasis()
 const  vector<vector<Integer> >& Cone<Integer>::getGroebnerBasis()
 const  vector<vector<Integer> >& Cone<Integer>::getRepresentations()
 \end{Verbatim}
 For all three there are also the usual variants with \verb|Matrix| and \verb|Nr|.
-Note that they reurn only those binomials for Markov and Gröbner bases that satisfy the degree bounds set by \verb|gb_degree_bound| and \verb|gb_min_degree|.
+Note that they return only those binomials for Markov and Gröbner bases that satisfy the degree bounds set by \verb|gb_degree_bound| and \verb|gb_min_degree|.
 
 
 \subsubsection{Integer hull}
@@ -2352,7 +2397,7 @@ The argument of \verb|SetPolynomialEquations| is a list of strings in which each
 \begin{Verbatim}
 C.SetPolynomialInequalities(PolyEQ)
 \end{Verbatim}
-are vinterpreted as $f(x) \ge 0$.
+are interpreted as $f(x) \ge 0$.
 
 Selected input types:
 \begin{itemize}
@@ -2393,7 +2438,17 @@ toric\_ideal,
 normal\_toric\_ideal
 }
 \end{itemize}
-For explanantions and other input types se the Normaliz manual. The input type \verb|constraints| can't be used in PyNormaliz. Also shortcuts like \verb|nonnegative| or \verb|total_degree| are not available.
+For explanations and other input types se the Normaliz manual. The input type \verb|constraints| can't be used in PyNormaliz (but it is allowed in input files read by PyNormaliz as, for example \verb*|small.in| above).
+
+Shortcuts like \verb|nonnegative| or \verb|total_degree| are available as boolean parameters. They can be set by, for example,
+\begin{Verbatim}
+C.SetBoolParam("nonnegative")
+\end{Verbatim}
+The function has an optional argument that can be \verb*|True| or \verb*|False| (though\verb*|False| hardly makes sense). The boolean parameter itself is encoded as a string as in the example. These parameters are
+\begin{center}
+	\verb*|verbose|, \verb*|nonnegative|, \verb*|total_degree|, \verb*|list_poilynomials|, \verb*|convert_equations|, \verb*|no_coord_transf|, \verb*|no_pos_orth_def|
+\end{center}
+For \verb*|verbose| you can also use \verb*|C.SetVerbose()|.
 
 \subsubsection{Matrices, vectors and numbers}
 
@@ -2532,7 +2587,7 @@ The first member is not a matrix, but close enough so that we can use \verb|prin
 [2, 3] 1 []
 [0, 3] 1 []
 \end{Verbatim}
-In each line we find the information on a simplicial cone, first the list of the rays by their indices relative to the matrix of rays (counting rows from $0$). The next is the determinant relative to a lattice basis (in our case the unit vectors). In a unimodular triangulation these determinants must of course be $1$. The third component is the list of excluded faces if we have computed a disjoint decomposition. This is explained in Section~\ref{Disjoint}.
+In each line we find the information on a simplicial cone, first the list of the rays by their indices relative to the matrix of rays (counting rows from $0$). The next is the determinant relative to a lattice basis (in our case the unit vectors). In a unimodular triangulation these determinants must of course be $1$. The third component is the list of excluded faces if we have computed a disjoint decomposition (not done automatically!). This is explained in Section~\ref{Disjoint}.
 
 To see an even more complicated data structure we ask for the combinatorial automorphisms:
 \begin{Verbatim}
@@ -2540,7 +2595,7 @@ To see an even more complicated data structure we ask for the combinatorial auto
 >>> G
 [2, Faase, False,  [[[1, 0]], [[0, 1]]], [[], []], [[[1, 0]], [[0, 1]]]]
 \end{Verbatim}
-There are~$6$ components on the outermost level. The first is the order of the group. The second amswers the question whether the integrality of the automorphisms has been checked. The answer is always ``no'' for compinatorial automorphisms, and therefore the third give the answer ``no'' to the question whether the automorphisms are integral.
+There are~$6$ components on the outermost level. The first is the order of the group. The second answers the question whether the integrality of the automorphisms has been checked. The answer is always ``no'' for compinatorial automorphisms, and therefore the third give the answer ``no'' to the question whether the automorphisms are integral.
 
 The next three contain information on the
 \begin{itemize}
@@ -2568,7 +2623,7 @@ orbits of  support hyperplanes
 \end{Verbatim}
 It makes sense to have a look at Section~\ref{Automorphisms}. (Here we count from $0$.)
 
-\ttt{AmbientAutomorphisms} and \ttt{InputAutomorphisms} yield a slightly different result. The permutations and orbits in the third element of the outer list now refer to the input vectors. The fourth element gives data for thempty set, as does the fifth for \ttt{InputAutomorphisms} . For \ttt{AmbientAutomorphisms} it lists the permutation and oprbits of the coordinates of the ambient lattice. All this is folloowed by the input vectors for reference. A simple example:
+\ttt{AmbientAutomorphisms} and \ttt{InputAutomorphisms} yield a slightly different result. The permutations and orbits in the third element of the outer list now refer to the input vectors. The fourth element gives data for the rmpty set, as does the fifth for \ttt{InputAutomorphisms} . For \ttt{AmbientAutomorphisms} it lists the permutation and orbits of the coordinates of the ambient lattice. All this is followed by the input vectors for reference. A simple example:
 \begin{Verbatim}
 >>> C = Cone(cone = [[0,1],[1,0]])
 >>> C.AmbientAutomorphisms()
@@ -2624,7 +2679,7 @@ We also have a printer for the Stanley decomposition:
 \end{Verbatim}
 Try it.
 
-The cone properties that fall into the categories discussed in this section are: \ttt{    Triangulation,
+The cone properties that fall into the categories discussed in this section include: \ttt{    Triangulation,
 	UnimodularTriangulation,
 	LatticePointTriangulation,
 	AllGeneratorsTriangulation,\\
@@ -2642,8 +2697,13 @@ The cone properties that fall into the categories discussed in this section are:
 	DualFaceLattice,
 	FVector,
 	DualFVector,
+    FaceLatticeOrbits,
+	DualFaceLatticeOrbits,
+	FVectorOrbits,
+	DualFVectorOrbits,
 	Incidence,
-	DualIncidence.}
+	DualIncidence,
+	SingularLocus.}
 
 \subsubsection{Hilbert and other series}
 
@@ -2814,7 +2874,7 @@ The last component is $1$ as it must be for lattice points of the polytope.
  3  2 1
 \end{Verbatim}
 
-The other computations that return a cone are \verb|ProjectCone| and \verb|SymmetrizedCone|.
+In the same way as \verb*|IntegerHull| you can get the  \verb|ProjectCone| as the result of the cone projection. The third cone that Normaliz produces is the symmetrized cone. It is only an auxiliary cone that is not a computation goal itself. See Sewction \ref{add_data} how to access it.
 
 \subsubsection{Boolean values}
 
@@ -2899,6 +2959,8 @@ Wec can also ask for \verb*|SimpleFusionRings|, \verb*|NonSimpleFusionRings|, \v
 \end{Verbatim}
 
 For suitable input it make sense to ask for \verb*|ModularGradings|. Then the algorithmic variant \verb*|UseModularGrading| can be applied via the collective compute command discussed below. If there is more than one modular grading, you must pick one by the function \verb*|SetModularGrading(<g>)| where  \verb*|<g>| is the number of the grading you want to pick, counted from 1. The same applies to \verb*|SSetChosenFusionRing(<r>)| by which we can pick a fusion ring for \verb*|InductionMatrices|.
+
+The input types \verb*|fusion_ring_map|, \verb*|fusion_image_type|, \verb*|fusion_image_ring| and \verb*|fusion_image_duality| can of course be used: they are all given by matrices.
 
 \subsubsection{The collective compute command and algorithmic variants}\label{CollComp}
 So far we have asked Normaliz for a single cone property. It is also possible to bundle several computation goals and options in a single compute command:
@@ -3005,7 +3067,7 @@ Finally, we can write a Normaliz output file:
 >>> C.WriteOutputFile("Wonderful")
 True
 \end{Verbatim}
-Now you should find a file \verb|Wonderful.out| in the current directory.
+Now you should find a file \verb|Wonderful.out| in the current directory. Note that additional compulsory output files are written as well. For example, \verb*|Wionderful.aut| is written if an automorphism group has been computed. It is not possible to write truly optional output files line \verb*|Wonderful.gen|. If you want one of them, you must use python methods.
 
 One can also write a file for the input of precomputed data:
 \begin{Verbatim}
@@ -3026,7 +3088,18 @@ NmzCone(**kwargs)
 \end{Verbatim}
 The keyword arguments \ttt{kwargs} transport Normaliz input types and the corresponding matrices in Python format. In addition we must use \ttt{number\_field} for algebraic polyhedra. You can use \ttt{polynomial} for computations with a polynomial weight. (There is also an extra function for setting the polynomial; see below.) You can also ask for a \verb|Cone<long long>| by adding \verb|CreateAsLongLong = True|.
 
-\textbf{Once and for all:} in the functions listed in the following that apply to a specific \verb|NmzCone|, this \verb|NmzCone| must be the first argument in \verb|*args|.
+\textbf{Once and for all:} in the functions listed in the following that apply to a specific \verb|NmzCone|, this \verb|NmzCone| must be the first argument in \verb|*args|, apart from obvious exceptions that do not depend on a specific cone. In interactive use one should note that a \verb*|Cone| produced by the high level interface is NOT an \verb*|NmzCone|, but it contains an \verb*|NmzCone|, as shown in the following example:
+\begin{Verbatim}
+>>> from PyNormaliz import *
+>>> C= Cone(cone =  [[1,0]]);
+>>> NmzGetHilbertSeriesExpansion(C,25);
+Traceback (most recent call last):
+File "<stdin>", line 1, in <module>
+PyNormaliz_cpp.NormalizInterfaceError: First argument must be a cone
+>>> NmzGetHilbertSeriesExpansion(C.cone,25);
+[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+>>> 
+\end{Verbatim}
 
 Computations are started by
 \begin{Verbatim}
@@ -3084,14 +3157,14 @@ The polynomial is given as a string.
 NmzSetNrCoeffQuasiPol(cone, number)
 NmzSetFaceCodimBound(cone, number)
 \end{Verbatim}
-Do what the names say.
+do what the names say.
 
 \begin{Verbatim}
 NmzModifyCone(cone, type, matrix)
 \end{Verbatim}
 This is the PyNormaliz version of the libnormaliz function modifyCone. Please have a look at Section~\ref{Modify}.
 
-\subsubsection{Additional data access}
+\subsubsection{Additional data access}\label{add_data}
 
 Some values cannot be returned as cone properties. For them we have additional access functions.
 
@@ -3102,18 +3175,16 @@ returns the polynomial weight if one has been set.
 
 The functions
 \begin{Verbatim}
-NmzHilbertSeriesExpansion(cone, degree)
-NmzEhrhartSeriesExpansion(cone, degree)
-NmzWeightedEhrhartSeriesExpansion(cone, degree)
+NmzGHetHilbertSeriesExpansion(cone, degree)
+NmzGetEhrhartSeriesExpansion(cone, degree)
+NmzGetWeightedEhrhartSeriesExpansion(cone, degree)
 \end{Verbatim}
 return the expansion of the named series up to the given degree as a list of numbers.
 
 \begin{Verbatim}
-NmzIntegerHullCone(cone)
-NmzProjectCone(cone)
 NmzSymmetrizedCone(cone)
 \end{Verbatim}
-return \verb|NmzCone|.
+returns a \verb|NmzCone|.
 
 \begin{Verbatim}
 NmzGetRenfInfo(cone)

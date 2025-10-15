@@ -180,6 +180,23 @@ bool isPolyParam(PolyParam::Param& polypar, const string& type_string);
 PolyParam::Param to_polypar(const string& type_string);
 string polypar_to_string(const PolyParam::Param& polypar);
 
+namespace BoolParam {
+enum Param {
+    verbose,
+    nonnegative,
+    total_degree,
+    convert_equations,
+    no_coord_transf,
+    list_polynomials,
+    no_pos_orth_def,
+    not_a_bool_param
+};
+}  // end namespace BoolParam
+
+bool isBoolParam(BoolParam::Param& boolpar, const string& type_string);
+BoolParam::Param to_boolpar(const string& type_string);
+string boolpar_to_string(const BoolParam::Param& boolpar);
+
 inline InputType to_type(const string& type_string) {
     if (type_string == "0" || type_string == "1" || type_string == "2" || type_string == "3" || type_string == "4" ||
         type_string == "5" || type_string == "6" || type_string == "hyperplanes" || type_string == "10") {
@@ -514,6 +531,54 @@ inline bool isPolyParam(PolyParam::Param& polypar, const string& type_string) {
         return false;
     return true;
 }
+
+inline BoolParam::Param to_boolpar(const string& type_string) {
+    if (type_string == "verbose")
+        return BoolParam::verbose;
+    if (type_string == "nonnegative")
+        return BoolParam::nonnegative;
+    if (type_string == "convert_equations")
+        return BoolParam::convert_equations;
+    if (type_string == "no_coord_transf")
+        return BoolParam::no_coord_transf;
+    if (type_string == "total_degree")
+        return  BoolParam::total_degree;
+    if (type_string == "list_polynomials")
+        return  BoolParam::list_polynomials;
+    if (type_string == "no_pos_orth_def")
+        return  BoolParam::no_pos_orth_def;
+
+    return BoolParam::not_a_bool_param;
+}
+
+inline string boolpar_to_string(const BoolParam::Param& boolpar) {
+    if (boolpar == BoolParam::verbose)
+        return "verbose";
+    if (boolpar == BoolParam::nonnegative)
+        return "nonnegative";
+    if (boolpar == BoolParam::total_degree)
+        return "total_degree";
+    if (boolpar == BoolParam::convert_equations)
+        return "convert_equations";
+    if (boolpar == BoolParam::no_coord_transf)
+        return "no_coord_transf";
+    if (boolpar == BoolParam::list_polynomials)
+        return "list_polynomials";
+    if (boolpar == BoolParam::no_pos_orth_def)
+        return "list_polynomials";
+    if (boolpar == BoolParam::no_pos_orth_def)
+        return "not_a_bool_param";
+    assert(false);
+    return string();  // silence compiler warning
+}
+
+inline bool isBoolParam(BoolParam::Param& boolpar, const string& type_string) {
+    boolpar = to_boolpar(type_string);
+    if (boolpar == BoolParam::not_a_bool_param)
+        return false;
+    return true;
+}
+
 
 
 } /* end namespace libnormaliz */

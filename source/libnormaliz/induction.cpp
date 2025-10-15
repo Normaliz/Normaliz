@@ -541,7 +541,7 @@ void Induction<Integer>::from_low_to_full(){
             }
         }
 
-        // now the eruation for the FPdim of the center
+        // now the equation for the FPdim of the center
 
         vector<Integer> this_equ;
         for(size_t i = 0; i < HighRepresentations.nr_of_rows(); ++i){

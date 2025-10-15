@@ -383,6 +383,11 @@ void ConeProperties::check_fusion_ring_props() const{
     copy.reset(ConeProperty::ModularGradings);
     copy.reset(ConeProperty::UseModularGrading);
     copy.reset(ConeProperty::NoEmptyOutput);
+    copy.reset(ConeProperty::NoPatching);
+    copy.reset(ConeProperty::NoCoarseProjection);
+    copy.reset(ConeProperty::SupportHyperplanes);
+    copy.reset(ConeProperty::Sublattice);
+    copy.reset(ConeProperty::AffineDim);
 
 
     if (copy.any()) {
@@ -719,7 +724,7 @@ void ConeProperties::set_preconditions(bool inhomogeneous, bool numberfield) {
         CPs.set(ConeProperty::Sublattice);
 
     // we want an ordinary triangulation if one is asked for
-    if (CPs.test(ConeProperty::BasicTriangulation) && !numberfield)
+    if (CPs.test(ConeProperty::BasicTriangulation)) // && !numberfield)?????
         CPs.set(ConeProperty::NoSubdivision);
 
     // Volume + Integral ==> NoGradingDenom
@@ -910,6 +915,7 @@ void ConeProperties::check_Q_permissible(bool after_implications) {
     copy.reset(ConeProperty::FusionData);
     copy.reset(ConeProperty::ShortInt);
     copy.reset(ConeProperty::NoHeuristicMinimization);
+    copy.reset(ConeProperty::NoSubdivision);
     if (after_implications) {
         copy.reset(ConeProperty::Multiplicity);
         copy.reset(ConeProperty::Grading);

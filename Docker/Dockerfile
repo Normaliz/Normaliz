@@ -1,6 +1,6 @@
 # Dockerfile for Normaliz
 
-FROM ubuntu:focal
+FROM ubuntu:24.04
 
 ENV TZ=Europe/Berlin
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
@@ -15,8 +15,8 @@ RUN apt-get update \
     wget curl sed \
     unzip \
     sudo \
-    python3-pip
-RUN pip3 install setuptools
+    python3-pip \
+    python3-setuptools
 
 RUN adduser --quiet --shell /bin/bash --gecos "norm user,101,," --disabled-password norm \
     && adduser norm sudo \

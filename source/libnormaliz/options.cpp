@@ -377,10 +377,6 @@ bool OptionsHandler::handle_options(vector<string>& LongOptions, string& ShortOp
             verbose = true;    // global verbose
             continue;
         }
-        if (LongOption == "list_polynomials") {
-            polynomial_verbose = true; // global
-            continue;
-        }
         if (LongOption == "version") {
             printVersion();
             exit(0);

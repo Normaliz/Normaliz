@@ -133,8 +133,11 @@ void Sublattice_Representation<Integer>::initialize(const Matrix<Integer>& M, bo
 
     success = true;
 
+    // cout << "=============================================" << endl;
+
     dim = M.nr_of_columns();
     Matrix<Integer> N = M;
+    // M.debug_print('M');
 
     rank = N.row_echelon_reduce(success);  // reduce is importnat here, will be used
     if (!success)
@@ -217,13 +220,14 @@ void Sublattice_Representation<Integer>::initialize(const Matrix<Integer>& M, bo
 
     // now we must take the saturation.
     // We do it by computing a complement of the smallest direct summand containing
-    // of the sublattice and then taking its complement.
+    // the sublattice and then taking its complement.
 
     Matrix<Integer> R_inv(dim);
     success = N.column_trigonalize(rank, R_inv);
     Matrix<Integer> R = R_inv.invert_unprotected(c, success);  // yields c=1 as it should be in this case
     if (!success)
         return;
+    assert(c==1);
 
     for (size_t i = 0; i < rank; i++) {
         for (size_t j = 0; j < dim; j++) {
@@ -232,6 +236,17 @@ void Sublattice_Representation<Integer>::initialize(const Matrix<Integer>& M, bo
         }
     }
     B_is_projection = B.check_projection(projection_key);
+    /*
+    cout << "how Whow Whow" << endl;
+    A.debug_print('A');
+    B.debug_print('B');
+    Matrix<Integer> PP = A.multiplication(B);
+    PP.debug_print('P');
+    Matrix<Integer> QQ = M.multiplication(B);
+    M.debug_print('M');
+    QQ = QQ.multiplication(A);
+    QQ.debug_print('Q');
+    */
     return;
 }
 
@@ -425,7 +440,7 @@ void Sublattice_Representation<Integer>::compose_with_passage_to_quotient(Matrix
     Sub.standardize_basis();
     Perp.standardize_basis();
 
-    Sublattice_Representation<Integer> QuotentDual(Perp_L, true);
+    Sublattice_Representation<Integer> QuotentDual(Perp_L, true,useLLL);
 
     compose_dual(QuotentDual);
 }

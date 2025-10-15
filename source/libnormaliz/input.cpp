@@ -857,46 +857,10 @@ void read_num_param(istream& in, map<NumParam::Param, long>& num_param_input,
 }
 
 template <typename Number>
-void convert_equ_to_inequ(InputMap<Number>& Input, const InputType& equ, const InputType inequ){
-
-    Number MinusOne = -1;
-
-    if(Input.find(equ) != Input.end() && Input[equ].nr_of_rows() > 0){
-        if(Input.find(inequ) == Input.end())
-            Input[inequ] = Matrix<Number>(0, Input[equ][0].size());
-        for(size_t i =0; i< Input[equ].nr_of_rows(); ++i){
-            Input[inequ].append(Input[equ][i]);
-            Input[inequ].append(Input[equ][i]);
-            v_scalar_multiplication<Number>(Input[inequ][Input[inequ].nr_of_rows()-1], MinusOne);
-        }
-        Input[equ].resize(0, Input[equ][0].size());
-    }
-
-}
-
-template <typename Number>
-void convert_equ_to_inequ(InputMap<Number>& Input,  const long dim){
-
-    bool exists_default_breaker = false;
-    for(auto& T: Input){
-        if(is_inequalities(T.first) || is_generators(T.first)){
-            exists_default_breaker = true;
-            break;
-        }
-    }
-
-    convert_equ_to_inequ<Number>(Input, Type::equations, Type::inequalities);
-    convert_equ_to_inequ<Number>(Input, Type::inhom_equations, Type::inhom_inequalities);
-    if(exists_default_breaker)
-        return;
-    Matrix<Number> unit_mat(dim); // must add unit_mat of inequalities to imitate default befavior
-    save_matrix(Input, Type::inequalities, unit_mat); // if no inequalities in input
-}
-
-template <typename Number>
 InputMap<Number> readNormalizInput(istream& in,
                                             OptionsHandler& options,
                                             map<NumParam::Param, long>& num_param_input,
+                                            map<BoolParam::Param, bool>& bool_param_input,
                                             map<PolyParam::Param, vector<string> >& poly_param_input,
                                             renf_class_shared& number_field) {
     string type_string;
@@ -906,11 +870,11 @@ InputMap<Number> readNormalizInput(istream& in,
     Number number;
     ConeProperty::Enum cp;
     NumParam::Param numpar;
+    BoolParam::Param boolpar;
     PolyParam::Param polypar;
     set<NumParam::Param> num_par_already_set;
+    set<BoolParam::Param> bool_par_already_set;
     bool we_have_a_polynomial = false;
-    bool convert_equations = false;
-    no_coord_transf = false; // in general.h and cpp
 
     write_lp_file = false; // in general.h and cpp
     size_t length_weight = 0;
@@ -927,6 +891,7 @@ InputMap<Number> readNormalizInput(istream& in,
     bool new_input_syntax = !std::isdigit(c);
 
     long dim;
+    bool dim_known = false;
 
     if (new_input_syntax) {
         while (in.peek() == '/') {
@@ -937,7 +902,6 @@ InputMap<Number> readNormalizInput(istream& in,
         if (!in.good() || type_string != "amb_space") {
             throw BadInputException("First entry must be \"amb_space\"!");
         }
-        bool dim_known = false;
         in >> std::ws;
         c = in.peek();
         if (c == 'a') {
@@ -982,6 +946,14 @@ InputMap<Number> readNormalizInput(istream& in,
                         throw BadInputException("Numerical parameter " + type_string + " set twice");
                     read_num_param(in, num_param_input, numpar, type_string);
                     num_par_already_set.insert(numpar);
+                    continue;
+                }
+                if (isBoolParam(boolpar, type_string)) {
+                    auto ns = bool_par_already_set.find(boolpar);
+                    if (ns != bool_par_already_set.end())
+                        throw BadInputException("Boolean parameter " + type_string + " set twice");
+                    bool_param_input[boolpar] = true;
+                    bool_par_already_set.insert(boolpar);
                     continue;
                 }
                if (isPolyParam(polypar, type_string)) {
@@ -1045,25 +1017,6 @@ InputMap<Number> readNormalizInput(istream& in,
 #endif
                     continue;
                 }
-                if (type_string == "total_degree") {
-                    if (!dim_known) {
-                        throw BadInputException("Ambient space must be known for " + type_string + "!");
-                    }
-                    input_type = Type::grading;
-                    vector<Number> TotDeg(dim + type_nr_columns_correction(input_type),1);
-                    Matrix<Number> TotDegMat(TotDeg);
-                    save_matrix(input_map, input_type, TotDegMat);
-                    continue;
-                }
-                if (type_string == "nonnegative") {
-                    if (!dim_known) {
-                        throw BadInputException("Ambient space must be known for " + type_string + "!");
-                    }
-                    input_type = Type::signs;
-                    Matrix<Number> SignMat(vector<Number>(dim + type_nr_columns_correction(input_type), 1));
-                    save_matrix(input_map, input_type, SignMat);
-                    continue;
-                }
                 if (type_string == "constraints") {
                     if (!dim_known) {
                         throw BadInputException("Ambient space must be known for " + type_string + "!");
@@ -1078,20 +1031,8 @@ InputMap<Number> readNormalizInput(istream& in,
                     read_constraints(in, dim, input_map, true);
                     continue;
                 }
-                if (type_string == "convert_equations") {
-                    convert_equations = true;
-                    continue;
-                }
-                if (type_string == "no_coord_transf") {
-                    no_coord_transf = true;
-                    continue;
-                }
                 if (type_string == "write_lp_file") {
                     write_lp_file = true;
-                    continue;
-                }
-                if (type_string == "list_polynomials") {
-                    polynomial_verbose = true;
                     continue;
                 }
                 if(type_string == "parallel_threads"){
@@ -1124,7 +1065,7 @@ InputMap<Number> readNormalizInput(istream& in,
                     in >> std::ws;  // eat up any leading white spaces
                     c = in.peek();
                     if(c != '[')
-                        throw BadInputException("Fusion ring map musat be formatted matrix");
+                        throw BadInputException("Fusion ring map must be formatted matrix");
                 
                     Matrix<Number> input_mat;
                     read_formatted_matrix(in, input_mat, false);
@@ -1372,24 +1313,30 @@ InputMap<Number> readNormalizInput(istream& in,
             save_matrix(input_map, input_type, M);
         }
     }
-    if(convert_equations){
-            convert_equ_to_inequ(input_map, dim);
+
+    if(!dim_known && new_input_syntax)
+        throw BadInputException("Input file does not define dimension");
+
+    if(input_map.empty() || input_map.begin()->first >= Type::add_cone){ // can happen if only nonnegative is asked for
+        input_map[Type::inequalities] = Matrix<Number>(1,dim); // used to transfer dimension
     }
     return input_map;
 }
 
 template InputMap<mpq_class> readNormalizInput(istream& in,
-                                                                             OptionsHandler& options,
-                                                                             map<NumParam::Param, long>& num_param_input,
-                                                                             map<PolyParam::Param, vector<string> >& poly_param_input,
-                                                                             renf_class_shared& number_field);
+                                                    OptionsHandler& options,
+                                                    map<NumParam::Param, long>& num_param_input,
+                                                    map<BoolParam::Param, bool>& bool_param_input,
+                                                    map<PolyParam::Param, vector<string> >& poly_param_input,
+                                                    renf_class_shared& number_field);
 
 #ifdef ENFNORMALIZ
 template InputMap<renf_elem_class> readNormalizInput(istream& in,
-                                                                                   OptionsHandler& options,
-                                                                                   map<NumParam::Param, long>& num_param_input,
-                                                                                   map<PolyParam::Param, vector<string> >& poly_param_input,
-                                                                                   renf_class_shared& number_field);
+                                                     OptionsHandler& options,
+                                                     map<NumParam::Param, long>& num_param_input,
+                                                     map<BoolParam::Param, bool>& bool_param_input,
+                                                     map<PolyParam::Param, vector<string> >& poly_param_input,
+                                                     renf_class_shared& number_field);
 #endif
 
 #ifndef NMZ_MIC_OFFLOAD  // offload with long is not supported

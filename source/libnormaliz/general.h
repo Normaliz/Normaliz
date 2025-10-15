@@ -109,7 +109,6 @@ typedef unsigned short shortkey_t;
 NORMALIZ_DLL_EXPORT extern bool verbose;
 NORMALIZ_DLL_EXPORT extern bool running_input_file;
 NORMALIZ_DLL_EXPORT extern bool constructor_verbose;
-NORMALIZ_DLL_EXPORT extern bool polynomial_verbose;
 NORMALIZ_DLL_EXPORT extern bool talkative;
 NORMALIZ_DLL_EXPORT extern size_t GMP_mat, GMP_hyp, GMP_scal_prod;
 NORMALIZ_DLL_EXPORT extern size_t TotDet;
@@ -119,7 +118,6 @@ NORMALIZ_DLL_EXPORT extern bool int_max_value_dual_long_long_computed;
 NORMALIZ_DLL_EXPORT extern bool int_max_value_primary_long_computed;
 NORMALIZ_DLL_EXPORT extern bool int_max_value_primary_long_long_computed;
 NORMALIZ_DLL_EXPORT extern bool output_on_interrupt;
-NORMALIZ_DLL_EXPORT extern bool no_coord_transf;
 NORMALIZ_DLL_EXPORT extern bool write_lp_file;
 NORMALIZ_DLL_EXPORT extern bool no_empty_output;
 
@@ -160,7 +158,6 @@ NORMALIZ_DLL_EXPORT extern long full_cone_recursion_level;
 /* set the verbose default value */
 bool setVerboseDefault(bool v);
 void suppressNextConstructorVerbose();
-bool setPolynomialVerbose(bool onoff);
 bool setTalkativeDefault(bool v);
 /* methods to set and use the output streams */
 void setVerboseOutput(std::ostream&);

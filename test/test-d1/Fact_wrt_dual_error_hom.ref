@@ -24,8 +24,8 @@ degrees of extreme rays:
  3 2 0 2
 
 2 support hyperplanes:
- 0  1 0 0
- 2 -3 0 0
+ 0 0 1 0
+ 0 1 0 0
 
 2 equations:
  2 0 1 -3

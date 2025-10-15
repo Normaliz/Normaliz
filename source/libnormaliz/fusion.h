@@ -308,6 +308,8 @@ void FusionBasic::read_data_from_input(InputMap<Integer>& input_data){
 
     commutative = false;
     if(contains(input_data, Type::fusion_duality)){
+        if(input_data[Type::fusion_duality].nr_of_rows() == 0)
+            throw BadInputException("Empty fusion duality");
         vector<Integer> prel_duality = input_data[Type::fusion_duality][0];
         // std::cout << "PREL " << prel_duality; //" -- " << prel_duality.size() << " -- " <<  fusion_rank_from_input << endl;
         if(prel_duality.size() != fusion_rank || (prel_duality[0] != 0 && prel_duality[0] != -1 && prel_duality[0] != -2 && prel_duality[0] != -3))

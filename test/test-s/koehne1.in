@@ -17,4 +17,4 @@ inhom_inequalities 13
  0 1 1 1 0 0
  1 1 0 0 0 0
  1 1 1 1 0 0
- convert_equations
+ no_coord_transf

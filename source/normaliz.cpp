@@ -188,21 +188,6 @@ int main(int argc, char* argv[]){
         command_line_items.push_back(string(argv[i]));
     }
 
-/*
-    for(auto& s: command_line_items){
-        if(s == "--PostProcessFusion"){
-            try{
-                post_process_fusion(command_line_items);
-            } catch (const BadInputException& e) {
-                cerr << e.what() << endl;
-                cerr << "BadInputException caught... exiting." << endl;
-                exit(1);
-            }
-            exit(0);
-        }
-    }
-*/
-
     string global_command_line = command_line;
 
     // read command line options
@@ -223,7 +208,49 @@ int main(int argc, char* argv[]){
         verboseOutput() << "Command line: " << command_line << endl;
     }
 
-    /* vector<long long> our_type = {1,1,2,6};
+    /* Matrix<long long> Test(1,3);
+    Test[0] = {1,2,3};
+    Cone<long long> C(Type::vertices, Test);
+    C.compute(ConeProperty::EhrhartSeries);
+    cout << "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$" << endl;
+    C.compute(ConeProperty::EhrhartQuasiPolynomial);
+    cout << "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << endl;
+    C.getEhrhartSeries().getHilbertQuasiPolynomial();
+    cout << "&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&" << endl;
+    C.getEhrhartSeries().getHilbertQuasiPolynomial();
+    exit(0);*/
+
+    /*
+    //long long a = 4, b = 14, c = 24;
+    long long a = 3, b = 4, c = 69;
+    vector<long long> tt = {1,a,b,c};
+    Matrix< long long> tt_mat(0,4);
+    tt_mat.append(tt);
+    map<Type::InputType, Matrix<long long> > OurInput;
+    Matrix<long long> InputEq(2,6);
+    InputEq[0][0] = a;
+    InputEq[0][1] = b;
+    InputEq[0][2] = c;
+    InputEq[0][5] = - (a*a-1);
+    InputEq[1][1] = a;
+    InputEq[1][3] = b;
+    InputEq[1][4] = c;
+    InputEq[1][5] = - a*b;
+    Matrix<long long> OurCong(1,7);
+    OurCong[0][2] = a;
+    OurCong[0][4] = b;
+    OurCong[0][6] = c;
+    OurInput[Type::inhom_equations] = InputEq;
+    OurInput[Type::inhom_congruences] = OurCong;
+    Cone<long long> C(OurInput);
+    Matrix<long long> Sol = C.getLatticePointsMatrix();
+    Sol.debug_print();
+    exit(0);
+    */
+
+
+    /*
+     vector<long long> our_type = {1,1,2,6};
     vector<unsigned int> our_dual = {0,1,2,3};
     vector<long long> our_ring = {0,0,0,1,0,1,1,0,2,5,1}; */
 
@@ -263,18 +290,21 @@ int main(int argc, char* argv[]){
     vector<vector<Matrix<long long> > > BB = TT.getFusionDataMatrix();
     BB[0][0].debug_print();
     cout << "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ " << endl;
-    exit(0);*/
+    exit(0);     LL.getModuleGeneratorsMatrix().debug_print('+');
 
-    /*Matrix<long long> CC(3,3);
+
+    Matrix<long long> CC(3,3);
+    vector<long long> TTT ={0,0,1};
     CC[0] = {2,0,1};
     CC[1] = {0,2,1};
     CC[2] = {0,0,1};
     CC.debug_print('/');
-    Cone<long long> LL(Type::vertices, CC);
+    Matrix<long long> Bla = TTT;
+    Cone<long long> LL(Type::vertices, CC, Type::grading, Bla);
     LL.compute(ConeProperty::LatticePoints);
     LL.getSupportHyperplanesMatrix().debug_print('$');
     LL.getLatticePointsMatrix().debug_print();
-    LL.getModuleGeneratorsMatrix().debug_print('+');*/
+    */
 
     set_normaliz_time();
 
@@ -390,6 +420,7 @@ template <typename ConeType, typename InputNumberType>
 void compute_and_output(OptionsHandler& options,
                         const InputMap<InputNumberType>& input,
                         const map<NumParam::Param, long>& num_param_input,
+                        const map<BoolParam::Param, bool>& bool_param_input,
                         map<PolyParam::Param, vector<string> >& poly_param_input,
                         renf_class_shared number_field_ref,
                         InputMap<InputNumberType>& add_input) {
@@ -412,9 +443,7 @@ void compute_and_output(OptionsHandler& options,
     Cone<ConeType> MyCone = Cone<ConeType>(input);
     MyCone.setPolyParams(poly_param_input);
     MyCone.setNumericalParams(num_param_input);
-    /*MyCone.setNrCoeffQuasiPol(nr_coeff_quasipol);
-    MyCone.setExpansionDegree(expansion_degree);
-    MyCone.setFaceCodimBound(face_codim_bound);*/
+    MyCone.setBoolParams(bool_param_input);
     MyCone.setRenf(number_field);
     MyCone.setProjectName(options.getProjectName());
     try {
@@ -493,6 +522,7 @@ void compute_and_output(OptionsHandler& options,
 template <typename InputNumberType>
 InputMap<InputNumberType> extract_additional_input(
     InputMap<InputNumberType>& input) {
+
     InputMap<InputNumberType> add_input;
     size_t nr_add_input = 0;
     auto M = input.find(Type::add_inequalities);
@@ -537,6 +567,9 @@ InputMap<InputNumberType> extract_additional_input(
         input.erase(Type::add_vertices);
         nr_add_input++;
     }
+
+    // must make sure that dimension is transferred via *this
+
     return add_input;
 }
 
@@ -629,13 +662,14 @@ int process_data(OptionsHandler& options, const string& command_line) {
         InputMap<mpq_class> input, add_input;
         InputMap<renf_elem_class> renf_input, renf_add_input;
         map<NumParam::Param, long> num_param_input;
+        map<BoolParam::Param, bool> bool_param_input;
         map<PolyParam::Param, vector<string> > poly_param_input;
         bool renf_read = false;
         renf_class_shared number_field;
 
         if(!standard_fusion_name){
             try {
-                input = readNormalizInput<mpq_class>(in, options, num_param_input, poly_param_input,  number_field);
+                input = readNormalizInput<mpq_class>(in, options, num_param_input, bool_param_input, poly_param_input,  number_field);
                 if (nmz_interrupted)
                     exit(10);
             }
@@ -646,7 +680,8 @@ int process_data(OptionsHandler& options, const string& command_line) {
 
                 in.close();
                 in.open(file_in, ifstream::in);
-                renf_input = readNormalizInput<renf_elem_class>(in, options, num_param_input, poly_param_input, number_field);
+                renf_input = readNormalizInput<renf_elem_class>(in, options, num_param_input, bool_param_input,
+                                                                poly_param_input, number_field);
                 if (nmz_interrupted)
                     exit(10);
                 renf_read = true;
@@ -687,18 +722,18 @@ int process_data(OptionsHandler& options, const string& command_line) {
             // if(options.getToCompute().test(ConeProperty::Dynamic))
             renf_add_input = extract_additional_input<renf_elem_class>(renf_input);
 
-            compute_and_output<renf_elem_class>(options, renf_input, num_param_input, poly_param_input, number_field, renf_add_input);
+            compute_and_output<renf_elem_class>(options, renf_input, num_param_input, bool_param_input, poly_param_input, number_field, renf_add_input);
         }
         else {
             if (options.isUseLongLong()) {
                 // if(options.getToCompute().test(ConeProperty::Dynamic))
                 add_input = extract_additional_input<mpq_class>(input);
-                compute_and_output<long long>(options, input, num_param_input, poly_param_input, number_field, add_input);
+                compute_and_output<long long>(options, input, num_param_input, bool_param_input, poly_param_input, number_field, add_input);
             }
             else {
                 // if(options.getToCompute().test(ConeProperty::Dynamic))
                 add_input = extract_additional_input<mpq_class>(input);
-                compute_and_output<mpz_class>(options, input, num_param_input, poly_param_input, number_field, add_input);
+                compute_and_output<mpz_class>(options, input, num_param_input, bool_param_input, poly_param_input, number_field, add_input);
             }
         }
 

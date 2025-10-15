@@ -517,6 +517,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
                 continue;
             if(CongIndicator[i].is_subset_of(AllPatches[coord]))
                 continue;
+            // cout << "CCCCC " << coord << " --- "<< Congs[i];
             AllCongsRestricted[coord].push_back(OurPolynomialCong<IntegerRet>(Congs[i]));
         }
 
@@ -2042,7 +2043,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
 
         if(talkative){
             verboseOutput() << "done " << nr_points_done_in_this_round;
-            verboseOutput() << " ext " << nr_extensions;
+            verboseOutput() << " ext&cgr " << nr_extensions;
             if(PolyEqusThread[0].size() > 0)
                 verboseOutput() << " equ " << nr_caught_by_equations;
             if(PolyInequsThread[0].size() > 0)
@@ -3476,7 +3477,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute(bool all_points, bool liftin
         }
         else{
             if(verbose)
-                verboseOutput() << "for general system" << endl;
+                verboseOutput() << " for general system" << endl;
             compute_projections(EmbDim, 1, StartInd, StartPair, StartParaInPair, StartRank);
         }
         //restrict_congruences();

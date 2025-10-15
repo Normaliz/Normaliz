@@ -3,15 +3,15 @@ Automorphisms are integral
 ************************************************************************
 3 permutations of 6 extreme rays
 
-Perm 1: 6 2 3 4 5 1
+Perm 1: 1 5 3 4 2 6
 Perm 2: 1 2 4 3 5 6
-Perm 3: 1 5 3 4 2 6
+Perm 3: 6 2 3 4 5 1
 
 Cycle decompositions 
 
-Perm 1: (1 6) --
+Perm 1: (2 5) --
 Perm 2: (3 4) --
-Perm 3: (2 5) --
+Perm 3: (1 6) --
 
 3 orbits of extreme rays
 
@@ -22,15 +22,15 @@ Orbit 3 , length 2:  3 4
 ************************************************************************
 3 permutations of 8 support hyperplanes
 
-Perm 1: 5 6 7 8 1 2 3 4
+Perm 1: 3 4 1 2 7 8 5 6
 Perm 2: 2 1 4 3 6 5 8 7
-Perm 3: 3 4 1 2 7 8 5 6
+Perm 3: 5 6 7 8 1 2 3 4
 
 Cycle decompositions 
 
-Perm 1: (1 5) (2 6) (3 7) (4 8) --
+Perm 1: (1 3) (2 4) (5 7) (6 8) --
 Perm 2: (1 2) (3 4) (5 6) (7 8) --
-Perm 3: (1 3) (2 4) (5 7) (6 8) --
+Perm 3: (1 5) (2 6) (3 7) (4 8) --
 
 1 orbits of support hyperplanes
 

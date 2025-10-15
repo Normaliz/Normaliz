@@ -1608,7 +1608,7 @@ void Matrix<Integer>::inverse_permute_columns(const vector<key_t>& perm) {
 
 template <typename Integer>
 void Matrix<Integer>::exchange_columns(const size_t& col1, const size_t& col2) {
-    if (col1 == col2)
+    if (col1 == col2 || nr == 0)
         return;
     assert(col1 < nc);
     assert(col2 < nc);
@@ -1621,6 +1621,8 @@ void Matrix<Integer>::exchange_columns(const size_t& col1, const size_t& col2) {
 
 template <typename Integer>
 void Matrix<Integer>::cyclic_shift_right(const size_t& col){
+    if(nr == 0)
+        return;
     assert(col < nc);
     Integer dummy;
     for(int i = 0; i < nr; ++i){
@@ -4482,6 +4484,7 @@ Matrix<renf_elem_class> Matrix<renf_elem_class>::LLL_red(Matrix<renf_elem_class>
 
 template <typename Integer>
 Matrix<Integer> Matrix<Integer>::LLL() const {
+    // cout << "LLLLLLLLLLLLLLLLLLLLL" << endl;
     Matrix<Integer> Dummy1, Dummy2;
     return LLL_red(*this, Dummy1, Dummy2);
 }
@@ -4494,6 +4497,7 @@ Matrix<mpq_class> Matrix<mpq_class>::LLL() const {
 
 template <typename Integer>
 Matrix<Integer> Matrix<Integer>::LLL_transpose() const {
+    // cout << "TTTTTTTTTTTTTTTTTTTTTTTT" << endl;
     return transpose().LLL().transpose();
 }
 
