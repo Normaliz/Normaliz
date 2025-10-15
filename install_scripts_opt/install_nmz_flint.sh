@@ -9,7 +9,7 @@ source $(dirname "$0")/common.sh
 CONFIGURE_FLAGS="--prefix=${PREFIX}"
 
 if [ "$OSTYPE" != "msys" ]; then
-	CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --with-mpfr=${PREFIX}"
+	CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --with-mpfr=${PREFIX} --enable-static"
 else # only static here, we take shared from MSYS repository
 	CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --with-gmp=${MSYS_STANDARD_LOC} --with-mpfr=${MSYS_STANDARD_LOC} --disable-shared"
 fi
