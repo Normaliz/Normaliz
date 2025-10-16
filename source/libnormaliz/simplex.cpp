@@ -957,6 +957,8 @@ bool SimplexEvaluator<Integer>::evaluate(SHORTSIMPLEX<Integer>& s) {
         evaluate_block(1, convertToLong(volume) - 1, C_ptr->Results[tn]);
     conclude_evaluation(C_ptr->Results[tn]);
 
+    // Simplex_parallel_evaluation(); TODO instead of not parallelized evaluation
+
     return true;
 }
 
