@@ -1211,14 +1211,14 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation() {
             addMult(-volume, C.Results[0]);
             // delete this large simplex
             C.totalNrSimplices--;
-            if (C.keep_triangulation) {
+            /*if (C.keep_triangulation) {
                 for (auto it = C.Triangulation.begin(); it != C.Triangulation.end(); ++it) {
                     if (it->key == key) {
                         C.Triangulation.erase(it);
                         break;
                     }
                 }
-            }
+            }*/
 
             // create generators for bottom decomposition
             // we start with the extreme rays of the recession cone

@@ -3650,7 +3650,7 @@ void Cone<Integer>::compute_full_cone_inner(ConeProperties& ToCompute) {
     }
 
     if (ToCompute.test(ConeProperty::BasicTriangulation)) {
-        FC.keep_triangulation = true;
+        FC.export_triangulation = true;
     }
 
     if (ToCompute.test(ConeProperty::PullingTriangulationInternal)) {
@@ -3782,7 +3782,7 @@ void Cone<Integer>::compute_full_cone_inner(ConeProperties& ToCompute) {
 
     bool must_triangulate = FC.do_h_vector || FC.do_Hilbert_basis || FC.do_multiplicity || FC.do_Stanley_dec ||
                             FC.do_module_rank || FC.do_module_gens_intcl || FC.do_bottom_dec || FC.do_hsop ||
-                            FC.do_integrally_closed || FC.keep_triangulation || FC.do_integrally_closed || FC.do_cone_dec ||
+                            FC.do_integrally_closed || FC.export_triangulation || FC.do_integrally_closed || FC.do_cone_dec ||
                             FC.do_determinants || FC.do_triangulation_size || FC.do_deg1_elements || FC.do_default_mode;
 
     // Do we really need the Full_Cone? ALREADY CHECKED

@@ -115,7 +115,8 @@ class Full_Cone {
     bool do_Hilbert_basis;
     bool do_deg1_elements;
     bool do_h_vector;
-    bool keep_triangulation;
+    bool export_triangulation;  // to cone
+    bool store_triangulation; // true as long as simplices m,ust be stored
     bool pulling_triangulation;
     bool keep_triangulation_bitsets;  // convert the triangulation keys into bitsets  and keep them
     bool do_Stanley_dec;

@@ -723,9 +723,11 @@ void ConeProperties::set_preconditions(bool inhomogeneous, bool numberfield) {
     if (CPs.test(ConeProperty::Rank))
         CPs.set(ConeProperty::Sublattice);
 
-    // we want an ordinary triangulation if one is asked for
+    /*/
+    / we want an ordinary triangulation if one is asked for
     if (CPs.test(ConeProperty::BasicTriangulation)) // && !numberfield)?????
         CPs.set(ConeProperty::NoSubdivision);
+    */
 
     // Volume + Integral ==> NoGradingDenom
     if (CPs.test(ConeProperty::Volume) || CPs.test(ConeProperty::Integral)) {

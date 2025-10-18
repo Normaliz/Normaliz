@@ -1638,7 +1638,7 @@ void Full_Cone<Integer>::store_key(const vector<key_t>& key,
         for (size_t i = 0; i < dim; i++)  // and needs the key in TopCone numbers
             newsimplex.key[i] = Top_Key[newsimplex.key[i]];
 
-        if (keep_triangulation)
+        if (export_triangulation)
             sort(newsimplex.key.begin(), newsimplex.key.end());
         Top_Cone->SimplexEval[tn].evaluate(newsimplex);
         // restore the local generator numbering, needed in extend_triangulation
@@ -1647,7 +1647,7 @@ void Full_Cone<Integer>::store_key(const vector<key_t>& key,
     if (height == 0)
         Top_Cone->triangulation_is_partial = true;
 
-    if (keep_triangulation) {
+    if (export_triangulation) {
         Triangulation.push_back(newsimplex);
         return;
     }
@@ -1721,7 +1721,7 @@ void Full_Cone<renf_elem_class>::store_key(const vector<key_t>& key,
     if (height == 0)
         Top_Cone->triangulation_is_partial = true;
 
-    if (keep_triangulation) {
+    if (export_triangulation) {
         Triangulation.push_back(newsimplex);
         return;
     }
@@ -3922,7 +3922,7 @@ bool Full_Cone<Integer>::check_evaluation_buffer() {
 
 template <typename Integer>
 bool Full_Cone<Integer>::check_evaluation_buffer_size() {
-    return (!Top_Cone->keep_triangulation && Top_Cone->TriangulationBufferSize > EvalBoundTriang);
+    return (!Top_Cone->export_triangulation && Top_Cone->TriangulationBufferSize > EvalBoundTriang);
 }
 
 //---------------------------------------------------------------------------
@@ -4133,7 +4133,7 @@ void Full_Cone<Integer>::evaluate_triangulation() {
 
     totalNrSimplices += TriangulationBufferSize;
 
-    if (do_Stanley_dec || keep_triangulation) {  // in these cases sorting is necessary
+    if (do_Stanley_dec || store_triangulation) {  // in these cases sorting is necessary
         for (auto& simp : TriangulationBuffer)
             sort(simp.key.begin(), simp.key.end());
     }
@@ -4171,8 +4171,6 @@ void Full_Cone<Integer>::evaluate_triangulation() {
 
                         done[spos] = true;
 
-                        /* if(keep_triangulation || do_Stanley_dec)  -- now done above
-                            sort(s->key.begin(),s->key.end()); */
                         if (!SimplexEval[tn].evaluate(*s)) {
 #pragma omp critical(LARGESIMPLEX)
                             LargeSimplices.push_back(SimplexEval[tn]);
@@ -4226,7 +4224,7 @@ void Full_Cone<Integer>::evaluate_triangulation() {
             Triangulation_ind.push_back(make_pair(key_to_bitset(T.key, nr_gen), dynamic_bitset()));
     }
 
-    if (keep_triangulation) {
+    if (store_triangulation) { // is false when large simplices are evaluated
         Triangulation.splice(Triangulation.end(), TriangulationBuffer);
     }
     else {
@@ -4340,7 +4338,7 @@ void Full_Cone<renf_elem_class>::evaluate_triangulation() {
         }
     }
 
-    if (keep_triangulation) {
+    if (store_triangulation) {
         Triangulation.splice(Triangulation.end(), TriangulationBuffer);
     }
     else {
@@ -4360,6 +4358,8 @@ void Full_Cone<Integer>::evaluate_large_simplices() {
         return;
 
     assert(omp_get_level() == omp_start_level);
+
+    store_triangulation = false; // simplex is already stored, and subsimplices will not be stored
 
     if (verbose) {
         verboseOutput() << "Evaluating " << lss << " large simplices" << endl;
@@ -4546,7 +4546,7 @@ void Full_Cone<Integer>::primal_algorithm() {
     // primal_algorithm_initialize();
 
     /***** Main Work is done in build_top_cone() *****/
-    build_top_cone();  // evaluates if keep_triangulation==false
+    build_top_cone();  // evaluates if export_triangulation==false
     /***** Main Work is done in build_top_cone() *****/
 
     check_pointed();
@@ -4654,7 +4654,7 @@ void Full_Cone<Integer>::primal_algorithm_finalize() {
     if (isComputed(ConeProperty::Grading) && !deg1_generated) {
         deg1_triangulation = false;
     }
-    if (keep_triangulation) {
+    if (export_triangulation) {
         setComputed(ConeProperty::Triangulation);
         if (pulling_triangulation)
             setComputed(ConeProperty::PullingTriangulation);
@@ -4953,17 +4953,19 @@ void Full_Cone<Integer>::set_preconditions() {
     if (do_module_gens_intcl)
         allow_simplex_dec = false;  // extra bottom points change the originalmonoid
     if (do_Stanley_dec)
-        keep_triangulation = true;
+        export_triangulation = true;
     if (do_pure_triang)
-        keep_triangulation = true;
+        export_triangulation = true;
     if (pulling_triangulation) {
-        keep_triangulation = true;
+        export_triangulation = true;
         keep_order = true;
     }
     if (do_cone_dec)
-        keep_triangulation = true;
-    if (keep_triangulation)
+        export_triangulation = true;
+    if (export_triangulation){
         do_determinants = true;
+        store_triangulation = true;
+    }
 
     do_signed_dec = do_multiplicity_by_signed_dec || do_integral_by_signed_dec || do_virtual_multiplicity_by_signed_dec;
 
@@ -4991,7 +4993,7 @@ void Full_Cone<Integer>::set_preconditions() {
         suppress_bottom_dec = true;
 
     // to exclude descent to facets in the exploitation of automorphism groups: we must use the primal algorithm directly
-    no_descent_to_facets = do_h_vector || do_module_gens_intcl || keep_triangulation || do_triangulation_size || do_Stanley_dec ||
+    no_descent_to_facets = do_h_vector || do_module_gens_intcl || export_triangulation || do_triangulation_size || do_Stanley_dec ||
                            do_cone_dec || do_determinants || do_excluded_faces || do_bottom_dec;
 
     do_only_supp_hyps_and_aux =
@@ -5023,8 +5025,10 @@ void Full_Cone<Integer>::deactivate_completed_tasks() {
         do_Stanley_dec = false;
     if (isComputed(ConeProperty::ConeDecomposition))
         do_cone_dec = false;
-    if (isComputed(ConeProperty::Triangulation))
-        keep_triangulation = false;
+    if (isComputed(ConeProperty::Triangulation)){
+        export_triangulation = false;
+        store_triangulation = false;
+    }
     if (isComputed(ConeProperty::TriangulationDetSum))
         do_determinants = false;
 
@@ -5259,7 +5263,7 @@ void Full_Cone<Integer>::compute() {
         return;
     }
 
-    if (!do_Hilbert_basis && !do_h_vector && !do_multiplicity && !do_deg1_elements && !do_Stanley_dec && !keep_triangulation &&
+    if (!do_Hilbert_basis && !do_h_vector && !do_multiplicity && !do_deg1_elements && !do_Stanley_dec && !export_triangulation &&
         !do_determinants)
         assert(Generators.max_rank_submatrix_lex().size() == dim);
 
@@ -7383,7 +7387,8 @@ void Full_Cone<Integer>::reset_tasks() {
     do_integrally_closed = false;
     do_Hilbert_basis = false;
     do_deg1_elements = false;
-    keep_triangulation = false;
+    export_triangulation = false;
+    store_triangulation = false;
     allow_simplex_dec = true;
     pulling_triangulation = false;
     keep_triangulation_bitsets = false;
@@ -7830,7 +7835,7 @@ Full_Cone<Integer>::Full_Cone(Full_Cone<Integer>& C, const vector<key_t>& Key) {
     do_deg1_elements = C.do_deg1_elements;
     do_h_vector = C.do_h_vector;
     do_Hilbert_basis = C.do_Hilbert_basis;
-    keep_triangulation = C.keep_triangulation;
+    export_triangulation = C.export_triangulation;
     keep_triangulation_bitsets = C.keep_triangulation_bitsets;
     do_pure_triang = C.do_pure_triang;
     do_evaluation = C.do_evaluation;
