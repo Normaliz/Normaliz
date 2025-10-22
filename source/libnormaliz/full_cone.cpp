@@ -4133,7 +4133,7 @@ void Full_Cone<Integer>::evaluate_triangulation() {
 
     totalNrSimplices += TriangulationBufferSize;
 
-    if (do_Stanley_dec || store_triangulation) {  // in these cases sorting is necessary
+    if (do_Stanley_dec || store_simplices) {  // in these cases sorting is necessary
         for (auto& simp : TriangulationBuffer)
             sort(simp.key.begin(), simp.key.end());
     }
@@ -4224,7 +4224,7 @@ void Full_Cone<Integer>::evaluate_triangulation() {
             Triangulation_ind.push_back(make_pair(key_to_bitset(T.key, nr_gen), dynamic_bitset()));
     }
 
-    if (store_triangulation) { // is false when large simplices are evaluated
+    if (store_simplices) { // is false when large simplices are evaluated
         Triangulation.splice(Triangulation.end(), TriangulationBuffer);
     }
     else {
@@ -4338,7 +4338,7 @@ void Full_Cone<renf_elem_class>::evaluate_triangulation() {
         }
     }
 
-    if (store_triangulation) {
+    if (store_simplices) {
         Triangulation.splice(Triangulation.end(), TriangulationBuffer);
     }
     else {
@@ -4359,7 +4359,7 @@ void Full_Cone<Integer>::evaluate_large_simplices() {
 
     assert(omp_get_level() == omp_start_level);
 
-    store_triangulation = false; // simplex is already stored, and subsimplices will not be stored
+    store_simplices = false; // simplex is already stored, and subsimplices will not be stored
 
     if (verbose) {
         verboseOutput() << "Evaluating " << lss << " large simplices" << endl;
@@ -4964,7 +4964,7 @@ void Full_Cone<Integer>::set_preconditions() {
         export_triangulation = true;
     if (export_triangulation){
         do_determinants = true;
-        store_triangulation = true;
+        store_simplices = true;
     }
 
     do_signed_dec = do_multiplicity_by_signed_dec || do_integral_by_signed_dec || do_virtual_multiplicity_by_signed_dec;
@@ -5027,7 +5027,7 @@ void Full_Cone<Integer>::deactivate_completed_tasks() {
         do_cone_dec = false;
     if (isComputed(ConeProperty::Triangulation)){
         export_triangulation = false;
-        store_triangulation = false;
+        store_simplices = false;
     }
     if (isComputed(ConeProperty::TriangulationDetSum))
         do_determinants = false;
@@ -7388,7 +7388,7 @@ void Full_Cone<Integer>::reset_tasks() {
     do_Hilbert_basis = false;
     do_deg1_elements = false;
     export_triangulation = false;
-    store_triangulation = false;
+    store_simplices = false;
     allow_simplex_dec = true;
     pulling_triangulation = false;
     keep_triangulation_bitsets = false;
