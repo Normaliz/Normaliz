@@ -4173,8 +4173,12 @@ void Full_Cone<Integer>::evaluate_triangulation() {
 
                         if (!SimplexEval[tn].evaluate(*s)) {
 #pragma omp critical(LARGESIMPLEX)
-                            LargeSimplices.push_back(SimplexEval[tn]);
+                        if(allow_simplex_dec)
+                                LargeSimplices.push_back(SimplexEval[tn]);
+                        else
+                                HugeSimplices.push_back(SimplexEval[tn]);
                         }
+
                         if (verbose) {
 #pragma omp critical(VERBOSE)
                             while ((long)(i * VERBOSE_STEPS) >= step_x_size) {
@@ -4352,6 +4356,24 @@ void Full_Cone<renf_elem_class>::evaluate_triangulation() {
 //---------------------------------------------------------------------------
 
 template <typename Integer>
+void Full_Cone<Integer>::evaluate_huge_simplices() {
+
+    if(HugeSimplices.empty())
+        return;
+
+    assert(LargeSimplices.empty());
+
+    evaluate_huge = true;
+
+    swap(LargeSimplices, HugeSimplices);
+
+    return;
+
+}
+
+//---------------------------------------------------------------------------
+
+template <typename Integer>
 void Full_Cone<Integer>::evaluate_large_simplices() {
     size_t lss = LargeSimplices.size();
     if (lss == 0)
@@ -4361,8 +4383,12 @@ void Full_Cone<Integer>::evaluate_large_simplices() {
 
     store_simplices = false; // simplex is already stored, and subsimplices will not be stored
 
+    string simplex_class = " large ";
+    if(evaluate_huge)
+        simplex_class =" huge ";
+
     if (verbose) {
-        verboseOutput() << "Evaluating " << lss << " large simplices" << endl;
+        verboseOutput() << "Evaluating " << lss << simplex_class << "simplices" << endl;
     }
     size_t j;
     for (j = 0; j < lss; ++j) {
@@ -4403,7 +4429,7 @@ void Full_Cone<Integer>::evaluate_large_simplices() {
 template <typename Integer>
 void Full_Cone<Integer>::evaluate_large_simplex(size_t j, size_t lss) {
     if (verbose) {
-        verboseOutput() << "Large simplex " << j + 1 << " / " << lss << endl;
+        verboseOutput() << "Simplex " << j + 1 << " / " << lss << endl;
     }
 
     if (do_deg1_elements && !do_h_vector && !do_Stanley_dec && !deg1_triangulation) {
@@ -4668,6 +4694,11 @@ void Full_Cone<Integer>::primal_algorithm_finalize() {
     evaluate_large_simplices();   // can produce level 0 pyramids
     allow_simplex_dec = false;    // block new attempts for subdivision
     evaluate_stored_pyramids(0);  // in case subdivision took place
+    evaluate_triangulation();
+    // the same once more for huge simplices put into LargeSimplices
+    evaluate_huge_simplices();
+    evaluate_large_simplices();   // can produce level 0 pyramids
+    evaluate_stored_pyramids(0);  // if we had huige simplices
     evaluate_triangulation();
     FreeSimpl.clear();
 
@@ -7390,6 +7421,7 @@ void Full_Cone<Integer>::reset_tasks() {
     export_triangulation = false;
     store_simplices = false;
     allow_simplex_dec = true;
+    evaluate_huge = false;
     pulling_triangulation = false;
     keep_triangulation_bitsets = false;
     do_Stanley_dec = false;

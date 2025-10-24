@@ -946,9 +946,8 @@ bool SimplexEvaluator<Integer>::evaluate(SHORTSIMPLEX<Integer>& s) {
     // large simplicies to be postponed for parallel evaluation
     if (volume > SimplexParallelEvaluationBound / 10
         // || (volume > SimplexParallelEvaluationBound/10 && C_ptr->do_Hilbert_basis) )
-        && !C_ptr->do_Stanley_dec && C_ptr->allow_simplex_dec
-    ) {  //&& omp_get_max_threads()>1)
-        return false;
+        && !C_ptr->do_Stanley_dec){
+            return false;
     }
     if (C_ptr->stop_after_cone_dec)
         return true;
