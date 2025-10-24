@@ -1,3 +1,4 @@
+
 /*
  * Normaliz
  * Copyright (C) 2007-2019  Winfried Bruns, Bogdan Ichim, Christof Soeger
@@ -172,7 +173,6 @@ class Full_Cone {
     bool do_only_supp_hyps_and_aux;
     bool do_all_hyperplanes;  // controls whether all support hyperplanes must be computed
     bool allow_simplex_dec;
-    bool evaluate_huge;
     bool no_subdivision;
     ConeProperties is_Computed;
     bool has_generator_with_common_divisor;
@@ -237,7 +237,7 @@ class Full_Cone {
     vector<pair<dynamic_bitset, dynamic_bitset>> Triangulation_ind;  // the same, but bitsets instead of keys
     list<SHORTSIMPLEX<Integer>> TriangulationBuffer;                 // simplices to evaluate
     list<SimplexEvaluator<Integer>> LargeSimplices;                  // Simplices for dec  into smaller simplices
-    list<SimplexEvaluator<Integer>> HugeSimplices;                   // Simplices for internal parallelization
+    list<SimplexEvaluator<Integer>> LargeSimplicesBuffer;            // temporyry storage
     Integer detSum;                                                  // sum of the determinants of the simplices
     list<STANLEYDATA_int> StanleyDec;                                // Stanley decomposition
     vector<Integer>
@@ -465,7 +465,7 @@ class Full_Cone {
     void prepare_old_candidates_and_support_hyperplanes();
     void evaluate_triangulation();
     void evaluate_large_simplices();
-    void evaluate_huge_simplices();
+    void evaluate_large_simplices_inner();
     void evaluate_large_simplex(size_t j, size_t lss);
     void transfer_triangulation_to_top();
     void primal_algorithm();

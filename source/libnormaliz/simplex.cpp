@@ -1162,9 +1162,9 @@ void SimplexEvaluator<Integer>::Simplex_parallel_evaluation() {
     }
 
     if (C_ptr->allow_simplex_dec &&
-        (volume >= SimplexParallelEvaluationBound ||
-        (volume > SimplexParallelEvaluationBound / 10 && C_ptr->do_Hilbert_basis)) &&
-        (!C_ptr->deg1_triangulation || !C_ptr->isComputed(ConeProperty::Grading))) {  // try subdivision
+        (volume >= SimplexParallelEvaluationBound||
+        (volume > SimplexParallelEvaluationBound / 10 && C_ptr->do_Hilbert_basis))
+        &&   (!C_ptr->deg1_triangulation || !C_ptr->isComputed(ConeProperty::Grading))) {  // try subdivision
 
         Full_Cone<Integer>& C = *C_ptr;
 

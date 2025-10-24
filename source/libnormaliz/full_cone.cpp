@@ -4173,10 +4173,7 @@ void Full_Cone<Integer>::evaluate_triangulation() {
 
                         if (!SimplexEval[tn].evaluate(*s)) {
 #pragma omp critical(LARGESIMPLEX)
-                        if(allow_simplex_dec)
-                                LargeSimplices.push_back(SimplexEval[tn]);
-                        else
-                                HugeSimplices.push_back(SimplexEval[tn]);
+                                LargeSimplicesBuffer.push_back(SimplexEval[tn]);
                         }
 
                         if (verbose) {
@@ -4356,25 +4353,7 @@ void Full_Cone<renf_elem_class>::evaluate_triangulation() {
 //---------------------------------------------------------------------------
 
 template <typename Integer>
-void Full_Cone<Integer>::evaluate_huge_simplices() {
-
-    if(HugeSimplices.empty())
-        return;
-
-    assert(LargeSimplices.empty());
-
-    evaluate_huge = true;
-
-    swap(LargeSimplices, HugeSimplices);
-
-    return;
-
-}
-
-//---------------------------------------------------------------------------
-
-template <typename Integer>
-void Full_Cone<Integer>::evaluate_large_simplices() {
+void Full_Cone<Integer>::evaluate_large_simplices_inner() {
     size_t lss = LargeSimplices.size();
     if (lss == 0)
         return;
@@ -4384,8 +4363,6 @@ void Full_Cone<Integer>::evaluate_large_simplices() {
     store_simplices = false; // simplex is already stored, and subsimplices will not be stored
 
     string simplex_class = " large ";
-    if(evaluate_huge)
-        simplex_class =" huge ";
 
     if (verbose) {
         verboseOutput() << "Evaluating " << lss << simplex_class << "simplices" << endl;
@@ -4691,15 +4668,7 @@ void Full_Cone<Integer>::primal_algorithm_finalize() {
 
     evaluate_triangulation();
     assert(nrPyramids[0] == 0);
-    evaluate_large_simplices();   // can produce level 0 pyramids
-    allow_simplex_dec = false;    // block new attempts for subdivision
-    evaluate_stored_pyramids(0);  // in case subdivision took place
-    evaluate_triangulation();
-    // the same once more for huge simplices put into LargeSimplices
-    evaluate_huge_simplices();
-    evaluate_large_simplices();   // can produce level 0 pyramids
-    evaluate_stored_pyramids(0);  // if we had huige simplices
-    evaluate_triangulation();
+    evaluate_large_simplices();
     FreeSimpl.clear();
 
     // collect accumulated data from the SimplexEvaluators
@@ -4730,6 +4699,22 @@ void Full_Cone<Integer>::primal_algorithm_finalize() {
         /* if(NrCompVect>0)
             cout << "Vector comparisons " << NrCompVect << " Value comparisons " << NrCompVal
                     << " Average " << NrCompVal/NrCompVect+1 << endl; */
+    }
+}
+
+
+//---------------------------------------------------------------------------
+
+template <typename Integer>
+void Full_Cone<Integer>::evaluate_large_simplices() {
+
+    while(!LargeSimplicesBuffer.empty()){
+        assert(LargeSimplices.empty());
+        assert(nrPyramids[0] == 0);
+        swap(LargeSimplices, LargeSimplicesBuffer);
+        evaluate_large_simplices_inner();   // can produce level 0 pyramids
+        evaluate_stored_pyramids(0);  // in case subdivision took place
+        evaluate_triangulation();
     }
 }
 
@@ -7421,7 +7406,6 @@ void Full_Cone<Integer>::reset_tasks() {
     export_triangulation = false;
     store_simplices = false;
     allow_simplex_dec = true;
-    evaluate_huge = false;
     pulling_triangulation = false;
     keep_triangulation_bitsets = false;
     do_Stanley_dec = false;
