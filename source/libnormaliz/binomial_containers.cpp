@@ -722,9 +722,9 @@ vector<mpz_class> binomial_list::compute_HilbertSeries(const vector<long long>& 
     level_bound_for_omp++;
     // cout << "LLLLLLLLLLL " << level_bound_for_omp << endl;
 
-    omp_set_nested(1);
+    omp_set_max_active_levels(4);
     vector<mpz_class> Num = the_monomials.compute_HilbertSeries_inner(0,grading);
-    omp_set_nested(0);
+    omp_set_max_active_levels(1);
     // cout << "max level " << max_level << " branches " << nr_branches << endl;
     return Num;
 
