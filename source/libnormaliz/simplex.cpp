@@ -933,6 +933,18 @@ long SimplexParallelEvaluationBound = 100000000;  // simplices larger than this 
 
 //---------------------------------------------------------------------------
 
+// Simplices can be treated in three ways:
+//
+// (1)  Complete evaluation in regard to all data in a single threa by
+//      evaluate(SHORTSIMPLEX<Integer>& s),
+//      provided volume < SimplexParallelEvaluationBound.
+//      This finction returns true in case of the evaluation, else false.
+// (2)  By Simplex_parallel_evaluation, called from evaluate_large_simplices_inner
+//      in full_cone.cpp.The returned simplices are made pyramids of level 1.
+// (3)  As (2), but evaluating the simplex in parallel threads, if a subdivision is
+//      not possible or forbidden. So no pyramid.
+//   See the two functions evaluate or Simplex_parallel_evaluation for more details.
+
 /* evaluates a simplex in regard to all data in a single thread*/
 template <typename Integer>
 bool SimplexEvaluator<Integer>::evaluate(SHORTSIMPLEX<Integer>& s) {

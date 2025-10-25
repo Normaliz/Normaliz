@@ -1647,7 +1647,7 @@ In addition to the files \verb|<project>.tgn| and \verb|<project>.tri|, also the
 \textbf{Note:}\enspace Normaliz (now) allows the computation of triangulations for all input. In the homogeneous case it computes a triangulation of the (pointed quotient of the) cone $C$ defined by the input. It can then be interpreted as a triangulation of a cross-section polytope if a grading is given. In the inhomogeneous case for which the input defines a polyhedron $P$, $C$ is the cone over $P$. If $P$ is a polytope, then a triangulation of $C$ can again be identified with a triangulation of $P$. However, if $P$ is unbounded, the the triangulation of $C$ only induces a polyhedral decomposition of $P$ into subpolyhedra whose compact faces are simplices.
 
 \subsubsection{Nested triangulations}\label{nested}
-We explain what we mean by a nested triangulation, even if it cannot be exported. Normaliz uses (at least) three types of subdivision: (i) bottom decomposition (see \ref{bottom_dec}), (ii) recursive pyramid decompositions, as discussed in \cite{BIS}, and (iii) subdivisions of ``large'' simplicial cones into simplicial subcones (see \ref{subdiv}). As lomg as only (i) and (ii) are applied, strictness is not lost; see \cite{BIS} and \cite{BSS}. 
+We explain what we mean by a nested triangulation, even if it cannot be exported. Normaliz uses (at least) three types of subdivision: (i) bottom decomposition (see \ref{bottom_dec}), (ii) recursive pyramid decompositions, as discussed in \cite{BIS}, and (iii) subdivisions of ``large'' simplicial cones into simplicial subcones (see \ref{subdiv}). As lomg as only (i) and (ii) are applied, strictness is not lost; see \cite{BIS} and \cite{BSS}. If \verb*|Triangulation| is combined with other computation goals that require (ii), then only the ``mother'' simplices resulting from (i) and (ii) are exported. 
 
 If Normaliz has subdivided a simplicial cone of a triangulation of the cone $C$, the resulting decomposition of $C$ may no longer be a triangulation in the strict sense. It is rather a \emph{nested triangulation}, namely a map from a rooted tree to the set of full-dimensional subcones of $C$ with the following properties:
 \begin{arab}
@@ -1714,7 +1714,11 @@ Normaliz can export the disjoint decomposition of the cone that it has computed.
 	\end{scriptsize}
 \end{center}
 
-If you want to access the disjoint decomposition, you must activate the computation goal \verb|ConeDecomposition| or use the command line option is \verb|-D|. As an example we compute \verb|cross2.in| with the computation goal \verb|ConeDecomposition|. The file \verb|cross2.tri| now looks as follows:
+If you want to access the disjoint decomposition, you must activate the computation goal
+\begin{itemize}
+	\itemtt[ConeDecomposition, -D] .
+\end{itemize}
+As an example we compute \verb|cross2.in| with the computation goal \verb|ConeDecomposition|. The file \verb|cross2.tri| now looks as follows:
 
 \begin{Verbatim}
 2

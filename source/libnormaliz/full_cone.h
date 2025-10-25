@@ -465,7 +465,7 @@ class Full_Cone {
     void prepare_old_candidates_and_support_hyperplanes();
     void evaluate_triangulation();
     void evaluate_large_simplices();
-    void evaluate_large_simplices_inner();
+    void evaluate_large_simplices_inner(long round);
     void evaluate_large_simplex(size_t j, size_t lss);
     void transfer_triangulation_to_top();
     void primal_algorithm();

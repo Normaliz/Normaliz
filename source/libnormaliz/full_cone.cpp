@@ -4108,6 +4108,7 @@ void Full_Cone<Integer>::prepare_old_candidates_and_support_hyperplanes() {
 
 //---------------------------------------------------------------------------
 
+// see simplex.cpp for remarks on evaluation
 template <typename Integer>
 void Full_Cone<Integer>::evaluate_triangulation() {
     // prepare reduction
@@ -4353,7 +4354,7 @@ void Full_Cone<renf_elem_class>::evaluate_triangulation() {
 //---------------------------------------------------------------------------
 
 template <typename Integer>
-void Full_Cone<Integer>::evaluate_large_simplices_inner() {
+void Full_Cone<Integer>::evaluate_large_simplices_inner(long round) {
     size_t lss = LargeSimplices.size();
     if (lss == 0)
         return;
@@ -4365,7 +4366,7 @@ void Full_Cone<Integer>::evaluate_large_simplices_inner() {
     string simplex_class = " large ";
 
     if (verbose) {
-        verboseOutput() << "Evaluating " << lss << simplex_class << "simplices" << endl;
+        verboseOutput() << "Evaluating " << lss << simplex_class << "simplices, round " << round << endl;
     }
     size_t j;
     for (j = 0; j < lss; ++j) {
@@ -4708,13 +4709,17 @@ void Full_Cone<Integer>::primal_algorithm_finalize() {
 template <typename Integer>
 void Full_Cone<Integer>::evaluate_large_simplices() {
 
+    long round = 0;
+
     while(!LargeSimplicesBuffer.empty()){
+        round++;
         assert(LargeSimplices.empty());
         assert(nrPyramids[0] == 0);
         swap(LargeSimplices, LargeSimplicesBuffer);
-        evaluate_large_simplices_inner();   // can produce level 0 pyramids
+        evaluate_large_simplices_inner(round);   // can produce level 0 pyramids
         evaluate_stored_pyramids(0);  // in case subdivision took place
         evaluate_triangulation();
+        allow_simplex_dec = false; // at present only one round of subdivisdions
     }
 }
 
@@ -7405,7 +7410,6 @@ void Full_Cone<Integer>::reset_tasks() {
     do_deg1_elements = false;
     export_triangulation = false;
     store_simplices = false;
-    allow_simplex_dec = true;
     pulling_triangulation = false;
     keep_triangulation_bitsets = false;
     do_Stanley_dec = false;
