@@ -8,3 +8,4 @@ cone 5
  grading 1 0 0 0 0
  NumberLatticePoints
  EhrhartSeries
+ TestSimplexParallel

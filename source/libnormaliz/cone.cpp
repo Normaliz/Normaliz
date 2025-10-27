@@ -7471,10 +7471,13 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
     if(!inhomogeneous && (ToCompute.test(ConeProperty::HilbertBasis) || ToCompute.test(ConeProperty::HilbertSeries)) )
         return;
 
+    if(ToCompute.test(ConeProperty::EhrhartSeries))
+        return;
+
     if (inhomogeneous && (!ToCompute.test(ConeProperty::ModuleGenerators) && !ToCompute.test(ConeProperty::HilbertBasis) &&
                           !ToCompute.test(ConeProperty::NumberLatticePoints)&& !ToCompute.test(ConeProperty::SingleLatticePoint) &&
                           !ToCompute.test(ConeProperty::FusionRings) &&!ToCompute.test(ConeProperty::SimpleFusionRings) &&
-                          !ToCompute.test(ConeProperty::SingleFusionRing) ) )
+                          !ToCompute.test(ConeProperty::SingleFusionRing)) )
         return;
 
     bool primitive = false;
