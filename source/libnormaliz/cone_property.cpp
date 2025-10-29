@@ -688,13 +688,16 @@ void ConeProperties::set_preconditions(bool inhomogeneous, bool numberfield) {
         CPs.set(ConeProperty::SupportHyperplanes);
 
     // ConeDecomposition ==> Triangulation
-    if (CPs.test(ConeProperty::ConeDecomposition))
+    if (CPs.test(ConeProperty::ConeDecomposition)){
         CPs.set(ConeProperty::Triangulation);
+        CPs.set(ConeProperty::NoSubdivision);
+    }
 
     // Stanley decompition  ==> Triangulation
     if (CPs.test(ConeProperty::StanleyDec)) {
         CPs.set(ConeProperty::Triangulation);
         CPs.set(ConeProperty::BasicStanleyDec);
+        CPs.set(ConeProperty::NoSubdivision);
     }
 
     if (CPs.test(ConeProperty::PlacingTriangulation)) {

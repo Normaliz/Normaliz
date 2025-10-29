@@ -4719,7 +4719,7 @@ void Full_Cone<Integer>::evaluate_large_simplices() {
         evaluate_large_simplices_inner(round);   // can produce level 0 pyramids
         evaluate_stored_pyramids(0);  // in case subdivision took place
         evaluate_triangulation();
-        allow_simplex_dec = false; // at present only one round of subdivisdions
+        allow_simplex_dec = false; // at only one round of subdivisdions
     }
 }
 
@@ -4971,6 +4971,7 @@ void Full_Cone<Integer>::set_preconditions() {
     // activate implications
     if (do_module_gens_intcl)
         do_Hilbert_basis = true;
+    cout << "mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm " << do_module_gens_intcl << endl;
     if (do_module_gens_intcl)
         allow_simplex_dec = false;  // extra bottom points change the originalmonoid
     if (do_Stanley_dec)
@@ -5284,6 +5285,7 @@ void Full_Cone<Integer>::compute() {
         return;
     }
 
+    // the condition Generators.max_rank_submatrix_lex().size() == dim is most often tested at other places
     if (!do_Hilbert_basis && !do_h_vector && !do_multiplicity && !do_deg1_elements && !do_Stanley_dec && !export_triangulation &&
         !do_determinants)
         assert(Generators.max_rank_submatrix_lex().size() == dim);

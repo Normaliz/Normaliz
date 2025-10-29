@@ -52,6 +52,7 @@ EXTRA_DIST =					\
 	IntClMonIdSupp.in			\
 	IsEmpty.in				\
 	IsNonEmpty.in				\
+	Jupiter.in				\
 	MonIdeal.in				\
 	NonCMDiv.in				\
 	NumSemi.in				\
