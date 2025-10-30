@@ -6467,12 +6467,14 @@ void Cone<Integer>::set_original_monoid_generators(const Matrix<Integer>& Input)
 template <typename Integer>
 void Cone<Integer>::set_extreme_rays(const vector<bool>& ext) {
     assert(ext.size() == Generators.nr_of_rows());
+    Generators.debug_print('G');
     ExtremeRaysIndicator = ext;
 
     if (isComputed(ConeProperty::ExtremeRays))
         return;
 
     ExtremeRays = Generators.submatrix(ext);  // extreme rays of the homogenized cone
+    ExtremeRays.debug_print('E');
     vector<bool> choice = ext;
     if (inhomogeneous) {
         // separate extreme rays to rays of the level 0 cone
@@ -6492,6 +6494,7 @@ void Cone<Integer>::set_extreme_rays(const vector<bool>& ext) {
         setComputed(ConeProperty::VerticesOfPolyhedron);
     }
     ExtremeRaysRecCone = Generators.submatrix(choice);
+    ExtremeRaysRecCone.debug_print('R');
 
     if (inhomogeneous && !isComputed(ConeProperty::AffineDim) && isComputed(ConeProperty::MaximalSubspace)) {
         size_t level0_dim = ExtremeRaysRecCone.max_rank_submatrix_lex().size();
@@ -6512,6 +6515,8 @@ void Cone<Integer>::set_extreme_rays(const vector<bool>& ext) {
         ExteEmbedded.remove_duplicate_and_zero_rows();
         ExtremeRaysRecCone = BasisChangePointed.from_sublattice(ExteEmbedded);
     }
+    ExtremeRaysRecCone.debug_print('R');
+
 
     if (using_renf<Integer>()) {
         ExtremeRays.standardize_rows(Norm);

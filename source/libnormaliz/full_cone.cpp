@@ -4971,7 +4971,6 @@ void Full_Cone<Integer>::set_preconditions() {
     // activate implications
     if (do_module_gens_intcl)
         do_Hilbert_basis = true;
-    cout << "mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm " << do_module_gens_intcl << endl;
     if (do_module_gens_intcl)
         allow_simplex_dec = false;  // extra bottom points change the originalmonoid
     if (do_Stanley_dec)
@@ -5248,6 +5247,7 @@ void Full_Cone<Integer>::revlex_triangulation() {
 template <typename Integer>
 void Full_Cone<Integer>::compute() {
     InputGenerators = Generators;  // purified input -- in case we get an exception
+    Generators.debug_print('I');
 
     // Safeguard against the removal of input generators despite that extreme rays
     // had been computed in the cone.
@@ -5348,7 +5348,7 @@ void Full_Cone<Integer>::compute() {
                 break;
             }
     }
-    if (polyhedron_is_polytope && (do_Hilbert_basis || do_h_vector)) {  // inthis situation we must just find the
+    if (polyhedron_is_polytope && ((do_Hilbert_basis && !do_module_gens_intcl) || do_h_vector)) {  // inthis situation we must just find the
         convert_polyhedron_to_polytope();                               // degree 1 points
         deactivate_completed_tasks();
     }
