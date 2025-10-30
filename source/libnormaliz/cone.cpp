@@ -6467,34 +6467,46 @@ void Cone<Integer>::set_original_monoid_generators(const Matrix<Integer>& Input)
 template <typename Integer>
 void Cone<Integer>::set_extreme_rays(const vector<bool>& ext) {
     assert(ext.size() == Generators.nr_of_rows());
-    Generators.debug_print('G');
+    // Generators.debug_print('G');
     ExtremeRaysIndicator = ext;
 
     if (isComputed(ConeProperty::ExtremeRays))
         return;
 
     ExtremeRays = Generators.submatrix(ext);  // extreme rays of the homogenized cone
-    ExtremeRays.debug_print('E');
-    vector<bool> choice = ext;
+    // ExtremeRays.debug_print('E');
+
+    // if module gens over ori monoid have been computed, there may be non-coprime vectors
+    // among the generators and duplicates when made coprime
+    if (isComputed(ConeProperty::ModuleGeneratorsOverOriginalMonoid)) {
+        Matrix<Integer> ExteEmbedded = BasisChangePointed.to_sublattice(ExtremeRays);
+        for (size_t i = 0; i < ExteEmbedded.nr_of_rows(); ++i)
+            v_make_prime(ExteEmbedded[i]);
+        ExteEmbedded.remove_duplicate_and_zero_rows();
+        ExtremeRays = BasisChangePointed.from_sublattice(ExteEmbedded);
+    }
+    // ExtremeRays.debug_print('R');
+
+    vector<bool> choice(ExtremeRays.nr_of_rows(),true);
     if (inhomogeneous) {
         // separate extreme rays to rays of the level 0 cone
         // and the vertices of the polyhedron, which are in level >=1
-        size_t nr_gen = Generators.nr_of_rows();
+        size_t nr_gen = ExtremeRays.nr_of_rows();
         vector<bool> VOP(nr_gen);
         for (size_t i = 0; i < nr_gen; i++) {
-            if (ext[i] && v_scalar_product(Generators[i], Dehomogenization) != 0) {
+            if (v_scalar_product(ExtremeRays[i], Dehomogenization) != 0) {
                 VOP[i] = true;
                 choice[i] = false;
             }
         }
-        VerticesOfPolyhedron = Generators.submatrix(VOP);
+        VerticesOfPolyhedron = ExtremeRays.submatrix(VOP);
         if (using_renf<Integer>())
             VerticesOfPolyhedron.standardize_rows(Norm);
         VerticesOfPolyhedron.sort_by_weights(WeightsGrad, GradAbs);
         setComputed(ConeProperty::VerticesOfPolyhedron);
     }
-    ExtremeRaysRecCone = Generators.submatrix(choice);
-    ExtremeRaysRecCone.debug_print('R');
+    ExtremeRaysRecCone = ExtremeRays.submatrix(choice);
+    // ExtremeRaysRecCone.debug_print('R');
 
     if (inhomogeneous && !isComputed(ConeProperty::AffineDim) && isComputed(ConeProperty::MaximalSubspace)) {
         size_t level0_dim = ExtremeRaysRecCone.max_rank_submatrix_lex().size();
@@ -6508,15 +6520,6 @@ void Cone<Integer>::set_extreme_rays(const vector<bool>& ext) {
         }
         setComputed(ConeProperty::AffineDim);
     }
-    if (isComputed(ConeProperty::ModuleGeneratorsOverOriginalMonoid)) {
-        Matrix<Integer> ExteEmbedded = BasisChangePointed.to_sublattice(ExtremeRaysRecCone);  // done to extract gcd
-        for (size_t i = 0; i < ExteEmbedded.nr_of_rows(); ++i)  // not always done for original monoid generators
-            v_make_prime(ExteEmbedded[i]);                      // Moreover, several generators can give the same extreme ray
-        ExteEmbedded.remove_duplicate_and_zero_rows();
-        ExtremeRaysRecCone = BasisChangePointed.from_sublattice(ExteEmbedded);
-    }
-    ExtremeRaysRecCone.debug_print('R');
-
 
     if (using_renf<Integer>()) {
         ExtremeRays.standardize_rows(Norm);

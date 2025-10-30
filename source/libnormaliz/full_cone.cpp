@@ -5247,7 +5247,7 @@ void Full_Cone<Integer>::revlex_triangulation() {
 template <typename Integer>
 void Full_Cone<Integer>::compute() {
     InputGenerators = Generators;  // purified input -- in case we get an exception
-    Generators.debug_print('I');
+    // Generators.debug_print('I');
 
     // Safeguard against the removal of input generators despite that extreme rays
     // had been computed in the cone.
