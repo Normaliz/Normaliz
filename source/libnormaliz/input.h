@@ -45,7 +45,7 @@ InputMap<Number> readNormalizInput(istream& in,
                                    map<NumParam::Param, long>& num_param_input,
                                    map<BoolParam::Param, bool>& bool_param_input,
                                    map<PolyParam::Param, vector<string> >&  poly_param_input,
-                                   renf_class_shared& number_field);
+                                   renf_class_ptr& number_field);
 
 // here defined for use in interfaces
 void read_number_field_strings(istream& in, string& mp_string, string& indet, string& emb_string);

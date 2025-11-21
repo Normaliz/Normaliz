@@ -175,7 +175,7 @@ void Output<Number>::write_renf(ostream& os) const {
 }
 
 template <typename Number>
-void Output<Number>::set_renf(const renf_class_shared renf, bool is_int_hull) {
+void Output<Number>::set_renf(const renf_class_ptr renf, bool is_int_hull) {
 }
 
 #ifdef ENFNORMALIZ
@@ -190,7 +190,7 @@ void Output<renf_elem_class>::write_renf(ostream& os) const {
 }
 
 template <>
-void Output<renf_elem_class>::set_renf(const renf_class_shared renf, bool is_int_hull) {
+void Output<renf_elem_class>::set_renf(const renf_class_ptr renf, bool is_int_hull) {
     Renf = renf;
     print_renf = !is_int_hull;
 }

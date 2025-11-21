@@ -56,12 +56,13 @@ template class FACETDATA<renf_elem_class>;
 */
 
 template <typename Number>
-void Cone<Number>::setRenf(const renf_class_shared renf) {
+void Cone<Number>::setRenf(const renf_class_ptr renf) {
+    // this is intended to avoid checking for ENFNORMALIZ
 }
 
 #ifdef ENFNORMALIZ
 template <>
-void Cone<renf_elem_class>::setRenf(const renf_class_shared renf) {
+void Cone<renf_elem_class>::setRenf(const renf_class_ptr renf) {
     Renf = &*renf;
     renf_degree = fmpq_poly_degree(renf->renf_t()->nf->pol);
     RenfSharedPtr = renf;
@@ -74,7 +75,7 @@ Cone<Integer>::Cone(const string project) {
     map<PolyParam::Param, vector<string> > poly_param_input;
     map<NumParam::Param, long> num_param_input;
     map<BoolParam::Param, bool> bool_param_input;
-    renf_class_shared number_field_ref;
+    renf_class_ptr number_field_ref;
 
     string name_in = project + ".in";
     const char* file_in = name_in.c_str();
@@ -101,7 +102,7 @@ Cone<Integer>::Cone(const string project) {
     map<Type::InputType, Matrix<mpq_class> > input;
     input = readNormalizInput<mpq_class>(in, options, num_param_input, bool_param_input, poly_param_input, number_field_ref);
 
-    const renf_class_shared number_field = number_field_ref;
+    const renf_class_ptr number_field = number_field_ref;
     process_multi_input(input);
     setRenf(number_field);
     setProjectName(project);
@@ -117,7 +118,7 @@ Cone<renf_elem_class>::Cone(const string project) {
     map<NumParam::Param, long> num_param_input;
     map<BoolParam::Param, bool> bool_param_input;
     map<PolyParam::Param, vector<string> > poly_param_input;
-    renf_class_shared number_field_ref;
+    renf_class_ptr number_field_ref;
 
     string name_in = project + ".in";
     const char* file_in = name_in.c_str();
@@ -144,7 +145,7 @@ Cone<renf_elem_class>::Cone(const string project) {
     in.open(file_in, ifstream::in);
     map<Type::InputType, Matrix<renf_elem_class> > renf_input;
     renf_input = readNormalizInput<renf_elem_class>(in, options, num_param_input, bool_param_input, poly_param_input, number_field_ref);
-    const renf_class_shared number_field = number_field_ref.get();
+    const renf_class_ptr number_field = number_field_ref.get();
 
     process_multi_input(renf_input);
     setRenf(number_field);
@@ -3230,8 +3231,8 @@ const renf_class* Cone<Integer>::getRenf() {
 }
 
 template <typename Integer>
-renf_class_shared Cone<Integer>::getRenfSharedPtr() {
-    if (using_renf<Integer>())
+renf_class_ptr Cone<Integer>::getRenfSharedPtr() {
+    if (!using_renf<Integer>())
         throw NotComputableException("RenfSharedPtr only available for Cone<renf_elem_class>");
     else
         return RenfSharedPtr;
@@ -3921,12 +3922,14 @@ void Cone<Integer>::compute_integer_hull() {
 
     if (!using_renf<Integer>())
         IntHullCone = new Cone<Integer>(InputType::cone_and_lattice, IntHullGen, Type::subspace, BasisMaxSubspace);
-    else
+    else{
         IntHullCone = new Cone<Integer>(InputType::cone, IntHullGen, Type::subspace, BasisMaxSubspace);
+        IntHullCone->setRenf(Renf);
+    }
     /* if (nr_extr != 0)  // we suppress the ordering in full_cone only if we have found few extreme rays
         IntHullCompute.set(ConeProperty::KeepOrder);*/
 
-    IntHullCone->setRenf(RenfSharedPtr);
+
 
     IntHullCone->inhomogeneous = true;  // inhomogeneous;
     IntHullCone->is_inthull_cone = true;

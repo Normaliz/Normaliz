@@ -332,7 +332,7 @@ class Cone {
     void setProjectName(const string& my_project);
     string getProjectName() const;
 
-    void setRenf(const renf_class_shared renf);
+    void setRenf(const renf_class_ptr renf);
 
     template <typename InputNumber>
     void check_add_input(const InputMap<InputNumber>& multi_add_data);
@@ -624,7 +624,7 @@ class Cone {
     string getRenfGenerator();
     string getRenfGenerator(const renf_class*);
     const renf_class* getRenf();
-    renf_class_shared getRenfSharedPtr();
+    renf_class_ptr getRenfSharedPtr();
 
     bool isParallelotope() const;
     vector<dynamic_bitset> getPair() const;        // for indicator vectors in project-and_lift
@@ -825,7 +825,7 @@ class Cone {
     bool general_no_grading_denom;
 
     const renf_class* Renf;
-    renf_class_shared RenfSharedPtr;
+    renf_class_ptr RenfSharedPtr;
 
     long renf_degree;
     long face_codim_bound;

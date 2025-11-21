@@ -85,13 +85,13 @@ typedef struct timeval {
 namespace libnormaliz {
 using eantic::renf_class;
 using eantic::renf_elem_class;
-typedef boost::intrusive_ptr<const renf_class> renf_class_shared;
+typedef boost::intrusive_ptr<const renf_class> renf_class_ptr;
 }  // namespace libnormaliz
 #else
 namespace libnormaliz {
 typedef long renf_elem_class;
 struct renf_class {};
-typedef renf_class* renf_class_shared;
+typedef renf_class* renf_class_ptr;
 }  // namespace libnormaliz
 #endif
 

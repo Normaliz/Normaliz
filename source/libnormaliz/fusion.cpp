@@ -295,7 +295,7 @@ void  FusionBasic::data_from_mpq_input(ifstream& cone_in){
     map<BoolParam::Param, bool> bool_param_input;
     map<PolyParam::Param, vector<string> > poly_param_input;
     OptionsHandler options;
-    renf_class_shared number_field;
+    renf_class_ptr number_field;
     input = readNormalizInput<mpq_class>(cone_in, options, num_param_input, bool_param_input, poly_param_input,  number_field);
     read_data_from_input<mpq_class>(input);
 }
@@ -307,7 +307,7 @@ void  FusionBasic::data_from_renf_input(ifstream& cone_in){
     map<BoolParam::Param, bool> bool_param_input;
     map<PolyParam::Param, vector<string> > poly_param_input;
     OptionsHandler options;
-    renf_class_shared number_field;
+    renf_class_ptr number_field;
     input = readNormalizInput<renf_elem_class>(cone_in, options, num_param_input, bool_param_input, poly_param_input,  number_field);
     read_data_from_input<renf_elem_class>(input);
 }

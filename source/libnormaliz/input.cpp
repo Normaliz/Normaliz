@@ -835,7 +835,7 @@ void read_number_field_strings(istream& in, string& mp_string, string& indet, st
 }
 
 #ifdef ENFNORMALIZ
-renf_class_shared read_number_field(istream& in) {
+renf_class_ptr read_number_field(istream& in) {
     string mp_string, indet, emb_string;
     read_number_field_strings(in, mp_string, indet, emb_string);
 
@@ -862,7 +862,7 @@ InputMap<Number> readNormalizInput(istream& in,
                                             map<NumParam::Param, long>& num_param_input,
                                             map<BoolParam::Param, bool>& bool_param_input,
                                             map<PolyParam::Param, vector<string> >& poly_param_input,
-                                            renf_class_shared& number_field) {
+                                            renf_class_ptr& number_field) {
     string type_string;
     long i, j;
     long nr_rows, nr_columns, nr_rows_or_columns;
@@ -1328,7 +1328,7 @@ template InputMap<mpq_class> readNormalizInput(istream& in,
                                                     map<NumParam::Param, long>& num_param_input,
                                                     map<BoolParam::Param, bool>& bool_param_input,
                                                     map<PolyParam::Param, vector<string> >& poly_param_input,
-                                                    renf_class_shared& number_field);
+                                                    renf_class_ptr& number_field);
 
 #ifdef ENFNORMALIZ
 template InputMap<renf_elem_class> readNormalizInput(istream& in,
@@ -1336,7 +1336,7 @@ template InputMap<renf_elem_class> readNormalizInput(istream& in,
                                                      map<NumParam::Param, long>& num_param_input,
                                                      map<BoolParam::Param, bool>& bool_param_input,
                                                      map<PolyParam::Param, vector<string> >& poly_param_input,
-                                                     renf_class_shared& number_field);
+                                                     renf_class_ptr& number_field);
 #endif
 
 #ifndef NMZ_MIC_OFFLOAD  // offload with long is not supported
