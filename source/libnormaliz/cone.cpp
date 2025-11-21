@@ -65,7 +65,7 @@ template <>
 void Cone<renf_elem_class>::setRenf(const renf_class_ptr renf) {
     Renf = &*renf;
     renf_degree = fmpq_poly_degree(renf->renf_t()->nf->pol);
-    RenfSharedPtr = renf;
+    // RenfSharedPtr = renf;
 }
 #endif
 
@@ -3229,7 +3229,7 @@ template <typename Integer>
 const renf_class* Cone<Integer>::getRenf() {
     throw NotComputableException("Renf only available for Cone<renf_elem_class>");
 }
-
+/*
 template <typename Integer>
 renf_class_ptr Cone<Integer>::getRenfSharedPtr() {
     if (!using_renf<Integer>())
@@ -3237,6 +3237,7 @@ renf_class_ptr Cone<Integer>::getRenfSharedPtr() {
     else
         return RenfSharedPtr;
 }
+*/
 
 #ifdef ENFNORMALIZ
 template <>

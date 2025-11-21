@@ -422,12 +422,12 @@ void compute_and_output(OptionsHandler& options,
                         const map<NumParam::Param, long>& num_param_input,
                         const map<BoolParam::Param, bool>& bool_param_input,
                         map<PolyParam::Param, vector<string> >& poly_param_input,
-                        renf_class_shared number_field_ref,
+                        renf_class_ptr number_field_ref,
                         InputMap<InputNumberType>& add_input) {
     Output<ConeType> Out;  // all the information relevant for output is collected in this object
 
     // const
-    renf_class_shared number_field =
+    renf_class_ptr number_field =
 #ifdef ENFNORMALIZ
         number_field_ref.get();
 #else
@@ -665,7 +665,7 @@ int process_data(OptionsHandler& options, const string& command_line) {
         map<BoolParam::Param, bool> bool_param_input;
         map<PolyParam::Param, vector<string> > poly_param_input;
         bool renf_read = false;
-        renf_class_shared number_field;
+        renf_class_ptr number_field;
 
         if(!standard_fusion_name){
             try {
