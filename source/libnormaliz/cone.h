@@ -825,7 +825,7 @@ class Cone {
     bool general_no_grading_denom;
 
     const renf_class* Renf;
-    renf_class_ptr RenfSharedPtr;
+    // renf_class_ptr RenfSharedPtr;
 
     long renf_degree;
     long face_codim_bound;

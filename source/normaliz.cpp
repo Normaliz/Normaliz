@@ -426,6 +426,7 @@ void compute_and_output(OptionsHandler& options,
                         InputMap<InputNumberType>& add_input) {
     Output<ConeType> Out;  // all the information relevant for output is collected in this object
 
+    /*
     // const
     renf_class_ptr number_field =
 #ifdef ENFNORMALIZ
@@ -433,6 +434,7 @@ void compute_and_output(OptionsHandler& options,
 #else
         number_field_ref;
 #endif
+        */
 
     options.applyOutputOptions(Out);
 
@@ -444,7 +446,7 @@ void compute_and_output(OptionsHandler& options,
     MyCone.setPolyParams(poly_param_input);
     MyCone.setNumericalParams(num_param_input);
     MyCone.setBoolParams(bool_param_input);
-    MyCone.setRenf(number_field);
+    MyCone.setRenf(number_field_ref);
     MyCone.setProjectName(options.getProjectName());
     try {
         write_fusion_mult_tables_from_input = false;
@@ -479,7 +481,7 @@ void compute_and_output(OptionsHandler& options,
     }
 
     Out.setCone(MyCone);
-    Out.set_renf(number_field);
+    Out.set_renf(number_field_ref);
 
     signal(SIGINT, SIG_DFL);
 
@@ -493,7 +495,7 @@ void compute_and_output(OptionsHandler& options,
         options.applyOutputOptions(IntHullOut);
         IntHullOut.set_name(options.getProjectName() + ".IntHull");
         IntHullOut.setCone(MyCone.getIntegerHullCone());
-        IntHullOut.set_renf(number_field, true);
+        IntHullOut.set_renf(number_field_ref, true);
         IntHullOut.write_files();
     }
 
@@ -502,7 +504,7 @@ void compute_and_output(OptionsHandler& options,
         options.applyOutputOptions(ProjOut);
         ProjOut.set_name(options.getProjectName() + ".ProjectCone");
         ProjOut.setCone(MyCone.getProjectCone());
-        ProjOut.set_renf(number_field);
+        ProjOut.set_renf(number_field_ref);
         ProjOut.write_files();
     }
 
