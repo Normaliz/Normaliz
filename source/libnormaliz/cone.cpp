@@ -102,7 +102,7 @@ Cone<Integer>::Cone(const string project) {
     map<Type::InputType, Matrix<mpq_class> > input;
     input = readNormalizInput<mpq_class>(in, options, num_param_input, bool_param_input, poly_param_input, number_field_ref);
 
-    const renf_class_ptr number_field = number_field_ref;
+    // const renf_class_ptr number_field = number_field_ref;
     process_multi_input(input);
     // setRenf(number_field);
     setProjectName(project);
@@ -3925,10 +3925,12 @@ void Cone<Integer>::compute_integer_hull() {
 
     if (!using_renf<Integer>())
         IntHullCone = new Cone<Integer>(InputType::cone_and_lattice, IntHullGen, Type::subspace, BasisMaxSubspace);
+#ifdef ENFNORMALIZ
     else{
         IntHullCone = new Cone<Integer>(InputType::cone, IntHullGen, Type::subspace, BasisMaxSubspace);
         IntHullCone->setRenf(Renf);
     }
+#endif
     /* if (nr_extr != 0)  // we suppress the ordering in full_cone only if we have found few extreme rays
         IntHullCompute.set(ConeProperty::KeepOrder);*/
 
