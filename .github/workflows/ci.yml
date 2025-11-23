@@ -244,7 +244,7 @@ jobs:
           path: local/bin/MacOSbinary.zip
 
   cocoa-eantic-nauty-static-Intel:
-    runs-on: macos-15_intel
+    runs-on: macos-15-intel
     env:
       BUILDSYSTEM: "cocoa-eantic-nauty-static-Intel"
       CONFIGURE_FLAGS: "--enable-openmp"

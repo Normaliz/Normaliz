@@ -364,7 +364,7 @@ class ConeProperties {
 
     void check_conflicting_variants();
     void check_conflicting_fusion_variants();
-    void check_Q_permissible(bool after_implications);
+    void check_Q_permissible(bool after_implications) const;
     void check_monoid_goals() const;
     void check_lattice_ideal_goals() const;
     void check_fusion_ring_props() const;
@@ -386,7 +386,9 @@ std::ostream& operator<<(std::ostream&, const ConeProperties&);
 OutputType::Enum output_type(ConeProperty::Enum);
 
 ConeProperties all_options();                                // returns cps with the options set
-ConeProperties all_goals();                                  // returns cps with the options set
+ConeProperties all_goals();
+ConeProperties all_Q_permissible();
+// returns cps with the options set
 ConeProperties all_full_cone_goals(bool renf);               // returns the goals controlling compute_full_cone()
 ConeProperties all_goals_using_grading(bool inhomogeneous);  // returns the goals which depend on grading
 ConeProperties only_homogeneous_props();

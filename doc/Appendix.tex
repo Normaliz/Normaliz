@@ -2386,7 +2386,7 @@ One can create a cone from a Normaliz input file as follows:
 \begin{Verbatim}
 C = Cone(file = "example/small")
 \end{Verbatim}
-It will read the file \verb|small.in| in the directory \verb|example| /relative to the current directory.  \verb|CreateAsLongLong| \verb| = True| can be used.
+It will read the file \verb|small.in| in the directory \verb|example| (relative to the current directory).  \verb|CreateAsLongLong| \verb| = True| can be used.
 
 For polynomial constraints one uses commands like
 \begin{Verbatim}
@@ -2449,6 +2449,8 @@ The function has an optional argument that can be \verb*|True| or \verb*|False| 
 	\verb*|verbose|, \verb*|nonnegative|, \verb*|total_degree|, \verb*|list_poilynomials|, \verb*|convert_equations|, \verb*|no_coord_transf|, \verb*|no_pos_orth_def|
 \end{center}
 For \verb*|verbose| you can also use \verb*|C.SetVerbose()|.
+
+If you want to run computations with \verb*|BigInt|, you must use the collective compoute command; see Section \ref{CollComp}. 
 
 \subsubsection{Matrices, vectors and numbers}
 
@@ -3005,6 +3007,8 @@ SignedDec,
 NoSignedDec,
 FixedPrecision}
 
+Aldo \verb*|BigInt| is an option that you must set via \verb*|Compoute|. There is no possibility to reset it later on: it will be used in all subsequent computations.
+
 \subsubsection{Miscellaneous functions}
 In order to get some information about what is going on in Normaliz, we can switch on the terminal output:
 \begin{Verbatim}
@@ -3067,7 +3071,7 @@ Finally, we can write a Normaliz output file:
 >>> C.WriteOutputFile("Wonderful")
 True
 \end{Verbatim}
-Now you should find a file \verb|Wonderful.out| in the current directory. Note that additional compulsory output files are written as well. For example, \verb*|Wionderful.aut| is written if an automorphism group has been computed. It is not possible to write truly optional output files line \verb*|Wonderful.gen|. If you want one of them, you must use python methods.
+Now you should find a file \verb|Wonderful.out| in the current directory. Note that additional compulsory output files are written as well. For example, \verb*|Wionderful.aut| is written if an automorphism group has been computed. It is not possible to write truly optional output files like \verb*|Wonderful.gen|. If you want one of them, you must use python methods.
 
 One can also write a file for the input of precomputed data:
 \begin{Verbatim}

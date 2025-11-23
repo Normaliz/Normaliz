@@ -104,7 +104,7 @@ Cone<Integer>::Cone(const string project) {
 
     const renf_class_ptr number_field = number_field_ref;
     process_multi_input(input);
-    setRenf(number_field);
+    // setRenf(number_field);
     setProjectName(project);
     setPolyParams(poly_param_input);
     setBoolParams(bool_param_input);
@@ -3172,6 +3172,8 @@ vector<Integer> Cone<Integer>::getGrading() {
 
 template <typename Integer>
 Integer Cone<Integer>::getGradingDenom() {
+    if(isComputed(ConeProperty::GradingDenom))
+        return GradingDenom;
     compute(ConeProperty::Grading);
     return GradingDenom;
 }
@@ -4684,8 +4686,9 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
         ToCompute.set(ConeProperty::NakedDual);
     }
 
-    if (using_renf<Integer>())
+    if (using_renf<Integer>()){
         ToCompute.check_Q_permissible(false);  // before implications!
+    }
 
     ToCompute.check_conflicting_variants();
 
@@ -9648,13 +9651,17 @@ template <typename Integer>
 void Cone<Integer>::compute_ambient_automorphisms(const ConeProperties& ToCompute) {
     if (!ToCompute.test(ConeProperty::AmbientAutomorphisms) || isComputed(ConeProperty::AmbientAutomorphisms))
         return;
+    if(Congruences.nr_of_rows() > 0)
+        throw BadInputException("Ambient automorphisms not computable if congruences in input");
+
     if (Generators.nr_of_rows() > 0)
         compute_ambient_automorphisms_gen(ToCompute);
     if (Generators.nr_of_rows() == 0 && Inequalities.nr_of_rows() > 0) {
         if (BasisChange.IsIdentity())
             compute_ambient_automorphisms_ineq(ToCompute);
-        else
-            throw BadInputException("Ambient automorphisms not computable from input automorphisms");
+        else{
+            throw BadInputException("Ambient automorphisms not computable if equations in input. Add convert_equations to input and try again.");
+        }
     }
     setComputed(ConeProperty::AmbientAutomorphisms);
 
