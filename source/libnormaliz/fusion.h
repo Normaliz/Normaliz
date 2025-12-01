@@ -62,6 +62,8 @@ public:
     vector<key_t> duality;
     vector<key_t> subring_base_key;
 
+    vector<renf_elem_class> renf_fusion_type; // used to circumvent mising renf_class
+
     double total_FPdim;
 
     vector<vector<dynamic_bitset> > ModularGradings;
@@ -105,6 +107,8 @@ public:
     bool compatible_duality(const vector<dynamic_bitset >& parts);
     void make_grad_mult_table();
     void restrict_type_automs_to_grading();
+    template <typename Integer>
+    void set_renf_fusion_type(const vector<Integer>&);
 
     void make_type_automs();
 };
@@ -265,6 +269,18 @@ void string_to_type(vector<Integer>& our_type, const string& our_type_string){
     }
 }
 
+/*
+#ifdef ENFNORMALIZ
+inline void string_to_type(vector<renf_elem_class>& our_type, const string& our_type_string){
+
+    istringstream type_stram(our_type_string);
+    for(size_t i = 0; i < our_type.size(); ++i){
+        type_stram >> our_type[i];
+    }
+}
+#endif
+*/
+
 template <typename Integer>
 vector<key_t> fusion_coincidence_pattern(const vector<Integer>& v);
 
@@ -284,11 +300,22 @@ bool check_duality(vector<Integer> test_duality, const vector<Integer>& test_typ
     return true;
 }
 
+template <typename Integer>
+void FusionBasic::set_renf_fusion_type(const vector<Integer>& full_type){
+
+}
+
+template <>
+inline void FusionBasic::set_renf_fusion_type(const vector<renf_elem_class>& full_type){
+    renf_fusion_type = full_type;
+}
+
 // Note: the following routine must work for renf_elem_class
 template <typename Integer>
 void FusionBasic::read_data_from_input(InputMap<Integer>& input_data){
 
     vector<Integer> full_type = input_data[Type::fusion_type][0];
+    set_renf_fusion_type<Integer>(full_type);
     total_FPdim = 0;
     for(size_t i = 0; i< full_type.size(); ++i){
         double this_FPdim;

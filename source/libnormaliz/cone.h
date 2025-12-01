@@ -620,11 +620,11 @@ class Cone {
     nmz_float euclidean_corr_factor();
 
     vector<string> getRenfData();
-    static vector<string> getRenfData(const renf_class*);
     string getRenfGenerator();
-    string getRenfGenerator(const renf_class*);
     const renf_class* getRenf();
-    renf_class_ptr getRenfSharedPtr();
+    // for access to n number frield in general: static = not bound to a cone
+    static vector<string> getRenfData(const renf_class_ptr);
+    static string getRenfGenerator(const renf_class_ptr);
 
     bool isParallelotope() const;
     vector<dynamic_bitset> getPair() const;        // for indicator vectors in project-and_lift

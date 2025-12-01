@@ -65,6 +65,7 @@ template <>
 void Cone<renf_elem_class>::setRenf(const renf_class_ptr renf) {
     Renf = &*renf;
     renf_degree = fmpq_poly_degree(renf->renf_t()->nf->pol);
+    // setGlobalRenf(renf);
     // RenfSharedPtr = renf;
 }
 #endif
@@ -3208,7 +3209,7 @@ renf_elem_class Cone<Integer>::getRenfVolume() {
 }
 
 template <typename Integer>
-vector<string> Cone<Integer>::getRenfData() {
+vector<string> Cone<Integer>::getRenfData(){
     throw NotComputableException("Renf data only available for Cone<renf_elem_class>");
 }
 
@@ -3218,12 +3219,12 @@ string Cone<Integer>::getRenfGenerator() {
 }
 
 template <typename Integer>
-string Cone<Integer>::getRenfGenerator(const renf_class*) {
+string Cone<Integer>::getRenfGenerator(const renf_class_ptr) {
     return "";
 }
 
 template <typename Integer>
-vector<string> Cone<Integer>::getRenfData(const renf_class* renf) {
+vector<string> Cone<Integer>::getRenfData(const renf_class_ptr renf) {
     throw NotComputableException("Renf data only available for Cone<renf_elem_class>");
 }
 
@@ -3254,7 +3255,7 @@ renf_elem_class Cone<renf_elem_class>::getRenfVolume() {
 }
 
 template <>
-vector<string> Cone<renf_elem_class>::getRenfData(const renf_class* renf) {
+vector<string> Cone<renf_elem_class>::getRenfData(const renf_class_ptr renf) {
     std::string s = renf->to_string();
 
     static const char* prefix = "NumberField(";
@@ -3281,7 +3282,7 @@ vector<string> Cone<renf_elem_class>::getRenfData() {
 }
 
 template <>
-string Cone<renf_elem_class>::getRenfGenerator(const renf_class* renf) {
+string Cone<renf_elem_class>::getRenfGenerator(const renf_class_ptr renf) {
     string GenName;
     vector<string> RenfData = Cone<renf_elem_class>::getRenfData(renf);
     string min_poly = RenfData[0];
@@ -7397,6 +7398,19 @@ void Cone<Integer>::make_fusion_data(ConeProperties& ToCompute){
 
 //---------------------------------------------------------------------------
 template <typename Integer>
+vector<Integer> get_fusion_type(const FusionBasic& FusBas){
+        vector<Integer> ret(FusBas.duality.size());
+        string_to_type(ret, FusBas.fusion_type_string);
+        return ret;
+}
+
+template <>
+vector<renf_elem_class> get_fusion_type(const FusionBasic& FusBas){
+        return FusBas.renf_fusion_type;
+}
+
+//---------------------------------------------------------------------------
+template <typename Integer>
 void Cone<Integer>::make_induction_matrices(ConeProperties& ToCompute){
 
     if(!ToCompute.test(ConeProperty::InductionMatrices) || isComputed(ConeProperty::InductionMatrices))
@@ -7413,12 +7427,7 @@ void Cone<Integer>::make_induction_matrices(ConeProperties& ToCompute){
         ChosenFusionRings = FusionRings;
 
     vector<key_t> our_dual = FusionBasicCone.duality;
-    vector<Integer> our_type(our_dual.size());
-    string our_type_string = FusionBasicCone.fusion_type_string;
-    istringstream type_stram(our_type_string);
-    for(size_t i = 0; i < our_dual.size(); ++i){
-        type_stram >> our_type[i];
-    }
+    vector<Integer> our_type = get_fusion_type<Integer>(FusionBasicCone);
     InductionMatrices.resize(ChosenFusionRings.nr_of_rows());
 
     if(change_integer_type){

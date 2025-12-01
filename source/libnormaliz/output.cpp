@@ -182,7 +182,8 @@ void Output<Number>::set_renf(const renf_class_ptr renf, bool is_int_hull) {
 template <>
 void Output<renf_elem_class>::write_renf(ostream& os) const {
     if (print_renf) {
-        auto polyemb = Cone<renf_elem_class>::getRenfData(&*Renf);
+        // auto polyemb = Cone<renf_elem_class>::getRenfData(&*Renf);
+        auto polyemb = Result->getRenfData();
         os << "Real embedded number field:" << std::endl
            << "min_poly (" << polyemb[0] << ") embedding " << polyemb[1] << std::endl
            << std::endl;
@@ -1281,10 +1282,17 @@ void Output<Integer>::write_induction_matrices() {
     write_vec_vec_Mat(Result->getInductionMatrices(), ind_out);
 }
 
+vector<string> RenfDataOutput;
+
 //---------------------------------------------------------------------------
 
 template <typename Integer>
 void Output<Integer>::write_files() {
+
+#ifdef ENFNORMALIZ
+    if(using_renf<Integer>())
+        RenfDataOutput = Result->getRenfData(); // for use with fusion rings
+#endif
 
     if(Result->isComputed(ConeProperty::InductionMatrices))
         write_induction_matrices();
@@ -1301,7 +1309,7 @@ void Output<Integer>::write_files() {
                             Result->getSimpleFusionRingsMatrix(), Result->getNonsimpleFusionRingsMatrix(),
                             no_matrices_output, false);
         }
-        else{ // only soimple computed
+        else{ // only simple computed
             Matrix<Integer> Zero;
             write_fusion_files(Result->getFusionBasicCone(),name, Result->isComputed(ConeProperty::SimpleFusionRings),
                             Result->isComputed(ConeProperty::NonsimpleFusionRings), Result->getEmbeddingDim(),
@@ -2046,6 +2054,11 @@ void write_fusion_files(const FusionBasic fusion_basic, const string& name, cons
     ofstream out(file);
     if (out.fail()) {
         throw BadInputException("Cannot write to output file. Typo in directory name?");
+    }
+    if(!RenfDataOutput.empty()){
+        out << "Real embedded number field" << endl;
+        out << "min_poly (" << RenfDataOutput[0] << ") embedding " << RenfDataOutput[1] << std::endl
+           << std::endl;
     }
 
     FusionComp<Integer> fusion(fusion_basic);

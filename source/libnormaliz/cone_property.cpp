@@ -923,6 +923,8 @@ ConeProperties all_Q_permissible(){
     ret.set(ConeProperty::NoSubdivision);
     ret.set(ConeProperty::Multiplicity);
     ret.set(ConeProperty::Grading);
+    ret.set(ConeProperty::InductionMatrices);
+    ret.set(ConeProperty::ModularGradings);
     return ret;
 }
 

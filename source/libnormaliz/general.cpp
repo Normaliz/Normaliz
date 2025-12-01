@@ -238,13 +238,14 @@ void Check_Stop(){
 }
 
 /*
-void reset_global_fusion_data(){
-    fusion_type_coinc_from_input.clear();
-    fusion_type_from_input.clear();
-    fusion_duality_from_input.clear();
-    fusion_commutative_from_input = false;
+#ifdef ENFNORMALIZ
+renf_class_ptr* GlobalRenf;
+void setGlobalRenf(const renf_class_ptr Renf){
+    GlobalRenf = &Renf;
 }
+#endif
 */
+
 
 unsigned int getVersion()
 {

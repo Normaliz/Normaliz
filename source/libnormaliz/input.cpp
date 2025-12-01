@@ -33,26 +33,8 @@
 namespace libnormaliz {
 
 //---------------------------------------------------------------------------
-//                     Number input
+//                     Number input (also see input.h)
 //---------------------------------------------------------------------------
-
-
-#ifdef ENFNORMALIZ
-
-static int xalloc = std::ios_base::xalloc();
-
-// Normaliz implementation of deprecated e-antic functions
-std::istream & nmz_set_pword(boost::intrusive_ptr<const renf_class> our_renf, std::istream & is)
-{
-    is.pword(xalloc) = const_cast<void*>(reinterpret_cast<const void*>(&*our_renf));
-    return is;
-}
-boost::intrusive_ptr<const renf_class> nmz_get_pword(std::istream& is) {
-    return reinterpret_cast<renf_class*>(is.pword(xalloc));
-}
-#endif
-//---------------------------------------------------------
-
 
 // To be used in input.cpp
 inline void string2coeff(mpq_class& coeff, istream& in, const string& s) {  // in here superfluous parameter
@@ -82,54 +64,6 @@ inline void read_number(istream& in, mpz_class& number) {
     in >> number;
 }
 
-#ifdef ENFNORMALIZ
-
-inline void string2coeff(renf_elem_class& coeff, istream& in, const string& s) {  // we need in to access the renf
-
-    try {
-        coeff = renf_elem_class(*nmz_get_pword(in), s);
-    } catch (const std::exception& e) {
-        cerr << e.what() << endl;
-        throw BadInputException("Illegal number string " + s + " in input, Exiting.");
-    }
-}
-
-inline void read_number(istream& in, renf_elem_class& number) {
-    // in >> number;
-
-    char c;
-
-    in >> ws;
-    c = in.peek();
-    if (c != '(' && c != '\'' && c != '\"') {  // rational number
-        mpq_class rat = mpq_read(in);
-        number = renf_elem_class(rat);
-        return;
-    }
-
-    // now we have a proper field element
-
-    in >> c;  // read (
-
-    string num_string;
-    bool skip = false;
-    while (in.good()) {
-        c = in.peek();
-        if (c == ')' || c == '\'' || c == '\"') {
-            in >> c;
-            break;
-        }
-        if (c == '~' || c == '=' || c == '[')  // skip the approximation
-            skip = true;
-        in.get(c);
-        if (in.fail())
-            throw BadInputException("Error in reading number: field element not terminated");
-        if (!skip)
-            num_string += c;
-    }
-    string2coeff(number, in, num_string);
-}
-#endif
 
 // matrix input
 

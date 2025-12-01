@@ -109,6 +109,87 @@ inline void string2coeff(mpq_class& coeff, const string& s) {
     coeff = mpq_read(sin);
     // coeff=mpq_class(s);
 }
+
+#ifdef ENFNORMALIZ
+
+
+static int xalloc = std::ios_base::xalloc();
+
+// Normaliz implementation of deprecated e-antic functions
+inline std::istream & nmz_set_pword(boost::intrusive_ptr<const renf_class> our_renf, std::istream & is)
+{
+    is.pword(xalloc) = const_cast<void*>(reinterpret_cast<const void*>(&*our_renf));
+    return is;
+}
+
+inline boost::intrusive_ptr<const renf_class> nmz_get_pword(std::istream& is) {
+    return reinterpret_cast<renf_class*>(is.pword(xalloc));
+}
+
+inline void string2coeff(renf_elem_class& coeff, istream& in, const string& s) {  // we need in to access the renf
+
+    try {
+        coeff = renf_elem_class(*nmz_get_pword(in), s);
+    } catch (const std::exception& e) {
+        cerr << e.what() << endl;
+        throw BadInputException("Illegal number string " + s + " in input, Exiting.");
+    }
+}
+
+inline void string2coeff(renf_elem_class& coeff, renf_class_ptr our_rnf, const string& s) {  // we need in to access the renf
+
+    try {
+        coeff = renf_elem_class(*our_rnf, s);
+    } catch (const std::exception& e) {
+        cerr << e.what() << endl;
+        throw BadInputException("Illegal number string " + s + " in input, Exiting.");
+    }
+}
+
+inline void read_renf_elem_string(string& num_string, renf_elem_class& number, bool& is_rational, istream& in) {
+    char c;
+    is_rational = false;
+
+    in >> ws;
+    c = in.peek();
+    if (c != '(' && c != '\'' && c != '\"') {  // rational number
+        mpq_class rat = mpq_read(in);
+        number = renf_elem_class(rat);
+        is_rational = true;
+        return;
+    }
+
+    // now we have a proper field element
+
+    in >> c;  // read (
+    bool skip = false;
+    while (in.good()) {
+        c = in.peek();
+        if (c == ')' || c == '\'' || c == '\"') {
+            in >> c;
+            break;
+        }
+        if (c == '~' || c == '=' || c == '[')  // skip the approximation
+            skip = true;
+        in.get(c);
+        if (in.fail())
+            throw BadInputException("Error in reading number: field element not terminated");
+        if (!skip)
+            num_string += c;
+    }
+}
+
+inline void read_number(istream& in, renf_elem_class& number) {
+    string num_string;
+    bool is_rational;
+    read_renf_elem_string(num_string, number, is_rational, in);
+    if(is_rational)
+        return;
+    string2coeff(number, in, num_string);
+}
+#endif
+
+
 }  // namespace libnormaliz
 
 #endif
