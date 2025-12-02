@@ -65,13 +65,14 @@ public:
     vector<Matrix<Integer> >  Tables;
 
     vector<Integer> divisors;
+    vector<Integer> candidates_m_i;
     vector<long long> divisors_S; // for the near-integral case
     // In the next line the first size_t is the multiplicity, the second the n_i
     map<Integer,pair<size_t, size_t> > EV_mult_n_i;
     Matrix<Integer> EVMat;
 
     // for the near-inegral case with minimal polynomial a^2 - kkk*a - FPdim_S
-    renf_elem_class kkk, d_plus, d_minus; // zeroes d_plus > 0 and d_minus < 0
+    Integer kkk, d_plus, d_minus; // zeroes d_plus > 0 and d_minus < 0
 
     // first: the m_i for i < s = number of irreducible presentations
     // second: the dimensions of the irreducibles as an Integer
@@ -101,11 +102,15 @@ public:
 
     // void start_low_parts();
     void make_divisors();
+    void make_candidates_m_i();
     void make_low_m_i();
     void build_low_parts();
     void solve_system_low_parts();
     void from_low_to_full();
     void augment_induction_matrices();
+
+    Integer conjugate(const Integer& val);
+    bool is_algebraic_integer(const Integer& val);
 
     Matrix<Integer> make_allowed_transpositions(Matrix<Integer> FusionMap);
 

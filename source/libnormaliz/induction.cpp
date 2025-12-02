@@ -27,6 +27,7 @@
 #include "libnormaliz/cone.h"
 #include "libnormaliz/induction.h"
 #include "libnormaliz/normaliz_exception.h"
+#include "libnormaliz/matrix.h"
 
 namespace libnormaliz{
 using std::vector;
@@ -92,7 +93,8 @@ Induction<Integer>::Induction(const vector<Integer>& fus_type, const vector<key_
     }
 
     if(verbose){
-        verboseOutput() << "FPdfim " << FPdim;
+        verboseOutput() << "Type " << fusion_type;
+        verboseOutput() << "FPdim " << FPdim;
         if(using_renf<Integer>())
             verboseOutput() << " FPdim(S) " << FPdim_S;
         verboseOutput() << endl;
@@ -165,10 +167,10 @@ Induction<Integer>::Induction(const vector<Integer>& fus_type, const vector<key_
 
     HighRepresentations.resize(0, fusion_rank);
 
-    if(using_renf<Integer>())
-        return; // only for the moment
 
-    for(auto& t: divisors){
+    make_candidates_m_i();
+
+    for(auto& t: candidates_m_i){
 
         INTERRUPT_COMPUTATION_BY_EXCEPTION
 
@@ -211,7 +213,7 @@ Induction<Integer>::Induction(const vector<Integer>& fus_type, const vector<key_
 
         }
         if(verbose)
-            verboseOutput() << "divisor " << t << " has " << count_high << " high" << " representations" << endl;
+            verboseOutput() << "candidate " << t << " has " << count_high << " high" << " representations" << endl;
 
        // LowRepresentations[t].debug_print('$');
     }
@@ -223,9 +225,69 @@ Induction<Integer>::Induction(const vector<Integer>& fus_type, const vector<key_
         cout << t << " " << LowRepresentations[t].nr_of_rows() << endl;
     } */
     // cout << "high" << endl;
-
-
 }
+
+template<typename Integer>
+Integer Induction<Integer>::conjugate(const Integer& val){
+    assert(false);
+    return 0;
+}
+
+template<typename Integer>
+bool Induction<Integer>::is_algebraic_integer(const Integer& val){
+    assert(false);
+    return false;
+}
+
+#ifdef ENFNORMALIZ
+template<>
+renf_elem_class Induction<renf_elem_class>::conjugate(const renf_elem_class& val){
+    vector<mpz_class> num = val.num_vector();
+    // cout << "vvvvvvvvv " << val << endl;
+    assert(num.size() <= 2);
+    if(num.size() <= 1)
+        return val;
+    renf_elem_class ret = (num[1]*d_minus + num[0])/val.den();
+    return ret;
+}
+
+template<>
+bool Induction<renf_elem_class>::is_algebraic_integer(const renf_elem_class& val){
+    renf_elem_class conj = conjugate(val);
+    if (!(val + conj).is_integer())
+        return false;
+    if(!(val*conj).is_integer())
+        return false;
+    return true;
+}
+#endif
+
+template<typename Integer>
+void Induction<Integer>::make_candidates_m_i(){
+    candidates_m_i = divisors;
+}
+
+#ifdef ENFNORMALIZ
+template<>
+void Induction<renf_elem_class>::make_candidates_m_i(){
+
+    // cout << "ddddddddddddd " << d_plus << endl;
+
+    for(long long n = 0; n < FPdim; ++n){
+        for(long long m = 0; m < (FPdim-n)/d_plus; ++m){
+
+             INTERRUPT_COMPUTATION_BY_EXCEPTION
+
+            renf_elem_class cand = n + m * d_plus;
+            if(cand == 0)
+                continue;
+            if(is_algebraic_integer(FPdim/cand))
+                candidates_m_i.push_back(cand);
+        }
+    }
+}
+#endif
+
 
 template<typename Integer>
 void Induction<Integer>::make_divisors(){
@@ -595,7 +657,15 @@ void Induction<Integer>::from_low_to_full(){
 
     //First we compute the contribution of the low part to the conditions for induction matrices
 
+    size_t count_low_parts = 0;
+
     for(auto& ThisLowPart: LowParts){
+
+        count_low_parts++;
+        if(verbose){
+            verboseOutput() << "Low part  " << count_low_parts << endl;
+            ThisLowPart.debug_print('L');
+        }
 
         Integer FPdim_so_far =0;
         for(size_t j = 0; j < nr_rows_low_part; ++j)
@@ -665,13 +735,13 @@ void Induction<Integer>::from_low_to_full(){
         Matrix<Integer> Unit(HighRepresentations.nr_of_rows());
         Cone<Integer> C(Type::inhom_inequalities, InhomEqu, Type::inequalities, Unit);
         C.setVerbose(false);
-        C.compute(ConeProperty::HilbertBasis, ConeProperty::Projection);
+        C.compute(ConeProperty::LatticePoints);
         Matrix<Integer> LP = C.getLatticePointsMatrix();
 
         // LP.debug_print('P');
 
-        if(talkative && LP.nr_of_rows() == 0)
-            verboseOutput() << "N" << endl;
+        if(verbose && LP.nr_of_rows() == 0)
+            verboseOutput() << "No extension" << endl;
 
         for(size_t k= 0; k< LP.nr_of_rows(); ++k){
             Matrix<Integer> IndMat = ThisLowPart;
@@ -686,10 +756,10 @@ void Induction<Integer>::from_low_to_full(){
 
             }
             InductionMatrices.push_back(IndMat);
-            /*if(verbose){
+            if(verbose){
                 IndMat.debug_print('I');
                 verboseOutput() << endl;
-            }*/
+            }
         }
 
     }
