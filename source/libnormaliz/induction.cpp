@@ -271,6 +271,10 @@ void Induction<Integer>::make_candidates_m_i(){
 template<>
 void Induction<renf_elem_class>::make_candidates_m_i(){
 
+    for(size_t i = 0; i < fusion_type.size() -1; ++i)
+        if(!fusion_type[i].is_integer())
+            throw BadInputException("Induction matrices not allowed in genetral non-integral case");
+
     // cout << "ddddddddddddd " << d_plus << endl;
 
     for(long long n = 0; n < FPdim; ++n){
@@ -563,9 +567,11 @@ void Induction<Integer>::make_low_m_i(){
     }
     sort(low_m.begin(), low_m.end());
 
-    for(auto& mm: low_m){
+    /*
+     * for(auto& mm: low_m){
         cout << mm.first << " ---- " << mm.second << endl;
     }
+    */
 }
 
 template<typename Integer>
@@ -775,10 +781,24 @@ void Induction<Integer>::augment_induction_matrices(){
         sort(N.begin(), N. end());
         if(EquivHelp.find(N) == EquivHelp.end()){
             Representatives.push_back(M);
-           EquivHelp.insert(N);
+            EquivHelp.insert(N);
         }
     }
     swap(InductionMatrices, Representatives);
+
+    map<vector<Integer>, vector<Matrix<Integer> > > InductionMatricesByType;
+
+    for(auto& M: InductionMatrices){
+        vector<Integer> type = M.MxV(fusion_type);
+        InductionMatricesByType[type].push_back(M);
+    }
+    if(verbose)
+        verboseOutput() << InductionMatricesByType.size() << " fusion types defined by induction matrices" << endl;
+
+    InductionMatrices.clear();
+    for(auto& T: InductionMatricesByType){
+        InductionMatrices.insert(InductionMatrices.end(), T.second.begin(), T.second.end());
+    }
 
     for(auto& M: InductionMatrices){
         //we rteorder the rows by increasing m_i
