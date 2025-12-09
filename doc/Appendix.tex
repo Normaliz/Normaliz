@@ -3905,7 +3905,7 @@ has told Normaliz  to use the chosen modular grading. If there is only one modul
 
 \subsubsection{Induction to the center}
 
-Let $R$ be a fusion ring with fusion data $(N_{i,j}^k)$ and basis $\{a_1, \ldots, a_r\}$, where $a_1$ is the unit. For simplicity, we restrict ourselves  to integral and commutative $R$. Both these properties are essential for the discussion below. \emph{However, in version 3.10.5 Normaliz can also deal with noncommutative fusion rings of rank $\le 8$.}
+Let $R$ be a fusion ring with fusion data $(N_{i,j}^k)$ and basis $\{a_1, \ldots, a_r\}$, where $a_1$ is the unit. For simplicity, we restrict ourselves  to integral and commutative $R$. Both these properties are essential for the discussion below. \emph{However, in version 3.10.5 Normaliz can also deal with integral noncommutative fusion rings of rank $\le 8$.} Normaliz cannot deal with induction matrices for general nonintegral fusion rings, but it computes induction matrices for so-called near-integral fusion rings. See \cite{DS}for the mathematics and \verb*|C6_0.in| for an example.
 
 Assume that $R$ admits a categorification into a fusion category $\mathcal{C}$ over the complex field. ($\mathcal{C}$ is not necessarily uniquely determined.) Then the Drinfeld center $Z(\mathcal{C})$ of $\mathcal{C}$ is an integral modular fusion category see \cite[Section 9.2]{EGNO} for the mathematics). Let $ZR$ be the Grothendieck ring of $Z(\mathcal{C})$ Let $\{b_1, \ldots, b_n\}$ be the basis of $ZR$, where $n \geq r$. By the properties of the Drinfeld center, $ZR$ is an integral commutative $1/2$-Frobenius fusion ring: this means that $\FPdim(b_i)^2$ divides $\FPdim(ZR)$ in $\ZZ$ ($\FPdim$ was introduced on p.~\pageref{FPdim}).
 

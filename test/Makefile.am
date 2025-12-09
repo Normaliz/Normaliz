@@ -1480,6 +1480,8 @@ NMZTESTS +=						\
 	test-Aut/mon_auto.in				\
 	test-Aut/mon_auto.ref				\
 	test-Aut/mon_auto.aut.ref			\
+	test-nf/C6_0.in					\
+	test-nf/C6_0.ref				\
 	test-nf/alg_vol.in				\
 	test-nf/alg_vol.ref				\
 	test-nf/EH1.in					\
