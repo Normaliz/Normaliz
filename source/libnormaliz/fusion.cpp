@@ -1504,8 +1504,8 @@ Matrix<Integer> FusionComp<Integer>::make_linear_constraints(const vector<Intege
     if(libnormaliz::verbose)
         verboseOutput() << "Made " << Equ.nr_of_rows() << " inhom linear equations in " << Equ.nr_of_columns() -1 << " unknowns " << endl;
 
-    /* Equ.debug_print();
-    Cone<Integer> Test(Type::inhom_equations, Equ);
+    // Equ.debug_print();
+    /*Cone<Integer> Test(Type::inhom_equations, Equ);
     Test.setConvertEquations();
     Test.compute(ConeProperty::NoLLL, ConeProperty::AffineDim);
     size_t NrSol = Test.getNrLatticePoints();
@@ -1772,16 +1772,16 @@ set<map<vector<key_t>, Integer> > FusionComp<Integer>::make_associativity_constr
         }
     }
 
-    /*
-    for(auto& q: Polys){
+
+    /*for(auto& q: Polys){
         cout << "****************" <<endl;
         for(auto& p: q){
             cout << p.second << " -- " << p.first;
         }
     }
     cout << "****************" <<endl;
-    cout << "NR POLYS " << Polys.size() << endl;
-    exit(0); */
+    cout << "NR POLYS " << Polys.size() << endl;*/
+    // exit(0);
 
     if(libnormaliz::verbose)
         verboseOutput() << "Made " << Polys.size() << " associativity constraints for fusion rings" << endl;

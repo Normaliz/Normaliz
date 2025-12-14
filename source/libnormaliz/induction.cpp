@@ -784,7 +784,7 @@ void Induction<Integer>::augment_induction_matrices(){
             EquivHelp.insert(N);
         }
     }
-    swap(InductionMatrices, Representatives);
+    swap(InductionMatrices, Representatives); // matrices now oin InductionMatrices
 
     map<vector<Integer>, vector<Matrix<Integer> > > InductionMatricesByType;
 
