@@ -29,7 +29,7 @@ FLINTLIB = -lflint
 ifeq ($(NMZ_DEBUG),yes)
 	CXXFLAGS += -g3 -DNMZ_DEBUG
 else
-  CXXFLAGS += -O3
+  CXXFLAGS += -O3  -march=znver3
 endif
 
 ifeq ($(NMZ_32),yes)

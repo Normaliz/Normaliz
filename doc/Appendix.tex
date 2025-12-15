@@ -1940,7 +1940,7 @@ It is clear that the complex results can only be accessed via their specialized 
 
 In this section we want to enable the user to write applications of \verb*|libnormaliz| to algebraic polyhedra. More information can of course be found in the source files of e-antic. Note that e-antic is based on Flint and internally uses Flint types.
 
-\subsubsection{Definition of real embedded algebraic number rfield}
+\subsubsection{Definition of a real embedded algebraic number rfield}
 
 Normaliz uses ther type defined by
 \begin{Verbatim}
@@ -1970,7 +1970,7 @@ There are many ways to convert integer or rational types to \verb*|renf_elem_cla
 \begin{Verbatim}
 renf_elem_class(const renf_class& k, const std::string &);
 \end{Verbatim}
-(from o convert integer or rational types to \verb*|renf_elem_class|. See \verb*|integer.h| or \verb*|renf_elem_class.hpp|). Also for the construction of a \verb*|renf_elem_class| from an integral or rational vector of coefficients the parameter \verb*|const renf_class& k| is needed. Example:
+See \verb*|integer.h| or \verb*|renf_elem_class.hpp|). Also for the construction of a \verb*|renf_elem_class| from an integral or rational vector of coefficients the parameter \verb*|const renf_class& k| is needed. Example:
 \begin{Verbatim}
 renf_elem_class(const renf_class& k, const std::vector<mpq_class> &)
 \end{Verbatim}
@@ -1981,8 +1981,8 @@ Cones over algebraic number fields are constructed by
 \begin{Verbatim}
 Cone<renf_elem_class>(...)
 \end{Verbatim}
-where \ttt{...} stands for all the variants that have been discussed in Section~\ref{ConstCone}, except that all matrices must be of type \verb+vector<vector<renf_elem_class> >+ or \verb+Matrix<renf_elem_class>+. \verb|Cone<renf_elem_class>(...)| is predefined in \ttt{libnormaliz}. 
-However, not all input types are allowed as entries of matrices; see Section~\ref{Algebraic}.
+where \ttt{...} stands for all the variants that have been discussed in Section~\ref{ConstCone}, except that all matrices must be of type \verb+vector<vector<renf_elem_class> >+ or \verb+Matrix<renf_elem_class>+.\newline  \verb|Cone<renf_elem_class>(...)| is predefined in \ttt{libnormaliz}. 
+However, not all input types are allowed as matrices; see Section~\ref{Algebraic}.
 
 After the construction of the cone you must use
 \begin{Verbatim}
