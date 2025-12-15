@@ -1938,9 +1938,42 @@ It is clear that the complex results can only be accessed via their specialized 
 
 \subsection{Algebraic polyhedra}
 
+In this section we want to enable the user to write applications of \verb*|libnormaliz| to algebraic polyhedra. More information can of course be found in the source files of e-antic. Note that e-antic is based on Flint and internally uses Flint types.
+
 \subsubsection{Definition of real embedded algebraic number rfield}
 
+Normaliz uses ther type defined by
+\begin{Verbatim}
+typedef boost::intrusive_ptr<const renf_class> renf_class_ptr;
+\end{Verbatim}
+A real algebraic number field is defined by the function
+\begin{Verbatim}
+renf_class::make(mp_string, indet, emb_string);
+\end{Verbatim}
+It returns a \verb*|renf_class_ptr|. The strings define the minimal polynomial, the name of the field generator and an interval in which the filed generator is the unique zero of the irreducible minimal polynomial.
+
+The elements of an embedded algebraic number field are of class \verb*|renf_elem_class|. Distinguished elements:
+\begin{Verbatim}
+const renf_elem_class& renf_class::gen() const
+const renf_elem_class& renf_class::zero() const
+const renf_elem_class& renf_class::one() const
+\end{Verbatim}
+The first is the field generator.
+
 \subsubsection{Definition of number field elements}
+
+The class of number field elements is
+\begin{Verbatim}
+renf_elem_class
+\end{Verbatim}
+There are many ways to convert integer or rational types to \verb*|renf_elem_class|. See \verb*|integer.h| or \verb*|renf_elem_class.hpp| and \verb*|renf_elem_class.cpp| in the e-antic source files. As soon as a number field element is not a rational number, it needs to know its number field, for example by inheriting it from an already existing number field element or by reading it as a string:
+\begin{Verbatim}
+renf_elem_class(const renf_class& k, const std::string &);
+\end{Verbatim}
+(from o convert integer or rational types to \verb*|renf_elem_class|. See \verb*|integer.h| or \verb*|renf_elem_class.hpp|). Also for the construction of a \verb*|renf_elem_class| from an integral or rational vector of coefficients the parameter \verb*|const renf_class& k| is needed. Example:
+\begin{Verbatim}
+renf_elem_class(const renf_class& k, const std::vector<mpq_class> &)
+\end{Verbatim}
 
 \subsubsection{Cones over number fields}
 
@@ -1948,21 +1981,22 @@ Cones over algebraic number fields are constructed by
 \begin{Verbatim}
 Cone<renf_elem_class>(...)
 \end{Verbatim}
-where \ttt{...} stands for all the variants that have been discussed in Section~\ref{ConstCone}, except that all matrices must be of type \verb+vector<vector<renf_elem_class> >+ or \verb+Matrix<renf_elem_class>+. \verb|Cone<renf_elem_class>(...)| is predefined in \ttt{libnormaliz}.
-
-Note that not all integer, rational or float input types are allowed; see Section~\ref{Algebraic}.
+where \ttt{...} stands for all the variants that have been discussed in Section~\ref{ConstCone}, except that all matrices must be of type \verb+vector<vector<renf_elem_class> >+ or \verb+Matrix<renf_elem_class>+. \verb|Cone<renf_elem_class>(...)| is predefined in \ttt{libnormaliz}. 
+However, not all input types are allowed as entries of matrices; see Section~\ref{Algebraic}.
 
 After the construction of the cone you must use
 \begin{Verbatim}
-void Cone<renf_elem_class>::setRenf(renf_class* renf)
+void Cone<renf_elem_class>::setRenf(const renf_class_ptr renf)
 \end{Verbatim}
-It is necessary to forward the information about the number field to derived cones. In the other direction:
+The cone has a variable
+\begin{Verbatim}
+const renf_class* Renf
+\end{Verbatim}
+See the source code of \verb*|setRenf| for the conversion of the \verb*|renf_class_ptr| to a \verb*|renf_class*|.
+
+It is necessary to forward the information about the number field to derived cones. This is done through \verb*|setRenf(Renf)|. In the other direction:
 \begin{Verbatim}
 renf_class* Cone<renf_elem_class>::getRenf()
-\end{Verbatim}
-Since version~1.0.0 the \verb|renf_class*| is administrated through a \verb|std::shared_ptr<const renf_class>|. It is returned by
-\begin{Verbatim}
-const std::shared_ptr<const renf_class> Cone<Integer>::getRenfSharedPtr()
 \end{Verbatim}
 
 One can retrieve the minimal polynomial and the embedding by
@@ -1980,8 +2014,6 @@ In return values \ttt{Integer} must be specialized to \verb|renf_elem_class|. A 
 \begin{Verbatim}
 renf_elem_class Cone<renf_elem_class>::getRenfVolume() 
 \end{Verbatim}
-
-The number field must be defined outside of libnormaliz. Have a look at \verb|source/normaliz.cpp| and \verb|source/input.in| to see the details.
 
 The integer hull cone is of type \verb|libnormaliz::Cone<renf_elem_class>|.
 
