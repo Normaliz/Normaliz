@@ -82,36 +82,21 @@ Induction<Integer>::Induction(const vector<Integer>& fus_type, const vector<key_
     }
 
     FPdim = 0;
-    FPdim_S = 0;
     for(size_t i = 0; i < fus_type.size(); ++i){
         FPdim += fusion_type[i]*fusion_type[i];
-        if(i < fusion_type.size()-1 || !using_renf<Integer>()){
-            long long help;
-            convert_via_string(help, fusion_type[i]);
-            FPdim_S += help*help;
-        }
     }
 
     if(verbose){
         verboseOutput() << "Type " << fusion_type;
         verboseOutput() << "FPdim " << FPdim;
-        if(using_renf<Integer>())
-            verboseOutput() << " FPdim(S) " << FPdim_S;
         verboseOutput() << endl;
     }
 
     FPSquare = FPdim * FPdim;
     make_divisors();
 
-    // cout << FPdim << " " << divisors;
-
-    /* for(auto& T: Tables)
-        T.debug_print('$'); */
-
     // For the computation of eigenvalues and multiplicities
     size_t EVMat_size = fusion_rank;
-    if(using_renf<Integer>()) // for the near-integral case: compute codegrees for S
-        EVMat_size--;
 
     EVMat.resize(EVMat_size, EVMat_size);
     for(size_t s =0; s < EVMat_size; ++s){
@@ -126,30 +111,15 @@ Induction<Integer>::Induction(const vector<Integer>& fus_type, const vector<key_
             EVMat[s][l] = S;
         }
     }
-    // EVMat.debug_print();
 
-    if(!using_renf<Integer>()){
-        if(commutative){
-            codegrees_and_mult_commutative();
-        }
-        else{
-            codegrees_and_mult_noncommutative();
-        }
+    if(commutative){
+        codegrees_and_mult_commutative();
     }
     else{
-        if(!commutative)
-            throw BadInputException("Near-integral fusion rings only implemented in the commuatative case ");
-        codegrees_and_mult_near_integral();
+        codegrees_and_mult_noncommutative();
     }
 
     Bounds.resize(fusion_rank, fusion_rank);
-
-   /* for(size_t s = 0; s < fusion_rank; ++s){
-       for(size_t t = 0; t < fusion_rank; ++t)
-           cout << s << " " << t << " " << N(t,0,s) << " " << endl;
-
-   } */
-
     for(size_t j = 0; j< fusion_rank; ++j){
         for(size_t k = 0; k < fusion_rank; ++k){
             Integer S =0;
@@ -160,15 +130,11 @@ Induction<Integer>::Induction(const vector<Integer>& fus_type, const vector<key_
             Bounds[j][k] = S;
         }
     }
-    // Bounds.debug_print('&');
 
     if(verbose)
         verboseOutput() << "Computing reporesentations of divisors of FPdim in terms of type" << endl;
 
     HighRepresentations.resize(0, fusion_rank);
-
-
-    make_candidates_m_i();
 
     for(auto& t: candidates_m_i){
 
@@ -217,14 +183,6 @@ Induction<Integer>::Induction(const vector<Integer>& fus_type, const vector<key_
 
        // LowRepresentations[t].debug_print('$');
     }
-    // HighRepresentations.debug_print('%');
-
-
-    /* cout << "Numbers of reporesentations low" << endl;
-    for(auto& t: divisors){
-        cout << t << " " << LowRepresentations[t].nr_of_rows() << endl;
-    } */
-    // cout << "high" << endl;
 }
 
 template<typename Integer>
@@ -263,17 +221,20 @@ bool Induction<renf_elem_class>::is_algebraic_integer(const renf_elem_class& val
 #endif
 
 template<typename Integer>
-void Induction<Integer>::make_candidates_m_i(){
-    candidates_m_i = divisors;
+void Induction<Integer>::make_divisors(){
+    for(Integer t = 1; t <= FPdim; ++t){
+        if(FPdim % t == 0){
+            divisors.push_back(t);
+            candidates_m_i.push_back(FPdim/t);
+        }
+    }
 }
-
-#ifdef ENFNORMALIZ
 template<>
-void Induction<renf_elem_class>::make_candidates_m_i(){
+void Induction<renf_elem_class>::make_divisors(){
 
     for(size_t i = 0; i < fusion_type.size() -1; ++i)
         if(!fusion_type[i].is_integer())
-            throw BadInputException("Induction matrices not allowed in genetral non-integral case");
+            throw BadInputException("Induction matrices not allowed in general non-integral case");
 
     // cout << "ddddddddddddd " << d_plus << endl;
 
@@ -285,26 +246,11 @@ void Induction<renf_elem_class>::make_candidates_m_i(){
             renf_elem_class cand = n + m * d_plus;
             if(cand == 0)
                 continue;
-            if(is_algebraic_integer(FPdim/cand))
+            renf_elem_class inv = FPdim/cand;
+            if(is_algebraic_integer(inv))
                 candidates_m_i.push_back(cand);
+            divisors.push_back(inv);
         }
-    }
-}
-#endif
-
-
-template<typename Integer>
-void Induction<Integer>::make_divisors(){
-    for(Integer t = 1; t <= FPdim; ++t){
-        if(FPdim % t == 0)
-            divisors.push_back(t);
-        }
-}
-template<>
-void Induction<renf_elem_class>::make_divisors(){
-    for(long long t = 1; t <= FPdim_S; ++t){
-        if(FPdim_S % t == 0)
-            divisors_S.push_back(t);
     }
 }
 
@@ -323,63 +269,6 @@ void Induction<Integer>::test_commutativity(){
     }
     commutative =  true;
 }
-
-
-
-template<typename Integer>
-void Induction<Integer>::codegrees_and_mult_near_integral(){
-
-}
-
-template<>
-void Induction<renf_elem_class>::codegrees_and_mult_near_integral(){
-
-    nr_rows_low_part = fusion_rank;
-
-    size_t sum_mult = 0;
-    if(verbose)
-        verboseOutput() << "eigenvalues and their multiplicities in the near-integral case" << endl;
-    for(size_t i = 0; i< divisors_S.size(); ++i){
-        renf_elem_class help = convertTo<renf_elem_class>(divisors_S[i]);
-        size_t mult_ev = EVMat.mult_of_eigenvalue(help);
-        sum_mult += mult_ev;
-        if(mult_ev == 0)
-            continue;
-
-        if((divisors_S[i] == FPdim_S)){ // must exchange FPdim_S with FPdim
-            mult_ev--;
-            EV_mult_n_i[FPdim] = make_pair(1,1);
-        }
-        if(mult_ev == 0)
-            continue;
-
-        EV_mult_n_i[help] = make_pair(mult_ev,1);
-        if(verbose){
-            verboseOutput() << divisors_S[i] << " mult " <<  EV_mult_n_i[help].first << endl;
-        }
-    }
-    size_t r = fusion_rank -1;
-    renf_elem_class k = N(r,r,r);   // We must take care of the codegree FPdim(S) + (d_-)^2.
-    renf_elem_class d_plus = fusion_type.back();
-    renf_elem_class d_minus = k - d_plus;
-    if(Iabs(d_plus) == Iabs(d_minus)){
-        EV_mult_n_i[FPdim].first++;
-    }
-    else{
-        renf_elem_class help_1 = convertTo<renf_elem_class>(FPdim_S);
-        renf_elem_class help_2 = d_minus*d_minus;
-        EV_mult_n_i[help_1 + help_2]  = make_pair(1,1);
-    }
-    if(sum_mult < fusion_rank -1){
-        if(verbose)
-            verboseOutput() << "Sum of multiplicities of eigenvalues dividing FPdim(S) < fusion_rank -1" << endl;
-        mult_of_ev_ok = false;
-    }
-
-    // We must take care of the codegree FPdim(S) + (d_-)^2.
-
-}
-
 
 template<typename Integer>
 void Induction<Integer>::codegrees_and_mult_commutative(){
@@ -549,11 +438,14 @@ void Induction<Integer>::make_low_m_i(){
     vector<pair<Integer, size_t> > EV_n_i;
 
     for(auto& EV_mult: EV_mult_n_i){
+        cout << "MMMMM " << EV_mult.first << "     "  << EV_mult.second.first << endl;
         for(size_t j = 0; j < EV_mult.second.first; ++j){
             EV_n_i.push_back(make_pair(EV_mult.first, EV_mult.second.second));
             // cout << EV_mult.first << " " << EV_mult.second.second << endl;
         }
     }
+
+    cout << "EEEEEEEEEEE " << EV_n_i.size() << endl;
 
     // First we want to replace eigenvalues by codegrees
     // Note: eigenvalue n_if_i by f_i si9nce we want m_i = FPdim/f_i
@@ -567,11 +459,11 @@ void Induction<Integer>::make_low_m_i(){
     }
     sort(low_m.begin(), low_m.end());
 
-    /*
-     * for(auto& mm: low_m){
+
+      for(auto& mm: low_m){
         cout << mm.first << " ---- " << mm.second << endl;
     }
-    */
+
 }
 
 template<typename Integer>

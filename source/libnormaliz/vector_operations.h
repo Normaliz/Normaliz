@@ -812,12 +812,17 @@ inline renf_elem_class v_scalar_product(const vector<renf_elem_class>& av, const
 
     renf_elem_class ans = 0;
     size_t n = av.size();
+    // renf_elem_class help;
 
     for (size_t i = 0; i < n; ++i) {
-        // if(ans.is_rational())
+        // if(ans.is_rational()){
+            //help = av[i];
+            // help  *= bv[i];
             ans += av[i]*bv[i];
-        // else
-          //  ans.iaddmul(av[i],bv[i]);
+            //ans += help;
+        /*}
+        else
+            ans.iaddmul(av[i],bv[i]);*/
     }
     return ans;
 }

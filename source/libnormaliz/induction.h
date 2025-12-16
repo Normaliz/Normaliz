@@ -66,7 +66,6 @@ public:
 
     vector<Integer> divisors;
     vector<Integer> candidates_m_i;
-    vector<long long> divisors_S; // for the near-integral case
     // In the next line the first size_t is the multiplicity, the second the n_i
     map<Integer,pair<size_t, size_t> > EV_mult_n_i;
     Matrix<Integer> EVMat;
