@@ -194,7 +194,7 @@ Integer Induction<Integer>::conjugate(const Integer& val){
 template<typename Integer>
 bool Induction<Integer>::is_algebraic_integer(const Integer& val){
     assert(false);
-    return false;
+    return true;
 }
 
 #ifdef ENFNORMALIZ
@@ -209,14 +209,69 @@ renf_elem_class Induction<renf_elem_class>::conjugate(const renf_elem_class& val
     return ret;
 }
 
+
 template<>
-bool Induction<renf_elem_class>::is_algebraic_integer(const renf_elem_class& val){
+bool Induction<renf_elem_class>::is_algebraic_integer_old(const renf_elem_class& val){
     renf_elem_class conj = conjugate(val);
     if (!(val + conj).is_integer())
         return false;
     if(!(val*conj).is_integer())
         return false;
     return true;
+}
+
+
+template<>
+bool Induction<renf_elem_class>::is_algebraic_integer(const renf_elem_class& val){
+    if(val.is_rational()){
+        if(val.is_integer())
+            return true;
+        return false;
+    }
+    // cout << "true renf" << endl;
+    vector<renf_elem_class> powers;
+    powers.push_back(1);
+    vector<vector<mpz_class> > numerators;
+    numerators.push_back(powers.back().num_vector());
+    size_t max_deg = 0;
+    while(true){
+        powers.push_back(powers.back() * val);
+        numerators.push_back(powers.back().num_vector());
+        if(numerators.back().size() - 1 > max_deg)
+            max_deg = numerators.back().size() - 1;
+        for(auto& v: numerators)
+            v.resize(max_deg + 1);
+        Matrix<mpz_class> LinDep(numerators);
+        // cout << powers;
+        // cout << "rank " << LinDep.rank() << endl;
+        if(LinDep.rank() == LinDep.nr_of_rows()) // powers still linearly independent
+            continue;
+        // now gedree found
+        // get 5rid of denominators
+        // LinDep.debug_print();
+        mpz_class D = 1;
+        for(auto& p: powers)
+            D = libnormaliz::lcm(D, p.den());
+        for(size_t i = 0; i < LinDep.nr_of_rows(); ++i){
+            mpz_class fact = D/powers[i].den();
+            v_scalar_multiplication(LinDep[i], fact);
+        }
+        // cout << "Den " << D << endl;
+        // find linear elation on powers
+        Matrix<mpz_class> T = LinDep.transpose();
+        // T.debug_print('T');
+        Matrix<mpz_class> Sol = T.kernel(false);
+        assert(Sol.nr_of_rows() ==1); // since the rank pf the matrix is 1 nr_of_columns -1
+        vector<mpz_class> SolVec = Sol[0];
+        // cout << "Sol " << SolVec << endl;
+        // now we must check whether we can divide by the coefficient
+        // of the highesdt power.
+        if(Iabs(SolVec.back()) == 1)
+            return true;
+        else
+            return false;
+
+    }
 }
 #endif
 
@@ -232,23 +287,33 @@ void Induction<Integer>::make_divisors(){
 template<>
 void Induction<renf_elem_class>::make_divisors(){
 
-    for(size_t i = 0; i < fusion_type.size() -1; ++i)
-        if(!fusion_type[i].is_integer())
-            throw BadInputException("Induction matrices not allowed in general non-integral case");
+    vector<renf_elem_class> h = fusion_type;
+    h.push_back(-FPdim);
+    renf_elem_class MinusOne = -1;
+    v_scalar_multiplication(h, MinusOne);
+    Matrix<renf_elem_class> Hyp(h);
+    Hyp.debug_print();
+    Cone<renf_elem_class> CandCone(Type::inhom_inequalities, Hyp);
+    CandCone.setNonnegative();
+    Matrix<renf_elem_class> RawCands = CandCone.getLatticePointsMatrix();
+    set<renf_elem_class> CandSet;
 
-    // cout << "ddddddddddddd " << d_plus << endl;
-
-    for(long long n = 0; n < FPdim; ++n){
-        for(long long m = 0; m < (FPdim-n)/d_plus; ++m){
-
-             INTERRUPT_COMPUTATION_BY_EXCEPTION
-
-            renf_elem_class cand = n + m * d_plus;
-            if(cand == 0)
-                continue;
-            renf_elem_class inv = FPdim/cand;
-            if(is_algebraic_integer(inv))
-                candidates_m_i.push_back(cand);
+    for(size_t i = 0; i < RawCands.nr_of_rows(); ++i){
+        auto c = RawCands[i];
+        renf_elem_class cand = v_scalar_product_vectors_unequal_lungth(c, fusion_type);
+        if(cand == 0)
+            continue;
+        if(CandSet.find(cand) != CandSet.end()) // already tested
+            continue;
+        CandSet.insert(cand);
+        renf_elem_class inv = FPdim/cand;
+        // cout << " inv " << inv << endl;
+        // cout << "old " << is_algebraic_integer_old(inv) << endl;
+        bool whow = is_algebraic_integer(inv);
+        //cout << "new " <<whow << endl;
+        // cout << "=============================================" << endl;
+        if(whow){
+            candidates_m_i.push_back(cand);
             divisors.push_back(inv);
         }
     }
@@ -689,6 +754,7 @@ void Induction<Integer>::augment_induction_matrices(){
 
     InductionMatrices.clear();
     for(auto& T: InductionMatricesByType){
+        // cout << T.first;
         InductionMatrices.insert(InductionMatrices.end(), T.second.begin(), T.second.end());
     }
 

@@ -110,6 +110,7 @@ public:
 
     Integer conjugate(const Integer& val);
     bool is_algebraic_integer(const Integer& val);
+    bool is_algebraic_integer_old(const Integer& val);
 
     Matrix<Integer> make_allowed_transpositions(Matrix<Integer> FusionMap);
 
