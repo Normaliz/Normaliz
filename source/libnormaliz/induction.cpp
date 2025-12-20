@@ -93,7 +93,6 @@ Induction<Integer>::Induction(const vector<Integer>& fus_type, const vector<key_
     }
 
     FPSquare = FPdim * FPdim;
-    make_divisors();
 
     // For the computation of eigenvalues and multiplicities
     size_t EVMat_size = fusion_rank;
@@ -112,12 +111,7 @@ Induction<Integer>::Induction(const vector<Integer>& fus_type, const vector<key_
         }
     }
 
-    if(commutative){
-        codegrees_and_mult_commutative();
-    }
-    else{
-        codegrees_and_mult_noncommutative();
-    }
+    EVMat.debug_print('E');
 
     Bounds.resize(fusion_rank, fusion_rank);
     for(size_t j = 0; j< fusion_rank; ++j){
@@ -129,6 +123,18 @@ Induction<Integer>::Induction(const vector<Integer>& fus_type, const vector<key_
             }
             Bounds[j][k] = S;
         }
+    }
+
+    Bounds.debug_print('B');
+
+
+    make_divisors();
+
+    if(commutative){
+        codegrees_and_mult_commutative();
+    }
+    else{
+        codegrees_and_mult_noncommutative();
     }
 
     if(verbose)
@@ -154,6 +160,7 @@ Induction<Integer>::Induction(const vector<Integer>& fus_type, const vector<key_
                               Type::inhom_inequalities, NeutralInEqu);
         RepCone.setVerbose(false);
         Matrix<Integer> Reps = RepCone.getLatticePointsMatrix();
+        // Reps.debug_print('R');
         size_t count_high = 0;
         for(size_t i = 0; i < Reps.nr_of_rows(); ++i){
             bool too_large = false;
