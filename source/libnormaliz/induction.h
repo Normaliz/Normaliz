@@ -46,6 +46,7 @@ public:
 
     bool mult_of_ev_ok;
     bool commutative;
+    bool near_integral;
 
     Matrix<Integer> F;
 
@@ -101,6 +102,7 @@ public:
 
     // void start_low_parts();
     void make_divisors();
+    void make_divisors_near_integral();
     void make_candidates_m_i();
     void make_low_m_i();
     void build_low_parts();
@@ -109,8 +111,8 @@ public:
     void augment_induction_matrices();
 
     Integer conjugate(const Integer& val);
-    bool is_algebraic_integer(const Integer& val);
-    bool is_algebraic_integer_old(const Integer& val);
+    //bool is_algebraic_integer(const Integer& val);
+    // bool is_algebraic_integer_old(const Integer& val);
 
     Matrix<Integer> make_allowed_transpositions(Matrix<Integer> FusionMap);
 
