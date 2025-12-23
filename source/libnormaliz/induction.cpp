@@ -60,6 +60,16 @@ bool is_algebraic_integer(const Integer& val){
 }
 */
 
+template<typename Integer>
+Matrix<long long> SplitRepresentations(Integer val, vector<Integer> summands){
+    size_t r = summands.size();
+    Matrix<long long> InhomEqu(1,r +1);
+    for(size_t i = 0; i < r; ++i)
+        InhomEqu[0][i] = convertTo<long long>(summands[i]);
+    InhomEqu[0].back() = convertTo<long long>(- val);
+    return InhomEqu;
+}
+
 #ifdef ENFNORMALIZ
 
 vector<mpz_class> minimal_polynomial(const renf_elem_class& val){
@@ -133,6 +143,41 @@ bool is_d_number(const renf_elem_class& val){
             return false;
     }
     return true;
+}
+
+template<>
+Matrix<long long> SplitRepresentations(renf_elem_class val, vector<renf_elem_class> summands){
+
+    // get rid of denominators
+    mpz_class common_den = val.den();
+    for(auto& s: summands){
+        common_den = libnormaliz::lcm(common_den, s.den());
+    }
+    val *= common_den;
+    for(auto& s: summands){
+        s *= common_den;
+    }
+    vector<mpz_class> val_num = val.num_vector();
+    mpz_class MinusOne = -1;
+    v_scalar_multiplication(val_num, MinusOne);
+    size_t comm_size = val_num.size();
+    vector<vector<mpz_class> > Equ_mpz;
+    for(auto& s: summands){
+        Equ_mpz.push_back(s.num_vector());
+        comm_size = max(comm_size, Equ_mpz.back().size());
+    }
+    for(auto& v: Equ_mpz){
+        v.resize(comm_size);
+    }
+    val_num.resize(comm_size);
+    Equ_mpz.push_back(val_num);
+    Matrix<long long> Equ_ll(Equ_mpz.size(),comm_size);
+    size_t i = 0;
+    for(auto& v: Equ_mpz){
+        convert(Equ_ll[i],v);
+        i++;
+    }
+    return Equ_ll.transpose();
 }
 
 /*
@@ -270,21 +315,17 @@ Induction<Integer>::Induction(const vector<Integer>& fus_type, const vector<key_
 
         if(t == FPdim)
             continue;
-        Matrix<Integer> InhomEqu(1,fusion_rank +1);
-        for(size_t i = 0; i < fusion_rank; ++i)
-            InhomEqu[0][i] = fus_type[i];
-        InhomEqu[0].back() = - t;
-        Matrix<Integer> NonNeg(InhomEqu.nr_of_columns() - 1);
-        // Matrix<Integer> NeutralInEqu(1,fusion_rank +1);
-        // NeutralInEqu[0][0] = -1;
-        // NeutralInEqu[0].back() = 1;
-        Matrix<Integer> NeutralEqu(1,fusion_rank );
+        Matrix<long long> InhomEqu = SplitRepresentations(t, fusion_type);
+        Matrix<long long> NonNeg(InhomEqu.nr_of_columns() - 1);
+        Matrix<long long> NeutralEqu(1,fusion_rank );
         NeutralEqu[0][0] = 1;
-        Cone<Integer> RepCone(Type::inhom_equations, InhomEqu,Type::inequalities, NonNeg,
-        //                     Type::inhom_inequalities, NeutralInEqu);
+
+        Cone<long long> RepCone(Type::inhom_equations, InhomEqu,Type::inequalities, NonNeg,
                               Type::equations, NeutralEqu);
         RepCone.setVerbose(false);
-        Matrix<Integer> Reps = RepCone.getLatticePointsMatrix();
+        Matrix<long long> Reps_ll = RepCone.getLatticePointsMatrix();
+        Matrix<Integer> Reps;
+        convert(Reps, Reps_ll);
         // Reps.debug_print('R');
         size_t count_high = 0;
         for(size_t i = 0; i < Reps.nr_of_rows(); ++i){
@@ -365,9 +406,11 @@ void Induction<renf_elem_class>::make_divisors_near_integral(){
             else
                 cout << "inv false";
             cout << endl;*/
-            if(is_d_number(FPdim/cand) && is_d_number(cand)){
-                candidates_m_i.push_back(cand);
-                divisors.push_back(FPdim/cand);
+            if(is_d_number(cand)){
+                if(is_algebraic_integer(FPdim/cand))
+                    candidates_m_i.push_back(cand);
+                if(is_d_number(FPdim/cand))
+                    divisors.push_back(FPdim/cand);
             }
         }
     }
