@@ -75,12 +75,11 @@ public:
     Integer kkk, d_plus, d_minus; // zeroes d_plus > 0 and d_minus < 0
 
     // first: the m_i for i < s = number of irreducible presentations
-    // second: the dimensions of the irreducibles as an Integer
-    vector<pair<Integer, Integer> > low_m;
+    // second: the dimensions of the irreducibles
+    vector<pair<Integer, long long> > low_m;
 
     vector<Matrix<Integer> > InductionMatrices;
-    vector<Matrix<Integer> > LowParts;
-    // vector<Matrix<Integer> > LowPartsBounds;
+    vector<Matrix<long long> > LowParts;
 
     size_t iupper_bound;
     size_t nr_rows_low_part; // = number of irreducibles
@@ -88,8 +87,8 @@ public:
     Integer N(const key_t i, const key_t j, const key_t k);
 
     // map< Integer, Matrix<Integer > > LowRepresentations;  // F_ij for i <= r (counting from 1), F_i1 = 1
-    Matrix<Integer > HighRepresentations; // F_ij for i > 1 (counting from 1), F_i1 = 0
-    Matrix<Integer> Bounds;
+    Matrix<long long> HighRepresentations; // F_ij for i > 1 (counting from 1), F_i1 = 0
+    Matrix<long long> Bounds;
 
     Induction();
     Induction(const vector<Integer>& fus_type, const vector<key_t>& fus_duality , const vector<Integer>& FusRing, bool verb);

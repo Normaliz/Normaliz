@@ -5,7 +5,6 @@
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -45,13 +44,13 @@ Integer power(const Integer& m, const size_t& k){
     return m * power(m, k -1);
 }
 
-/*
+
 template<typename Integer>
 Integer Induction<Integer>::conjugate(const Integer& val){
     assert(false);
     return 0;
 }
-*/
+
 
 /* template<typename Integer>
 bool is_algebraic_integer(const Integer& val){
@@ -180,7 +179,7 @@ Matrix<long long> SplitRepresentations(renf_elem_class val, vector<renf_elem_cla
     return Equ_ll.transpose();
 }
 
-/*
+
 template<>
 renf_elem_class Induction<renf_elem_class>::conjugate(const renf_elem_class& val){
     vector<mpz_class> num = val.num_vector();
@@ -192,7 +191,7 @@ renf_elem_class Induction<renf_elem_class>::conjugate(const renf_elem_class& val
     return ret;
 }
 
-
+/*
 template<>
 bool Induction<renf_elem_class>::is_algebraic_integer_old(const renf_elem_class& val){
     renf_elem_class conj = conjugate(val);
@@ -288,12 +287,10 @@ Induction<Integer>::Induction(const vector<Integer>& fus_type, const vector<key_
                 for(size_t t = 0; t < fusion_rank; ++t )
                     S += N(t,j,s)*N(s, duality[t],k);
             }
-            Bounds[j][k] = S;
+            Bounds[j][k] = convertTo<long long>(S);
         }
     }
-
     Bounds.debug_print('B');
-
 
     make_divisors();
 
@@ -323,9 +320,9 @@ Induction<Integer>::Induction(const vector<Integer>& fus_type, const vector<key_
         Cone<long long> RepCone(Type::inhom_equations, InhomEqu,Type::inequalities, NonNeg,
                               Type::equations, NeutralEqu);
         RepCone.setVerbose(false);
-        Matrix<long long> Reps_ll = RepCone.getLatticePointsMatrix();
-        Matrix<Integer> Reps;
-        convert(Reps, Reps_ll);
+        Matrix<long long> Reps = RepCone.getLatticePointsMatrix(); // _ll = RepCone.getLatticePointsMatrix();
+        // Matrix<Integer> Reps;
+        // convert(Reps, Reps_ll);
         // Reps.debug_print('R');
         size_t count_high = 0;
         for(size_t i = 0; i < Reps.nr_of_rows(); ++i){
@@ -342,7 +339,7 @@ Induction<Integer>::Induction(const vector<Integer>& fus_type, const vector<key_
             }
             if(too_large)
                 continue;
-            vector<Integer> new_rep = Reps[i];
+            vector<long long> new_rep = Reps[i];
             new_rep.resize(new_rep.size() - 1);
 
             //if(Reps[i][0] == 0){
@@ -380,7 +377,6 @@ template<>
 void Induction<renf_elem_class>::make_divisors_near_integral(){
 
     size_t r = fusion_type.size() - 1;
-
     kkk = N(r,r,r);
     d_plus = fusion_type.back();
     d_minus = kkk - d_plus;
@@ -393,19 +389,8 @@ void Induction<renf_elem_class>::make_divisors_near_integral(){
             renf_elem_class cand = n + m * d_plus;
             if(cand == 0)
                 continue;
-            /*cout << "----------------------" << endl;
-            cout  << cand << " " << FPdim/cand << endl;
-            cout << minimal_polynomial(cand);
-            cout << minimal_polynomial(FPdim/cand);
-            if(is_d_number(cand))
-                cout << "cand true ";
-            else
-                cout << "cand false ";
-            if(is_d_number(FPdim/cand))
-                cout << "inv true ";
-            else
-                cout << "inv false";
-            cout << endl;*/
+            //if(conjugate(cand) < 0)
+             //   continue;
             if(is_d_number(cand)){
                 if(is_algebraic_integer(FPdim/cand))
                     candidates_m_i.push_back(cand);
@@ -428,39 +413,35 @@ void Induction<renf_elem_class>::make_divisors(){
         make_divisors_near_integral();
         return;
     }
-    size_t r = fusion_rank -1;
-    kkk = N(r,r,r);
-    d_plus = fusion_type.back();
-    d_minus = kkk - d_plus;
 
     vector<renf_elem_class> h = fusion_type;
-    h.push_back(-FPdim);
-    renf_elem_class MinusOne = -1;
-    v_scalar_multiplication(h, MinusOne);
-    Matrix<renf_elem_class> Hyp(h);
+    vector<long long> floors;
+    for(auto& f: fusion_type)
+        floors.push_back(convertTo<long long>(f.floor()));
+    floors.push_back(- convertTo<long long>(FPdim.ceil()));
+    long long MinusOne = -1;
+    v_scalar_multiplication(floors,MinusOne);
+    Matrix<long long> Hyp(floors);
     Hyp.debug_print();
-    Cone<renf_elem_class> CandCone(Type::inhom_inequalities, Hyp);
+    Cone<long long> CandCone(Type::inhom_inequalities, Hyp);
     CandCone.setNonnegative();
-    Matrix<renf_elem_class> RawCands = CandCone.getLatticePointsMatrix();
+    Matrix<long long> RawCands = CandCone.getLatticePointsMatrix();
     set<renf_elem_class> CandSet;
 
     for(size_t i = 0; i < RawCands.nr_of_rows(); ++i){
         auto c = RawCands[i];
-        renf_elem_class cand = v_scalar_product_vectors_unequal_lungth(c, fusion_type);
-        if(cand == 0)
+        renf_elem_class cand = v_scalar_product_vectors_unequal_lungth_mixed(c, fusion_type);
+        if(cand == 0 || cand > FPdim)
             continue;
         if(CandSet.find(cand) != CandSet.end()) // already tested
             continue;
         CandSet.insert(cand);
         renf_elem_class inv = FPdim/cand;
-        // cout << " inv " << inv << endl;
-        // cout << "old " << is_algebraic_integer_old(inv) << endl;
-        bool whow = is_algebraic_integer(inv);
-        //cout << "new " <<whow << endl;
-        // cout << "=============================================" << endl;
-        if(whow){
-            candidates_m_i.push_back(cand);
-            divisors.push_back(inv);
+        if(is_d_number(cand)){
+            if(is_algebraic_integer(FPdim/cand))
+                candidates_m_i.push_back(cand);
+            if(is_d_number(FPdim/cand))
+                divisors.push_back(FPdim/cand);
         }
     }
 }
@@ -591,28 +572,35 @@ template<typename Integer>
 void Induction<Integer>::solve_system_low_parts(){
 
     // foirst row and first column are fixed
-    Matrix<Integer> our_equs(0,(nr_rows_low_part -1)*(fusion_rank-1) + 1); // +1 for rhs
+    Matrix<long long> our_equs(0,(nr_rows_low_part -1)*(fusion_rank-1) + 1); // +1 for rhs
 
     // in the system we use that the entries in the first column are fixed
     // they are taken cae of in the right hand side
 
     // make row equations
     for(size_t i = 0; i < nr_rows_low_part -1; ++i){
-        vector<Integer> this_equ((nr_rows_low_part -1)*(fusion_rank-1));
-        for(size_t j = 0; j < fusion_rank -1; ++j){
-            this_equ[i*(fusion_rank -1) +j] = fusion_type[j+1];
+
+        Matrix<long long> RowSplit = SplitRepresentations(low_m[i+1].first, fusion_type);
+        for(int k = 0; k < RowSplit.nr_of_rows(); ++k){
+            vector<long long> this_equ((nr_rows_low_part -1)*(fusion_rank-1));
+            for(size_t j = 0; j < fusion_rank -1; ++j){
+                this_equ[i*(fusion_rank -1) +j] = RowSplit[k][j+1];
+            }
+            // now the nright hand side
+            // note: entry in first column is n_i
+            if(k == 0)
+                this_equ.push_back(RowSplit[k].back() + low_m[i+1].second);
+            else
+                this_equ.push_back(RowSplit[k].back());
+            our_equs.append(this_equ);
         }
-        // now the nright hand side
-        // note: entry in first column is n_i
-        this_equ.push_back(-low_m[i+1].first +low_m[i+1].second);
-        our_equs.append(this_equ);
     }
 
     // make column equations
     for(size_t j = 0; j < fusion_rank - 1; ++j){
-        vector<Integer> this_equ((nr_rows_low_part -1)*(fusion_rank-1));
+        vector<long long> this_equ((nr_rows_low_part -1)*(fusion_rank-1));
         for(size_t i = 0; i < nr_rows_low_part - 1; ++i){
-            this_equ[j + i*(fusion_rank -1)] = low_m[i+1].second;  // ?????????
+            this_equ[j + i*(fusion_rank -1)] = low_m[i+1].second; //  ?????????
         }
         this_equ.push_back(- Bounds[0][j + 1]); // right hand side
         our_equs.append(this_equ);
@@ -622,13 +610,13 @@ void Induction<Integer>::solve_system_low_parts(){
     // cout << "CCC " << our_equs.nr_of_columns() << endl;
     // our_equs.debug_print('E');
 
-    Cone<Integer> LP(Type::inhom_equations, our_equs);
+    Cone<long long> LP(Type::inhom_equations, our_equs);
     LP.setVerbose(false);
-    Matrix<Integer> LowPartsRaw = LP.getLatticePointsMatrix();
+    Matrix<long long> LowPartsRaw = LP.getLatticePointsMatrix();
     // LowPartsRaw.debug_print('#');
 
     for(size_t iii = 0; iii < LowPartsRaw.nr_of_rows(); iii++){
-        Matrix<Integer> our_low_part(nr_rows_low_part, fusion_rank);
+        Matrix<long long> our_low_part(nr_rows_low_part, fusion_rank);
         for(size_t i = 0; i < our_low_part.nr_of_rows(); ++i){
             our_low_part[i][0] = low_m[i].second;
         }
@@ -663,10 +651,9 @@ void Induction<Integer>::make_low_m_i(){
     // First we want to replace eigenvalues by codegrees
     // Note: eigenvalue n_if_i by f_i si9nce we want m_i = FPdim/f_i
 
-    // convert the n_i to Integer because they are used as such in the following
     for(auto& t: EV_n_i){
-        Integer dummy = convertTo<Integer>(static_cast<long long>(t.second));
-        low_m.push_back(make_pair(FPdim  / t.first, dummy));
+        // Integer dummy = convertTo<Integer>(static_cast<long long>(t.second));
+        low_m.push_back(make_pair(FPdim  / t.first, t.second));
 
         // cout << "m " << FPdim  / t.first << " mult "  << dummy << endl;
     }
@@ -694,7 +681,7 @@ void Induction<Integer>::build_low_parts(){
 
     // Low parts may come with permuted rows. We select those with
     // ordered rows
-    vector<Matrix<Integer> >  OrderedLowParts;
+    vector<Matrix<long long> >  OrderedLowParts;
     for(auto& M: LowParts){
         bool ordered = true;
         for(size_t i = 0; i < M.nr_of_rows() - 1; ++i){
@@ -782,16 +769,16 @@ void Induction<Integer>::from_low_to_full(){
         for(size_t j = 0; j < nr_rows_low_part; ++j)
             FPdim_so_far += low_m[j].first * low_m[j].first;
 
-        Integer MinusOne = -1;
+        long long MinusOne_ll = -1;
 
         INTERRUPT_COMPUTATION_BY_EXCEPTION
 
         // ThisLowPart.debug_print('#');
         // LowPartsBounds[iii].debug_print('B');
 
-        Matrix<Integer> MinusLowBound(fusion_rank, fusion_rank);
+        Matrix<long long> MinusLowBound(fusion_rank, fusion_rank);
         for(size_t i = 0; i< nr_rows_low_part; ++i){
-            vector<Integer> cand_extension = ThisLowPart[i];
+            vector<long long> cand_extension = ThisLowPart[i];
             // cout << "cccc " << cand_extension.size() << endl;
             for(size_t j = 0; j < fusion_rank; ++j){
                 // cout << "j "  << j << endl;
@@ -800,22 +787,21 @@ void Induction<Integer>::from_low_to_full(){
                 }
             }
         }
-        MinusLowBound.scalar_multiplication(MinusOne);
+        MinusLowBound.scalar_multiplication(MinusOne_ll);
 
         // Now the conditions for the high part
         // Remaining: the difference between whe goal and the contribution of the low part
 
-        Matrix<Integer> Remaining = Bounds.add(MinusLowBound);
-
+        Matrix<long long> Remaining = Bounds.add(MinusLowBound);
         // Remaining.debug_print('R');
 
-        Matrix<Integer> InhomEqu(0, HighRepresentations.nr_of_rows() + 1);
+        Matrix<long long> InhomEqu(0, HighRepresentations.nr_of_rows() + 1);
 
         // HighRepresentations.debug_print('H');
 
         for(size_t j = 1; j < fusion_rank; ++j){
             for(size_t k = j; k < fusion_rank; ++k){
-                vector<Integer> this_equ;
+                vector<long long> this_equ;
                 for(size_t i = 0; i < HighRepresentations.nr_of_rows(); ++i){
                     this_equ.push_back(HighRepresentations[i][j] * HighRepresentations[i][k]);
                 }
@@ -825,7 +811,8 @@ void Induction<Integer>::from_low_to_full(){
             }
         }
 
-        // now the equation for the FPdim of the center
+
+        /*// now the equation for the FPdim of the center
 
         vector<Integer> this_equ;
         for(size_t i = 0; i < HighRepresentations.nr_of_rows(); ++i){
@@ -834,20 +821,20 @@ void Induction<Integer>::from_low_to_full(){
         }
         // cout << "FFFFFF " << FPdim_so_far << " " << -FPSquare << " " << (-FPSquare + FPdim_so_far) <<  endl;
         this_equ.push_back(-FPSquare + FPdim_so_far);
-        InhomEqu.append(this_equ);
+        InhomEqu.append(this_equ);*/
 
         // InhomEqu.debug_print('&');
 
         // we use inequalities to avoid coordinate transformation
-        Matrix<Integer> Copy = InhomEqu;
-        Copy.scalar_multiplication(MinusOne);
+        Matrix<long long > Copy = InhomEqu;
+        Copy.scalar_multiplication(-1);
         InhomEqu.append(Copy);
 
-        Matrix<Integer> Unit(HighRepresentations.nr_of_rows());
-        Cone<Integer> C(Type::inhom_inequalities, InhomEqu, Type::inequalities, Unit);
+        Matrix<long long> Unit(HighRepresentations.nr_of_rows());
+        Cone<long long> C(Type::inhom_inequalities, InhomEqu, Type::inequalities, Unit);
         C.setVerbose(false);
         C.compute(ConeProperty::LatticePoints);
-        Matrix<Integer> LP = C.getLatticePointsMatrix();
+        Matrix<long long > LP = C.getLatticePointsMatrix();
 
         // LP.debug_print('P');
 
@@ -855,13 +842,16 @@ void Induction<Integer>::from_low_to_full(){
             verboseOutput() << "No extension" << endl;
 
         for(size_t k= 0; k< LP.nr_of_rows(); ++k){
-            Matrix<Integer> IndMat = ThisLowPart;
+            Matrix<Integer> IndMat;
+            convert(IndMat, ThisLowPart);
             // cout << "CCC " << ThisLowPart.nr_of_columns() << endl;
             for(size_t j = 0; j < LP.nr_of_columns() - 1; ++j){
-                Integer count = 0;
+                long long count = 0;
                 while(count < LP[k][j]){
                     // cout << "HHH " << HighRepresentations[j].size() << endl;
-                    IndMat.append(HighRepresentations[j]);
+                    vector<Integer> HR_Int;
+                    convert(HR_Int, HighRepresentations[j]);
+                    IndMat.append(HR_Int);
                     count = count +1;
                 }
 

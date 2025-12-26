@@ -133,6 +133,15 @@ Integer v_scalar_product_vectors_unequal_lungth(const vector<Integer>& a, const 
     return v_scalar_product(trunc_a, trunc_b);
 }
 
+template <typename Integer, typename Number>
+Number v_scalar_product_vectors_unequal_lungth_mixed(const vector<Integer>& a, const vector<Number>& b) {
+    size_t n = std::min(a.size(), b.size());
+    Number ret = 0;
+    for(size_t i = 0; i < n; ++i)
+        ret += a[i] * b[i];
+    return ret;
+}
+
 // v = v * scalar
 template <typename Integer>
 void v_scalar_multiplication(vector<Integer>& v, const Integer scalar) {
