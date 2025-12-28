@@ -1122,6 +1122,7 @@ void Cone<Integer>::finish_standard_input(const ConeProperties& ToCompute){
     if(no_pos_orth_def){
         if(make_nonnegative)
             throw BadInputException("conficting options nonnegative and no_pos_orth_def");
+        inequalities_in_input = true;
         if(Standard_Input.find(Type::inequalities) == Standard_Input.end() )
             Standard_Input[Type::inequalities] = Matrix<Integer> (0,dim);
     }
@@ -2024,7 +2025,7 @@ template <typename Integer>
 void Cone<Integer>::insert_default_inequalities(Matrix<Integer>& Inequalities) {
     if (Generators.nr_of_rows() == 0 && Inequalities.nr_of_rows() == 0 && !inequalities_in_input) {
         if (verbose) {
-            verboseOutput() << "No inequalities specified in constraint mode, using non-negative orthant." << endl;
+            verboseOutput() << "No inequalities specified in constraint mode, using positive orthant." << endl;
         }
         if (inhomogeneous) {
             vector<Integer> test(dim);
