@@ -88,7 +88,9 @@ public:
 
     // map< Integer, Matrix<Integer > > LowRepresentations;  // F_ij for i <= r (counting from 1), F_i1 = 1
     Matrix<long long> HighRepresentations; // F_ij for i > 1 (counting from 1), F_i1 = 0
+    Matrix<Integer> Bounds_Int;
     Matrix<long long> Bounds;
+    vector<string> BoundsPolys; // Bounds as polynomials
 
     Induction();
     Induction(const vector<Integer>& fus_type, const vector<key_t>& fus_duality , const vector<Integer>& FusRing, bool verb);

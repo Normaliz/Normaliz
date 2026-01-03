@@ -205,6 +205,35 @@ bool Induction<renf_elem_class>::is_algebraic_integer_old(const renf_elem_class&
 
 #endif
 
+
+template<typename Integer>
+bool check_bounds(const vector<Integer> v, const Matrix<Integer> Bounds){
+    assert(v.size() <= Bounds.nr_of_columns());
+    assert(v.size() <= Bounds.nr_of_rows());
+    for(size_t j = 0; j < v.size(); ++j){
+        for(size_t k = j; k < v.size(); ++k){
+            if(v[j]*v[k] > Bounds[j][k]){
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+template<typename Integer>
+vector<string> BoundsAsPolynomials(const Matrix<Integer> Bounds){
+    size_t n = Bounds.nr_of_columns();
+    assert(n == Bounds.nr_of_rows());
+    vector<string> Polys;
+    for(size_t j = 0; j < n; ++j){
+        for(size_t k = j; k < n; ++k){
+            // we count variables from 1 for polynomial bounds
+            string B = "-x[" + to_string(j+1) + "]*x["+to_string(k+1)+"]+"+to_string(Bounds[j][k]);
+            Polys.push_back(B);
+        }
+    }
+    return Polys;
+}
 // constructors
 
 template<typename Integer>
@@ -292,6 +321,10 @@ Induction<Integer>::Induction(const vector<Integer>& fus_type, const vector<key_
     }
     Bounds.debug_print('B');
 
+    convert(Bounds_Int, Bounds);
+
+    BoundsPolys =  BoundsAsPolynomials(Bounds);
+
     make_divisors();
 
     if(commutative){
@@ -313,34 +346,21 @@ Induction<Integer>::Induction(const vector<Integer>& fus_type, const vector<key_
         if(t == FPdim)
             continue;
         Matrix<long long> InhomEqu = SplitRepresentations(t, fusion_type);
-        Matrix<long long> NonNeg(InhomEqu.nr_of_columns() - 1);
         Matrix<long long> NeutralEqu(1,fusion_rank );
         NeutralEqu[0][0] = 1;
 
-        Cone<long long> RepCone(Type::inhom_equations, InhomEqu,Type::inequalities, NonNeg,
-                              Type::equations, NeutralEqu);
+        Cone<long long> RepCone(Type::inhom_equations, InhomEqu, Type::equations, NeutralEqu);
         RepCone.setVerbose(false);
-        Matrix<long long> Reps = RepCone.getLatticePointsMatrix(); // _ll = RepCone.getLatticePointsMatrix();
-        // Matrix<Integer> Reps;
-        // convert(Reps, Reps_ll);
-        // Reps.debug_print('R');
+        RepCone.setPolynomialInequalities( BoundsPolys);
+        RepCone.setNonnegative();
+        Matrix<long long> Reps = RepCone.getLatticePointsMatrix();
+        cout << "Reps Reps Reps " << Reps.nr_of_rows() << endl;
         size_t count_high = 0;
         for(size_t i = 0; i < Reps.nr_of_rows(); ++i){
-            bool too_large = false;
-            for(size_t j = 0; j < fusion_rank; ++j){
-                for(size_t k = j; k < fusion_rank; ++k){
-                    if(Reps[i][j]*Reps[i][k] > Bounds[j][k]){
-                        too_large = true;
-                        break;
-                    }
-                }
-                if(too_large)
-                    break;
-            }
-            if(too_large)
-                continue;
             vector<long long> new_rep = Reps[i];
             new_rep.resize(new_rep.size() - 1);
+            if(!check_bounds(new_rep, Bounds))
+                continue;
 
             //if(Reps[i][0] == 0){
                 HighRepresentations.append(new_rep);
@@ -348,6 +368,7 @@ Induction<Integer>::Induction(const vector<Integer>& fus_type, const vector<key_
             // }
 
         }
+
         if(verbose)
             verboseOutput() << "candidate " << t << " has " << count_high << " high" << " representations" << endl;
 
@@ -425,6 +446,7 @@ void Induction<renf_elem_class>::make_divisors(){
     Hyp.debug_print();
     Cone<long long> CandCone(Type::inhom_inequalities, Hyp);
     CandCone.setNonnegative();
+    CandCone.setPolynomialInequalities(BoundsPolys);
     Matrix<long long> RawCands = CandCone.getLatticePointsMatrix();
     set<renf_elem_class> CandSet;
 
@@ -795,15 +817,38 @@ void Induction<Integer>::from_low_to_full(){
         Matrix<long long> Remaining = Bounds.add(MinusLowBound);
         // Remaining.debug_print('R');
 
-        Matrix<long long> InhomEqu(0, HighRepresentations.nr_of_rows() + 1);
-
         // HighRepresentations.debug_print('H');
+
+        Matrix<long long> HighRepsHere(0,HighRepresentations.nr_of_columns());
+        for(size_t i = 0; i < HighRepresentations.nr_of_rows(); ++i){
+            if(check_bounds(HighRepresentations[i], Remaining))
+                HighRepsHere.append(HighRepresentations[i]);
+        }
+
+        cout << "Old " << HighRepresentations.nr_of_rows() << " New " << HighRepsHere.nr_of_rows() << endl;
+
+        vector<vector<long long> > SortVecVec;
+        for(size_t kk = 0; kk < HighRepsHere.nr_of_rows(); ++kk ){
+            SortVecVec.push_back(HighRepsHere[kk]);
+            v_scalar_multiplication(SortVecVec.back(), MinusOne_ll);
+        }
+        sort(SortVecVec.begin(), SortVecVec.end());
+        for(size_t kk = 0; kk < HighRepsHere.nr_of_rows(); ++kk ){
+            v_scalar_multiplication(SortVecVec[kk], MinusOne_ll);
+            HighRepsHere[kk]= SortVecVec[kk];
+        }
+
+        // HighRepsHere = HighRepresentations;
+
+
+        Matrix<long long> InhomEqu(0, HighRepsHere.nr_of_rows() + 1);
+
 
         for(size_t j = 1; j < fusion_rank; ++j){
             for(size_t k = j; k < fusion_rank; ++k){
                 vector<long long> this_equ;
-                for(size_t i = 0; i < HighRepresentations.nr_of_rows(); ++i){
-                    this_equ.push_back(HighRepresentations[i][j] * HighRepresentations[i][k]);
+                for(size_t i = 0; i < HighRepsHere.nr_of_rows(); ++i){
+                    this_equ.push_back(HighRepsHere[i][j] * HighRepsHere[i][k]);
                 }
                 this_equ.push_back(-Remaining[j][k]);
                 // cout << j << " " << k << " " << "ttt " <<  this_equ;
@@ -830,9 +875,9 @@ void Induction<Integer>::from_low_to_full(){
         Copy.scalar_multiplication(-1);
         InhomEqu.append(Copy);
 
-        Matrix<long long> Unit(HighRepresentations.nr_of_rows());
-        Cone<long long> C(Type::inhom_inequalities, InhomEqu, Type::inequalities, Unit);
+        Cone<long long> C(Type::inhom_inequalities, InhomEqu);
         C.setVerbose(false);
+        C.setNonnegative();
         C.compute(ConeProperty::LatticePoints);
         Matrix<long long > LP = C.getLatticePointsMatrix();
 
@@ -850,13 +895,15 @@ void Induction<Integer>::from_low_to_full(){
                 while(count < LP[k][j]){
                     // cout << "HHH " << HighRepresentations[j].size() << endl;
                     vector<Integer> HR_Int;
-                    convert(HR_Int, HighRepresentations[j]);
+                    convert(HR_Int, HighRepsHere[j]);
                     IndMat.append(HR_Int);
                     count = count +1;
                 }
 
             }
             InductionMatrices.push_back(IndMat);
+
+            assert(IndMat.transpose().multiplication(IndMat).equal(Bounds_Int));
             /* if(verbose){
                 IndMat.debug_print('I');
                 verboseOutput() << endl;
@@ -868,21 +915,23 @@ void Induction<Integer>::from_low_to_full(){
 
 template<typename Integer>
 void Induction<Integer>::augment_induction_matrices(){
-    set<vector<vector<Integer> > > EquivHelp;
-    vector<Matrix<Integer> > Representatives;
-    for(auto& M: InductionMatrices){
 
-        vector<vector<Integer> >  N = M.get_elements();
-        sort(N.begin(), N. end());
-        if(EquivHelp.find(N) == EquivHelp.end()){
-            Representatives.push_back(M);
-            EquivHelp.insert(N);
+    // Sort each induction matrix by increasing FPdim
+    // and rows with equal FPdim lex
+    for(auto& M: InductionMatrices){
+        vector<pair<Integer, vector<Integer> > > FPdim_row;
+        for(size_t i = 0; i < M.nr_of_rows(); ++i){
+            Integer FPdim = v_scalar_product(fusion_type, M[i]);
+            FPdim_row.push_back(make_pair(FPdim, M[i]));
+            sort(FPdim_row.begin(), FPdim_row.end());
+        }
+        for(size_t i = 0; i < M.nr_of_rows(); ++i){
+            M[i] = FPdim_row[i].second;
         }
     }
-    swap(InductionMatrices, Representatives); // matrices now oin InductionMatrices
 
+    // collect induction matrices of equal type
     map<vector<Integer>, vector<Matrix<Integer> > > InductionMatricesByType;
-
     for(auto& M: InductionMatrices){
         vector<Integer> type = M.MxV(fusion_type);
         InductionMatricesByType[type].push_back(M);
@@ -890,31 +939,16 @@ void Induction<Integer>::augment_induction_matrices(){
     if(verbose)
         verboseOutput() << InductionMatricesByType.size() << " fusion types defined by induction matrices" << endl;
 
+    // reorder induction matrices by increasing type
     InductionMatrices.clear();
     for(auto& T: InductionMatricesByType){
         // cout << T.first;
         InductionMatrices.insert(InductionMatrices.end(), T.second.begin(), T.second.end());
     }
-
-    for(auto& M: InductionMatrices){
-        //we rteorder the rows by increasing m_i
-
-        map<Integer, vector<vector<Integer> > > SortHelp;
-        for(size_t i = 0; i < M.nr_of_rows(); ++i){
-            Integer m = v_scalar_product(M[i], fusion_type);
-            SortHelp[m].push_back(M[i]);
-        }
-
-        M.resize(0,fusion_rank);
-        for(auto& T: SortHelp){
-            for(auto& v: T.second)
-                M.append(v);
-        }
-    }
-
     if(verbose)
         verboseOutput() << InductionMatrices.size() << " induction matrices found" << endl;
 
+    // Add additional info
     vector<Matrix<Integer> > InductionMatWithType;
     // cout << "FFFFFFFFFFF " << ImageRing;
     InductionMatWithType.push_back(ImageRing);
