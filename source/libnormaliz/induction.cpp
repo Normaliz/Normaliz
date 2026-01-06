@@ -44,6 +44,24 @@ Integer power(const Integer& m, const size_t& k){
     return m * power(m, k -1);
 }
 
+template<typename Integer>
+long long our_ceil(const Integer& val ){
+    return convertTo<long long>(val);
+}
+
+template<typename Integer>
+long long our_floor(const Integer& val ){
+    return convertTo<long long>(val);
+}
+
+template<typename Integer>
+Integer our_scalar_product(const vector<long long>& av, const vector<Integer>& bv){
+    Integer S = 0;
+    for(size_t i = 0; i < av.size(); ++i)
+        S += convertTo<Integer>(av[i]) *bv[i];
+    return S;
+}
+
 
 template<typename Integer>
 Integer Induction<Integer>::conjugate(const Integer& val){
@@ -70,6 +88,26 @@ Matrix<long long> SplitRepresentations(Integer val, vector<Integer> summands){
 }
 
 #ifdef ENFNORMALIZ
+
+template<>
+long long our_ceil(const renf_elem_class& val ){
+    return convertTo<long long>(val.ceil());
+}
+
+template<>
+long long our_floor(const renf_elem_class& val ){
+    return convertTo<long long>(val.floor());
+}
+
+template<>
+renf_elem_class our_scalar_product(const vector<long long>& av, const vector<renf_elem_class>& bv){
+    renf_elem_class S = 0;
+    for(size_t i = 0; i < av.size(); ++i)
+        S += av[i] * bv[i];
+    return S;
+}
+
+
 
 vector<mpz_class> minimal_polynomial(const renf_elem_class& val){
 
@@ -827,19 +865,17 @@ void Induction<Integer>::from_low_to_full(){
 
         cout << "Old " << HighRepresentations.nr_of_rows() << " New " << HighRepsHere.nr_of_rows() << endl;
 
-        vector<vector<long long> > SortVecVec;
-        for(size_t kk = 0; kk < HighRepsHere.nr_of_rows(); ++kk ){
-            SortVecVec.push_back(HighRepsHere[kk]);
-            v_scalar_multiplication(SortVecVec.back(), MinusOne_ll);
-        }
-        sort(SortVecVec.begin(), SortVecVec.end());
-        for(size_t kk = 0; kk < HighRepsHere.nr_of_rows(); ++kk ){
-            v_scalar_multiplication(SortVecVec[kk], MinusOne_ll);
-            HighRepsHere[kk]= SortVecVec[kk];
+        if(HighRepsHere.nr_of_rows() == 0)
+            continue;
+
+        /// HighRepsHere.debug_print('H');
+
+        sort(HighRepsHere.access_elements().begin(), HighRepsHere.access_elements().end());
+        for(size_t kk = 0; kk <= HighRepsHere.nr_of_rows()/2; ++kk ){
+            swap(HighRepsHere[kk], HighRepsHere[HighRepsHere.nr_of_rows()-1-kk]);
         }
 
-        // HighRepsHere = HighRepresentations;
-
+        // HighRepsHere.debug_print('S');
 
         Matrix<long long> InhomEqu(0, HighRepsHere.nr_of_rows() + 1);
 
@@ -857,16 +893,16 @@ void Induction<Integer>::from_low_to_full(){
         }
 
 
-        /*// now the equation for the FPdim of the center
+        // now the equation for the FPdim of the center -- integer bound version
 
-        vector<Integer> this_equ;
-        for(size_t i = 0; i < HighRepresentations.nr_of_rows(); ++i){
-            Integer m_new = v_scalar_product(HighRepresentations[i], fusion_type);
-            this_equ.push_back(m_new * m_new);
+        vector<long long> this_inequ;
+        for(size_t i = 0; i < HighRepsHere.nr_of_rows(); ++i){
+            Integer m_new = our_scalar_product(HighRepsHere[i], fusion_type);
+            long long m_int = our_floor(m_new);
+            this_inequ.push_back(- m_int*m_int);
         }
         // cout << "FFFFFF " << FPdim_so_far << " " << -FPSquare << " " << (-FPSquare + FPdim_so_far) <<  endl;
-        this_equ.push_back(-FPSquare + FPdim_so_far);
-        InhomEqu.append(this_equ);*/
+        this_inequ.push_back(our_ceil(FPSquare - FPdim_so_far));
 
         // InhomEqu.debug_print('&');
 
@@ -875,16 +911,22 @@ void Induction<Integer>::from_low_to_full(){
         Copy.scalar_multiplication(-1);
         InhomEqu.append(Copy);
 
+        InhomEqu.append(this_inequ);  // InhimEqu not so nice name
+
         Cone<long long> C(Type::inhom_inequalities, InhomEqu);
         C.setVerbose(false);
         C.setNonnegative();
-        C.compute(ConeProperty::LatticePoints);
+        C.compute(ConeProperty::LatticePoints, ConeProperty::NoPatching, ConeProperty::ShortInt);
         Matrix<long long > LP = C.getLatticePointsMatrix();
 
         // LP.debug_print('P');
 
-        if(verbose && LP.nr_of_rows() == 0)
-            verboseOutput() << "No extension" << endl;
+        if(verbose){
+            if(LP.nr_of_rows() == 0)
+                verboseOutput() << "No extension" << endl;
+            else
+                verboseOutput() << LP.nr_of_rows() << " extensions" << endl;
+        }
 
         for(size_t k= 0; k< LP.nr_of_rows(); ++k){
             Matrix<Integer> IndMat;
