@@ -88,6 +88,7 @@ public:
 
     // map< Integer, Matrix<Integer > > LowRepresentations;  // F_ij for i <= r (counting from 1), F_i1 = 1
     Matrix<long long> HighRepresentations; // F_ij for i > 1 (counting from 1), F_i1 = 0
+    Matrix<long long> HighRepsHere;
     Matrix<Integer> Bounds_Int;
     Matrix<long long> Bounds;
     vector<string> BoundsPolys; // Bounds as polynomials
@@ -110,6 +111,7 @@ public:
     void solve_system_low_parts();
     void from_low_to_full();
     void augment_induction_matrices();
+    void high_parts_recursive(const Matrix<long long>& Remaining, size_t p, long start, const Matrix<long long>& Ind_so_far);
 
     Integer conjugate(const Integer& val);
     //bool is_algebraic_integer(const Integer& val);

@@ -803,6 +803,161 @@ Matrix<Integer> Induction<Integer>::make_allowed_transpositions(Matrix<Integer> 
     return AllowedTranspositions;
 }
 
+
+template<typename Integer>
+void Induction<Integer>::high_parts_recursive(const Matrix<long long>& Remaining, size_t p, long start, const Matrix<long long>& Ind_so_far){
+
+    bool not_zero = false;
+    for(; p < fusion_rank; ++p){
+        for( size_t k = 0; k <= p; ++k){
+            if(Remaining[p][k]){
+                not_zero = true;
+                break;
+            }
+        }
+        if(not_zero)
+            break;
+    }
+
+    cout << "check " << not_zero << " ----- " << p << " --- " << start << endl;
+
+
+
+    for(; start < HighRepsHere.nr_of_rows(); ++start){
+
+        if(HighRepsHere[start][p] == 0)
+            continue;
+
+        bool good = true;
+        for(size_t j = 0; j < fusion_rank; ++j){
+            for(size_t k = j; k < fusion_rank; ++k){
+                if(Remaining[j][k] - HighRepsHere[start][j]*HighRepsHere[start][k] < 0){
+                    good = false;
+                    break;
+                }
+            }
+            if(!good)
+                break;
+        }
+        if(!good)
+            continue;
+        bool complete = true;
+        for(size_t j = 0; j < fusion_rank; ++j){
+            for(size_t k = j; k < fusion_rank; ++k){
+                if(Remaining[j][k] - HighRepsHere[start][j]*HighRepsHere[start][k] > 0){
+                    complete = false;
+                    break;
+                }
+            }
+            if(!complete)
+                break;
+        }
+
+        Matrix<long long> NewRemaining(Remaining);
+        for(size_t j = 0; j < fusion_rank; ++j){
+            for(size_t k = j; k < fusion_rank; ++k){
+                NewRemaining[j][k] -= HighRepsHere[start][j]*HighRepsHere[start][k];
+            }
+        }
+        if(complete){
+#pragma omp critical(INDUCTION)
+{
+            NewRemaining.debug_print('N');
+            Matrix<long long> Final(Ind_so_far);
+            Final.append(HighRepsHere[start]);
+            Matrix<Integer> indmat;
+            Final.debug_print('I');
+            cout << "*********************************************" << endl;
+            convert(indmat, Final);
+            InductionMatrices.push_back(indmat);
+}
+        continue;
+        }
+
+        cout << "jump " << start << endl;
+        Matrix<long long> NewInd_so_far(Ind_so_far);
+        NewInd_so_far.append(HighRepsHere[start]);
+        high_parts_recursive(NewRemaining, p, start, NewInd_so_far);
+    }
+}
+
+
+/*
+template<typename Integer>
+bool Induction<Integer>::high_parts_recursive(Matrix<long long> Remaining, size_t p, long start, Matrix<long long> Ind_so_far){
+
+    bool good = true;
+    for(size_t j = 0; j < fusion_rank; ++j){
+        for(size_t k = j; k < fusion_rank; ++k){
+            if(Remaining[j][k] - HighRepsHere[start][j]*HighRepsHere[start][k] < 0){
+                good = false;
+                break;
+            }
+        }
+        if(!good)
+            break;
+
+    }
+    if(!good)
+        return false;
+
+    cout << "add " << HighRepsHere[start];
+    Ind_so_far.append(HighRepsHere[start]);
+    Ind_so_far.debug_print('Z');
+
+    for(size_t j = 0; j < fusion_rank; ++j){
+        for(size_t k = j; k < fusion_rank; ++k)
+            Remaining[j][k] -= HighRepsHere[start][j]*HighRepsHere[start][k];
+    }
+
+    INTERRUPT_COMPUTATION_BY_EXCEPTION;
+
+    Remaining.debug_print('R');
+
+    ccc++;
+    //if(ccc > 5)
+    //     exit(0);
+
+    bool not_zero = false;
+    for(; p < fusion_rank; ++p){
+        for( size_t k = 0; k <= p; ++k){
+            if(Remaining[p][k]){
+                not_zero = true;
+                break;
+            }
+        }
+        if(not_zero)
+            break;
+    }
+
+    cout << "check " << not_zero << " ----- " << p << endl;
+    if(!not_zero){
+#pragma omp critical(INDUCTION)
+{
+        Matrix<Integer> indmat;
+        Ind_so_far.debug_print('I');
+        cout << "*********************************************" << endl;
+        convert(indmat, Ind_so_far);
+        InductionMatrices.push_back(indmat);
+}
+        return true;
+    }
+
+    for(; start < HighRepsHere.nr_of_rows(); ++start){
+        cout << "start " << start << " p " << p << endl;
+        cout << "cand " << HighRepsHere[start];
+        // Remaining.debug_print('V');
+        if(!HighRepsHere[start][p])
+            continue;
+
+        bool done = high_parts_recursive(Remaining, p, start, Ind_so_far);
+        // if(done)
+        //     return true;
+    }
+    return false;
+}
+*/
+
 template<typename Integer>
 void Induction<Integer>::from_low_to_full(){
 
@@ -815,15 +970,18 @@ void Induction<Integer>::from_low_to_full(){
 
     //First we compute the contribution of the low part to the conditions for induction matrices
 
-    size_t count_low_parts = 0;
+    // size_t count_low_parts = 0;
 
-    for(auto& ThisLowPart: LowParts){
+// #pragma omp parallel for private(HighRepsHere) schedule(dynamic)
+    for(size_t lll = 0; lll < LowParts.size(); ++lll){
 
-        count_low_parts++;
-        if(verbose){
+        Matrix<long long> ThisLowPart = LowParts[lll];
+
+        // count_low_parts++;
+        /* if(verbose){
             verboseOutput() << "Low part  " << count_low_parts << endl;
             ThisLowPart.debug_print('L');
-        }
+        }*/
 
         Integer FPdim_so_far =0;
         for(size_t j = 0; j < nr_rows_low_part; ++j)
@@ -857,7 +1015,7 @@ void Induction<Integer>::from_low_to_full(){
 
         // HighRepresentations.debug_print('H');
 
-        Matrix<long long> HighRepsHere(0,HighRepresentations.nr_of_columns());
+        HighRepsHere.resize(0,HighRepresentations.nr_of_columns());
         for(size_t i = 0; i < HighRepresentations.nr_of_rows(); ++i){
             if(check_bounds(HighRepresentations[i], Remaining))
                 HighRepsHere.append(HighRepresentations[i]);
@@ -868,14 +1026,18 @@ void Induction<Integer>::from_low_to_full(){
         if(HighRepsHere.nr_of_rows() == 0)
             continue;
 
-        /// HighRepsHere.debug_print('H');
-
         sort(HighRepsHere.access_elements().begin(), HighRepsHere.access_elements().end());
-        for(size_t kk = 0; kk <= HighRepsHere.nr_of_rows()/2; ++kk ){
+        HighRepsHere.debug_print('H');
+        for(size_t kk = 0; kk < HighRepsHere.nr_of_rows()/2; ++kk ){
             swap(HighRepsHere[kk], HighRepsHere[HighRepsHere.nr_of_rows()-1-kk]);
         }
 
-        // HighRepsHere.debug_print('S');
+        size_t p = 0;
+        long start = 0;
+        Matrix<long long> Ind_so_far(0, fusion_rank);
+        high_parts_recursive(Remaining, p, start, ThisLowPart);
+        continue;
+
 
         Matrix<long long> InhomEqu(0, HighRepsHere.nr_of_rows() + 1);
 
@@ -957,6 +1119,20 @@ void Induction<Integer>::from_low_to_full(){
 
 template<typename Integer>
 void Induction<Integer>::augment_induction_matrices(){
+
+    vector<vector<vector<Integer> > >  IndVecVecVec;
+
+    for(auto& M: InductionMatrices){
+        IndVecVecVec.push_back(M.get_elements());
+    }
+
+    sort(IndVecVecVec.begin(), IndVecVecVec.end());
+
+    InductionMatrices.clear();
+    for(auto& VVV: IndVecVecVec){
+        InductionMatrices.push_back(Matrix<Integer>(VVV));
+    }
+
 
     // Sort each induction matrix by increasing FPdim
     // and rows with equal FPdim lex
