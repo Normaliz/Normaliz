@@ -1488,6 +1488,10 @@ NMZTESTS +=						\
 	test-nf/alg_vol.ref				\
 	test-nf/EH1.in					\
 	test-nf/EH1.ref					\
+	test-nf/Seb2.in					\
+	test-nf/Seb2.ref				\
+	test-nf/Seb3.in					\
+	test-nf/Seb3.ref				\
 	test-nf-Aut/dodecahedron-v.in			\
 	test-nf-Aut/dodecahedron-v.ref			\
 	test-nf-Aut/dodecahedron-v.aut.ref		\

@@ -1,0 +1,6 @@
+
+amb_space 3
+number_field min_poly (a^2 - 2*a - 2) embedding [2 +/- 1]
+fusion_type 1 (a) (a+1)
+fusion_duality 0 1 2
+InductionMatrices

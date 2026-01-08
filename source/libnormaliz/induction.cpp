@@ -107,8 +107,6 @@ renf_elem_class our_scalar_product(const vector<long long>& av, const vector<ren
     return S;
 }
 
-
-
 vector<mpz_class> minimal_polynomial(const renf_elem_class& val){
 
     vector<renf_elem_class> powers;
@@ -344,7 +342,8 @@ Induction<Integer>::Induction(const vector<Integer>& fus_type, const vector<key_
         }
     }
 
-    EVMat.debug_print('E');
+    if(verbose)
+        EVMat.debug_print('E');
 
     Bounds.resize(fusion_rank, fusion_rank);
     for(size_t j = 0; j< fusion_rank; ++j){
@@ -357,7 +356,8 @@ Induction<Integer>::Induction(const vector<Integer>& fus_type, const vector<key_
             Bounds[j][k] = convertTo<long long>(S);
         }
     }
-    Bounds.debug_print('B');
+    if(verbose)
+        Bounds.debug_print('B');
 
     convert(Bounds_Int, Bounds);
 
@@ -392,7 +392,7 @@ Induction<Integer>::Induction(const vector<Integer>& fus_type, const vector<key_
         RepCone.setPolynomialInequalities( BoundsPolys);
         RepCone.setNonnegative();
         Matrix<long long> Reps = RepCone.getLatticePointsMatrix();
-        cout << "Reps Reps Reps " << Reps.nr_of_rows() << endl;
+        // cout << "Reps Reps Reps " << Reps.nr_of_rows() << endl;
         size_t count_high = 0;
         for(size_t i = 0; i < Reps.nr_of_rows(); ++i){
             vector<long long> new_rep = Reps[i];
@@ -481,7 +481,7 @@ void Induction<renf_elem_class>::make_divisors(){
     long long MinusOne = -1;
     v_scalar_multiplication(floors,MinusOne);
     Matrix<long long> Hyp(floors);
-    Hyp.debug_print();
+    // Hyp.debug_print();
     Cone<long long> CandCone(Type::inhom_inequalities, Hyp);
     CandCone.setNonnegative();
     CandCone.setPolynomialInequalities(BoundsPolys);
@@ -699,14 +699,14 @@ void Induction<Integer>::make_low_m_i(){
     vector<pair<Integer, size_t> > EV_n_i;
 
     for(auto& EV_mult: EV_mult_n_i){
-        cout << "MMMMM " << EV_mult.first << "     "  << EV_mult.second.first << endl;
+        // cout << "MMMMM " << EV_mult.first << "     "  << EV_mult.second.first << endl;
         for(size_t j = 0; j < EV_mult.second.first; ++j){
             EV_n_i.push_back(make_pair(EV_mult.first, EV_mult.second.second));
             // cout << EV_mult.first << " " << EV_mult.second.second << endl;
         }
     }
 
-    cout << "EEEEEEEEEEE " << EV_n_i.size() << endl;
+    // cout << "EEEEEEEEEEE " << EV_n_i.size() << endl;
 
     // First we want to replace eigenvalues by codegrees
     // Note: eigenvalue n_if_i by f_i si9nce we want m_i = FPdim/f_i
@@ -720,9 +720,9 @@ void Induction<Integer>::make_low_m_i(){
     sort(low_m.begin(), low_m.end());
 
 
-      for(auto& mm: low_m){
+    /* for(auto& mm: low_m){
         cout << mm.first << " ---- " << mm.second << endl;
-    }
+    }*/
 
 }
 
@@ -881,83 +881,6 @@ void Induction<Integer>::high_parts_recursive(const Matrix<long long>& Remaining
     }
 }
 
-
-/*
-template<typename Integer>
-bool Induction<Integer>::high_parts_recursive(Matrix<long long> Remaining, size_t p, long start, Matrix<long long> Ind_so_far){
-
-    bool good = true;
-    for(size_t j = 0; j < fusion_rank; ++j){
-        for(size_t k = j; k < fusion_rank; ++k){
-            if(Remaining[j][k] - HighRepsHere[start][j]*HighRepsHere[start][k] < 0){
-                good = false;
-                break;
-            }
-        }
-        if(!good)
-            break;
-
-    }
-    if(!good)
-        return false;
-
-    cout << "add " << HighRepsHere[start];
-    Ind_so_far.append(HighRepsHere[start]);
-    Ind_so_far.debug_print('Z');
-
-    for(size_t j = 0; j < fusion_rank; ++j){
-        for(size_t k = j; k < fusion_rank; ++k)
-            Remaining[j][k] -= HighRepsHere[start][j]*HighRepsHere[start][k];
-    }
-
-    INTERRUPT_COMPUTATION_BY_EXCEPTION;
-
-    Remaining.debug_print('R');
-
-    ccc++;
-    //if(ccc > 5)
-    //     exit(0);
-
-    bool not_zero = false;
-    for(; p < fusion_rank; ++p){
-        for( size_t k = 0; k <= p; ++k){
-            if(Remaining[p][k]){
-                not_zero = true;
-                break;
-            }
-        }
-        if(not_zero)
-            break;
-    }
-
-    cout << "check " << not_zero << " ----- " << p << endl;
-    if(!not_zero){
-#pragma omp critical(INDUCTION)
-{
-        Matrix<Integer> indmat;
-        Ind_so_far.debug_print('I');
-        cout << "*********************************************" << endl;
-        convert(indmat, Ind_so_far);
-        InductionMatrices.push_back(indmat);
-}
-        return true;
-    }
-
-    for(; start < HighRepsHere.nr_of_rows(); ++start){
-        cout << "start " << start << " p " << p << endl;
-        cout << "cand " << HighRepsHere[start];
-        // Remaining.debug_print('V');
-        if(!HighRepsHere[start][p])
-            continue;
-
-        bool done = high_parts_recursive(Remaining, p, start, Ind_so_far);
-        // if(done)
-        //     return true;
-    }
-    return false;
-}
-*/
-
 template<typename Integer>
 void Induction<Integer>::from_low_to_full(){
 
@@ -975,13 +898,17 @@ void Induction<Integer>::from_low_to_full(){
 // #pragma omp parallel for private(HighRepsHere) schedule(dynamic)
     for(size_t lll = 0; lll < LowParts.size(); ++lll){
 
+        // if(lll + 1 != 1905)
+        //    continue;
+
+
         Matrix<long long> ThisLowPart = LowParts[lll];
 
         // count_low_parts++;
-        /* if(verbose){
-            verboseOutput() << "Low part  " << count_low_parts << endl;
+        if(verbose){
+            verboseOutput() << "Low part  " << lll +1 << endl;
             ThisLowPart.debug_print('L');
-        }*/
+        }
 
         Integer FPdim_so_far =0;
         for(size_t j = 0; j < nr_rows_low_part; ++j)
@@ -1020,23 +947,25 @@ void Induction<Integer>::from_low_to_full(){
             if(check_bounds(HighRepresentations[i], Remaining))
                 HighRepsHere.append(HighRepresentations[i]);
         }
-
-        cout << "Old " << HighRepresentations.nr_of_rows() << " New " << HighRepsHere.nr_of_rows() << endl;
+        if(verbose)
+            verboseOutput() << "Old " << HighRepresentations.nr_of_rows() << " New " << HighRepsHere.nr_of_rows() << endl;
 
         if(HighRepsHere.nr_of_rows() == 0)
             continue;
 
         sort(HighRepsHere.access_elements().begin(), HighRepsHere.access_elements().end());
-        HighRepsHere.debug_print('H');
+        // HighRepsHere.debug_print('H');
         for(size_t kk = 0; kk < HighRepsHere.nr_of_rows()/2; ++kk ){
             swap(HighRepsHere[kk], HighRepsHere[HighRepsHere.nr_of_rows()-1-kk]);
         }
 
-        size_t p = 0;
+        /*
+         * size_t p = 0;
         long start = 0;
         Matrix<long long> Ind_so_far(0, fusion_rank);
         high_parts_recursive(Remaining, p, start, ThisLowPart);
         continue;
+        */
 
 
         Matrix<long long> InhomEqu(0, HighRepsHere.nr_of_rows() + 1);
@@ -1120,6 +1049,24 @@ void Induction<Integer>::from_low_to_full(){
 template<typename Integer>
 void Induction<Integer>::augment_induction_matrices(){
 
+    // Sort each induction matrix by increasing FPdim
+    // and rows with equal FPdim lex
+    if(verbose)
+        verboseOutput() << "Sorting induction matrices individually" << endl;
+    for(auto& M: InductionMatrices){
+        vector<pair<Integer, vector<Integer> > > FPdim_row;
+        for(size_t i = 0; i < M.nr_of_rows(); ++i){
+            Integer FPdim = v_scalar_product(fusion_type, M[i]);
+            FPdim_row.push_back(make_pair(FPdim, M[i]));
+        }
+        sort(FPdim_row.begin(), FPdim_row.end());
+        for(size_t i = 0; i < M.nr_of_rows(); ++i){
+            M[i] = FPdim_row[i].second;
+        }
+    }
+
+    if(verbose)
+        verboseOutput()<< "Sorting induction matrices lex" << endl;
     vector<vector<vector<Integer> > >  IndVecVecVec;
 
     for(auto& M: InductionMatrices){
@@ -1134,20 +1081,8 @@ void Induction<Integer>::augment_induction_matrices(){
     }
 
 
-    // Sort each induction matrix by increasing FPdim
-    // and rows with equal FPdim lex
-    for(auto& M: InductionMatrices){
-        vector<pair<Integer, vector<Integer> > > FPdim_row;
-        for(size_t i = 0; i < M.nr_of_rows(); ++i){
-            Integer FPdim = v_scalar_product(fusion_type, M[i]);
-            FPdim_row.push_back(make_pair(FPdim, M[i]));
-            sort(FPdim_row.begin(), FPdim_row.end());
-        }
-        for(size_t i = 0; i < M.nr_of_rows(); ++i){
-            M[i] = FPdim_row[i].second;
-        }
-    }
-
+    if(verbose)
+        verboseOutput()<< "Grouping  induction matrices lby type" << endl;
     // collect induction matrices of equal type
     map<vector<Integer>, vector<Matrix<Integer> > > InductionMatricesByType;
     for(auto& M: InductionMatrices){
