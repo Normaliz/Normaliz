@@ -898,8 +898,8 @@ void Induction<Integer>::from_low_to_full(){
 // #pragma omp parallel for private(HighRepsHere) schedule(dynamic)
     for(size_t lll = 0; lll < LowParts.size(); ++lll){
 
-       // if(lll + 1 != 1905)
-       //     continue;
+        //if(lll + 1 <= 1905)
+         //   continue;
 
         Matrix<long long> ThisLowPart = LowParts[lll];
 
@@ -949,8 +949,8 @@ void Induction<Integer>::from_low_to_full(){
         if(verbose)
             verboseOutput() << "Old " << HighRepresentations.nr_of_rows() << " New " << HighRepsHere.nr_of_rows() << endl;
 
-        if(HighRepsHere.nr_of_rows() == 0)
-            continue;
+        // if(HighRepsHere.nr_of_rows() == 0)
+            // continue;
 
         sort(HighRepsHere.access_elements().begin(), HighRepsHere.access_elements().end());
         // HighRepsHere.debug_print('H');
