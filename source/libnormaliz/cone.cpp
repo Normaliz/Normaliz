@@ -7466,8 +7466,7 @@ void Cone<Integer>::make_induction_matrices(ConeProperties& ToCompute){
         for(size_t i = 0; i < ChosenFusionRings.nr_of_rows(); ++i){
             Induction<Integer> Indu(our_type, our_dual, ChosenFusionRings[i], verbose);
             Indu.compute();
-            InductionMatrices[i] = Indu.InductionMatrices;
-            // InductionMatrices[i].push_back(ChosenFusionRings[i]);
+            swap(InductionMatrices[i], Indu.InductionMatrices);
         }
     }
 

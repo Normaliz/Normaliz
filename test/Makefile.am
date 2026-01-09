@@ -7,7 +7,7 @@ AM_LDFLAGS =
 
 NMZ_TEST_TARGETS = all
 if NMZ_COCOA
-NMZ_TEST_TARGETS += testInt
+NMZ_TEST_TARGETS += testInt testind
 endif
 if ENFNORMALIZ
 NMZ_TEST_TARGETS += testnf testnfH testdegQ

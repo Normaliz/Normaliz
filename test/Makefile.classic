@@ -80,7 +80,7 @@ TEST_FILES_IND_IND = $(patsubst %.in,%.ind.diff,$(wildcard test-ind/*.in))
 
 
 
-all: tests testv testn test1 testN testq testp testd testh testdefault testd1 testdnn testr1 testM testw testH testpr testdeg testDec testStDec testFac testInc testgen testcst testSpecial testclo testmrk testgrb testfus testind
+all: tests testv testn test1 testN testq testp testd testh testdefault testd1 testdnn testr1 testM testw testH testpr testdeg testDec testStDec testFac testInc testgen testcst testSpecial testclo testmrk testgrb testfus
 
 ## Don't include testLARGE into all! It requires the optional libraries and runs very long.
 
@@ -141,7 +141,7 @@ test-clopt/whow.out: $(NORMALIZ) test-clopt/whow.in
 	$(NICE) $(NORMALIZ)  --version
 	rm -f blabla12345*
 
-total: all testInt testnf testnfH testdegQ testAut testnfAut
+total: all testind testInt testnf testnfH testdegQ testAut testnfAut
 
 msys: all testAut
 

@@ -898,9 +898,8 @@ void Induction<Integer>::from_low_to_full(){
 // #pragma omp parallel for private(HighRepsHere) schedule(dynamic)
     for(size_t lll = 0; lll < LowParts.size(); ++lll){
 
-        // if(lll + 1 != 1905)
-        //    continue;
-
+       // if(lll + 1 != 1905)
+       //     continue;
 
         Matrix<long long> ThisLowPart = LowParts[lll];
 
@@ -1020,6 +1019,10 @@ void Induction<Integer>::from_low_to_full(){
         }
 
         for(size_t k= 0; k< LP.nr_of_rows(); ++k){
+
+            // if(k >= 1000)
+            //    break;
+
             Matrix<Integer> IndMat;
             convert(IndMat, ThisLowPart);
             // cout << "CCC " << ThisLowPart.nr_of_columns() << endl;
@@ -1057,11 +1060,11 @@ void Induction<Integer>::augment_induction_matrices(){
         vector<pair<Integer, vector<Integer> > > FPdim_row;
         for(size_t i = 0; i < M.nr_of_rows(); ++i){
             Integer FPdim = v_scalar_product(fusion_type, M[i]);
-            FPdim_row.push_back(make_pair(FPdim, M[i]));
+            FPdim_row.push_back(make_pair(FPdim, std::move(M[i])));
         }
         sort(FPdim_row.begin(), FPdim_row.end());
         for(size_t i = 0; i < M.nr_of_rows(); ++i){
-            M[i] = FPdim_row[i].second;
+            M[i] = std::move(FPdim_row[i].second);
         }
     }
 
@@ -1070,14 +1073,14 @@ void Induction<Integer>::augment_induction_matrices(){
     vector<vector<vector<Integer> > >  IndVecVecVec;
 
     for(auto& M: InductionMatrices){
-        IndVecVecVec.push_back(M.get_elements());
+        IndVecVecVec.push_back(std::move(M.get_elements()));
     }
 
     sort(IndVecVecVec.begin(), IndVecVecVec.end());
 
     InductionMatrices.clear();
     for(auto& VVV: IndVecVecVec){
-        InductionMatrices.push_back(Matrix<Integer>(VVV));
+        InductionMatrices.push_back(Matrix<Integer>(std::move(VVV)));
     }
 
 
@@ -1087,7 +1090,7 @@ void Induction<Integer>::augment_induction_matrices(){
     map<vector<Integer>, vector<Matrix<Integer> > > InductionMatricesByType;
     for(auto& M: InductionMatrices){
         vector<Integer> type = M.MxV(fusion_type);
-        InductionMatricesByType[type].push_back(M);
+        InductionMatricesByType[type].push_back(std::move(M));
     }
     if(verbose)
         verboseOutput() << InductionMatricesByType.size() << " fusion types defined by induction matrices" << endl;
@@ -1096,20 +1099,23 @@ void Induction<Integer>::augment_induction_matrices(){
     InductionMatrices.clear();
     for(auto& T: InductionMatricesByType){
         // cout << T.first;
-        InductionMatrices.insert(InductionMatrices.end(), T.second.begin(), T.second.end());
+        InductionMatrices.insert(InductionMatrices.end(), std::make_move_iterator(T.second.begin()), std::make_move_iterator(T.second.end()));
     }
     if(verbose)
         verboseOutput() << InductionMatrices.size() << " induction matrices found" << endl;
+    InductionMatricesByType.clear();
 
     // Add additional info
+    if(verbose)
+        verboseOutput()<< "Augmenting induction matrices by fusion types and duality info" << endl;
     vector<Matrix<Integer> > InductionMatWithType;
     // cout << "FFFFFFFFFFF " << ImageRing;
     InductionMatWithType.push_back(ImageRing);
     for(auto& M: InductionMatrices){
-        InductionMatWithType.push_back(M);
         vector<Integer> type = M.MxV(fusion_type);
-        InductionMatWithType.push_back(Matrix<Integer>(type));
         Matrix<Integer> AllowedTranspositions = make_allowed_transpositions(M);
+        InductionMatWithType.push_back(std::move(M));
+        InductionMatWithType.push_back(Matrix<Integer>(type));
         InductionMatWithType.push_back(AllowedTranspositions);
     }
 
