@@ -14,6 +14,9 @@ NMZ_TEST_TARGETS += testnf testnfH testdegQ
 if NMZ_NAUTY
 NMZ_TEST_TARGETS += testnfAut
 endif
+if NMZ_COCOA
+NMZ_TEST_TARGETS += testnfind
+endif
 endif
 if NMZ_NAUTY
 NMZ_TEST_TARGETS += testAut
@@ -1482,16 +1485,16 @@ NMZTESTS +=						\
 	test-Aut/mon_auto.in				\
 	test-Aut/mon_auto.ref				\
 	test-Aut/mon_auto.aut.ref			\
-	test-nf/C6_0.in					\
-	test-nf/C6_0.ref				\
+	test-nf-ind/C6_0.in					\
+	test-nf-ind/C6_0.ref				\
 	test-nf/alg_vol.in				\
 	test-nf/alg_vol.ref				\
 	test-nf/EH1.in					\
 	test-nf/EH1.ref					\
-	test-nf/Seb2.in					\
-	test-nf/Seb2.ref				\
-	test-nf/Seb3.in					\
-	test-nf/Seb3.ref				\
+	test-nf-ind/Seb2.in					\
+	test-nf-ind/Seb2.ref				\
+	test-nf-ind/Seb3.in					\
+	test-nf-ind/Seb3.ref				\
 	test-nf-Aut/dodecahedron-v.in			\
 	test-nf-Aut/dodecahedron-v.ref			\
 	test-nf-Aut/dodecahedron-v.aut.ref		\

@@ -50,8 +50,12 @@ TEST_FILES_DEC = $(patsubst %.in,%.diff,$(wildcard test-dec/*.in))
 TEST_FILES_DEC_TRI = $(patsubst %.in,%.tri.diff,$(wildcard test-dec/*.in))
 TEST_FILES_AUT = $(patsubst %.in,%.diff,$(wildcard test-Aut/*.in))
 TEST_FILES_AUT_AUT = $(patsubst %.in,%.aut.diff,$(wildcard test-Aut/*.in))
+
 TEST_FILES_NF_AUT = $(patsubst %.in,%.diff,$(wildcard test-nf-Aut/*.in))
 TEST_FILES_NF_AUT_AUT = $(patsubst %.in,%.aut.diff,$(wildcard test-nf-Aut/*.in))
+
+TEST_FILES_NF_IND = $(patsubst %.in,%.diff,$(wildcard test-nf-ind/*.in))
+TEST_FILES_NF_IND_IND = $(patsubst %.in,%.ind.diff,$(wildcard test-nf-ind/*.in))
 
 TEST_FILES_STD = $(patsubst %.in,%.diff,$(wildcard test-StDec/*.in))
 TEST_FILES_STD_DEC = $(patsubst %.in,%.dec.diff,$(wildcard test-StDec/*.in))
@@ -116,6 +120,7 @@ testpr: $(TEST_FILES_PR) $(TEST_FILES_PR_PROJCONE)
 testnfH: $(TEST_FILES_NF_HH) $(TEST_FILES_NF_HH_INTHULL)
 testAut: $(TEST_FILES_AUT) $(TEST_FILES_AUT_AUT)
 testnfAut: $(TEST_FILES_NF_AUT) $(TEST_FILES_NF_AUT_AUT)
+testnfind: $(TEST_FILES_NF_IND) $(TEST_FILES_NF_IND_IND)
 testStDec: $(TEST_FILES_STD) $(TEST_FILES_STD_DEC)
 testFac: $(TEST_FILES_FAC) $(TEST_FILES_FAC_FAC)
 testInc: $(TEST_FILES_INC) $(TEST_FILES_INC_INC)
@@ -141,7 +146,7 @@ test-clopt/whow.out: $(NORMALIZ) test-clopt/whow.in
 	$(NICE) $(NORMALIZ)  --version
 	rm -f blabla12345*
 
-total: all testind testInt testnf testnfH testdegQ testAut testnfAut
+total: all testind testInt testnf testnfH testdegQ testAut testnfAut testnfind
 
 msys: all testAut
 
@@ -231,6 +236,8 @@ test-Aut/%.out test-Aut/%.aut: $(NORMALIZ) test-Aut/%.in
 	$(NICE) $(NORMALIZ) $(NORMPARA) -c test-Aut/$* > /dev/null
 test-nf-Aut/%.out test-nf-Aut/%.aut: $(NORMALIZ) test-nf-Aut/%.in
 	$(NICE) $(NORMALIZ) $(NORMPARA) test-nf-Aut/$*
+test-nf-ind/%.out test-nf-ind/%.ind: $(NORMALIZ) test-nf-ind/%.in
+	$(NICE) $(NORMALIZ) $(NORMPARA) test-nf-ind/$*
 test-Int/%.out: $(NORMALIZ) test-Int/%.in
 	$(NICE) $(NORMALIZ) $(NORMPARA) -c --inv test-Int/$* > /dev/null
 test-Special/%.out: $(NORMALIZ) test-Special/%.in
@@ -289,6 +296,7 @@ distclean: clean
 .PRECIOUS: test-Aut/%.aut
 .PRECIOUS: test-Aut/%.out
 .PRECIOUS: test-nf-Aut/%.aut
+.PRECIOUS: test-nf-ind/%.ind
 .PRECIOUS: test-nf-Aut/%.out
 .PRECIOUS: test-StDec/%.out
 .PRECIOUS: test-StDec/%.dec
@@ -315,4 +323,4 @@ distclean: clean
 .PRECIOUS: test-fus/%.out
 
 .PHONY: all testdefault tests testn test1 testN testw testp testh testd testd1 testdnn testH clean distclean testInt testSpecial testdeg testFac testpatch testfus
-.PHONY: testnf testnfH testdegQ testAut testnfAut testStDec testInc testLARGE testgen testcst testclo testDec
+.PHONY: testnf testnfH testdegQ testAut testnfAut testStDec testInc testLARGE testgen testcst testclo testDec testnfindf
