@@ -2800,6 +2800,16 @@ void ProjectAndLift<IntegerPL, IntegerRet>::finalize_latt_point(vector<IntegerRe
 #pragma omp atomic
     TotalNrLP++;
 
+    if(TotalNrLP % 10000 == 0)
+#pragma omp critical(NRLP)
+{
+    verboseOutput() << "total number of lattice oints >= "  << TotalNrLP << endl;
+
+    for(auto& tt: Deg1Thread)
+        cout << tt.size() << " " ;
+    cout << " --- " << Deg1Points.size() <<   endl;
+}
+
     if (!count_only)
         Deg1Thread[tn].push_back(NewPoint);
 

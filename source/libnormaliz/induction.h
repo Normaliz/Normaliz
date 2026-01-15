@@ -55,6 +55,8 @@ public:
     string fusion_type_string;
     vector<key_t> duality;
 
+    vector<vector<key_t > > type_automs;
+
     vector<Integer> ImageRing;
 
     Integer FPdim;
@@ -112,6 +114,8 @@ public:
     void from_low_to_full();
     void augment_induction_matrices();
     void high_parts_recursive(const Matrix<long long>& Remaining, size_t p, long start, const Matrix<long long>& Ind_so_far);
+
+    bool column_normal(const Matrix<long long>& mat) const;
 
     Integer conjugate(const Integer& val);
     //bool is_algebraic_integer(const Integer& val);

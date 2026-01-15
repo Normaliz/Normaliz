@@ -489,7 +489,7 @@ class Cone {
 
     const Matrix<Integer>& getLatticePointsMatrix();
     const vector<vector<Integer> >& getLatticePoints();
-    size_t getNrLatticePoints();
+    // size_t getNrLatticePoints();
 
     const vector<Integer>& getSingleLatticePoint();
     const vector<Integer>& getSingleFusionRing();

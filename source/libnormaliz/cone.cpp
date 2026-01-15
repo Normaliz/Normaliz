@@ -3139,11 +3139,13 @@ const vector<vector<Integer> >& Cone<Integer>::getLatticePoints() {
     compute(ConeProperty::LatticePoints);
     return getLatticePointsMatrix().get_elements();
 }
+/*
 template <typename Integer>
 size_t Cone<Integer>::getNrLatticePoints() {
     compute(ConeProperty::LatticePoints);
     return getLatticePointsMatrix().nr_of_rows();
 }
+*/
 
 template <typename Integer>
 const vector<Integer>& Cone<Integer>::getSingleLatticePoint(){
@@ -10519,7 +10521,7 @@ void run_additional_tests_libnormaliz() {
 
     C.getLatticePoints();
 
-    C.getNrLatticePoints();
+    C.getNumberLatticePoints();
 
     C.isPointed();
 

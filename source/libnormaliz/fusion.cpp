@@ -1843,6 +1843,7 @@ void make_input_from_fusion_data(const FusionBasic& FusionInput, InputMap<mpq_cl
     }
 }
 
+
 void make_partition_input_from_fusion_data(const FusionBasic& FusionInput,InputMap<mpq_class>&  input,  const bool write_input_file){
 
     Matrix<mpq_class> TypeInput(1, FusionInput.fusion_rank);

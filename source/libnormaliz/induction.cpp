@@ -304,6 +304,16 @@ Induction<Integer>::Induction(const vector<Integer>& fus_type, const vector<key_
     FusComp = FusionComp<Integer>(FusBasic);
     FusComp.make_CoordMap();
     Tables = FusComp.make_all_data_tables(FusRing);
+    FusBasic.make_type_automs();
+    type_automs.resize(FusBasic.type_automs.size());
+    // transfer short_key_t to key_t
+    for(size_t i = 0; i < FusBasic.type_automs.size(); ++i){
+        type_automs[i].resize(FusBasic.type_automs[0].size());
+        for(size_t j = 0; j < FusBasic.type_automs[0].size(); ++j)
+            type_automs[i][j] = FusBasic.type_automs[i][j];
+    }
+    if(verbose)
+        verboseOutput() << FusBasic.type_automs.size() << endl;
     // cout << FusRing;
     /* for(auto& T: Tables);
         T.debug_print();*/
@@ -373,7 +383,7 @@ Induction<Integer>::Induction(const vector<Integer>& fus_type, const vector<key_
     }
 
     if(verbose)
-        verboseOutput() << "Computing reporesentations of divisors of FPdim in terms of type" << endl;
+        verboseOutput() << "Computing representations of divisors of FPdim in terms of type" << endl;
 
     HighRepresentations.resize(0, fusion_rank);
 
@@ -629,6 +639,18 @@ Integer Induction<Integer>::N(const key_t i, const key_t j, const key_t k){
 }
 
 template<typename Integer>
+bool Induction<Integer>::column_normal(const Matrix<long long>& mat) const{
+    for(auto& perm: type_automs){
+        Matrix<long long> trans = mat.transpose();
+        trans.order_rows_by_perm(perm);
+        Matrix<long long> mat_perm = trans.transpose();
+        if(mat_perm.get_elements() < mat.get_elements())
+            return false;
+    }
+    return true;
+}
+
+template<typename Integer>
 void Induction<Integer>::solve_system_low_parts(){
 
     // foirst row and first column are fixed
@@ -686,7 +708,9 @@ void Induction<Integer>::solve_system_low_parts(){
             }
         }
         // our_low_part.debug_print('L');
-        LowParts.push_back(our_low_part);
+        if(column_normal(our_low_part))
+            LowParts.push_back(our_low_part);
+
     }
 }
 
@@ -898,8 +922,8 @@ void Induction<Integer>::from_low_to_full(){
 // #pragma omp parallel for private(HighRepsHere) schedule(dynamic)
     for(size_t lll = 0; lll < LowParts.size(); ++lll){
 
-        //if(lll + 1 <= 1905)
-         //   continue;
+       // if(lll + 1 != 1945)
+       //   continue;
 
         Matrix<long long> ThisLowPart = LowParts[lll];
 
@@ -937,6 +961,13 @@ void Induction<Integer>::from_low_to_full(){
         // Remaining: the difference between whe goal and the contribution of the low part
 
         Matrix<long long> Remaining = Bounds.add(MinusLowBound);
+        // make it symmetric for nicer output
+        for(size_t j = 0; j < fusion_rank; ++j){
+            // cout << "j "  << j << endl;
+            for(size_t k = j; k < fusion_rank; ++k){
+                Remaining[k][j] = Remaining[j][k];
+            }
+        }
         // Remaining.debug_print('R');
 
         // HighRepresentations.debug_print('H');
@@ -949,8 +980,11 @@ void Induction<Integer>::from_low_to_full(){
         if(verbose)
             verboseOutput() << "Old " << HighRepresentations.nr_of_rows() << " New " << HighRepsHere.nr_of_rows() << endl;
 
-        // if(HighRepsHere.nr_of_rows() == 0)
-            // continue;
+        if(HighRepsHere.nr_of_rows() == 0)
+            continue;
+
+        // if(HighRepsHere.nr_of_rows() != 343)
+        //   continue;
 
         sort(HighRepsHere.access_elements().begin(), HighRepsHere.access_elements().end());
         // HighRepsHere.debug_print('H');
@@ -1006,8 +1040,28 @@ void Induction<Integer>::from_low_to_full(){
         Cone<long long> C(Type::inhom_inequalities, InhomEqu);
         C.setVerbose(false);
         C.setNonnegative();
+        // C.compute(ConeProperty::NumberLatticePoints, ConeProperty::NoPatching, ConeProperty::ShortInt);
         C.compute(ConeProperty::LatticePoints, ConeProperty::NoPatching, ConeProperty::ShortInt);
         Matrix<long long > LP = C.getLatticePointsMatrix();
+        // long long NrLatt = C.getNumberLatticePoints(); // C.getLatticePointsMatrix();
+        // cout << "NrExt " << NrLatt << endl;
+
+
+        /* vector<long long> Statistics(HighRepresentations.nr_of_rows());
+        for(long long i = 0; i < LP.nr_of_columns() -1; ++i){
+            for(long long k = 0; k < LP.nr_of_rows(); ++k){
+                Statistics[i] += LP[k][i];
+            }
+        }
+
+        bool has_solution = (LP.nr_of_rows() > 0);
+        cout << "Statistics" << endl;
+        for(size_t i = 0; i < Statistics.size(); ++i){
+            if(Statistics[i] > 0)
+                cout << Statistics[i] << " -- " << our_scalar_product(HighRepsHere[i], fusion_type) << " --- " << HighRepsHere[i];
+        }
+        if(has_solution)
+            exit(0);*/
 
         // LP.debug_print('P');
 
@@ -1020,8 +1074,8 @@ void Induction<Integer>::from_low_to_full(){
 
         for(size_t k= 0; k< LP.nr_of_rows(); ++k){
 
-            // if(k >= 1000)
-            //    break;
+            // C.setif(k >= 100)
+            //  break;
 
             Matrix<Integer> IndMat;
             convert(IndMat, ThisLowPart);

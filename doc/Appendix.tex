@@ -1341,14 +1341,13 @@ These functions apply to the homogeneous case. \verb|getNrDeg1Elements()| return
 In the inhomogeneous case replace \verb|Deg1Elements| by \verb|ModuleGenerators|; see below. (They are also computable in the unbounded case.) A uniform access is possible by
 \begin{Verbatim}
 const vector< vector<Integer> >& Cone<Integer>::getLatticePoints()
-size_t Cone<Integer>::getNrLatticePoints()
 \end{Verbatim}
 
 In addition, we have
 \begin{Verbatim}
 size_t Cone<Integer>::getNumberLatticePoints()
 \end{Verbatim}
-There is an important difference between \verb|getNrLatticePoints()| and \verb|getNumberLatticePoints()|: the latter returns the number whenever it is known for some reason. If the number is not known, it forces only the counting of lattice points, not their storage.
+\verb|getNumberLatticePoints()| returns the number whenever it is known for some reason. If the number is not known, it forces only the counting of lattice points, not their storage.
 
 If only a single lattice point has been asked for, it can be returned by 
 \begin{Verbatim}
