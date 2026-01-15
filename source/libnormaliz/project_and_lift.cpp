@@ -2800,6 +2800,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::finalize_latt_point(vector<IntegerRe
 #pragma omp atomic
     TotalNrLP++;
 
+/*
     if(TotalNrLP % 10000 == 0)
 #pragma omp critical(NRLP)
 {
@@ -2809,6 +2810,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::finalize_latt_point(vector<IntegerRe
         cout << tt.size() << " " ;
     cout << " --- " << Deg1Points.size() <<   endl;
 }
+*/
 
     if (!count_only)
         Deg1Thread[tn].push_back(NewPoint);
