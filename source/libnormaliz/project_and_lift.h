@@ -122,6 +122,7 @@ class ProjectAndLift {
     bool cong_order_patches;
     bool first_solution_printed;
     bool fusion_rings_computation;
+    bool forced_patching;
     bool stored_local_solutions;
     bool use_short_int;
     bool no_heuristic_minimization;
@@ -263,6 +264,7 @@ class ProjectAndLift {
     void set_short_int(bool on_off);
     void set_LLL(bool on_off);
     void set_no_relax(bool on_off);
+    void set_forced_patching(bool on_off);
     void set_primitive();
     void set_coord_weights(bool on_off);
     void set_no_weights(bool on_off);

@@ -256,6 +256,7 @@ enum Enum {
     FixedPrecision,
     DistributedComp,
     NoPatching,
+    Patching,
     NoCoarseProjection,
     MaxDegRepresentations,
     UseWeightsPatching,

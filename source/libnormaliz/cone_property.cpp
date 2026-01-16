@@ -177,6 +177,7 @@ ConeProperties all_options() {
     ret.set(ConeProperty::NoHeuristicMinimization);
     ret.set(ConeProperty::WritePreComp); // is not really an option, but taken care of in options.h
     ret.set(ConeProperty::NoPatching);
+    ret.set(ConeProperty::Patching);
     ret.set(ConeProperty::NoCoarseProjection);
     ret.set(ConeProperty::SingleLatticePointInternal);
     ret.set(ConeProperty::MaxDegRepresentations);
@@ -384,6 +385,7 @@ void ConeProperties::check_fusion_ring_props() const{
     copy.reset(ConeProperty::UseModularGrading);
     copy.reset(ConeProperty::NoEmptyOutput);
     copy.reset(ConeProperty::NoPatching);
+    copy.reset(ConeProperty::Patching);
     copy.reset(ConeProperty::NoCoarseProjection);
     copy.reset(ConeProperty::SupportHyperplanes);
     copy.reset(ConeProperty::Sublattice);
@@ -913,6 +915,7 @@ ConeProperties all_Q_permissible(){
     ret.set(ConeProperty::SingleLatticePointInternal);
     ret.set(ConeProperty::NoCoarseProjection);
     ret.set(ConeProperty::NoPatching);
+    ret.set(ConeProperty::Patching);
     ret.set(ConeProperty::FusionRings);
     ret.set(ConeProperty::SimpleFusionRings);
     ret.set(ConeProperty::NonsimpleFusionRings);
@@ -988,7 +991,8 @@ void ConeProperties::check_conflicting_variants() {
         (CPs.test(ConeProperty::LinearOrderPatches) && CPs.test(ConeProperty::CongOrderPatches)) ||
         (CPs.test(ConeProperty::LatticePoints) && CPs.test(ConeProperty::SingleLatticePoint) ) ||
         // (CPs.test(ConeProperty::Symmetrize) && CPs.test(ConeProperty::SignedDec)) ||
-        (CPs.test(ConeProperty::Dynamic) && CPs.test(ConeProperty::Static) )
+        (CPs.test(ConeProperty::Dynamic) && CPs.test(ConeProperty::Static) ) ||
+        ((CPs.test(ConeProperty::NoPatching) || CPs.test(ConeProperty::NoCoarseProjection)) && CPs.test(ConeProperty::Patching) )
     )
         throw BadInputException("Contradictory algorithmic variants in options.");
 
@@ -1232,6 +1236,7 @@ vector<string> initializeCPN() {
     CPN.at(ConeProperty::NoHeuristicMinimization) = "NoHeuristicMinimization";
     CPN.at(ConeProperty::DegLex) = "DegLex";
     CPN.at(ConeProperty::NoPatching) = "NoPatching";
+    CPN.at(ConeProperty::Patching) = "Patching";
     CPN.at(ConeProperty::NoCoarseProjection) = "NoCoarseProjection";
     CPN.at(ConeProperty::SingleLatticePoint) = "SingleLatticePoint";
     CPN.at(ConeProperty::SingleLatticePointInternal) = "SingleLatticePointInternal";
@@ -1253,7 +1258,7 @@ vector<string> initializeCPN() {
     CPN.at(ConeProperty::UseModularGrading) = "UseModularGrading";
 
     // detect changes in size of Enum, to remember to update CPN!
-    static_assert(ConeProperty::EnumSize == 169,"ConeProperties Enum size does not fit! Update cone_property.cpp!");
+    static_assert(ConeProperty::EnumSize == 170,"ConeProperties Enum size does not fit! Update cone_property.cpp!");
     // assert all fields contain an non-empty string
     for (size_t i = 0; i < ConeProperty::EnumSize; i++) {
         // bstd::cout << "iii " << i << "  " << CPN.at(i) << endl;

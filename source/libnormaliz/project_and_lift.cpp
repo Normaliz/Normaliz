@@ -261,7 +261,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
     dynamic_bitset max_sparse;
     // cout << Indicator;
     maximal_subsets(Indicator, max_sparse);
-    if(max_sparse.count() == 1 && !fusion_rings_computation){
+    if(max_sparse.count() == 1 && !fusion_rings_computation && !forced_patching){
         sparse = false;
         if(verbose)
             verboseOutput() << "System not sparse or only 1 patch" << endl;
@@ -273,7 +273,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
     // Note: fusion rings MUST be computed with patching
     // We try to avoid cases in which the cardinailites are too small
 
-    if(!fusion_rings_computation){
+    if(!fusion_rings_computation && !forced_patching){
         // cout << "MAX " << bitset_to_key(max_sparse) << endl;
         vector<size_t> card(max_sparse.size());
         for(size_t i = 0; i < max_sparse.size(); ++i)
@@ -3241,6 +3241,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::initialize(const Matrix<IntegerPL>& 
     check_simplicity_cand = false;
     stored_local_solutions = false;
     use_short_int = false;
+    forced_patching = false;
     no_heuristic_minimization = false;
     TotalNrLP = 0;
     min_return_patch = 0;
@@ -3385,6 +3386,11 @@ void ProjectAndLift<IntegerPL, IntegerRet>::set_cong_order_patches(bool on_off) 
 template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL, IntegerRet>::set_primitive() {
     primitive = true;
+}
+//---------------------------------------------------------------------------
+template <typename IntegerPL, typename IntegerRet>
+void ProjectAndLift<IntegerPL, IntegerRet>::set_forced_patching(bool onoff) {
+    forced_patching = onoff;
 }
 
 //---------------------------------------------------------------------------
@@ -3695,6 +3701,9 @@ void ProjectAndLift<IntegerPL, IntegerRet>::setOptions(const ConeProperties& ToC
 
     if(ToCompute.test(ConeProperty::ShortInt))
         use_short_int = true;
+
+    if(ToCompute.test(ConeProperty::Patching))
+        forced_patching = true;
 
     if(ToCompute.test(ConeProperty::NoHeuristicMinimization))
         no_heuristic_minimization = true;
