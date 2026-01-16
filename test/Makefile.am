@@ -19,7 +19,7 @@ NMZ_TEST_TARGETS += testnfind
 endif
 endif
 if NMZ_NAUTY
-NMZ_TEST_TARGETS += testAut
+NMZ_TEST_TARGETS += testAut testclo
 endif
 
 #TESTS = unittests
