@@ -1035,13 +1035,16 @@ void Induction<Integer>::from_low_to_full(){
         Copy.scalar_multiplication(-1);
         InhomEqu.append(Copy);
 
+        // this forces NoPatching
         InhomEqu.append(this_inequ);  // InhimEqu not so nice name
+
+        // InhomEqu.debug_print('/');
 
         Cone<long long> C(Type::inhom_inequalities, InhomEqu);
         C.setVerbose(false);
         C.setNonnegative();
         // C.compute(ConeProperty::NumberLatticePoints, ConeProperty::NoPatching, ConeProperty::ShortInt);
-        C.compute(ConeProperty::LatticePoints, ConeProperty::NoPatching, ConeProperty::ShortInt);
+        C.compute(ConeProperty::LatticePoints,  ConeProperty::ShortInt);
         Matrix<long long > LP = C.getLatticePointsMatrix();
         // long long NrLatt = C.getNumberLatticePoints(); // C.getLatticePointsMatrix();
         // cout << "NrExt " << NrLatt << endl;

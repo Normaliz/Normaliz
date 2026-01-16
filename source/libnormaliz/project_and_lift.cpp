@@ -256,17 +256,56 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
         return;
     }
 
+    // now we want to find the sparse upper bounds with maximal support
+    // Good idea ? Not Complete clear, but we do it
+    dynamic_bitset max_sparse;
+    // cout << Indicator;
+    maximal_subsets(Indicator, max_sparse);
+    if(max_sparse.count() == 1 && !fusion_rings_computation){
+        sparse = false;
+        if(verbose)
+            verboseOutput() << "System not sparse or only 1 patch" << endl;
+        return;
+    }
+
+    // but we check that the coupling of upper bounds is not too tight.
+    // the intersection of two upper bounds should be < 1/2 of each of them.
+    // Note: fusion rings MUST be computed with patching
+    // We try to avoid cases in which the cardinailites are too small
+
+    if(!fusion_rings_computation){
+        // cout << "MAX " << bitset_to_key(max_sparse) << endl;
+        vector<size_t> card(max_sparse.size());
+        for(size_t i = 0; i < max_sparse.size(); ++i)
+            card[i] = Indicator[i].count();
+        // cout << "CARD " << card;
+        for(size_t i = 0; i < max_sparse.size(); ++i){
+            if(!max_sparse[i])
+                continue;
+            for(size_t j = 0; j < i; ++j){
+                if(!max_sparse[j])
+                    continue;
+                dynamic_bitset intersection = Indicator[i] & Indicator[j];
+                if(intersection.count() > min(card[i]/2, card[j]/2)){
+                    sparse = false;
+                    break;
+                }
+            }
+            if(!sparse)
+                break;
+        }
+        // cout << "SPARSE " << sparse << "  ---  " <<endl;
+    }
+
+    if(!sparse){
+        // cout << "No patching" << endl;
+        if(verbose)
+            verboseOutput() << "No patching since coupling of patches too tight ";
+        return;
+    }
+
     if(verbose)
         verboseOutput() << "Preparing data for patching algorithm " << endl;
-
-    // now we want to find the sparse upper bounds with maximal support
-    vector<dynamic_bitset> help(nr_all_supps); // TODO find them, not only preparation
-    for(size_t i = 0; i < nr_all_supps; ++i){
-        help[i].resize(EmbDim);
-        if(sparse_bounds[i])
-            help[i] = Indicator[i];
-    }
-    dynamic_bitset max_sparse = sparse_bounds; // TODO here they must be found. So far: all
 
     dynamic_bitset covered(EmbDim);  // registers covered coordinates
     covered[0] = 1; // the 0-th coordinate is covered by all local PL
