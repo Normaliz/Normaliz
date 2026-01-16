@@ -1485,16 +1485,19 @@ NMZTESTS +=						\
 	test-Aut/mon_auto.in				\
 	test-Aut/mon_auto.ref				\
 	test-Aut/mon_auto.aut.ref			\
-	test-nf-ind/C6_0.in					\
+	test-nf-ind/C6_0.in				\
 	test-nf-ind/C6_0.ref				\
+	test-nf-ind/C6_0.ind.ref			\
 	test-nf/alg_vol.in				\
 	test-nf/alg_vol.ref				\
 	test-nf/EH1.in					\
 	test-nf/EH1.ref					\
-	test-nf-ind/Seb2.in					\
+	test-nf-ind/Seb2.in				\
 	test-nf-ind/Seb2.ref				\
-	test-nf-ind/Seb3.in					\
+	test-nf-ind/Seb2.ind.ref			\
+	test-nf-ind/Seb3.in				\
 	test-nf-ind/Seb3.ref				\
+	test-nf-ind/Seb3.ind.ref			\
 	test-nf-Aut/dodecahedron-v.in			\
 	test-nf-Aut/dodecahedron-v.ref			\
 	test-nf-Aut/dodecahedron-v.aut.ref		\
