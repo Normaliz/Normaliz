@@ -1,3 +1,5 @@
+% !TeX spellcheck = en_US
+
 \section{Algebraic polyhedra}\label{Algebraic}
 
 Normaliz can use coefficients from real algebraic extensions of $\QQ$. It is clear that the computations are then restricted to those that do not depend on finite generation of monoids. Whether algebraic coordinates are needed, is decided when Normaliz reads the input file and checks whether it defines an algebraic extension of $\QQ$ embedded into $\RR$.
@@ -222,23 +224,23 @@ It may seem contradictory, but \verb|saturation| are allowed. It must be interpr
 
 With coordinates in number fields, Normaliz does not look for an implicit grading, but it can use an explicit grading for lattice point or volume computations in the homogeneous case. \ttt{NoGradingDenom} is set automatically. For inhomogeneous input a grading makes no sense in the number field case and is therefore forbidden.
 
-While \verb|polynomial_equations| and \verb|polynomial_inequalities| are allowed for algebraic polytopes, the coefficients of the polynomials must be rational: This may change in the future.
+While \verb|polynomial_equations| and \verb|polynomial_inequalities| are allowed for algebraic polytopes, the coefficients of the polynomials must be rational. This may change in the future.
 
 \subsection{Computations}\label{alg_comp}
 
-The only (main) computation goals and algorithmic variants allowed are:
+The only main computation goals and algorithmic variants allowed are:
 \begin{center}
 	\texttt{
-		\begin{tabular}{llll}
-			SupportHyperplanes & Sublattice & LatticePoints& LatticePointTriangulation\\
-			NumberLatticePoints& IntegerHull&VerticesFloat&  TriangulationSize \\
-			Triangulation&  ProjectCone &KeepOrder &  ConeDecomposition\\
-			BottomDecomposition& SuppHypsFloat & NoBottomDec &  TriangulationDetSum\\
-			GradingIsPositive&DefaultMode& IsPointed& EuclideanAutomorphisms\\
-			FVector & FaceLattice  &  Automorphisms & CombinatorialAutomorphisms\\
-			Incidence & Deg1Elements& IsEmptySemiOpen &AllGeneratorsTriangulation\\
-			SingleLatticePoint& FusionRings & SimpleFusionRings
-	\end{tabular}	}
+\begin{tabular}{llll}
+SupportHyperplanes & Sublattice & LatticePoints& LatticePointTriangulation\\
+NumberLatticePoints& IntegerHull&VerticesFloat&  TriangulationSize \\
+Triangulation&  ProjectCone &KeepOrder &  ConeDecomposition\\
+BottomDecomposition& SuppHypsFloat & NoBottomDec &  TriangulationDetSum\\
+GradingIsPositive&DefaultMode& IsPointed& EuclideanAutomorphisms\\
+FVector & FaceLattice  &  Automorphisms & CombinatorialAutomorphisms\\
+Incidence & Deg1Elements& IsEmptySemiOpen &AllGeneratorsTriangulation\\
+SingleLatticePoint& FusionRings & SimpleFusionRings & SingleFusionRings
+\end{tabular}	}
 \end{center}
 
 It may seem paradoxical that \verb|Sublattice| appears here. As in the true lattice case, the \verb|Sublattice| \verb|Representation| is the coordinate transformation used by Normaliz. Over a field $F$ there is no need for the annihilator $c$, and one simply has a pair of linear maps $F^r\to F^d \to F^r$ whose composition is the identity of $F^r$. Of course, congruences and external index make no sense anymore.

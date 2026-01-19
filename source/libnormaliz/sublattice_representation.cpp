@@ -101,8 +101,8 @@ template <typename Integer>
 Sublattice_Representation<Integer>::Sublattice_Representation(const Matrix<Integer>& GivenA,
                                                               const Matrix<Integer>& GivenB,
                                                               Integer GivenC) {
-    dim = GivenA.nr;
-    rank = GivenA.nc;
+    dim = GivenA.nc;
+    rank = GivenA.nr;
     assert(GivenB.nr == dim);
     assert(GivenB.nc == rank);
     Matrix<Integer> Test(rank);

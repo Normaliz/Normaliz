@@ -3837,6 +3837,64 @@ void Cone<Integer>::compute_full_cone_inner(ConeProperties& ToCompute) {
 }
 
 //---------------------------------------------------------------------------
+template<typename Integer>
+void Cone<Integer>::compute_integer_hull_renf(const ConeProperties& IntHullCompute) {
+    assert(false);
+}
+//---------------------------------------------------------------------------
+
+#ifdef ENFNORMALIZ
+
+// We compute the integer hull for renf_elem_class by passing to a come mpz_class.
+// This keeps the computatioon of purely integer data on the integer side.
+template<>
+void Cone<renf_elem_class>::compute_integer_hull_renf(const ConeProperties& IntHullCompute) {
+
+    // transform to mpz_class
+    // generators
+    Matrix<renf_elem_class> gen_renf= Standard_Input[Type::cone];
+    Matrix<mpz_class> Gen_mpz;
+    convert(Gen_mpz, gen_renf);
+    // dehomogenization
+    vector<mpz_class> dehom_mpz ;
+    convert(dehom_mpz, Dehomogenization);
+    Cone<mpz_class> HelperCone(Type::cone, Gen_mpz, Type::dehomogenization, Matrix<mpz_class>(dehom_mpz));
+    HelperCone.compute(IntHullCompute);
+
+    // convert to renf_elem_class
+    // SupportHyperplanes
+    Matrix<mpz_class> SupptHyp_mpz = HelperCone.getSupportHyperplanesMatrix();
+    Matrix<renf_elem_class> suppHyp_renf;
+    convert(suppHyp_renf, SupptHyp_mpz);
+    SupportHyperplanes = suppHyp_renf;
+    setComputed(ConeProperty::SupportHyperplanes);
+    // extreme rays
+    Matrix<mpz_class> Vert_mpz= HelperCone.getVerticesOfPolyhedronMatrix();
+    Matrix<renf_elem_class> Vert_renf;
+    convert(Vert_renf, Vert_mpz);
+    Generators = Vert_renf;
+    setWeights();
+    set_extreme_rays(vector<bool>(Vert_renf.nr_of_rows(), true));
+    // coordinate transformation
+    Matrix<mpz_class> Emb_mpz = HelperCone.getSublattice().getEmbedding();
+    Matrix<mpz_class> Proj_mpz = HelperCone.getSublattice().getProjection();
+    renf_elem_class One = 1;
+    Matrix<renf_elem_class> Emb_renf;
+    Matrix<renf_elem_class> Proj_renf;
+    convert(Emb_renf, Emb_mpz);
+    convert(Proj_renf, Proj_mpz);
+    BasisChange = Sublattice_Representation<renf_elem_class>(Emb_renf, Proj_renf,One);
+    BasisChangePointed = BasisChange;
+    setComputed(ConeProperty::Sublattice);
+    // affine dim
+    affine_dim = HelperCone.getAffineDim();
+    setComputed(ConeProperty::AffineDim);
+    // rwcwaaion rnk = 0 inb this case
+    recession_rank = 0;
+    setComputed(ConeProperty::RecessionRank);
+
+}
+#endif
 
 template <typename Integer>
 void Cone<Integer>::compute_integer_hull() {
@@ -3848,6 +3906,12 @@ void Cone<Integer>::compute_integer_hull() {
     }
 
     compute(ConeProperty::SupportHyperplanes, ConeProperty::MaximalSubspace);
+
+    if(using_renf<Integer>()){
+        if(BasisMaxSubspace.nr_of_rows() > 0){
+            throw NotComputableException("for cone<renf_elem_class integer hull only compiutable if cone is pointed");
+        }
+    }
 
     Matrix<Integer> IntHullGen;
     vector<Integer> IntHullDehom;
@@ -3931,14 +3995,12 @@ void Cone<Integer>::compute_integer_hull() {
         IntHullCone = new Cone<Integer>(InputType::cone_and_lattice, IntHullGen, Type::subspace, BasisMaxSubspace);
 #ifdef ENFNORMALIZ
     else{
-        IntHullCone = new Cone<Integer>(InputType::cone, IntHullGen, Type::subspace, BasisMaxSubspace);
+        IntHullCone = new Cone<Integer>(InputType::cone, IntHullGen);
         IntHullCone->setRenf(Renf);
     }
 #endif
     /* if (nr_extr != 0)  // we suppress the ordering in full_cone only if we have found few extreme rays
         IntHullCompute.set(ConeProperty::KeepOrder);*/
-
-
 
     IntHullCone->inhomogeneous = true;  // inhomogeneous;
     IntHullCone->is_inthull_cone = true;
@@ -3956,8 +4018,12 @@ void Cone<Integer>::compute_integer_hull() {
         IntHullCone->Dehomogenization = Grading;
     IntHullCone->verbose = verbose;
     IntHullCompute.set(ConeProperty::FullConeDynamic);
+
     try {
-        IntHullCone->compute(IntHullCompute);
+        if(using_renf<Integer>())
+            IntHullCone->compute_integer_hull_renf(IntHullCompute);
+        else
+            IntHullCone->compute(IntHullCompute);
         if (IntHullCone->isComputed(ConeProperty::SupportHyperplanes))
             setComputed(ConeProperty::IntegerHull);
         if (verbose) {
@@ -6479,15 +6545,14 @@ void Cone<Integer>::set_original_monoid_generators(const Matrix<Integer>& Input)
 
 template <typename Integer>
 void Cone<Integer>::set_extreme_rays(const vector<bool>& ext) {
+
     assert(ext.size() == Generators.nr_of_rows());
-    // Generators.debug_print('G');
     ExtremeRaysIndicator = ext;
 
     if (isComputed(ConeProperty::ExtremeRays))
         return;
 
-    ExtremeRays = Generators.submatrix(ext);  // extreme rays of the homogenized cone
-    // ExtremeRays.debug_print('E');
+    ExtremeRays = Generators.submatrix(ext);  // extreme rays of the homogenized con
 
     // if module gens over ori monoid have been computed, there may be non-coprime vectors
     // among the generators and duplicates when made coprime

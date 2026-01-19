@@ -1011,6 +1011,7 @@ class Cone {
     Integer compute_primary_multiplicity_inner();
 
     void compute_integer_hull();
+    void compute_integer_hull_renf(const ConeProperties& IntHullCompute);
     void complete_sublattice_comp(ConeProperties& ToCompute);  // completes the sublattice computations
     void complete_HilbertSeries_comp(ConeProperties& ToCompute);
 
