@@ -78,7 +78,7 @@ bool is_algebraic_integer(const Integer& val){
 */
 
 template<typename Integer>
-Matrix<long long> SplitRepresentations(Integer val, vector<Integer> summands){
+Matrix<long long> SplitRepresentation(Integer val, vector<Integer> summands){
     size_t r = summands.size();
     Matrix<long long> InhomEqu(1,r +1);
     for(size_t i = 0; i < r; ++i)
@@ -181,7 +181,7 @@ bool is_d_number(const renf_elem_class& val){
 }
 
 template<>
-Matrix<long long> SplitRepresentations(renf_elem_class val, vector<renf_elem_class> summands){
+Matrix<long long> SplitRepresentation(renf_elem_class val, vector<renf_elem_class> summands){
 
     // get rid of denominators
     mpz_class common_den = val.den();
@@ -393,7 +393,7 @@ Induction<Integer>::Induction(const vector<Integer>& fus_type, const vector<key_
 
         if(t == FPdim)
             continue;
-        Matrix<long long> InhomEqu = SplitRepresentations(t, fusion_type);
+        Matrix<long long> InhomEqu = SplitRepresentation(t, fusion_type);
         Matrix<long long> NeutralEqu(1,fusion_rank );
         NeutralEqu[0][0] = 1;
 
@@ -662,7 +662,7 @@ void Induction<Integer>::solve_system_low_parts(){
     // make row equations
     for(size_t i = 0; i < nr_rows_low_part -1; ++i){
 
-        Matrix<long long> RowSplit = SplitRepresentations(low_m[i+1].first, fusion_type);
+        Matrix<long long> RowSplit = SplitRepresentation(low_m[i+1].first, fusion_type);
         for(int k = 0; k < RowSplit.nr_of_rows(); ++k){
             vector<long long> this_equ((nr_rows_low_part -1)*(fusion_rank-1));
             for(size_t j = 0; j < fusion_rank -1; ++j){

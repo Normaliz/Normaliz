@@ -3847,6 +3847,7 @@ void Cone<Integer>::compute_integer_hull_renf(const ConeProperties& IntHullCompu
 
 // We compute the integer hull for renf_elem_class by passing to a come mpz_class.
 // This keeps the computatioon of purely integer data on the integer side.
+// The conversion back to renf requiares some work
 template<>
 void Cone<renf_elem_class>::compute_integer_hull_renf(const ConeProperties& IntHullCompute) {
 
@@ -3859,22 +3860,17 @@ void Cone<renf_elem_class>::compute_integer_hull_renf(const ConeProperties& IntH
     vector<mpz_class> dehom_mpz ;
     convert(dehom_mpz, Dehomogenization);
     Cone<mpz_class> HelperCone(Type::cone, Gen_mpz, Type::dehomogenization, Matrix<mpz_class>(dehom_mpz));
+
     HelperCone.compute(IntHullCompute);
 
     // convert to renf_elem_class
     // SupportHyperplanes
-    Matrix<mpz_class> SupptHyp_mpz = HelperCone.getSupportHyperplanesMatrix();
-    Matrix<renf_elem_class> suppHyp_renf;
-    convert(suppHyp_renf, SupptHyp_mpz);
-    SupportHyperplanes = suppHyp_renf;
+    convert(SupportHyperplanes, HelperCone.getSupportHyperplanesMatrix());
     setComputed(ConeProperty::SupportHyperplanes);
     // extreme rays
-    Matrix<mpz_class> Vert_mpz= HelperCone.getVerticesOfPolyhedronMatrix();
-    Matrix<renf_elem_class> Vert_renf;
-    convert(Vert_renf, Vert_mpz);
-    Generators = Vert_renf;
+    convert(Generators, HelperCone.getVerticesOfPolyhedronMatrix());
     setWeights();
-    set_extreme_rays(vector<bool>(Vert_renf.nr_of_rows(), true));
+    set_extreme_rays(vector<bool>(Generators.nr_of_rows(), true));
     // coordinate transformation
     Matrix<mpz_class> Emb_mpz = HelperCone.getSublattice().getEmbedding();
     Matrix<mpz_class> Proj_mpz = HelperCone.getSublattice().getProjection();
@@ -3892,7 +3888,6 @@ void Cone<renf_elem_class>::compute_integer_hull_renf(const ConeProperties& IntH
     // rwcwaaion rnk = 0 inb this case
     recession_rank = 0;
     setComputed(ConeProperty::RecessionRank);
-
 }
 #endif
 
@@ -3999,19 +3994,13 @@ void Cone<Integer>::compute_integer_hull() {
         IntHullCone->setRenf(Renf);
     }
 #endif
-    /* if (nr_extr != 0)  // we suppress the ordering in full_cone only if we have found few extreme rays
-        IntHullCompute.set(ConeProperty::KeepOrder);*/
 
     IntHullCone->inhomogeneous = true;  // inhomogeneous;
     IntHullCone->is_inthull_cone = true;
-    // IntHullCone->HilbertBasis = HilbertBasis;
     IntHullCone->IntHullNorm = IntHullNorm;
-    // IntHullCone->ModuleGenerators = ModuleGenerators;
     if(!using_renf<Integer>())
         IntHullCone->RationalExtremeRays = RationalExtremeRays_Integral;
     IntHullCone->RationalBasisMaxSubspace = BasisMaxSubspace;
-    // IntHullCone->setComputed(ConeProperty::HilbertBasis);
-    // IntHullCone->setComputed(ConeProperty::ModuleGenerators);
     if (inhomogeneous)
         IntHullCone->Dehomogenization = Dehomogenization;
     else
