@@ -169,23 +169,6 @@ vector<vector<shortkey_t> > super_impose(const vector<vector<shortkey_t> >& set_
     return total;
 }
 
-
-/*
-vector<vector<shortkey_t> > super_impose(const vector<vector<shortkey_t> >& set_1, const vector<vector<shortkey_t> >& set_2){
-
-    vector<vector<shortkey_t> > total;
-    for(auto& v: set_1){
-        for(auto& w: set_2){
-
-            INTERRUPT_COMPUTATION_BY_EXCEPTION
-
-            total.push_back(v_add(v,w));
-        }
-    }
-    return total;
-}
-*/
-
 template <typename Integer>
 vector<vector<shortkey_t> > make_all_full_permutations(const vector<key_t>& type,const vector<key_t>& duality,
                                                   const  Matrix<Integer>& fusion_ring_map){
@@ -649,13 +632,6 @@ vector<vector<dynamic_bitset> > make_FPdim_partitions(const vector<Integer>& d, 
 
         FPdimParts.push_back(sort_part(FPdimPart));
     }
-    /*
-    cout << "----------" << endl;
-    for(auto& p: FPdimParts){
-        for(auto& q:p)
-            cout << bitset_to_key(q);
-        cout << "------------" << endl;
-    }*/
     return FPdimParts;
 }
 
@@ -875,10 +851,6 @@ void FusionComp<Integer>::make_automorphisms(){
 
     make_CoordMap();
 
-    /* cout <<  "Coord " << CoordMap.size() << endl;
-    cout << "Type " << fusion_type << endl;
-    cout << "duality " << duality;*/
-
     if(!type_automs_made){
         if(libnormaliz::verbose)
             verboseOutput() << "Making type automorphisms" << endl;
@@ -887,9 +859,6 @@ void FusionComp<Integer>::make_automorphisms(){
             verboseOutput() << type_automs.size() << " type automorphisms" << endl;
         type_automs_made =true;
     }
-
-    /*cout << "type automs " << type_automs.size() << endl;
-     cout << "selected_ind_tuples " << selected_ind_tuples.size() << endl;*/
 
     if(libnormaliz::verbose)
         verboseOutput() << "Making coordinate automorphisms" << endl;
@@ -1244,72 +1213,6 @@ vector<Integer> FusionComp<Integer>::normal_form_of(const vector<Integer>& solut
     return min_conjugate;;
 }
 
-/*
-template <typename Integer>
-Matrix<Integer> FusionComp<Integer>::do_iso_classes_inner(const Matrix<Integer>& LattPoints){
-
-   if(nr_coordinates != LattPoints.nr_of_columns() - 1)
-        throw BadInputException("Wrong number of coordinates in fusion data. Mismatch of duality or commutativity.");
-
-    Matrix<Integer> IsoClasses;
-    IsoClasses.resize(0,LattPoints.nr_of_columns());
-
-   // if(cone_coord){ // homogenizing coordinate is the last now
-        for(auto& aa: Automorphisms){  // and we are allowed to destroy the original Automorphisms
-            vector<shortkey_t> modified = aa;
-            v_cyclic_shift_left(modified, modified.size() -1);
-            modified.resize(modified.size()-1);
-            for(auto& c: modified)
-                c--;
-            aa = modified;
-        }
-    // }
-    set<vector<Integer> > Classes;
-
-    for(size_t i = 0; i < LattPoints.nr_of_rows(); ++i){
-        vector<Integer> max_conjugate = LattPoints[i];
-        bool first = true;
-        for(auto& aa: Automorphisms){
-            vector<Integer> conjugate(LattPoints.nr_of_columns());
-            for(size_t j = 0; j < aa.size(); ++ j){
-                conjugate[j] = LattPoints[i][aa[j]];
-            }
-            conjugate.back() = 1;
-            if(first || conjugate > max_conjugate){
-                max_conjugate = conjugate;
-                first = false;
-            }
-        }
-        if(Classes.find(max_conjugate) == Classes.end())
-            Classes.insert(max_conjugate);
-    }
-
-    for(auto& c: Classes)
-        IsoClasses.append(c);
-
-    if(verbose){
-        verboseOutput() << IsoClasses.nr_of_rows() << " isomorphism classes computed" << endl;
-
-    }
-
-    return IsoClasses;
-}
-
-*/
-
-// We work with final format (last coordinate is homogenizing)
-// This function protects *this
-/* template <typename Integer>
-Matrix<Integer> FusionComp<Integer>::do_iso_classes(const Matrix<Integer>& LattPoints)const {
-
-    if(LattPoints.nr_of_rows() == 0)
-        return LattPoints;
-
-    FusionComp<Integer> work_fusion = *this;
-
-    return work_fusion.do_iso_classes_inner(LattPoints);
-} */
-
 template <typename Integer>
 Matrix<Integer> FusionComp<Integer>::make_add_constraints_for_grading(){
 
@@ -1355,50 +1258,6 @@ Matrix<Integer> FusionComp<Integer>::make_add_constraints_for_grading(){
     return GradEqu;
 }
 
-
-            /*
-
-                indices[2] = k;
-                bool add_equ = false;
-                // multiplication inside neutral component
-                if((i <= half_at && j <= half_at)
-                            && k > half_at){
-                    add_equ = true;
-                }
-                // multiplication of non-neutral comp by neutral comp from left or right
-                if( ( (i <= half_at && j> half_at) || (i > half_at && j<= half_at) )
-                            && k <= half_at){
-                    add_equ = true;
-                }
-                // multiplication of non-neutral component by itself
-                if((i >  half_at && j > half_at) && k > half_at){
-                    add_equ = true;
-                }
-                if(add_equ){
-                    // cout << coord(indices) << " --- " << coord_cone(indices) << " ---- " << indices;
-                    // counter++;
-                    vector<Integer> this_equ(nr_coordinates + 1);
-                    this_equ[coord_cone(indices)] = 1;
-                    assert(coord_cone(indices) < nr_coordinates + 1);
-                    GradEqu.append(this_equ);
-                }
-            }
-        }
-    }
-
-
-    // cout << "CCCCC " << counter << endl;
-    GradEqu.remove_duplicate_and_zero_rows();
-    // cout << "Zero coords " << GradEqu.nr_of_rows() << " of " << GradEqu.nr_of_columns() << endl;
-
-    vector<Integer> test_v(GradEqu.nr_of_columns());
-    test_v.back() = 1;
-    for(size_t kkn = 0; kkn < GradEqu.nr_of_rows(); ++kkn)
-        if(test_v == GradEqu[kkn])
-            assert(false);
-    return GradEqu;
-}*/
-
 template <typename Integer>
 void write_inhom_eq_as_lp(const Matrix<Integer>& Equ){
 
@@ -1409,10 +1268,6 @@ void write_inhom_eq_as_lp(const Matrix<Integer>& Equ){
     ofstream lp_out(file_name);
     size_t lhs_dim = Equ.nr_of_columns() -1;
     lp_out << "max:  ;" << endl;
-    /*for(size_t i = 0; i < lhs_dim; ++i){
-        lp_out << " + x" + to_string(i+1);
-    }
-    lp_out << ";" << endl;*/
     for(size_t i = 0; i < Equ.nr_of_rows(); ++i){
         for(size_t j = 0; j < lhs_dim; ++j){
             if(Equ[i][j] == 0)
@@ -1504,21 +1359,6 @@ Matrix<Integer> FusionComp<Integer>::make_linear_constraints(const vector<Intege
     if(libnormaliz::verbose)
         verboseOutput() << "Made " << Equ.nr_of_rows() << " inhom linear equations in " << Equ.nr_of_columns() -1 << " unknowns " << endl;
 
-    // Equ.debug_print();
-    /*Cone<Integer> Test(Type::inhom_equations, Equ);
-    Test.setConvertEquations();
-    Test.compute(ConeProperty::NoLLL, ConeProperty::AffineDim);
-    size_t NrSol = Test.getNrLatticePoints();
-    size_t ad = Test.getAffineDim();
-    cout << "Affine dim " << ad << endl;
-    cout << "Nr sol " << NrSol << endl;*/
-    /* if(NrSol >0)
-        cout << "Solvable" << endl;*/
-    /*if(ad != 4){
-        cout << "Counterexamle" << endl;
-        exit(0);
-    }*/
-
     return Equ;
 }
 
@@ -1541,10 +1381,6 @@ Matrix<Integer> FusionComp<Integer>::make_homomorphism_constraints(){
     FusionComp<Integer> ImageComp(Image);
     ImageComp.make_CoordMap();
     auto Tables = ImageComp.make_all_data_tables(fusion_image_ring);
-
-    /* for(auto& M: Tables)
-        M.debug_print();
-    exit(0);*/
 
     vector<vector<vector<Integer> > > RHS;
     RHS.resize(fusion_rank);
@@ -1772,17 +1608,6 @@ set<map<vector<key_t>, Integer> > FusionComp<Integer>::make_associativity_constr
         }
     }
 
-
-    /*for(auto& q: Polys){
-        cout << "****************" <<endl;
-        for(auto& p: q){
-            cout << p.second << " -- " << p.first;
-        }
-    }
-    cout << "****************" <<endl;
-    cout << "NR POLYS " << Polys.size() << endl;*/
-    // exit(0);
-
     if(libnormaliz::verbose)
         verboseOutput() << "Made " << Polys.size() << " associativity constraints for fusion rings" << endl;
 
@@ -1940,83 +1765,9 @@ void FusionComp<Integer>::write_all_data_tables(const Matrix<Integer>& rings, os
     write_vec_vec_Mat(AllTables, table_out);
 }
 
-/*
-template <typename Integer>
-Matrix<Integer> FusionComp<Integer>::data_table(const vector<Integer>& ring, const size_t i){
 
-    Matrix<Integer> Table(fusion_rank, fusion_rank);
-
-    for(key_t k = 0; k < fusion_rank; k++){
-        for(key_t j= 0; j < fusion_rank; j++){
-            key_t ii = i;
-            vector<key_t>ind_tuple = {ii, j, k};
-            Table[j][k] = value(ring, ind_tuple);
-        }
-    }
-    // Table.debug_print();
-    return Table;
-}
-
-
-template <typename Integer>
-vector<Matrix<Integer> > FusionComp<Integer>::make_all_data_tables(const vector<Integer>& ring){
-
-    vector<Matrix<Integer> > Tables;
-
-    for(size_t i = 0; i <fusion_rank; ++i){
-        Tables.push_back(data_table(ring, i));
-    }
-    return Tables;
-}
-
-template <typename Integer>
-void FusionComp<Integer>::tables_for_all_rings(const Matrix<Integer>& rings){
-
-    make_CoordMap();
-
-    vector<vector<Matrix<Integer> > > AllTables;
-    for(size_t i = 0; i < rings.nr_of_rows(); ++i)
-        AllTables.push_back(make_all_data_tables(rings[i]));
-}
-
-template <typename Integer>
-void FusionComp<Integer>::write_all_data_tables(const Matrix<Integer>& rings, ostream& table_out){
-
-    tables_for_all_rings(rings);
-
-    table_out << "[" << endl;
-    for(size_t kk = 0; kk < rings.nr_of_rows(); kk++){
-        table_out << "  [" << endl;
-        vector<Matrix<Integer> > Tables = AllTables[kk]; // for a fixed ring
-        for(size_t nn = 0; nn < Tables.size(); ++nn){
-            Matrix<Integer> table = Tables[nn];
-            table_out << "    [" << endl;
-            for(size_t jj = 0; jj < table.nr_of_rows(); ++jj){
-                table_out << "      [";
-                for(size_t mm = 0; mm < table.nr_of_columns(); ++mm){
-                    table_out << table[jj][mm];
-                    if(mm < table.nr_of_rows() - 1)
-                        table_out << ",";
-                    else
-                        table_out << "]," << endl;
-                }
-            }
-            if(nn == Tables.size() - 1)
-                table_out << "    ]" << endl;
-            else
-                table_out << "    ]," << endl;
-        }
-        if(kk == rings.nr_of_rows() -1)
-            table_out << "  ]" << endl;
-        else
-            table_out << "  ]," << endl;
-    }
-    table_out << "]" << endl;
-}
-*/
 //-------------------------------------------------------------------------------
 // helper for fusion rings
-
 
 // bridge to cone
 template <typename Integer>
@@ -2070,175 +1821,6 @@ void split_into_simple_and_nonsimple(const FusionBasic& basic, Matrix<Integer>& 
     if(verb)
         verboseOutput() << NonsimpleFusionRings.nr_of_rows() << message_1 << endl;
 }
-
-/*
-template <typename Integer>
-Matrix<Integer> fusion_iso_classes(const Matrix<Integer>& LattPoints, const ConeProperties& ToCompute, const bool verb){
-
-    FusionComp<Integer> fusion;
-    fusion.set_options(ToCompute, verb);
-    fusion.read_data(false); // falsae = a posteriori
-    return fusion.do_iso_classes(LattPoints);
-}
-*/
-
-/*
-
-Matrix<long long> extract_latt_points_from_out(ifstream& in_out){
-
-    size_t nr_points;
-    in_out >> nr_points;
-    string s;
-    in_out >> s;
-    if(s != "lattice" && s != "fusion" && s!= "simple")
-        throw BadInputException("out file not suitable for extraction of simple fusion rtings");
-    while(true){
-        in_out >> s;
-        if(s == "dimension")
-            break;
-    }
-    in_out >> s; // skip = sign
-    size_t emb_dim;
-    in_out >> emb_dim;
-    while(true){
-        in_out >> s;
-        if(s == "constraints:" || s == "isomorphism:" || s == "data:")
-            break;
-    }
-    Matrix<long long> LattPoints(nr_points, emb_dim);
-    for(size_t i = 0; i < nr_points; ++i)
-        for(size_t j = 0; j < emb_dim; ++j)
-            in_out >> LattPoints[i][j];
-
-    if(in_out.fail())
-        throw BadInputException("out file corrupt.");
-    return LattPoints;
-}
-
-
-Matrix<long long> read_lat_points_from_file(bool our_verbose){
-
-    string name = global_project + ".final.lat";
-    Matrix<long long> LattPoints;
-    ifstream in_final(name);
-    if(in_final.is_open()){
-        if(our_verbose)
-            verboseOutput() << "Reading from " << name << endl;
-        in_final.close();
-        LattPoints = readMatrix<long long>(name);
-    }
-    else{
-        name = global_project + ".out";
-        ifstream in_out(name);
-        if(!in_out.is_open())
-            throw BadInputException("No file with lattice points found");
-        if(our_verbose)
-            verboseOutput() << "Reading from " << name << endl;
-        LattPoints = extract_latt_points_from_out(in_out);
-    }
-    return LattPoints;
-}
-
-void post_process_fusion_file(const vector<string>& command_line_items,string our_project){
-
-    bool non_simple_fusion_rings = true;
-    bool verbose = false;
-    for(auto& s: command_line_items){
-        if(s == "--SimpleFusionRings")
-            non_simple_fusion_rings = false;
-        if(s == "-c" || s =="--verbose")
-            verbose = true;
-    }
-
-    if(our_project.size() >= 11){
-        if(our_project.substr(our_project.size()-10,10) == ".final.lat"){
-            our_project = our_project.substr(0, our_project.size()-10);
-        }
-    }
-    if(our_project.size() >= 5){
-        if(our_project.substr(our_project.size()-4,4) == ".out"){
-            our_project = our_project.substr(0, our_project.size()-4);
-        }
-    }
-    if(our_project.size() >= 4){
-        if(our_project.substr(our_project.size()-3,3) == ".in"){
-            our_project = our_project.substr(0, our_project.size()-3);
-        }
-    }
-
-    global_project = our_project;
-    if(verbose)
-        verboseOutput() << "Project " << global_project << endl;
-
-    Matrix<long long> LattPoints = read_lat_points_from_file(verbose);
-    // LatPoints.debug_print();
-    LattPoints.sort_lex();
-    size_t embdim = LattPoints.nr_of_columns();
-
-    Matrix<long long> SimpleFusionRings, NonsimpleFusionRings;
-    FusionBasic blabla;
-    split_into_simple_and_nonsimple(blabla, SimpleFusionRings, NonsimpleFusionRings, LattPoints, verbose);
-
-    string name = global_project + ".fusion";
-    write_fusion_files(blabla, name, non_simple_fusion_rings, true, embdim,
-                            SimpleFusionRings, NonsimpleFusionRings,false,false);
-}
-
-void post_process_fusion(const vector<string>& command_line_items){
-
-    string our_project;
-    bool list_processing = false;
-    bool our_verbose = false;
-
-    for(auto& s: command_line_items){
-        if(s[0] != '-')
-            our_project = s;
-        if(s == "--List")
-            list_processing = true;
-       if(s == "-c" || s =="--verbose")
-            our_verbose = true;
-    }
-    verbose = our_verbose;
-
-    if(our_project.empty())
-        throw BadInputException("No project defined");
-    if(verbose)
-        verboseOutput() << "Given file " << our_project << endl;
-
-    if(!list_processing){
-        if(verbose)
-            verboseOutput() << "Processing single file" << endl;
-        post_process_fusion_file(command_line_items, our_project);
-        return;
-    }
-
-    if(verbose)
-        verboseOutput() << "Processing list of files" << endl;
-
-     ifstream list(our_project);
-     while(true){
-        list >> ws;
-        int c = list.peek();
-        if (c == EOF) {
-            break;
-        }
-        list >> our_project;
-        post_process_fusion_file(command_line_items, our_project);
-     }
-}
-*/
-
-/*
-pair<bool, bool>  FusionBasic::read_data() {
-
-    auto dummy = make_pair(true,true);
-
-    return dummy;
-}
-*/
-
-
-
 
 template <typename Integer>
 void make_full_input_partition(InputMap<Integer>& input_data){
@@ -2302,21 +1884,6 @@ vector<key_t> fusion_coincidence_pattern(const vector<Integer>& v){
 
     return coinc;
 }
-
-/*
-template <typename Integer>
-void FusionComp<Integer>::set_global_fusion_data(){
-    assert(false);
-}
-
-template <>
-void FusionComp<long long>::set_global_fusion_data(){
-    fusion_type_coinc_from_input = fusion_type;
-    fusion_type_from_input = fusion_type_string;
-    fusion_duality_from_input = duality;
-    fusion_commutative_from_input = commutative;
-}
-*/
 
 template class FusionComp<mpz_class>;
 template class FusionComp<long long>;

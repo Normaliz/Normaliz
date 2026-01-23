@@ -460,6 +460,10 @@ void make_full_input(FusionBasic& FusionInput, InputMap<Integer>& input_data) {
     FusionInput.read_data_from_input(input_data);
     FusionComp<Integer> OurFusion(FusionInput);
     vector<Integer> full_type = input_data[Type::fusion_type][0];
+    // The following condition is true if we make an integer cone for
+    // the computation of fusion rings from a renf_elem_class cone
+    if(contains(input_data, Type::inhom_inequalities))
+        return;
     Matrix<Integer> Equ = OurFusion.make_linear_constraints(full_type);
     // FusionInput.type_aiutoms_mde = OurFusion.automorphisms_mde;
     // swap(FusionInput.Automorphisms,OurFusion.Automorphisms);
