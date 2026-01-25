@@ -25,6 +25,7 @@
 #include "libnormaliz/vector_operations.h"
 #include "libnormaliz/cone.h"
 #include "libnormaliz/input.h"
+#include "libnormaliz/induction.h"
 
 namespace libnormaliz{
 using std::vector;
@@ -32,6 +33,8 @@ using std::string;
 using std::list;
 using std::pair;
 //---------------------------------------------------------------------------
+
+vector<Int> test_v ={ 1,1,1,0,0,0,1,0,1,0,0,1,1,1,1,2,1,1,1,1,1,1,2,2,3,3,1,2,2,3,3,4,4,5,6,7};
 
 // classless functions
 
@@ -3105,6 +3108,8 @@ void ProjectAndLift<IntegerPL, IntegerRet>::lift_points_to_this_dim(list<vector<
                 DoneWithDim[dim1] = true;
             }
         }
+        cout << "SSSSSS " << Deg1Lifted.size() << endl;
+        cout << "DDDDD " << Deg1Lifted.front();
         lift_points_to_this_dim(Deg1Lifted);
         Deg1Lifted.clear();
 
@@ -3752,6 +3757,106 @@ template class ProjectAndLift<renf_elem_class, mpz_class>;
 // interface cone/project-and-lift
 
 #ifdef ENFNORMALIZ
+
+void project_and_lift(Cone<renf_elem_class>&  C, const ConeProperties& ToCompute,
+                                             Matrix<renf_elem_class>& Deg1,
+                                             const Matrix<renf_elem_class>& Supps,
+                                             const OurPolynomialSystem<renf_elem_class>& PolyEqus) {
+
+    typedef long long Int;
+
+    bool count_only = ToCompute.test(ConeProperty::NumberLatticePoints);
+    bool all_points = !ToCompute.test(ConeProperty::SingleFusionRing);
+    Supps.debug_print();
+
+    vector<Int> test_v ={ 1,1,1,0,0,0,1,0,1,0,0,1,1,1,1,2,1,1,1,1,1,1,2,2,3,3,1,2,2,3,3,4,4,5,6,7};
+
+    size_t rank = C.getRankRaw();
+    vector<dynamic_bitset> Dummy;
+    size_t dim = Supps.nr_of_columns();
+    bool primitive = true;
+
+    // first we split the inequalities/equations into dumensiion equations and others
+    Matrix<renf_elem_class> DimEquations(0,dim);
+    Matrix<renf_elem_class> OtherSupps(0,dim);
+    renf_elem_class Zero = 0;
+
+    // Fhe dimension equations have been split into pairs of inequalities.
+    // The following keeps this structure, even if we treat thgemn as equations
+    // for the passage to Int.
+    for(size_t i = 0; i < Supps.nr_of_rows(); ++i){
+        bool other = true;
+        for(size_t j = 0; j < dim; ++j){
+            if(!Supps[i][j].is_integer()){
+                other = false;
+                break;
+            }
+        }
+        if(other)
+            OtherSupps.append(Supps[i]);
+        else
+            DimEquations.append(Supps[i]);
+    }
+
+    Matrix<Int> OtherSupps_Int;
+    convert(OtherSupps_Int, OtherSupps);
+    OtherSupps_Int.debug_print('O');
+
+    Matrix<Int> DimEquations_Int(0, dim);
+    DimEquations.debug_print('D');
+    for(size_t i = 0; i < DimEquations.nr_of_rows(); ++i){
+        vector<renf_elem_class> summands = DimEquations[i];
+        summands.pop_back();
+        Matrix<Int> Split = SplitRepresentation(- DimEquations[i].back(), summands);
+        DimEquations_Int.append(Split);
+    }
+    DimEquations_Int.debug_print('I');
+
+    auto TotalSupps_Int = DimEquations_Int;
+    TotalSupps_Int.append(OtherSupps_Int);
+
+    cout << " ZZ " << TotalSupps_Int.nr_of_rows() << " ------ " << TotalSupps_Int.nr_of_columns() << endl;
+
+    TotalSupps_Int.debug_print('T');
+
+    vector<Int> res_v = TotalSupps_Int.MxV(test_v);
+
+    cout << "RRRRRRRRRRRRR " << res_v;
+
+
+
+
+    auto PL = ProjectAndLift<long long, long long>(TotalSupps_Int, Dummy, rank);
+
+    PL.setFusion(C.getFusionBasicCone());
+    PL.setOptions(ToCompute, primitive, C.getVerbose());
+
+    OurPolynomialSystem<long long> PolyEqus_Int;
+    convert(PolyEqus_Int, PolyEqus);
+
+    cout << "CCCCCCCC " << PolyEqus_Int.check(test_v, false, true) << endl;
+
+    // PL.set_PolyEquations(PolyEqus_Int, ToCompute.test(ConeProperty::MinimizePolyEquations));
+    PL.compute(all_points, false, count_only);
+
+    Matrix<Int> Deg1_Int(0,Supps.nr_of_columns());
+
+    if(all_points){
+            PL.put_eg1Points_into(Deg1_Int);
+            C.setNumberLatticePoints(PL.getNumberLatticePoints());
+        }
+    else{
+        vector<long long> SLP_Int;
+        PL.put_single_point_into(SLP_Int);
+        if(SLP_Int.size() > 0){
+            Deg1_Int.append(SLP_Int);
+        }
+    }
+
+    convert(Deg1, Deg1_Int);
+}
+
+
 // special version to avoid problems with machine integer etc.
 template <>
 void project_and_lift(Cone<renf_elem_class>&  C, const ConeProperties& ToCompute,
@@ -3763,6 +3868,14 @@ void project_and_lift(Cone<renf_elem_class>&  C, const ConeProperties& ToCompute
                                              const bool primitive,
                                              const OurPolynomialSystem<renf_elem_class>& PolyEqus,
                                              const OurPolynomialSystem<renf_elem_class>& PolyInequs) {   // no primitive vgersion yet for renf
+
+
+    if(ToCompute.test(ConeProperty::FusionRings) || ToCompute.test(ConeProperty::SimpleFusionRings)
+        || ToCompute.test(ConeProperty::SingleFusionRing) ){
+        project_and_lift(C, ToCompute,Deg1, Supps, PolyEqus);
+        return;
+    }
+
     bool count_only = ToCompute.test(ConeProperty::NumberLatticePoints);
     bool all_points = !( ToCompute.test(ConeProperty::SingleLatticePoint) ||ToCompute.test(ConeProperty::SingleFusionRing) );
 

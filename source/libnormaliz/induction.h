@@ -129,6 +129,9 @@ public:
 
 }; // class Induction end
 
+template<typename Integer>
+Matrix<long long> SplitRepresentation(Integer val, vector<Integer> summands);
+
 } // namespace
 
 #endif /* LIBNORMALIZ_INDUCTION_H */

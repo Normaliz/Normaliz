@@ -1359,6 +1359,8 @@ Matrix<Integer> FusionComp<Integer>::make_linear_constraints(const vector<Intege
     if(libnormaliz::verbose)
         verboseOutput() << "Made " << Equ.nr_of_rows() << " inhom linear equations in " << Equ.nr_of_columns() -1 << " unknowns " << endl;
 
+    Equ.debug_print('Q');
+
     return Equ;
 }
 
