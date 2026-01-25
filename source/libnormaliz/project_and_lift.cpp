@@ -34,7 +34,7 @@ using std::list;
 using std::pair;
 //---------------------------------------------------------------------------
 
-vector<Int> test_v ={ 1,1,1,0,0,0,1,0,1,0,0,1,1,1,1,2,1,1,1,1,1,1,2,2,3,3,1,2,2,3,3,4,4,5,6,7};
+vector<long long> test_v ={ 1,1,1,0,0,0,1,0,1,0,0,1,1,1,1,2,1,1,1,1,1,1,2,2,3,3,1,2,2,3,3,4,4,5,6,7};
 
 // classless functions
 
@@ -252,6 +252,10 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
     }
 
     sparse = (union_upper_bounds.count() == EmbDim);
+
+    cout << "EEEEE " << EmbDim << " UUUUU " << union_upper_bounds.count() << endl;
+
+    cout << bitset_to_key(union_upper_bounds.flip());
 
     if(!sparse){
         if(verbose)
@@ -3108,8 +3112,8 @@ void ProjectAndLift<IntegerPL, IntegerRet>::lift_points_to_this_dim(list<vector<
                 DoneWithDim[dim1] = true;
             }
         }
-        cout << "SSSSSS " << Deg1Lifted.size() << endl;
-        cout << "DDDDD " << Deg1Lifted.front();
+        // cout << "SSSSSS " << Deg1Lifted.size() << endl;
+        // cout << "DDDDD " << Deg1Lifted.front();
         lift_points_to_this_dim(Deg1Lifted);
         Deg1Lifted.clear();
 
@@ -3758,6 +3762,28 @@ template class ProjectAndLift<renf_elem_class, mpz_class>;
 
 #ifdef ENFNORMALIZ
 
+
+typedef long long Int;
+
+template<typename Number>
+vector<Int> positive_maker(const vector<Number>& inequ ){
+    assert(false);
+    return vector<Int>();
+}
+
+template <>
+vector<Int> positive_maker(const vector<renf_elem_class>& inequ ){
+
+    vector<Int> pos(inequ.size());
+    for(size_t j = 1; j < pos.size(); ++j){
+        pos[j] = - convertTo<Int>(Iabs(inequ[j]).floor());
+    }
+    pos.front() = convertTo<Int>(inequ.front().ceil());
+
+    return pos;
+}
+
+
 void project_and_lift(Cone<renf_elem_class>&  C, const ConeProperties& ToCompute,
                                              Matrix<renf_elem_class>& Deg1,
                                              const Matrix<renf_elem_class>& Supps,
@@ -3767,9 +3793,7 @@ void project_and_lift(Cone<renf_elem_class>&  C, const ConeProperties& ToCompute
 
     bool count_only = ToCompute.test(ConeProperty::NumberLatticePoints);
     bool all_points = !ToCompute.test(ConeProperty::SingleFusionRing);
-    Supps.debug_print();
-
-    vector<Int> test_v ={ 1,1,1,0,0,0,1,0,1,0,0,1,1,1,1,2,1,1,1,1,1,1,2,2,3,3,1,2,2,3,3,4,4,5,6,7};
+    // Supps.debug_print();
 
     size_t rank = C.getRankRaw();
     vector<dynamic_bitset> Dummy;
@@ -3800,31 +3824,56 @@ void project_and_lift(Cone<renf_elem_class>&  C, const ConeProperties& ToCompute
 
     Matrix<Int> OtherSupps_Int;
     convert(OtherSupps_Int, OtherSupps);
-    OtherSupps_Int.debug_print('O');
+    // OtherSupps_Int.debug_print('O');
 
     Matrix<Int> DimEquations_Int(0, dim);
-    DimEquations.debug_print('D');
+    // DimEquations.debug_print('D');
     for(size_t i = 0; i < DimEquations.nr_of_rows(); ++i){
+
+        /* bool critical = false;
+        if(DimEquations[i][1] < 0)
+            critical = true; */
+
         vector<renf_elem_class> summands = DimEquations[i];
         summands.pop_back();
         Matrix<Int> Split = SplitRepresentation(- DimEquations[i].back(), summands);
         DimEquations_Int.append(Split);
+
+        /* if(critical){
+            cout << DimEquations[i];
+            Split.debug_print('C');
+
+        }*/
+
+        bool upper_inequality = true;
+        for(size_t j = 1; j < DimEquations.nr_of_columns(); ++j){
+            if(DimEquations[i][j] > 0){
+                upper_inequality = false;
+                break;
+            }
+        }
+        if(!upper_inequality)
+            continue;
+
+        /* cout << " NNNNNNNNNNNNNNNNN " << endl;
+        cout << DimEquations[i];
+        cout << positive_maker(DimEquations[i]);*/
+
+        // We need the positive_maker to ensure the patching algporithm
+        DimEquations_Int.append(positive_maker(DimEquations[i]));
     }
-    DimEquations_Int.debug_print('I');
+    // DimEquations_Int.debug_print('I');
 
     auto TotalSupps_Int = DimEquations_Int;
     TotalSupps_Int.append(OtherSupps_Int);
 
-    cout << " ZZ " << TotalSupps_Int.nr_of_rows() << " ------ " << TotalSupps_Int.nr_of_columns() << endl;
+    // cout << " ZZ " << TotalSupps_Int.nr_of_rows() << " ------ " << TotalSupps_Int.nr_of_columns() << endl;
 
-    TotalSupps_Int.debug_print('T');
+    // TotalSupps_Int.debug_print('T');
 
-    vector<Int> res_v = TotalSupps_Int.MxV(test_v);
+    // vector<Int> res_v = TotalSupps_Int.MxV(test_v);
 
-    cout << "RRRRRRRRRRRRR " << res_v;
-
-
-
+    // cout << "RRRRRRRRRRRRR " << res_v;
 
     auto PL = ProjectAndLift<long long, long long>(TotalSupps_Int, Dummy, rank);
 
@@ -3834,7 +3883,7 @@ void project_and_lift(Cone<renf_elem_class>&  C, const ConeProperties& ToCompute
     OurPolynomialSystem<long long> PolyEqus_Int;
     convert(PolyEqus_Int, PolyEqus);
 
-    cout << "CCCCCCCC " << PolyEqus_Int.check(test_v, false, true) << endl;
+    // cout << "CCCCCCCC " << PolyEqus_Int.check(test_v, false, true) << endl;
 
     // PL.set_PolyEquations(PolyEqus_Int, ToCompute.test(ConeProperty::MinimizePolyEquations));
     PL.compute(all_points, false, count_only);
@@ -3875,6 +3924,7 @@ void project_and_lift(Cone<renf_elem_class>&  C, const ConeProperties& ToCompute
         project_and_lift(C, ToCompute,Deg1, Supps, PolyEqus);
         return;
     }
+
 
     bool count_only = ToCompute.test(ConeProperty::NumberLatticePoints);
     bool all_points = !( ToCompute.test(ConeProperty::SingleLatticePoint) ||ToCompute.test(ConeProperty::SingleFusionRing) );
