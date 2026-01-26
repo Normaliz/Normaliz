@@ -253,9 +253,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
 
     sparse = (union_upper_bounds.count() == EmbDim);
 
-    cout << "EEEEE " << EmbDim << " UUUUU " << union_upper_bounds.count() << endl;
-
-    cout << bitset_to_key(union_upper_bounds.flip());
+    // cout << "EEEEE " << EmbDim << " UUUUU " << union_upper_bounds.count() << endl;
+    // cout << bitset_to_key(union_upper_bounds.flip());
 
     if(!sparse){
         if(verbose)
@@ -3778,11 +3777,26 @@ vector<Int> positive_maker(const vector<renf_elem_class>& inequ ){
     for(size_t j = 1; j < pos.size(); ++j){
         pos[j] = - convertTo<Int>(Iabs(inequ[j]).floor());
     }
-    pos.front() = convertTo<Int>(inequ.front().ceil());
+
+    // we cannot exclude that a d_i in the type is < 1
+    // and safeguard against this case
+    renf_elem_class addendum = 0;
+    for(size_t j = 1; j < inequ.size(); ++j){
+        if((inequ[j] < 0) && pos[j]== 0 ){
+            pos[j] = -1;
+            addendum += Iabs(inequ[j]);
+        }
+    }
+
+    addendum += inequ[0];
+    pos[0] = convertTo<Int>(addendum.ceil());
 
     return pos;
 }
 
+// function conveerting the computation of fusion rings over number fields into a purely
+// integer computation. A somewhat tricky point is the use of positivirty_maker  to
+// make patching possible.
 
 void project_and_lift(Cone<renf_elem_class>&  C, const ConeProperties& ToCompute,
                                              Matrix<renf_elem_class>& Deg1,
@@ -3855,9 +3869,34 @@ void project_and_lift(Cone<renf_elem_class>&  C, const ConeProperties& ToCompute
         if(!upper_inequality)
             continue;
 
+        dynamic_bitset negative_entries(DimEquations.nr_of_columns());
+        for(size_t j = 1; j < negative_entries.size(); ++j){
+            if(DimEquations[i][j] < 0)
+                negative_entries[j] = true;
+        }
+
+        bool is_positive_already = false;
+        for(size_t j = 0; j < Split.nr_of_rows(); ++j){
+            bool this_positive = true;
+            for(size_t k = 1; k < Split.nr_of_columns(); ++k){
+                if(!negative_entries[k])
+                    continue;
+                if(Split[j][k] >= 0){
+                    this_positive = false; // we are trying to find a good upper inequality
+                    break;
+                }
+            }
+            if(this_positive){
+                is_positive_already = true;
+                break;
+            }
+        }
+        if(is_positive_already)
+            continue;
+
         /* cout << " NNNNNNNNNNNNNNNNN " << endl;
         cout << DimEquations[i];
-        cout << positive_maker(DimEquations[i]);*/
+        cout << positive_maker(DimEquations[i]); */
 
         // We need the positive_maker to ensure the patching algporithm
         DimEquations_Int.append(positive_maker(DimEquations[i]));
