@@ -1114,15 +1114,17 @@ void Induction<Integer>::augment_induction_matrices(){
     if(verbose)
         verboseOutput() << "Sorting induction matrices individually" << endl;
     for(auto& M: InductionMatrices){
+        // M.debug_print('M');
         vector<pair<Integer, vector<Integer> > > FPdim_row;
         for(size_t i = 0; i < M.nr_of_rows(); ++i){
             Integer FPdim = v_scalar_product(fusion_type, M[i]);
             FPdim_row.push_back(make_pair(FPdim, std::move(M[i])));
         }
-        sort(FPdim_row.begin(), FPdim_row.end());
+        sort(++FPdim_row.begin(), FPdim_row.end());  // IMPORTANT: must keep the neutral element in first row
         for(size_t i = 0; i < M.nr_of_rows(); ++i){
             M[i] = std::move(FPdim_row[i].second);
         }
+        // M.debug_print('S');
     }
 
     if(verbose)

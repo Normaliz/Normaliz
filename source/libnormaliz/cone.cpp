@@ -7979,6 +7979,8 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
         }  // Now we have 3 cases FusionRings, SimpleFusionRings, SingleFusionRing
         if(ToCompute.test(ConeProperty::FusionRings)){
             FusionRings = ModuleGenerators;
+            // for(size_t kk = 0; kk < FusionRings.nr_of_rows() ; ++kk)
+            //     cout << CHECK.MxV(FusionRings[kk]);
             split_into_simple_and_nonsimple(FusionBasicCone,SimpleFusionRings,  NonsimpleFusionRings, FusionRings, verbose);
             setComputed(ConeProperty::FusionRings);
             setComputed(ConeProperty::SimpleFusionRings);
@@ -10177,6 +10179,8 @@ void Cone<Integer>::add_fusion_ass_and_grading_constraints(ConeProperties& ToCom
         Matrix<Integer> Whow = OurFusion.make_homomorphism_constraints();
         if(verbose)
             verboseOutput() << Whow.nr_of_rows()/2 <<" equations for checking ring homomorphism made" << endl;
+
+        //CHECK = Whow;
         Inequalities.append(Whow);
     }
 

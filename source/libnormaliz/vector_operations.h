@@ -1502,8 +1502,12 @@ inline vector<string> to_string_vector(int argc, char* argv[]){
      return ret;
 }
 
+// It is not possible to use the following function qwith ret = renf_elem_class
 template<typename Val, typename Ret>
 void convert_vector_via_string(vector<Ret>& V, const vector<Val>& W){
+
+    if(using_renf<Ret>())
+        assert(false);
 
     stringstream bridge;
     bridge << W;

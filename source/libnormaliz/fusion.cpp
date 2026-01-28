@@ -816,7 +816,7 @@ FusionComp<Integer>::FusionComp(const FusionBasic& basic){
     // automorphisms_mde = basic.automorphisms_mde;
     chosen_modular_grading = basic.chosen_modular_grading;
     if(basic.fusion_ring_map.nr_of_rows() > 0){
-        assert(!using_renf<Integer>());
+        // assert(!using_renf<Integer>());
         convert(fusion_image_type, basic.fusion_image_type);
         convert(fusion_image_ring, basic.fusion_image_ring);
         convert(fusion_ring_map, basic.fusion_ring_map);
@@ -1408,7 +1408,7 @@ Matrix<Integer> FusionComp<Integer>::make_homomorphism_constraints(){
         }
     }
 
-    Matrix<Integer> Equ(0, nr_coordinates + 1); // mudst accomodate right hand side in last coordinate
+    Matrix<Integer> Equ(0, nr_coordinates + 1); // must accomodate right hand side in last coordinate
 
     vector<key_t> indices(3);
 

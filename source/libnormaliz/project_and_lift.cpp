@@ -3924,7 +3924,7 @@ void project_and_lift(Cone<renf_elem_class>&  C, const ConeProperties& ToCompute
 
     // cout << "CCCCCCCC " << PolyEqus_Int.check(test_v, false, true) << endl;
 
-    // PL.set_PolyEquations(PolyEqus_Int, ToCompute.test(ConeProperty::MinimizePolyEquations));
+    PL.set_PolyEquations(PolyEqus_Int, ToCompute.test(ConeProperty::MinimizePolyEquations));
     PL.compute(all_points, false, count_only);
 
     Matrix<Int> Deg1_Int(0,Supps.nr_of_columns());

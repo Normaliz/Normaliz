@@ -75,8 +75,8 @@ public:
     vector<key_t> fusion_image_type;
     vector<key_t> fusion_image_duality;
     string fusion_image_type_string;
-    vector<long> fusion_image_ring;
-    Matrix<long> fusion_ring_map;
+    vector<long long> fusion_image_ring;
+    Matrix<long long> fusion_ring_map;
     bool fusion_image_commutative;
 
     vector<vector<shortkey_t> > type_automs; // permutations of the basis vectors
@@ -352,19 +352,12 @@ void FusionBasic::read_data_from_input(InputMap<Integer>& input_data){
             use_modular_grading = true;
             prel_duality[0] = 0;
         }
-        duality.resize(fusion_rank);
-        for(key_t i = 0; i < fusion_rank; ++i){
-            bool in_range = false;
-            for(long j = 0; j < fusion_rank; ++j){  // conversion by counting
-                if(convertTo<Integer>(j) == prel_duality[i]){
-                    duality[i] = j;
-                    in_range = true;
-                    break;
-                }
-            }
-            if(!in_range)
-                throw BadInputException("Fusion duality out of range");
+        convert_vector_via_string(duality, prel_duality);
+        for(size_t i = 0; i < fusion_rank; ++i){
+            if(duality[i] > fusion_rank)
+               throw BadInputException("Fusion duality out of range");
         }
+
         if(key_to_bitset(duality, fusion_rank).count() != fusion_rank)
             throw BadInputException("Fusion duality has repeated entries");
         if(!check_duality<key_t>(duality, fusion_type))
@@ -415,8 +408,9 @@ void FusionBasic::read_data_from_input(InputMap<Integer>& input_data){
 
     if(!contains(input_data, Type::fusion_image_duality)){ // take the default
         input_data[Type::fusion_image_duality].resize(1);
-        convert_vector_via_string(input_data[Type::fusion_image_duality][0],
-                                  identity_key(fusion_ring_map.nr_of_columns()));
+        input_data[Type::fusion_image_duality][0].resize(fusion_ring_map.nr_of_columns());
+        for(size_t i = 0; i < fusion_ring_map.nr_of_columns(); ++i)
+            input_data[Type::fusion_image_duality][0][i] = i;
     }
 
     InputMap<Integer> Help;
@@ -442,16 +436,9 @@ void FusionBasic::read_data_from_input(InputMap<Integer>& input_data){
         }
     }
 
-    vector<long> full_image_type(fusion_image_duality.size());
-    string our_type_string = fusion_image_type_string;
-    string_to_type(full_image_type, our_type_string);
-
-    vector<long> full_type_long(duality.size());
-    convert_vector_via_string(full_type_long, full_type);
-
-    vector<long> test_type = fusion_ring_map.MxV(full_image_type);
-    if(test_type != full_type_long)
-        throw BadInputException("Fusion type does not fit fusion ring map");
+    vector<Integer> test_vector = input_data[Type::fusion_ring_map].MxV(input_data[Type::fusion_image_type][0]);
+    if(test_vector != input_data[Type::fusion_type][0])
+        throw BadInputException("Fusion types do not fit fusion ring map");
 }
 
 template <typename Integer>

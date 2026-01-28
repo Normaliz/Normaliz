@@ -744,6 +744,8 @@ class Cone {
     vector<vector<Matrix<Integer> > > InductionMatrices;
     vector<Integer> fusion_type_input;
 
+    Matrix<Integer> CHECK; // for debiugging
+
     HilbertSeries HSeries;
     HilbertSeries EhrSeries;
     IntegrationData IntData;
