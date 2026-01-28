@@ -1490,6 +1490,8 @@ NMZTESTS +=						\
 	test-nf-ind/C6_0.ind.ref			\
 	test-nf/alg_vol.in				\
 	test-nf/alg_vol.ref				\
+	test-nf/SWb2_hom.in				\
+	test-nf/SWb2_hom.in				\
 	test-nf/EH1.in					\
 	test-nf/EH1.ref					\
 	test-nf-ind/Seb2.in				\
