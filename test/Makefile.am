@@ -1491,7 +1491,7 @@ NMZTESTS +=						\
 	test-nf/alg_vol.in				\
 	test-nf/alg_vol.ref				\
 	test-nf/SWb2_hom.in				\
-	test-nf/SWb2_hom.in				\
+	test-nf/SWb2_hom.ref				\
 	test-nf/EH1.in					\
 	test-nf/EH1.ref					\
 	test-nf-ind/Seb2.in				\

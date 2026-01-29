@@ -928,6 +928,10 @@ ConeProperties all_Q_permissible(){
     ret.set(ConeProperty::Grading);
     ret.set(ConeProperty::InductionMatrices);
     ret.set(ConeProperty::ModularGradings);
+    ret.set(ConeProperty::UseWeightsPatching);
+    ret.set(ConeProperty::CongOrderPatches);
+    ret.set(ConeProperty::NoWeights);
+    ret.set(ConeProperty::LinearOrderPatches);
     return ret;
 }
 
