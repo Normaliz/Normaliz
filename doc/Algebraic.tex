@@ -228,18 +228,18 @@ While \verb|polynomial_equations| and \verb|polynomial_inequalities| are allowed
 
 \subsection{Computations}\label{alg_comp}
 
-The only main computation goals and algorithmic variants allowed are:
+Main computation goals and algorithmic variants allowed are:
 \begin{center}
-	\texttt{
+\texttt{
 \begin{tabular}{llll}
 SupportHyperplanes & Sublattice & LatticePoints& LatticePointTriangulation\\
 NumberLatticePoints& IntegerHull&VerticesFloat&  TriangulationSize \\
-Triangulation&  ProjectCone &KeepOrder &  ConeDecomposition\\
-BottomDecomposition& SuppHypsFloat & NoBottomDec &  TriangulationDetSum\\
+Triangulation&  ProjectCone & ConeDecomposition &  TriangulationDetSum\\
 GradingIsPositive&DefaultMode& IsPointed& EuclideanAutomorphisms\\
 FVector & FaceLattice  &  Automorphisms & CombinatorialAutomorphisms\\
 Incidence & Deg1Elements& IsEmptySemiOpen &AllGeneratorsTriangulation\\
-SingleLatticePoint& FusionRings & SimpleFusionRings & SingleFusionRings
+SingleLatticePoint& FusionRings & SimpleFusionRings & SingleFusionRings\\
+SuppHypsFloat
 \end{tabular}	}
 \end{center}
 
@@ -249,19 +249,8 @@ It may seem paradoxical that \verb|Sublattice| appears here. As in the true latt
 
 \verb|Automorphisms| is interpreted as \emph{algebraic} automorphisms. They are defined in the same way as rational automorphisms of rational polytopes. One has only to replace the field of rational numbers by the number field defined for the polytope. \verb|EuclideaAutomorphisms| and \verb|CombinatorialAutomorphisms| have the usual meaning.
 
-\verb|Volume| is restricted to full-dimensional polytopes. In the homogeneous case the grading must have integer coprime coefficients.
-
-The only algorithmic variants that appear concern the bottom decomposition. Implicit or explicit \verb|DefaultMode| is interpreted as \verb|SupportHyperplanes|.
+\verb|Volume| is restricted to full-dimensional polytopes. In the homogeneous case the grading must have integer coprime coefficients. Implicit or explicit \verb|DefaultMode| is interpreted as \verb|SupportHyperplanes|.
 
 Volumes are computed by triangulation and lattice points by project-and-lift.
 
-For the control of computations and communication with interfaces the following are allowed:
-\begin{center}
-	\texttt{
-		\begin{tabular}{llll}
-			Generators& ExtremeRays & VerticesOfPolyhedron & MaximalSubspace \\
-			RecessionRank & AffineDim&  Rank&    EmbeddingDim\\
-			IsInhomogeneous &RenfVolume  &EuclideanVolume	&ModuleGenerators\\
-			Dehomogenization&NoGradingDenom&Equations\\
-	\end{tabular}	}
-\end{center}
+Look up \verb*|cone_properties.cpp|, function \verb*|all_Q_permissible()| for the full list of computation goals and algorithmic variants that are allowed for computations with field coefficients. 

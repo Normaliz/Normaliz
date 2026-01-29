@@ -21,6 +21,7 @@ EXTRA_DIST =					\
 	B4.in					\
 	baby.in					\
 	C6_0.in					\
+	temp/SWb2_hom.in			\
 	both_precomputed.in			\
 	ChineseRemainder.in			\
 	ChF_2_64.in				\

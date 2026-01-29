@@ -4084,7 +4084,7 @@ Important: The input types
 \itemtt[fusion\_image\_ring]
 \itemtt[fusion\_ring\_map]
 \end{itemize}
-must be \textbf{formatted} matrices. If the \verb*|fusion_image_type| is missing, it is set to the identity (like \verb*|fusion_duality|).
+must be \textbf{formatted} matrices. If the \verb*|fusion_image_duality| is missing, it is set to the identity (like \verb*|fusion_duality|).
 
 \verb*|mini_ind.out| is
 \begin{Verbatim}
@@ -4116,3 +4116,32 @@ $$
 This system of linear equations for $M_{i,j}^k$ is added to the constraints defining $ZR$.
 
 \emph{Remark.}\enspace All computations above only verify necessary conditions for a Drinfeld center. The fusion rings $ZR$ that are defined by an induction matrix and a compatible duality and for which $F$ is a homomorphism to $R$ are not necessarily Grothendieck rings of Drinfeld centers of the categorifications $\mathcal C$ of $R$. A simple example: if one changes the \verb*|fusion_duality| $[0,1,2,3]$ in \verb*|mini_ind.in| to $[0,1,3,2]$, one obtains the group ring of the cyclic group $C_4$ as $ZR$. But the Drinfeld centers of the categorifications of $C_2$ all have the group ring of $C_2\times C_2$ as their Grothendieck ring (as we got it for the duality $[0,1,2,3$]).
+
+An example defined over an algebraic number field is \verb*|SW2_hom.in|:
+\begin{Verbatim}
+amb_space auto
+number_field min_poly (a^2 - 3) embedding [2 +/-2]
+
+fusion_type
+[1,1,(a+1 ~ 2.7320508),(a+1 ~ 2.7320508),(a+1 ~ 2.7320508),(a+1 ~ 2.7320508),
+(a+1 ~ 2.7320508),(a+2 ~ 3.7320508),(a+2 ~ 3.7320508),(a+3 ~ 4.7320508)]
+
+fusion_image_type [1, 1, (a+1)]
+
+fusion_image_ring
+[0,0,1,2,1]
+
+fusion_ring_map
+[
+[1,0,0],
+[0,1,0],
+[0,0,1],
+[0,0,1],
+[0,0,1],
+[0,0,1],
+[0,0,1],
+[0,1,1],
+[1,0,1],
+[1,1,1]
+]
+\end{Verbatim}
