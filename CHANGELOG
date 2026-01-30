@@ -1,11 +1,16 @@
 # ChangeLog
 
 
+## 3.11.1]  2026-02-15
+
+-- induction matrices also for non-integral fusion rings
+-- complete change to integer computations for non-integral fusion nrings
+
 ## 3.11.0]  2025-10-15
 
--- Better choice of linear forms for support hyperplanes in cases of nonuniqueness
--- Extended effect of \verb*|NoLLL|
--- Introduction of \verb*|BoolOptions| for \verb*|Cone| in libnormaliz
+-- Better choice of linear forms for support hyperplanes in cases of non-uniqueness
+-- Extended effect of NoLLL
+-- Introduction of BoolOptions for Cone in libnormaliz
 -- biugfix for subdision of simplicial cones
 -- bugfix for (and introduction of) no_subdivision in fiull_cone.cpp
 

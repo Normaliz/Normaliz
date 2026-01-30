@@ -3,11 +3,11 @@ Automorphisms are integral
 ************************************************************************
 1 permutations of 4 vertices of polyhedron
 
-Perm 1: 4 3 2 1
+perm 1: 4 3 2 1
 
 Cycle decompositions 
 
-Perm 1: (1 4) (2 3) --
+perm 1: (1 4) (2 3) --
 
 2 orbits of vertices of polyhedron
 
@@ -17,11 +17,11 @@ Orbit 2 , length 2:  2 3
 ************************************************************************
 1 permutations of 4 support hyperplanes
 
-Perm 1: 4 3 2 1
+perm 1: 4 3 2 1
 
 Cycle decompositions 
 
-Perm 1: (1 4) (2 3) --
+perm 1: (1 4) (2 3) --
 
 2 orbits of support hyperplanes
 
