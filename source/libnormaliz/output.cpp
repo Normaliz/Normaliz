@@ -433,7 +433,7 @@ void Output<Integer>::write_perms_and_orbits(ofstream& out,
     out << Perms.size() << " permutations of " << nr_objects << " " << type_string << endl << endl;
     size_t nr_items = Perms.size();
     for (size_t i = 0; i < nr_items; ++i) {
-        out << "Perm " << i + 1 << ":";
+        out << "perm " << i + 1 << ":";
         for (unsigned int j : Perms[i])
             out << " " << j + 1;
         out << endl;
@@ -445,7 +445,7 @@ void Output<Integer>::write_perms_and_orbits(ofstream& out,
 
     for (size_t i = 0; i < nr_items; ++i) {
         vector<vector<libnormaliz::key_t> > dec = cycle_decomposition(Perms[i]);
-        out << "Perm " << i + 1 << ": ";
+        out << "perm " << i + 1 << ": ";
         pretty_print_cycle_dec(dec, out);
     }
     out << endl;

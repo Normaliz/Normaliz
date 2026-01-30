@@ -89,54 +89,8 @@ Furthermore, Normaliz is used by B.~Burton's system
 Normaliz does not have its own interactive shell. We recommend the access via PyNormaliz, GAP or SageMath for interactive use. \textsc{PyNormaliz} is documented in Appendix~\ref{PyNormaliz}.
 
 
-\subsection{Major changes relative since version~3.9.0}
+\subsection{Major changes relative since version~3.10.0}
 
-In~3.9.0:
-
-\begin{arab}
-	\item Volume and integral computation by signed decomposition.
-	\item Variant \ttt{tExploitIsosMult} added to volume by descent.
-	\item \ttt{AmbientAutomorphisms} and \ttt{InputAutomorphisms} added.
-	\item \ttt{PlacingTriangulations} and \ttt{PullingTriangulation} added.
-	\item e-antic updated to version 1.0.1.
-\end{arab}
-
-In~3.9.1:
-
-\begin{arab}
-	\item Better handling of distributed computation.
-	\item Python 2 no longer supported.
-\end{arab}
-
-In~3.9.2:
-
-\begin{arab}
-	\item Compilation for MS Windows under MSYS; MPIR no longer forced under Windows.
-	\item Bug fixes and improvements.
-	\item Extension of sparse vectors to ranges of indices and \verb|unit_matrix| as an input type.
-	\item Output of an input fie with precomputed data.
-	\item libnormaliz function that constructs a cone from an input file.
-\end{arab}
-
-
-In~3.9.3:
-
-\begin{arab}
-	\item Bug fixes.
-	\item Compilation for MS Windows under MSYS with all optional packages.
-	\item Option NoHilbertBasisOutput added.
-	\item Short reference for Normaliz added.
-	\item \verb|normaliz.lib| for Singular updated.
-\end{arab}
-
-n~3.9.4:
-
-\begin{arab}
-	\item Polynomial constraints  for lattice points.
-	\item Coarse project-and-lift for positive systems.
-	\item Patching variant for coarse project-and-lift .
-	\item Input directive \verb|convert_equations|.
-\end{arab}
 
 In 3.10.0:
 
@@ -200,6 +154,13 @@ In 3.11.0:
 	\item Bug fixes related to subdivision in the primal algorithm. 
 \end{arab}
 
+In 3.11.1:
+
+\begin{arab}
+	\item Induction matrices also for non-integral fusion rings.
+	item  Complete change to integer computations for non-integral fusion nrings.
+	\item  Internal improvements.
+\end{arab}
 See the file \verb|CHANGELOG| in the Normaliz directory for more information on the history of Normaliz.
 
 
