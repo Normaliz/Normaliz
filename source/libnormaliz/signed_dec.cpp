@@ -212,7 +212,7 @@ bool SignedDec<Integer>::FindGeneric() {
                 list<dynamic_bitset> SubfacetsOfSimplex;  // now we reproduce the subfacets of the hollow triangulation
                 for (size_t i = 0; i < nr_gen; ++i) {     // coming from simplex S
                     if (S->second[i]) {
-                        SubfacetsOfSimplex.push_back(S->first);
+                        SubfacetsOfSimplex.emplace_back(S->first);
                         SubfacetsOfSimplex.back()[i] = 0;
                     }
                 }
@@ -448,7 +448,7 @@ bool SignedDec<Integer>::ComputeMultiplicity() {
                 list<dynamic_bitset> SubfacetsOfSimplex;  // now we reproduce the subfacets of the hollow triangulation
                 for (size_t i = 0; i < nr_gen; ++i) {     // coming from simplex S
                     if (S->second[i]) {
-                        SubfacetsOfSimplex.push_back(S->first);
+                        SubfacetsOfSimplex.emplace_back(S->first);
                         SubfacetsOfSimplex.back()[i] = 0;
                     }
                 }
@@ -606,14 +606,14 @@ size_t HollowTriangulation::make_hollow_triangulation_inner(const vector<size_t>
             verboseOutput() << endl;
         else {
             vector<key_t> block_start, block_end;
-            block_start.push_back(PatternKey[0]);
+            block_start.emplace_back(PatternKey[0]);
             for (size_t k = 1; k < PatternKey.size(); ++k) {
                 if (PatternKey[k] > PatternKey[k - 1] + 1) {
-                    block_end.push_back(PatternKey[k - 1]);
-                    block_start.push_back(PatternKey[k]);
+                    block_end.emplace_back(PatternKey[k - 1]);
+                    block_start.emplace_back(PatternKey[k]);
                 }
             }
-            block_end.push_back(PatternKey.back());
+            block_end.emplace_back(PatternKey.back());
             verboseOutput() << "for ";
             for (size_t k = 0; k < block_start.size(); ++k) {
                 if (block_end[k] == block_start[k])
@@ -634,7 +634,7 @@ size_t HollowTriangulation::make_hollow_triangulation_inner(const vector<size_t>
     if (restricted) {
         for (size_t i = 0; i < PatternKey.back(); ++i) {
             if (!Pattern[i])
-                NonPattern.push_back(static_cast<key_t>(i));
+                NonPattern.emplace_back(static_cast<key_t>(i));
         }
     }
 
@@ -689,7 +689,7 @@ size_t HollowTriangulation::make_hollow_triangulation_inner(const vector<size_t>
                     if (!restricted) {
                         for (size_t j = 0; j < nr_gen; ++j) {           // we make copies in which we delete
                             if (Triangulation_ind[pp].first[j] == 1) {  // one entry each
-                                MiniBlock.push_back(make_pair(Triangulation_ind[pp].first, pp));  // nr_done serves as a signature
+                                MiniBlock.emplace_back(make_pair(Triangulation_ind[pp].first, pp));  // nr_done serves as a signature
                                 MiniBlock.back().first[j] = 0;  // that allows us to recognize subfacets
                             }                                   // that arise from the same simplex in T
                         }
@@ -698,7 +698,7 @@ size_t HollowTriangulation::make_hollow_triangulation_inner(const vector<size_t>
                         bool done = false;
                         for (size_t j = 0; j < NonPattern.size(); ++j) {
                             if (Triangulation_ind[pp].first[NonPattern[j]]) {
-                                MiniBlock.push_back(make_pair(Triangulation_ind[pp].first, pp));
+                                MiniBlock.emplace_back(make_pair(Triangulation_ind[pp].first, pp));
                                 MiniBlock.back().first[NonPattern[j]] = 0;
                                 done = true;
                                 break;
@@ -710,7 +710,7 @@ size_t HollowTriangulation::make_hollow_triangulation_inner(const vector<size_t>
 
                         for (size_t j = PatternKey.back() + 1; j < nr_gen; ++j) {
                             if (Triangulation_ind[pp].first[j] == 1) {
-                                MiniBlock.push_back(make_pair(Triangulation_ind[pp].first, pp));
+                                MiniBlock.emplace_back(make_pair(Triangulation_ind[pp].first, pp));
                                 MiniBlock.back().first[j] = 0;
                                 // cout << "+++Pattern " << j << endl;
                             }
@@ -793,7 +793,7 @@ size_t HollowTriangulation::refine_and_process_selection(vector<size_t>& Selecti
     vector<key_t> NonPattern;
     for (size_t i = 0; i < PatternKey.back(); ++i) {
         if (!Pattern[i])
-            NonPattern.push_back(static_cast<key_t>(i));
+            NonPattern.emplace_back(static_cast<key_t>(i));
     }
 
     dynamic_bitset TwoInNonPattern(Selection.size());
@@ -812,7 +812,7 @@ size_t HollowTriangulation::refine_and_process_selection(vector<size_t>& Selecti
             }
         }
         if (good)
-            Refinement.push_back(Selection[i]);
+            Refinement.emplace_back(Selection[i]);
     }
 
     if (Refinement.size() >= HollowTriBound
@@ -837,7 +837,7 @@ size_t HollowTriangulation::refine_and_process_selection(vector<size_t>& Selecti
     vector<size_t> NewSelection;
     for (size_t i = 0; i < Selection.size(); ++i) {
         if (!TwoInNonPattern[i])
-            NewSelection.push_back(Selection[i]);
+            NewSelection.emplace_back(Selection[i]);
     }
     // cout << "Sieving " << Selection.size() << " -- " << NewSelection.size() << endl;
     swap(Selection, NewSelection);
@@ -870,20 +870,20 @@ size_t HollowTriangulation::extend_selection_pattern(vector<size_t>& Selection,
 
     for (size_t i = start_gen; i <= last_gen; ++i) {
         vector<key_t> PatternKeyRefinement = PatternKey;
-        PatternKeyRefinement.push_back(static_cast<key_t>(i));
+        PatternKeyRefinement.emplace_back(static_cast<key_t>(i));
 
         dynamic_bitset PatternRefinement = Pattern;
         PatternRefinement[i] = 1;
         if (verbose) {
             vector<key_t> block_start, block_end;
-            block_start.push_back(PatternKeyRefinement[0]);
+            block_start.emplace_back(PatternKeyRefinement[0]);
             for (size_t k = 1; k < PatternKeyRefinement.size(); ++k) {
                 if (PatternKeyRefinement[k] > PatternKeyRefinement[k - 1] + 1) {
-                    block_end.push_back(PatternKeyRefinement[k - 1]);
-                    block_start.push_back(PatternKeyRefinement[k]);
+                    block_end.emplace_back(PatternKeyRefinement[k - 1]);
+                    block_start.emplace_back(PatternKeyRefinement[k]);
                 }
             }
-            block_end.push_back(PatternKeyRefinement.back());
+            block_end.emplace_back(PatternKeyRefinement.back());
             verboseOutput() << "Select ";
             for (size_t k = 0; k < block_start.size(); ++k) {
                 if (block_end[k] == block_start[k])

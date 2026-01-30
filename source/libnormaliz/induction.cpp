@@ -110,13 +110,13 @@ renf_elem_class our_scalar_product(const vector<long long>& av, const vector<ren
 vector<mpz_class> minimal_polynomial(const renf_elem_class& val){
 
     vector<renf_elem_class> powers;
-    powers.push_back(1);
+    powers.emplace_back(1);
     vector<vector<mpz_class> > numerators;
-    numerators.push_back(powers.back().num_vector());
+    numerators.emplace_back(powers.back().num_vector());
     size_t max_deg = 0;
     while(true){
-        powers.push_back(powers.back() * val);
-        numerators.push_back(powers.back().num_vector());
+        powers.emplace_back(powers.back() * val);
+        numerators.emplace_back(powers.back().num_vector());
         if(numerators.back().size() - 1 > max_deg)
             max_deg = numerators.back().size() - 1;
         for(auto& v: numerators)
@@ -198,14 +198,14 @@ Matrix<long long> SplitRepresentation(renf_elem_class val, vector<renf_elem_clas
     size_t comm_size = val_num.size();
     vector<vector<mpz_class> > Equ_mpz;
     for(auto& s: summands){
-        Equ_mpz.push_back(s.num_vector());
+        Equ_mpz.emplace_back(s.num_vector());
         comm_size = max(comm_size, Equ_mpz.back().size());
     }
     for(auto& v: Equ_mpz){
         v.resize(comm_size);
     }
     val_num.resize(comm_size);
-    Equ_mpz.push_back(val_num);
+    Equ_mpz.emplace_back(val_num);
     Matrix<long long> Equ_ll(Equ_mpz.size(),comm_size);
     size_t i = 0;
     for(auto& v: Equ_mpz){
@@ -265,7 +265,7 @@ vector<string> BoundsAsPolynomials(const Matrix<Integer> Bounds){
         for(size_t k = j; k < n; ++k){
             // we count variables from 1 for polynomial bounds
             string B = "-x[" + to_string(j+1) + "]*x["+to_string(k+1)+"]+"+to_string(Bounds[j][k]);
-            Polys.push_back(B);
+            Polys.emplace_back(B);
         }
     }
     return Polys;
@@ -429,8 +429,8 @@ template<typename Integer>
 void Induction<Integer>::make_divisors(){
     for(Integer t = 1; t <= FPdim; ++t){
         if(FPdim % t == 0){
-            divisors.push_back(t);
-            candidates_m_i.push_back(FPdim/t);
+            divisors.emplace_back(t);
+            candidates_m_i.emplace_back(FPdim/t);
         }
     }
 }
@@ -462,9 +462,9 @@ void Induction<renf_elem_class>::make_divisors_near_integral(){
              //   continue;
             if(is_d_number(cand)){
                 if(is_algebraic_integer(FPdim/cand))
-                    candidates_m_i.push_back(cand);
+                    candidates_m_i.emplace_back(cand);
                 if(is_d_number(FPdim/cand))
-                    divisors.push_back(FPdim/cand);
+                    divisors.emplace_back(FPdim/cand);
             }
         }
     }
@@ -486,8 +486,8 @@ void Induction<renf_elem_class>::make_divisors(){
     vector<renf_elem_class> h = fusion_type;
     vector<long long> floors;
     for(auto& f: fusion_type)
-        floors.push_back(convertTo<long long>(f.floor()));
-    floors.push_back(- convertTo<long long>(FPdim.ceil()));
+        floors.emplace_back(convertTo<long long>(f.floor()));
+    floors.emplace_back(- convertTo<long long>(FPdim.ceil()));
     long long MinusOne = -1;
     v_scalar_multiplication(floors,MinusOne);
     Matrix<long long> Hyp(floors);
@@ -509,9 +509,9 @@ void Induction<renf_elem_class>::make_divisors(){
         renf_elem_class inv = FPdim/cand;
         if(is_d_number(cand)){
             if(is_algebraic_integer(FPdim/cand))
-                candidates_m_i.push_back(cand);
+                candidates_m_i.emplace_back(cand);
             if(is_d_number(FPdim/cand))
-                divisors.push_back(FPdim/cand);
+                divisors.emplace_back(FPdim/cand);
         }
     }
 }
@@ -671,9 +671,9 @@ void Induction<Integer>::solve_system_low_parts(){
             // now the nright hand side
             // note: entry in first column is n_i
             if(k == 0)
-                this_equ.push_back(RowSplit[k].back() + low_m[i+1].second);
+                this_equ.emplace_back(RowSplit[k].back() + low_m[i+1].second);
             else
-                this_equ.push_back(RowSplit[k].back());
+                this_equ.emplace_back(RowSplit[k].back());
             our_equs.append(this_equ);
         }
     }
@@ -684,7 +684,7 @@ void Induction<Integer>::solve_system_low_parts(){
         for(size_t i = 0; i < nr_rows_low_part - 1; ++i){
             this_equ[j + i*(fusion_rank -1)] = low_m[i+1].second; //  ?????????
         }
-        this_equ.push_back(- Bounds[0][j + 1]); // right hand side
+        this_equ.emplace_back(- Bounds[0][j + 1]); // right hand side
         our_equs.append(this_equ);
     }
 
@@ -709,7 +709,7 @@ void Induction<Integer>::solve_system_low_parts(){
         }
         // our_low_part.debug_print('L');
         if(column_normal(our_low_part))
-            LowParts.push_back(our_low_part);
+            LowParts.emplace_back(our_low_part);
 
     }
 }
@@ -725,7 +725,7 @@ void Induction<Integer>::make_low_m_i(){
     for(auto& EV_mult: EV_mult_n_i){
         // cout << "MMMMM " << EV_mult.first << "     "  << EV_mult.second.first << endl;
         for(size_t j = 0; j < EV_mult.second.first; ++j){
-            EV_n_i.push_back(make_pair(EV_mult.first, EV_mult.second.second));
+            EV_n_i.emplace_back(make_pair(EV_mult.first, EV_mult.second.second));
             // cout << EV_mult.first << " " << EV_mult.second.second << endl;
         }
     }
@@ -737,7 +737,7 @@ void Induction<Integer>::make_low_m_i(){
 
     for(auto& t: EV_n_i){
         // Integer dummy = convertTo<Integer>(static_cast<long long>(t.second));
-        low_m.push_back(make_pair(FPdim  / t.first, t.second));
+        low_m.emplace_back(make_pair(FPdim  / t.first, t.second));
 
         // cout << "m " << FPdim  / t.first << " mult "  << dummy << endl;
     }
@@ -778,7 +778,7 @@ void Induction<Integer>::build_low_parts(){
             }
         }
         if(ordered)
-            OrderedLowParts.push_back(M);
+            OrderedLowParts.emplace_back(M);
     }
 
     swap(LowParts, OrderedLowParts);
@@ -893,7 +893,7 @@ void Induction<Integer>::high_parts_recursive(const Matrix<long long>& Remaining
             Final.debug_print('I');
             cout << "*********************************************" << endl;
             convert(indmat, Final);
-            InductionMatrices.push_back(indmat);
+            InductionMatrices.emplace_back(indmat);
 }
         continue;
         }
@@ -1008,9 +1008,9 @@ void Induction<Integer>::from_low_to_full(){
             for(size_t k = j; k < fusion_rank; ++k){
                 vector<long long> this_equ;
                 for(size_t i = 0; i < HighRepsHere.nr_of_rows(); ++i){
-                    this_equ.push_back(HighRepsHere[i][j] * HighRepsHere[i][k]);
+                    this_equ.emplace_back(HighRepsHere[i][j] * HighRepsHere[i][k]);
                 }
-                this_equ.push_back(-Remaining[j][k]);
+                this_equ.emplace_back(-Remaining[j][k]);
                 // cout << j << " " << k << " " << "ttt " <<  this_equ;
                 InhomEqu.append(this_equ);
             }
@@ -1023,10 +1023,10 @@ void Induction<Integer>::from_low_to_full(){
         for(size_t i = 0; i < HighRepsHere.nr_of_rows(); ++i){
             Integer m_new = our_scalar_product(HighRepsHere[i], fusion_type);
             long long m_int = our_floor(m_new);
-            this_inequ.push_back(- m_int*m_int);
+            this_inequ.emplace_back(- m_int*m_int);
         }
         // cout << "FFFFFF " << FPdim_so_far << " " << -FPSquare << " " << (-FPSquare + FPdim_so_far) <<  endl;
-        this_inequ.push_back(our_ceil(FPSquare - FPdim_so_far));
+        this_inequ.emplace_back(our_ceil(FPSquare - FPdim_so_far));
 
         // InhomEqu.debug_print('&');
 
@@ -1094,7 +1094,7 @@ void Induction<Integer>::from_low_to_full(){
                 }
 
             }
-            InductionMatrices.push_back(IndMat);
+            InductionMatrices.emplace_back(IndMat);
 
             assert(IndMat.transpose().multiplication(IndMat).equal(Bounds_Int));
             /* if(verbose){
@@ -1118,7 +1118,7 @@ void Induction<Integer>::augment_induction_matrices(){
         vector<pair<Integer, vector<Integer> > > FPdim_row;
         for(size_t i = 0; i < M.nr_of_rows(); ++i){
             Integer FPdim = v_scalar_product(fusion_type, M[i]);
-            FPdim_row.push_back(make_pair(FPdim, std::move(M[i])));
+            FPdim_row.emplace_back(make_pair(FPdim, std::move(M[i])));
         }
         sort(++FPdim_row.begin(), FPdim_row.end());  // IMPORTANT: must keep the neutral element in first row
         for(size_t i = 0; i < M.nr_of_rows(); ++i){
@@ -1132,14 +1132,14 @@ void Induction<Integer>::augment_induction_matrices(){
     vector<vector<vector<Integer> > >  IndVecVecVec;
 
     for(auto& M: InductionMatrices){
-        IndVecVecVec.push_back(std::move(M.get_elements()));
+        IndVecVecVec.emplace_back(std::move(M.get_elements()));
     }
 
     sort(IndVecVecVec.begin(), IndVecVecVec.end());
 
     InductionMatrices.clear();
     for(auto& VVV: IndVecVecVec){
-        InductionMatrices.push_back(Matrix<Integer>(std::move(VVV)));
+        InductionMatrices.emplace_back(Matrix<Integer>(std::move(VVV)));
     }
 
 
@@ -1149,7 +1149,7 @@ void Induction<Integer>::augment_induction_matrices(){
     map<vector<Integer>, vector<Matrix<Integer> > > InductionMatricesByType;
     for(auto& M: InductionMatrices){
         vector<Integer> type = M.MxV(fusion_type);
-        InductionMatricesByType[type].push_back(std::move(M));
+        InductionMatricesByType[type].emplace_back(std::move(M));
     }
     if(verbose)
         verboseOutput() << InductionMatricesByType.size() << " fusion types defined by induction matrices" << endl;
@@ -1169,13 +1169,13 @@ void Induction<Integer>::augment_induction_matrices(){
         verboseOutput()<< "Augmenting induction matrices by fusion types and duality info" << endl;
     vector<Matrix<Integer> > InductionMatWithType;
     // cout << "FFFFFFFFFFF " << ImageRing;
-    InductionMatWithType.push_back(ImageRing);
+    InductionMatWithType.emplace_back(ImageRing);
     for(auto& M: InductionMatrices){
         vector<Integer> type = M.MxV(fusion_type);
         Matrix<Integer> AllowedTranspositions = make_allowed_transpositions(M);
-        InductionMatWithType.push_back(std::move(M));
-        InductionMatWithType.push_back(Matrix<Integer>(type));
-        InductionMatWithType.push_back(AllowedTranspositions);
+        InductionMatWithType.emplace_back(std::move(M));
+        InductionMatWithType.emplace_back(Matrix<Integer>(type));
+        InductionMatWithType.emplace_back(AllowedTranspositions);
     }
 
     swap(InductionMatrices, InductionMatWithType);

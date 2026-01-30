@@ -191,7 +191,7 @@ void DescentFace<Integer>::compute(
 
     for (size_t i = 0; i < nr_gens; ++i)
         if (GensInd[i])
-            extrays_of_this.push_back(static_cast<key_t>(i));
+            extrays_of_this.emplace_back(static_cast<key_t>(i));
 
     Matrix<Integer> Gens_this;
 
@@ -264,7 +264,7 @@ void DescentFace<Integer>::compute(
         vector<libnormaliz::key_t> facet_key;  // keys of extreme rays in current supphyp of cone
         for (size_t k = 0; k < extrays_of_this.size(); ++k) {
             if (FF.SuppHypInd[i][extrays_of_this[k]] == true)
-                facet_key.push_back(static_cast<key_t>(k));
+                facet_key.emplace_back(static_cast<key_t>(k));
         }
         if (facet_key.size() < d - 1)  // can't be a facet(*this)
             continue;
@@ -302,7 +302,7 @@ void DescentFace<Integer>::compute(
             else {
                 vector<key_t> trans_key;  // translate back to FF
                 for (unsigned int k : facet_key)
-                    trans_key.push_back(extrays_of_this[k]);
+                    trans_key.emplace_back(extrays_of_this[k]);
                 SimpKeys[facet_ind] = trans_key;  // helps to pick the submatrix of its generators
             }
         }
@@ -335,7 +335,7 @@ void DescentFace<Integer>::compute(
                 vector<key_t> trans_key;  // translate back to FF
                 vector<key_t> local_key = bitset_to_key(G->first);
                 for (unsigned int k : local_key)
-                    trans_key.push_back(extrays_of_this[k]);
+                    trans_key.emplace_back(extrays_of_this[k]);
                 Matrix<Integer> RankTest = FF.Gens.submatrix(trans_key);
                 if (RankTest.rank() < d - 1)
                     G = FacetInds.erase(G);
@@ -416,7 +416,7 @@ void DescentFace<Integer>::compute(
             }
 
             H->second.coeff = divided_coeff * convertTo<mpz_class>(ht);
-            opposite_facets.push_back(CutOutBy[G->first]);
+            opposite_facets.emplace_back(CutOutBy[G->first]);
 
             if (FF.exploit_automorphisms && FF.facet_based) {      // Absolutely necessary, used in definition of IsoType
                 dynamic_bitset ExtRaysFacet(FF.nr_gens);           // in the first step we must translate
@@ -446,8 +446,8 @@ void DescentFace<Integer>::compute(
                 }
                 vector<long> ERC;
                 for (auto& C : Counter) {
-                    ERC.push_back(C.first);
-                    ERC.push_back(C.second);
+                    ERC.emplace_back(C.first);
+                    ERC.emplace_back(C.second);
                 }
 #ifdef NMZ_HASHLIBRARY
                 ostringstream VecString;

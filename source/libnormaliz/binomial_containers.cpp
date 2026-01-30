@@ -51,7 +51,7 @@ binomial_tree_node::binomial_tree_node() {
 
 /*
 binomial_tree_node::binomial_tree_node(const binomial& b) {
-    data.push_back(b);
+    data.emplace_back(b);
     sorted = true;
 }
 */
@@ -63,11 +63,11 @@ node_binomial(rhs.node_binomial) {
     for (auto child : rhs.children) {
         if (nullptr == child.second) {
             pair < pair<size_t, exponent_t>, binomial_tree_node*> n(child.first, nullptr);
-            children.push_back(n);
+            children.emplace_back(n);
         } else { // copy recursively
             binomial_tree_node* copy = new binomial_tree_node(*child.second);
             pair < pair<size_t, exponent_t>, binomial_tree_node*> n(child.first, copy);
-            children.push_back(n);
+            children.emplace_back(n);
         }
     }
 }
@@ -243,7 +243,7 @@ void binomial_tree::insert(const binomial& b) {
                 cur_node = cur_node->children[j].second; // traverse
             } else { // There is no child with first == i yet. We create one.
                 binomial_tree_node* next = new binomial_tree_node;
-                cur_node->children.push_back(std::make_pair(std::make_pair(i,b[i]), next));
+                cur_node->children.emplace_back(std::make_pair(std::make_pair(i,b[i]), next));
                 cur_node = next;
                 cur_node->has_binomial = false;
             }
@@ -255,7 +255,7 @@ void binomial_tree::insert(const binomial& b) {
         cur_node-> node_binomial = b;
     }
     else{
-        cur_node-> minimization_binomials.push_back(b);
+        cur_node-> minimization_binomials.emplace_back(b);
     }
 }
 
@@ -408,12 +408,12 @@ monomial_list monomial_list::add_monmial(const int& indet, const int& power) con
         INTERRUPT_COMPUTATION_BY_EXCEPTION
 
         if(M[indet] < power)
-            new_gen_set.push_back(M);
+            new_gen_set.emplace_back(M);
     }
 
     exponent_vec add_gen(front().size());
     add_gen[indet] = power;
-    new_gen_set.push_back(binomial(add_gen));
+    new_gen_set.emplace_back(binomial(add_gen));
     new_gen_set.appearing_at_least_twice = appearing_at_least_twice;
     return new_gen_set;
 }
@@ -445,7 +445,7 @@ monomial_list monomial_list::colon_by_monmial(const int& indet, const int& power
 
     map<int, list<list<exponent_vec>::iterator> > by_degrees;
     for(auto it = begin(); it != end(); ++it){
-        by_degrees[(*it)[indet]].push_back(it);
+        by_degrees[(*it)[indet]].emplace_back(it);
 
     }
     int previous = -1;
@@ -455,7 +455,7 @@ monomial_list monomial_list::colon_by_monmial(const int& indet, const int& power
         INTERRUPT_COMPUTATION_BY_EXCEPTION
 
         if(BD.first != previous){
-            degrees_prsent.push_back(BD.first);
+            degrees_prsent.emplace_back(BD.first);
             previous = BD.first;
         }
     }
@@ -585,7 +585,7 @@ int  monomial_list::find_pivot(int& indet) const{
 
 monomial_list::monomial_list(const binomial_list& BL){
     for(auto& B: BL){
-        push_back(B.get_exponent_pos());
+        emplace_back(B.get_exponent_pos());
     }
     if(!BL.empty())
         appearing_at_least_twice.resize(BL.get_number_indets());
@@ -683,7 +683,7 @@ binomial_list::binomial_list(const matrix_t& binomial_matrix) {
     degree_bound_set = false;
     for (size_t i = 0; i < binomial_matrix.nr_of_rows(); ++i) {
         binomial bi(binomial_matrix[i]);
-        push_back(bi);
+        emplace_back(bi);
     }
 }
 
@@ -749,7 +749,7 @@ void binomial_list::customize(binomial& b) {
 }
 
 void binomial_list::insert_back(const binomial& b) {
-    push_back(b);
+    emplace_back(b);
     customize(back());
 }
 
@@ -1179,7 +1179,7 @@ binomial_list binomial_list::graph_minimize(bool& success){
         if(b.first > min_degree)
             break;
         b1 = b.second;
-        Vmin.push_back(b1);
+        Vmin.emplace_back(b1);
         b1.set_support_keys(sat_support);
         Min_red_tree.insert(b1);
         for(size_t i = 0; i < b1.size(); ++i)
@@ -1230,7 +1230,7 @@ binomial_list binomial_list::graph_minimize(bool& success){
             }
         }
         if(is_minimal){
-                Vmin.push_back(b1);
+                Vmin.emplace_back(b1);
             b1.set_support_keys(sat_support);
             Min_red_tree.insert(b1);
             for(size_t i = 0; i < b1.size(); ++i)
@@ -1334,7 +1334,7 @@ binomial_list binomial_list::graph_minimize(bool& success){
                 continue;
             G.insert_back(b);
             G_red_tree.insert(b);
-            Vmin.push_back(b);
+            Vmin.emplace_back(b);
             s_poly_insert(G, B);
         }
     }

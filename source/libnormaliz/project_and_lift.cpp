@@ -405,7 +405,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
             if(Congs[k][i] != 0)
                 cong_support[i] = true;
         }
-        CongIndicator.push_back(cong_support);
+        CongIndicator.emplace_back(cong_support);
     }
 
     // we compute basic data for simplicity test
@@ -436,7 +436,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
         vector<key_t> relevant_supps_now;
         for(size_t i = 0; i < nr_all_supps; ++i){
             if(Indicator[i].is_subset_of(AllPatches[coord])){
-                relevant_supps_now.push_back(i);
+                relevant_supps_now.emplace_back(i);
                 used_supps[i] = 1;
             }
         }
@@ -444,7 +444,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
         // next we add what is implied by other upper bounds
         for(size_t i = 0; i < nr_all_supps; ++i){
             if(!used_supps[i] && upper_bounds[i]){
-                relevant_supps_now.push_back(i);
+                relevant_supps_now.emplace_back(i);
             }
         }
 
@@ -548,7 +548,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
         if(check_simplicity_all){
             for(size_t i = 0; i < fusion.coords_to_check_ind.size(); ++i){
                 if(fusion.coords_to_check_ind[i].is_subset_of(new_covered) && !fusion.coords_to_check_ind[i].is_subset_of(covered))
-                    fusion.all_critical_coords_keys[coord].push_back(fusion.coords_to_check_key[i]);
+                    fusion.all_critical_coords_keys[coord].emplace_back(fusion.coords_to_check_key[i]);
             }
         }
 
@@ -563,7 +563,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
             if(CongIndicator[i].is_subset_of(AllPatches[coord]))
                 continue;
             // cout << "CCCCC " << coord << " --- "<< Congs[i];
-            AllCongsRestricted[coord].push_back(OurPolynomialCong<IntegerRet>(Congs[i]));
+            AllCongsRestricted[coord].emplace_back(OurPolynomialCong<IntegerRet>(Congs[i]));
         }
 
          // now the extra constraints, in perticular the polynomial ones
@@ -634,10 +634,10 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
                 cout << "Rest " << i << " --- " <<  Restrict.size() << " of " << PolyEquations[i].size() << endl;
                 first_rest = false;
             }*/
-            AllPolyEqus[coord].push_back(PolyEquations[i].split(covered));
+            AllPolyEqus[coord].emplace_back(PolyEquations[i].split(covered));
             AllPolyEqus[coord].back().first.vectorize_deg_2();
             AllPolyEqus[coord].back().second.vectorize_deg_2();
-            PolyEqusKey.push_back(i);
+            PolyEqusKey.emplace_back(i);
         }
         for(auto& T: AllPolyEqusThread[coord]){ // vcopy for each thread
             T = AllPolyEqus[coord];
@@ -650,8 +650,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
                 continue;
             if(!(PolyInequalities[i]).support.is_subset_of(new_covered))
                 continue;
-            AllPolyInequs[coord].push_back(PolyInequalities[i]);
-            PolyInequsKey.push_back(i);
+            AllPolyInequs[coord].emplace_back(PolyInequalities[i]);
+            PolyInequsKey.emplace_back(i);
         }
 
         // now the inequalities which can be restricted
@@ -661,8 +661,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
                 continue;
             if(!(RestrictablePolyInequs[i]).is_restrictable_inequ(new_covered))
                 continue;
-            AllPolyInequs[coord].push_back(RestrictablePolyInequs[i]);
-            RestrictablePolyInequsKey.push_back(i);
+            AllPolyInequs[coord].emplace_back(RestrictablePolyInequs[i]);
+            RestrictablePolyInequsKey.emplace_back(i);
         }
 
         /* Matrix<IntegerRet> ExtraEquations = reconstruct_equations(ExtraInequalities);
@@ -670,7 +670,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
         ExtraEquations.debug_print('E');*/
 
         for(size_t i = 0; i < ExtraInequalities.nr_of_rows(); ++i){
-            AllPolyInequs[coord].push_back(OurPolynomial<IntegerRet>(ExtraInequalities[i]));
+            AllPolyInequs[coord].emplace_back(OurPolynomial<IntegerRet>(ExtraInequalities[i]));
         }
 
         for(auto& T: AllPolyInequsThread[coord]){ // vcopy for each thread
@@ -705,7 +705,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
             for(key_t i = 0; i< new_covered.size(); ++i){
                 if(!new_covered[i] || covered[i])
                     continue;
-                AllCoveredKey[coord].push_back(i);
+                AllCoveredKey[coord].emplace_back(i);
             }
         }
         old_coord_key = AllCoveredKey[coord];
@@ -769,11 +769,11 @@ vector<pair<size_t, vector<key_t> > > ProjectAndLift<IntegerPL,IntegerRet>::
                 }
             }
             already_covered = (already_covered |AllPatches[max_covering]) & poly_supp;
-            patches_used.push_back(max_covering);
+            patches_used.emplace_back(max_covering);
             nr_patches_needed++;
             if(already_covered == poly_supp){
                 sort(patches_used.begin(), patches_used.end());
-                covering_equations.push_back(make_pair(patches_used.size(),
+                covering_equations.emplace_back(make_pair(patches_used.size(),
                                                        patches_used));
                 break;
             }
@@ -878,7 +878,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::find_order_congruences() {
                 }
             }
         }
-        InsertionOrderPatches.push_back(max_at);
+        InsertionOrderPatches.emplace_back(max_at);
         used_patches[max_at] = true;
         covered_coords |= AllPatches[max_at];
         for(size_t j = 0; j < Congs.nr_of_rows(); ++j){  // register used congs
@@ -918,7 +918,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::find_order_linear() {
                 min_weight = test_weight;
             }
         }
-        InsertionOrderPatches.push_back(min_at);
+        InsertionOrderPatches.emplace_back(min_at);
         used_patches[min_at] = true;
         covered_coords |= AllPatches[min_at];
     }
@@ -932,7 +932,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::finalize_order(const dynamic_bitset& 
     // There could be patches not used.
     for(size_t j = 0; j < EmbDim; ++j){
         if(!used_patches[j] && AllPatches[j].size() > 0)
-            InsertionOrderPatches.push_back(j);
+            InsertionOrderPatches.emplace_back(j);
     }
 
     if(verbose){
@@ -972,7 +972,7 @@ bool ProjectAndLift<IntegerPL,IntegerRet>::order_patches_user_defined() {
             if(used_patches[j])
                 throw BadInputException("<project>.order.patches contains " + to_string(j) + " more than once");
             used_patches[j] = true;
-            InsertionOrderPatches.push_back(j);
+            InsertionOrderPatches.emplace_back(j);
         }
         in_order.close();
         finalize_order(used_patches);
@@ -1080,7 +1080,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_covers() {
 
     vector<dynamic_bitset> our_supports;
     for(size_t i = 0; i < PolyEquations.size();++i)
-            our_supports.push_back(PolyEquations[i].support);
+            our_supports.emplace_back(PolyEquations[i].support);
 
     vector<pair<size_t, vector<key_t> > > covering_equations =
             cover_supports(our_supports);
@@ -1144,7 +1144,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_covers() {
             }
         }
         used_covering_equations[min_at] = true;
-        InsertionOrderEquations.push_back(min_at);
+        InsertionOrderEquations.emplace_back(min_at);
         for(auto& c:covering_equations[min_at].second){
             covered_coords |= AllPatches[c];
         }
@@ -1154,7 +1154,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_covers() {
     for(auto& i: InsertionOrderEquations){
         for(auto& c: covering_equations[i].second){
             if(!inserted_patches[c])
-                InsertionOrderPatches.push_back(c);
+                InsertionOrderPatches.emplace_back(c);
             inserted_patches[c] = true;
         }
     }
@@ -1174,7 +1174,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_local_solutions_for_saving() 
 
         size_t coord = InsertionOrderPatches[this_patch];
         vector<IntegerRet> start(1, GD);
-        start_list.push_back(start);
+        start_list.emplace_back(start);
         AllLocalPL[coord].lift_points_to_this_dim(start_list);
 
         if(use_short_int){
@@ -1204,7 +1204,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_latt_points_by_patching() {
     vector<IntegerRet> start(EmbDim);
     start[0] = GD;
     list<vector<IntegerRet> > start_list;
-    start_list.push_back(start);
+    start_list.emplace_back(start);
     extend_points_to_next_coord(start_list, 0);
     NrLP[EmbDim] = TotalNrLP;
     if(verbose){
@@ -1288,7 +1288,7 @@ void select_and_split(list<vector<Integer> >& LatticePoints, const key_t& this_p
         size_t k = 0;
         for(auto& v: LatticePoints){
             if(k >= done_indices)
-                PreSelection.push_back(v);
+                PreSelection.emplace_back(v);
             k++;
         }
         size_t given_lattice_points = LatticePoints.size();
@@ -1324,7 +1324,7 @@ void select_and_split(list<vector<Integer> >& LatticePoints, const key_t& this_p
     size_t i = 0;
     for(auto& p: LatticePoints){
         if(i >= start && i < last)
-            Selection.push_back(p);
+            Selection.emplace_back(p);
        i++;
     }
 
@@ -1547,17 +1547,17 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_local_solutions(const key_t t
         if(LocalSolutions_by_intersection_and_cong.find(overlap) != LocalSolutions_by_intersection_and_cong.end()){
             if(LocalSolutions_by_intersection_and_cong[overlap].find(partial_cong_values)
                         != LocalSolutions_by_intersection_and_cong[overlap].end()) {
-                LocalSolutions_by_intersection_and_cong[overlap][partial_cong_values].push_back(i);
+                LocalSolutions_by_intersection_and_cong[overlap][partial_cong_values].emplace_back(i);
             }
             else{
                 LocalSolutions_by_intersection_and_cong[overlap][partial_cong_values] ={};
-                LocalSolutions_by_intersection_and_cong[overlap][partial_cong_values].push_back(i);
+                LocalSolutions_by_intersection_and_cong[overlap][partial_cong_values].emplace_back(i);
             }
         }
         else{
             LocalSolutions_by_intersection_and_cong[overlap] = {};
             LocalSolutions_by_intersection_and_cong[overlap][partial_cong_values] ={};
-            LocalSolutions_by_intersection_and_cong[overlap][partial_cong_values].push_back(i);
+            LocalSolutions_by_intersection_and_cong[overlap][partial_cong_values].emplace_back(i);
         }
     }  // for i
 }
@@ -1804,13 +1804,13 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
 
         list<pair<key_t, IntegerRet> > order_poly_equs; // suddessful constraints to the front !!
         for(key_t k = 0; k < PolyEqusThread[tn].size(); ++k) // the nsecond component will contain values
-            order_poly_equs.push_back(make_pair(k,0));       // of the restrictions of the polynomials
+            order_poly_equs.emplace_back(make_pair(k,0));       // of the restrictions of the polynomials
         list<key_t> order_poly_inequs;
         for(key_t k = 0; k < PolyInequsThread[tn].size(); ++k)
-            order_poly_inequs.push_back(k);
+            order_poly_inequs.emplace_back(k);
         list<key_t> order_automs;
         for(key_t k = 0; k < Automs.size(); ++k)
-            order_automs.push_back(k);
+            order_automs.emplace_back(k);
 
 #pragma omp for schedule(dynamic)
         for (size_t ppp = 0; ppp < nr_to_match; ++ppp) {
@@ -1949,7 +1949,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                         finalize_latt_point(NewLattPoint, tn);
                     else{
                         store_new_vector(NewLattPoint,tn);
-                        // Deg1Thread[tn].push_back(NewLattPoint); // straight version
+                        // Deg1Thread[tn].emplace_back(NewLattPoint); // straight version
                     }
                 }
 
@@ -2017,7 +2017,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
              vector < pair<OurPolynomial<IntegerRet>, OurPolynomial<IntegerRet> > > EffectivePolys;
             for(size_t i = 0; i < PolyEqusThread[0].size(); ++i){
                 if(poly_equs_stat_total[i] > 0){
-                    EffectivePolys.push_back(PolyEqusThread[0][i]);
+                    EffectivePolys.emplace_back(PolyEqusThread[0][i]);
                 }
             }
 
@@ -2034,7 +2034,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
             vector<key_t> EffectiveAutoms;
             for(size_t i = 0; i < Automs.size(); ++i){
                 if(automs_stat_total[i] > 0)
-                    EffectiveAutoms.push_back(Automs[i]);
+                    EffectiveAutoms.emplace_back(Automs[i]);
             }
 
             if(talkative && Automs.size() > 0){
@@ -2050,7 +2050,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
             OurPolynomialSystem<IntegerRet> EffectivePolyInequs;
             for(size_t i = 0; i < PolyInequsThread[0].size(); ++i){
                 if(poly_inequs_stat_total[i] > 0)
-                    EffectivePolyInequs.push_back(PolyInequsThread[0][i]);
+                    EffectivePolyInequs.emplace_back(PolyInequsThread[0][i]);
             }
 
             if(talkative && PolyInequsThread[0].size() > 0){
@@ -2256,7 +2256,7 @@ vector<size_t> ProjectAndLift<IntegerPL, IntegerRet>::order_supps(const Matrix<I
     vector<pair<nmz_float, size_t> > NewPos, NewNeg, NewNeutr;  // to record the order of the support haperplanes
     for (size_t i = 0; i < Supps.nr_of_rows(); ++i) {
         if (Supps[i][dim - 1] == 0) {
-            NewNeutr.push_back(make_pair(0.0, i));
+            NewNeutr.emplace_back(make_pair(0.0, i));
             continue;
         }
         nmz_float num, den;
@@ -2264,9 +2264,9 @@ vector<size_t> ProjectAndLift<IntegerPL, IntegerRet>::order_supps(const Matrix<I
         convert(den, Supps[i][dim - 1]);
         nmz_float quot = num / den;
         if (Supps[i][dim - 1] > 0)
-            NewPos.push_back(make_pair(Iabs(quot), i));
+            NewPos.emplace_back(make_pair(Iabs(quot), i));
         else
-            NewNeg.push_back(make_pair(Iabs(quot), i));
+            NewNeg.emplace_back(make_pair(Iabs(quot), i));
     }
     sort(NewPos.begin(), NewPos.end());
     sort(NewNeg.begin(), NewNeg.end());
@@ -2279,13 +2279,13 @@ vector<size_t> ProjectAndLift<IntegerPL, IntegerRet>::order_supps(const Matrix<I
     vector<size_t> Order;
 
     for (size_t i = 0; i < min_length; ++i) {
-        Order.push_back(NewPos[i].second);
-        Order.push_back(NewNeg[i].second);
+        Order.emplace_back(NewPos[i].second);
+        Order.emplace_back(NewNeg[i].second);
     }
     for (size_t i = min_length; i < NewPos.size(); ++i)
-        Order.push_back(NewPos[i].second);
+        Order.emplace_back(NewPos[i].second);
     for (size_t i = min_length; i < NewNeg.size(); ++i)
-        Order.push_back(NewNeg[i].second);
+        Order.emplace_back(NewNeg[i].second);
 
     assert(Order.size() == Supps.nr_of_rows());
 
@@ -2328,13 +2328,13 @@ void ProjectAndLift<IntegerPL, IntegerRet>::reorder_coordinates(){
         for(size_t j = 0; j < dim; ++j){
             if(covered[j] || !new_covered[j])
                 continue;
-            NewOrder.push_back(j);
+            NewOrder.emplace_back(j);
         }
         covered = new_covered;
     }
     for(size_t i = 0; i < dim; ++i){
         if(!new_covered[i])
-            NewOrder.push_back(i);
+            NewOrder.emplace_back(i);
     }
     AllSupps[EmbDim].permute_columns(NewOrder);
     PolyEquations.permute_variables(NewOrder);
@@ -2453,10 +2453,10 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute_projections(size_t dim,
             else {
                 SuppsProj.append(Supps[i]);  // neutral support hyperplane
                 if (!is_parallelotope)
-                    NewInd.push_back(Ind[i]);
+                    NewInd.emplace_back(Ind[i]);
                 else {
-                    NewPair.push_back(Pair[i]);
-                    NewParaInPair.push_back(ParaInPair[i]);
+                    NewPair.emplace_back(Pair[i]);
+                    NewParaInPair.emplace_back(ParaInPair[i]);
                 }
             }
             continue;
@@ -2466,10 +2466,10 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute_projections(size_t dim,
         if (Supps[i][dim1] > 0) {
             if (IsEquation[i])
                 PosEquAt = i;
-            Pos.push_back(static_cast<key_t>(i));
+            Pos.emplace_back(static_cast<key_t>(i));
             continue;
         }
-        Neg.push_back(static_cast<key_t>(i));
+        Neg.emplace_back(static_cast<key_t>(i));
         if (IsEquation[i])
             NegEquAt = i;
     }
@@ -2509,7 +2509,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute_projections(size_t dim,
             if (is_zero)  // cannot happen, but included for analogy
                 continue;
             SuppsProj.append(new_supp);
-            NewInd.push_back(Ind[p]);
+            NewInd.emplace_back(Ind[p]);
         }
 
         for (size_t n : Neg) {  // match neg inequalities with a positive equation
@@ -2524,7 +2524,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute_projections(size_t dim,
             if (is_zero)  // cannot happen, but included for analogy
                 continue;
             SuppsProj.append(new_supp);
-            NewInd.push_back(Ind[n]);
+            NewInd.emplace_back(Ind[n]);
         }
     }
 
@@ -2545,7 +2545,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute_projections(size_t dim,
                 vector<key_t> PosKey;
                 for (size_t k = 0; k < Ind[i].size(); ++k)
                     if (Ind[p][k])
-                        PosKey.push_back(static_cast<key_t>(k));
+                        PosKey.emplace_back(static_cast<key_t>(k));
 
                 for (size_t n : Neg) {
                     INTERRUPT_COMPUTATION_BY_EXCEPTION
@@ -2558,7 +2558,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute_projections(size_t dim,
                     for (unsigned int k : PosKey)
                         if (Ind[n][k]) {
                             incidence[k] = true;
-                            CommonKey.push_back(k);
+                            CommonKey.emplace_back(k);
                             nr_match++;
                         }
                     if (rank >= 2 && nr_match < min_nr_vertices)  // cannot make subfacet of augmented cone
@@ -2599,7 +2599,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute_projections(size_t dim,
 #pragma omp critical(NEWSUPP)
                     {
                         SuppsProj.append(new_supp);
-                        NewInd.push_back(incidence);
+                        NewInd.emplace_back(incidence);
                     }
                 }
 
@@ -2708,8 +2708,8 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute_projections(size_t dim,
 #pragma omp critical(NEWSUPP)
                     {
                         SuppsProj.append(new_supp);
-                        NewPair.push_back(IntersectionPair);
-                        NewParaInPair.push_back(IntersectionParaInPair);
+                        NewPair.emplace_back(IntersectionPair);
+                        NewParaInPair.emplace_back(IntersectionParaInPair);
                     }
                 }
 
@@ -2738,7 +2738,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute_projections(size_t dim,
     AllNrEqus[dim1] = EqusProj.nr_of_rows();
     // We must add indicator vectors for the equations
     for (size_t i = 0; i < 2 * EqusProj.nr_of_rows(); ++i)
-        NewInd.push_back(TRUE);
+        NewInd.emplace_back(TRUE);
 
     if (dim1 > 1 && !only_projections)
         AllOrders[dim1] = order_supps(SuppsProj);
@@ -2858,7 +2858,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::finalize_latt_point(vector<IntegerRe
 */
 
     if (!count_only)
-        Deg1Thread[tn].push_back(NewPoint);
+        Deg1Thread[tn].emplace_back(NewPoint);
 
     if (Grading.size() > 0) {
         long deg = convertToLong(v_scalar_product(Grading, NewPoint));
@@ -2895,7 +2895,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::splice_into_short_deg1_points(list<v
                 throw NoComputationException("Range short int not sufficient");
             short_sol[i] = bridge;
         }
-        ShortDeg1Points.push_back(short_sol);
+        ShortDeg1Points.emplace_back(short_sol);
         Deg1PointsComputed.pop_front();
     }
 }
@@ -3065,7 +3065,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::lift_points_to_this_dim(list<vector<
                                 finalize_latt_point(NewPoint, tn);
                             }
                             else{
-                                Deg1Thread[tn].push_back(NewPoint);
+                                Deg1Thread[tn].emplace_back(NewPoint);
                             }
                         }
                     }
@@ -3187,7 +3187,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute_latt_points() {
 
     if(start_list.empty()){
         vector<IntegerRet> start(1, GD);
-        start_list.push_back(start);
+        start_list.emplace_back(start);
     }
     lift_points_to_this_dim(start_list);
     NrLP[EmbDim] = TotalNrLP;
@@ -3596,7 +3596,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::put_short_deg1Points_into(vector<vec
     assert(!use_LLL);
 
     while (!ShortDeg1Points.empty()) {
-        LattPoints.push_back(ShortDeg1Points.front());
+        LattPoints.emplace_back(std::move(ShortDeg1Points.front()));
         ShortDeg1Points.pop_front();
     }
 }
@@ -3607,10 +3607,10 @@ void ProjectAndLift<IntegerPL, IntegerRet>::put_deg1Points_into(vector<vector< I
 
     while (!Deg1Points.empty()) {
         if (use_LLL) {
-            LattPoints.push_back(LLL_Coordinates.from_sublattice(Deg1Points.front()));
+            LattPoints.emplace_back(LLL_Coordinates.from_sublattice(std::move(Deg1Points.front())));
         }
         else
-            LattPoints.push_back(Deg1Points.front());
+            LattPoints.emplace_back(std::move(Deg1Points.front()));
         Deg1Points.pop_front();
     }
 }
@@ -3624,16 +3624,16 @@ void ProjectAndLift<IntegerPL, IntegerRet>::put_eg1Points_into(Matrix<IntegerRet
         for(auto& p: ShortDeg1Points){
             for(size_t i= 0; i < bridge.size(); ++i)
                 bridge[i] = p[i];
-            Deg1Points.push_back(bridge);
+            Deg1Points.emplace_back(bridge);
         }
     }
 
     while (!Deg1Points.empty()) {
         if (use_LLL) {
-            LattPoints.append(LLL_Coordinates.from_sublattice(Deg1Points.front()));
+            LattPoints.append(LLL_Coordinates.from_sublattice(std::move(Deg1Points.front())));
         }
         else
-            LattPoints.append(Deg1Points.front());
+            LattPoints.append(std::move(Deg1Points.front()));
         Deg1Points.pop_front();
     }
 }

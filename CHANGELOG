@@ -5,6 +5,7 @@
 
 -- induction matrices also for non-integral fusion rings
 -- complete change to integer computations for non-integral fusion nrings
+-- internal improvements
 
 ## 3.11.0]  2025-10-15
 

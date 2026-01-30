@@ -153,6 +153,7 @@ class CandidateList {
     void splice(CandidateList<Integer>& NewCand);
     void extract(list<vector<Integer> >& V_List);
     void push_back(const Candidate<Integer>& c);
+    void emplace_back(const Candidate<Integer>& c);
     void clear();
     size_t size();
     bool empty();

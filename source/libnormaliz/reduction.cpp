@@ -302,7 +302,7 @@ template <typename Integer>
 bool CandidateList<Integer>::reduce_by_and_insert(Candidate<Integer>& cand, const CandidateList<Integer>& Reducers) {
     bool irred = !Reducers.is_reducible(cand);
     if (irred)
-        Candidates.push_back(cand);
+        Candidates.emplace_back(cand);
     return irred;
 }
 
@@ -500,9 +500,16 @@ void CandidateList<Integer>::push_back(const Candidate<Integer>& cand) {
 //---------------------------------------------------------------------------
 
 template <typename Integer>
+void CandidateList<Integer>::emplace_back(const Candidate<Integer>& cand) {
+    // cout << cand;
+    Candidates.emplace_back(cand);
+}
+//---------------------------------------------------------------------------
+
+template <typename Integer>
 void CandidateList<Integer>::extract(list<vector<Integer> >& V_List) {
     for (const auto& c : Candidates)
-        V_List.push_back(c.cand);
+        V_List.emplace_back(c.cand);
 }
 
 //---------------------------------------------------------------------------
@@ -517,7 +524,7 @@ void CandidateList<Integer>::splice(CandidateList<Integer>& NewCand) {
 template <typename Integer>
 CandidateTable<Integer>::CandidateTable(CandidateList<Integer>& CandList) {
     for (auto& c : CandList.Candidates)
-        ValPointers.push_back(make_pair(c.sort_deg, &(c.values)));
+        ValPointers.emplace_back(make_pair(c.sort_deg, &(c.values)));
     dual = CandList.dual;
     last_hyp = CandList.last_hyp;
 }
