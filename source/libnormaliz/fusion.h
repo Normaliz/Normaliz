@@ -409,7 +409,7 @@ void FusionBasic::read_data_from_input(InputMap<Integer>& input_data){
     if(!contains(input_data, Type::fusion_image_duality)){ // take the default
         input_data[Type::fusion_image_duality].resize(1);
         input_data[Type::fusion_image_duality][0].resize(fusion_ring_map.nr_of_columns());
-        for(size_t i = 0; i < fusion_ring_map.nr_of_columns(); ++i)
+        for(long i = 0; i < fusion_ring_map.nr_of_columns(); ++i)
             input_data[Type::fusion_image_duality][0][i] = i;
     }
 
