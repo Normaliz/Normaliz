@@ -258,7 +258,7 @@ enum Enum {
     NoPatching,
     Patching,
     NoCoarseProjection,
-    MaxDegRepresentations,
+    MaxDegRepresentations,  // npot implemented yet
     UseWeightsPatching,
     NoWeights,
     LinearOrderPatches,
