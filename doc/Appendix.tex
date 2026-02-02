@@ -2492,6 +2492,12 @@ For \verb*|verbose| you can also use \verb*|C.SetVerbose()|.
 
 If you want to run computations with \verb*|BigInt|, you must use the collective compoute command; see Section \ref{CollComp}. 
 
+With certain restrictions it is possible to modify a cone after construction. Please have a look at Section~\ref{Modify}. For the PyNormaliz high level interface an example is
+\begin{Verbatim} 
+ D.ModifyCone("equations", [[1,-1]])
+\end{Verbatim}
+Note that the type must be given as a string.
+
 \subsubsection{Matrices, vectors and numbers}
 
 The matrix format of the input is of course also used in PyNormaliz results:
@@ -3206,7 +3212,10 @@ do what the names say.
 \begin{Verbatim}
 NmzModifyCone(cone, type, matrix)
 \end{Verbatim}
-This is the PyNormaliz version of the libnormaliz function modifyCone. Please have a look at Section~\ref{Modify}.
+This is the PyNormaliz version of the libnormaliz function modifyCone and the low level version of the corresponding high level function.. Please have a look at Section~\ref{Modify}. The \verb*|type| is given as a string. Example:
+\begin{Verbatim}
+NmzModifyCone(D.cone, "inequalities", [[2,-1]])
+\end{Verbatim}
 
 \subsubsection{Additional data access}\label{add_data}
 
