@@ -290,6 +290,9 @@ class ProjectAndLift {
     void put_single_point_into(vector<IntegerRet>& LattPoint);
     void get_h_vectors(vector<num_t>& pos, vector<num_t>& neg) const;
 
+    void getResults(Matrix<IntegerRet>& Deg1Ret, vector<IntegerRet> SLPRet, size_t& NrLPRet,
+                                                       vector<num_t>& h_vec_pos, vector<num_t>& h_vec_neg);
+
     size_t getNumberLatticePoints() const;
 
     FusionComp<IntegerRet> fusion;

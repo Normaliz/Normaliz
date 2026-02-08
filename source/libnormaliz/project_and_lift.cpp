@@ -432,7 +432,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
     for(auto& coord: InsertionOrderPatches){
 
         // now we want to build "local" systems
-        // First we add was is is contained in AllPatches[coord]
+        // First we add what is is contained in AllPatches[coord],
+        // the indicator of the current patch
         vector<key_t> relevant_supps_now;
         for(size_t i = 0; i < nr_all_supps; ++i){
             if(Indicator[i].is_subset_of(AllPatches[coord])){
@@ -570,6 +571,10 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
          // First the linear inequalities
          // will be added to thepolynomial ones TODO simplify
          Matrix<IntegerRet> ExtraInequalities(0, EmbDim);
+         dynamic_bitset new_covered_0 = new_covered;
+         new_covered_0[0] = 0;
+
+
          for(size_t i = 0; i <nr_all_supps ; ++i){
             if(used_supps[i])
                 continue;
@@ -577,7 +582,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
                 continue;
             if(Indicator[i].is_subset_of(AllPatches[coord]))
                 continue;
-            if((Indicator[i] & new_covered).count() == 0)
+            if((Indicator[i] & new_covered_0).count() == 0)
                 continue;
              if(!using_renf<IntegerPL>()){
                 bool can_be_restricted = true;
@@ -596,7 +601,6 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
                 }
              }
         }
-
         // Collect relevant polynomial constraints
         // The keys are used for terminal output
         vector<key_t> PolyEqusKey, PolyInequsKey, RestrictablePolyInequsKey;
@@ -665,13 +669,13 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
             RestrictablePolyInequsKey.emplace_back(i);
         }
 
-        /* Matrix<IntegerRet> ExtraEquations = reconstruct_equations(ExtraInequalities);
-
-        ExtraEquations.debug_print('E');*/
+        // cout << "XXXXXXXXXXXXXX " << ExtraInequalities.nr_of_rows() << endl;
+        // ExtraInequalities.debug_print();
 
         for(size_t i = 0; i < ExtraInequalities.nr_of_rows(); ++i){
             AllPolyInequs[coord].emplace_back(OurPolynomial<IntegerRet>(ExtraInequalities[i]));
         }
+
 
         for(auto& T: AllPolyInequsThread[coord]){ // vcopy for each thread
             T = AllPolyInequs[coord];
@@ -685,10 +689,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
                 verboseOutput() << "simplicity check at this coordinate" << endl;
             if(verbose && PolyEqusKey.size() > 0)
                 verboseOutput() << "nr poly equations " << PolyEqusKey.size() << endl;
-            if(verbose && PolyInequsKey.size() > 0)
-                verboseOutput() << " nr poly inequalities " << PolyInequsKey.size() << endl;
-            if(verbose && RestrictablePolyInequsKey.size() > 0)
-                verboseOutput() <<  "nr restrictable poly inequalities " << RestrictablePolyInequsKey.size() << endl;
+            if(verbose && AllPolyInequs[coord].size() > 0)
+                verboseOutput() << "nr poly inequalities " << AllPolyInequs[coord].size() << endl;
             if(verbose && AllCongsRestricted[coord].size() > 0){
                 verboseOutput() <<  "nr congruences " << AllCongsRestricted[coord].size() << endl;
             }
@@ -1560,6 +1562,10 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_local_solutions(const key_t t
             LocalSolutions_by_intersection_and_cong[overlap][partial_cong_values].emplace_back(i);
         }
     }  // for i
+
+    // if(talkative){
+    //    verboseOutput() << "Local solutions sorted" << endl;
+    // }
 }
 
 //---------------------------------------------------------------------------
@@ -1812,6 +1818,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         for(key_t k = 0; k < Automs.size(); ++k)
             order_automs.emplace_back(k);
 
+
+
 #pragma omp for schedule(dynamic)
         for (size_t ppp = 0; ppp < nr_to_match; ++ppp) {
 
@@ -1823,16 +1831,24 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
             for (; ppp < ppos; --ppos, --P)
                 ;
 
-            if ((*P)[0] == 0)  // point done
+            // if ((*P)[0] == 0)  // point done
+            if (P->size() == 0)  // point done
                 continue;
 
 #pragma omp atomic
             nr_points_matched++;
 
+            if(false){
+                // if(nr_points_matched%10 == 1){
+// #pragma omp critical(PROGRESS)
+                    verboseOutput() << "nr points matched " << nr_points_matched << endl;
+                // }
+            }
+
 #pragma omp atomic
             nr_points_done_in_this_round++;
 
-        NewLattPoint = *P;
+        NewLattPoint = std::move(*P);
 
         overlap = v_select_coordinates(NewLattPoint, intersection_key);
         for(size_t k = 0; k < CongsRestricted.size(); ++k)
@@ -1840,7 +1856,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
 
         if(LocalSolutions_by_intersection_and_cong[overlap].find(old_cong)
                     == LocalSolutions_by_intersection_and_cong[overlap].end()){
-            (*P)[0] = 0;
+            // (*P)[0] = 0;
             continue;
         }
 
@@ -1945,6 +1961,11 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                     // nr_points_in_thread++;
 #pragma omp atomic
                     nr_new_latt_points++;
+
+                    if(talkative){
+#pragma omp critical(PROGRESS)
+                        verboseOutput() << "new point " << nr_new_latt_points << endl;
+                    }
                     if(last_coord)
                         finalize_latt_point(NewLattPoint, tn);
                     else{
@@ -1955,7 +1976,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
 
             } // for i (inner for loop)
 
-            (*P)[0] = 0;  // mark point as done
+            // (*P)[0] = 0;  // mark point as done
 
 #pragma omp atomic
             nr_latt_points_processed++;
@@ -3737,15 +3758,60 @@ void ProjectAndLift<IntegerPL, IntegerRet>::setOptions(const ConeProperties& ToC
     }
 }
 
+template <typename IntegerPL, typename IntegerRet>
+void ProjectAndLift<IntegerPL, IntegerRet>::getResults(Matrix<IntegerRet>& Deg1Ret, vector<IntegerRet> SLPRet,
+                                                       size_t& NrLPRet,
+                                                       vector<num_t>& h_vec_pos, vector<num_t>& h_vec_neq){
+
+    if(!only_single_point){
+            put_eg1Points_into(Deg1Ret);
+            NrLPRet = getNumberLatticePoints();
+        }
+    else{
+        put_single_point_into(SLPRet);
+        if(SLPRet.size() > 0){
+            Deg1Ret.append(SLPRet);
+        }
+    }
+    get_h_vectors(h_vec_pos, h_vec_neg);
+}
+
+/*
+
+template <typename IntegerPL, typename IntegerRet>
+void ProjectAndLift<IntegerPL, IntegerRet>::setData(Cone<Integer>&  C, const ConeProperties& ToCompute,
+                                     const Matrix<IntegerPL>& Gens,
+                                     const Matrix<IntegerRet>& Congs,
+                                     const vector<IntegerRet>& GradingOnPolytope,
+                                     const bool primitive,
+                                     const bool prverbose,
+                                     const OurPolynomialSystem<IntegerRet>& PolyEqus,
+                                     const OurPolynomialSystem<IntegerRet>& PolyInequs ){}
+
+    set_congruences(Congs);
+    setOptions(ToCompute, primitive, verbose);
+
+    set_grading_denom(GDMI); <------------------
+    set_grading(GradingOnPolytope);
+    set_vertices(Verts);
+    set_PolyEquations(PolyEqus, ToCompute.test(ConeProperty::MinimizePolyEquations));
+    set_PolyInequalities(PolyInequs);
+    if(PolyInequs.size() > 0 || PolyEqus.size() > 0)
+        set_LLL(false);
+
+}
+*/
+
 //---------------------------------------------------------------------------
 
+// template class ProjectAndLift<long, long long>;
+// template class ProjectAndLift<mpz_class, long long>;
+// template class ProjectAndLift<nmz_float, nmz_float>;
+
 template class ProjectAndLift<mpz_class, mpz_class>;
-template class ProjectAndLift<long, long long>;
-template class ProjectAndLift<mpz_class, long long>;
 template class ProjectAndLift<long long, long long>;
 template class ProjectAndLift<nmz_float, mpz_class>;
 template class ProjectAndLift<nmz_float, long long>;
-// template class ProjectAndLift<nmz_float, nmz_float>;
 #ifndef NMZ_MIC_OFFLOAD  // offload with long is not supported
 template class ProjectAndLift<long, long>;
 template class ProjectAndLift<nmz_float, long>;

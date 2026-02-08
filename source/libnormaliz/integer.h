@@ -103,6 +103,7 @@ inline bool try_convert(long long& ret, const long& val) {
 }
 bool try_convert(long& ret, const mpz_class& val);
 bool try_convert(long long& ret, const mpz_class& val);
+
 inline bool try_convert(mpz_class& ret, const long& val) {
     ret = val;
     return true;
