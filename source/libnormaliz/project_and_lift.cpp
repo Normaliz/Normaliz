@@ -1712,6 +1712,12 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         automs_minimized[coord] = true;
     }
 
+    if(this_patch == 0){ // we will never return to patch 0
+        automs_minimized[coord] = true;
+        apply_automorphisms = true;
+    }
+
+
     while (true) {
 
         /* if(talkative){
@@ -1838,12 +1844,14 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
 #pragma omp atomic
             nr_points_matched++;
 
-            if(false){
+            /*
+            if(true){
                 // if(nr_points_matched%10 == 1){
-// #pragma omp critical(PROGRESS)
-                    verboseOutput() << "nr points matched " << nr_points_matched << endl;
+#pragma omp critical(PROGRESS)
+                    verboseOutput() << "nr points matched " << nr_points_matched << " ine " << nr_caught_by_restricted << " aut " << nr_caught_by_automs << endl;
                 // }
             }
+            */
 
 #pragma omp atomic
             nr_points_done_in_this_round++;
@@ -1958,19 +1966,13 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                     }
                 }
                 if(can_be_inserted){
-                    // nr_points_in_thread++;
 #pragma omp atomic
                     nr_new_latt_points++;
 
-                    if(talkative){
-#pragma omp critical(PROGRESS)
-                        verboseOutput() << "new point " << nr_new_latt_points << endl;
-                    }
                     if(last_coord)
                         finalize_latt_point(NewLattPoint, tn);
                     else{
                         store_new_vector(NewLattPoint,tn);
-                        // Deg1Thread[tn].emplace_back(NewLattPoint); // straight version
                     }
                 }
 
@@ -3759,15 +3761,15 @@ void ProjectAndLift<IntegerPL, IntegerRet>::setOptions(const ConeProperties& ToC
 }
 
 template <typename IntegerPL, typename IntegerRet>
-void ProjectAndLift<IntegerPL, IntegerRet>::getResults(Matrix<IntegerRet>& Deg1Ret, vector<IntegerRet> SLPRet,
-                                                       size_t& NrLPRet,
-                                                       vector<num_t>& h_vec_pos, vector<num_t>& h_vec_neq){
+void ProjectAndLift<IntegerPL, IntegerRet>::getResults(Matrix<IntegerRet>& Deg1Ret, size_t& NrLPRet,
+                                                       vector<num_t>& h_vec_pos, vector<num_t>& h_vec_neg){
 
     if(!only_single_point){
             put_eg1Points_into(Deg1Ret);
             NrLPRet = getNumberLatticePoints();
         }
     else{
+        vector<IntegerRet> SLPRet;
         put_single_point_into(SLPRet);
         if(SLPRet.size() > 0){
             Deg1Ret.append(SLPRet);
@@ -3776,31 +3778,8 @@ void ProjectAndLift<IntegerPL, IntegerRet>::getResults(Matrix<IntegerRet>& Deg1R
     get_h_vectors(h_vec_pos, h_vec_neg);
 }
 
-/*
 
-template <typename IntegerPL, typename IntegerRet>
-void ProjectAndLift<IntegerPL, IntegerRet>::setData(Cone<Integer>&  C, const ConeProperties& ToCompute,
-                                     const Matrix<IntegerPL>& Gens,
-                                     const Matrix<IntegerRet>& Congs,
-                                     const vector<IntegerRet>& GradingOnPolytope,
-                                     const bool primitive,
-                                     const bool prverbose,
-                                     const OurPolynomialSystem<IntegerRet>& PolyEqus,
-                                     const OurPolynomialSystem<IntegerRet>& PolyInequs ){}
 
-    set_congruences(Congs);
-    setOptions(ToCompute, primitive, verbose);
-
-    set_grading_denom(GDMI); <------------------
-    set_grading(GradingOnPolytope);
-    set_vertices(Verts);
-    set_PolyEquations(PolyEqus, ToCompute.test(ConeProperty::MinimizePolyEquations));
-    set_PolyInequalities(PolyInequs);
-    if(PolyInequs.size() > 0 || PolyEqus.size() > 0)
-        set_LLL(false);
-
-}
-*/
 
 //---------------------------------------------------------------------------
 
@@ -3825,23 +3804,74 @@ template class ProjectAndLift<renf_elem_class, mpz_class>;
 
 // interface cone/project-and-lift
 
+// addítions to cinstructor
+template <typename IntegerPL, typename IntegerRet, typename IntegerCone>
+void setData(ProjectAndLift<IntegerPL, IntegerRet>& PL,Cone<IntegerCone>&  C,
+                                     const ConeProperties& ToCompute,
+                                     const Matrix<IntegerCone>& Verts,
+                                     const Matrix<IntegerCone>& Congs,
+                                     const vector<IntegerCone>& GradingOnPolytope,
+                                     const bool primitive,
+                                     const bool prverbose,
+                                     const OurPolynomialSystem<IntegerCone>& PolyEqus,
+                                     const OurPolynomialSystem<IntegerCone>& PolyInequs ){
+
+    Matrix<IntegerRet> CongsRet;
+    convert(CongsRet, Congs);
+    PL.set_congruences(CongsRet);
+
+    PL.setFusion(C.getFusionBasicCone());
+    PL.setOptions(ToCompute, primitive, C.getVerbose());
+
+    IntegerRet GDRet = convertTo<IntegerRet>(C.getGradingDenomRaw());
+
+    PL.set_grading_denom(GDRet);
+    vector<IntegerRet> GOPRet;
+    convert(GOPRet, GradingOnPolytope);
+    PL.set_grading(GOPRet);
+    Matrix<IntegerPL> VertsPL;
+    convert(VertsPL, Verts);
+    PL.set_vertices(VertsPL);
+
+    OurPolynomialSystem<IntegerRet> PolyEqus_Ret;
+    OurPolynomialSystem<IntegerRet> PolyInequs_Ret;
+    convert(PolyEqus_Ret, PolyEqus);
+    convert(PolyInequs_Ret, PolyInequs);
+    PL.set_PolyEquations(PolyEqus_Ret, ToCompute.test(ConeProperty::MinimizePolyEquations));
+    PL.set_PolyInequalities(PolyInequs_Ret);
+    if(PolyInequs.size() > 0 || PolyEqus.size() > 0)
+        PL.set_LLL(false);
+}
+
+template<typename IntegerCone>
+void make_Ind_Verts(const Cone<IntegerCone>& C,const Matrix<IntegerCone>& Supps,  const Matrix<IntegerCone>& Gens, vector<dynamic_bitset>& Ind, Matrix<IntegerCone>& Verts){
+
+    Ind = vector<dynamic_bitset>(Supps.nr_of_rows(), dynamic_bitset(Gens.nr_of_rows()));
+    for (size_t i = 0; i < Supps.nr_of_rows(); ++i)
+        for (size_t j = 0; j < Gens.nr_of_rows(); ++j)
+            if (v_scalar_product(Supps[i], Gens[j]) == 0)
+                Ind[i][j] = true;
+
+    if (C.isComputed(ConeProperty::Generators)) {
+        vector<key_t> choice = identity_key(Gens.nr_of_rows());  // Gens.max_rank_submatrix_lex();
+        if (choice.size() >= C.getEmbeddingDim())
+            Verts = Gens.submatrix(choice);
+    }
+}
+
+
 #ifdef ENFNORMALIZ
 
 
-typedef long long Int;
+// typedef long long Int;
 
-template<typename Number>
-vector<Int> positive_maker(const vector<Number>& inequ ){
-    assert(false);
-    return vector<Int>();
-}
 
-template <>
-vector<Int> positive_maker(const vector<renf_elem_class>& inequ ){
+template <typename IntCompute>
+vector<IntCompute> positive_maker(const vector<renf_elem_class>& inequ ){
 
-    vector<Int> pos(inequ.size());
+    vector<IntCompute> pos(inequ.size());
     for(size_t j = 1; j < pos.size(); ++j){
-        pos[j] = - convertTo<Int>(Iabs(inequ[j]).floor());
+        pos[j] = - convertTo<IntCompute>(Iabs(inequ[j]).floor());
     }
 
     // we cannot exclude that a d_i in the type is < 1
@@ -3855,7 +3885,7 @@ vector<Int> positive_maker(const vector<renf_elem_class>& inequ ){
     }
 
     addendum += inequ[0];
-    pos[0] = convertTo<Int>(addendum.ceil());
+    pos[0] = convertTo<IntCompute>(addendum.ceil());
 
     return pos;
 }
@@ -3864,12 +3894,11 @@ vector<Int> positive_maker(const vector<renf_elem_class>& inequ ){
 // integer computation. A somewhat tricky point is the use of positivirty_maker  to
 // make patching possible.
 
+template <typename IntCompute>
 void project_and_lift(Cone<renf_elem_class>&  C, const ConeProperties& ToCompute,
                                              Matrix<renf_elem_class>& Deg1,
                                              const Matrix<renf_elem_class>& Supps,
                                              const OurPolynomialSystem<renf_elem_class>& PolyEqus) {
-
-    typedef long long Int;
 
     bool count_only = ToCompute.test(ConeProperty::NumberLatticePoints);
     bool all_points = !ToCompute.test(ConeProperty::SingleFusionRing);
@@ -3902,28 +3931,18 @@ void project_and_lift(Cone<renf_elem_class>&  C, const ConeProperties& ToCompute
             DimEquations.append(Supps[i]);
     }
 
-    Matrix<Int> OtherSupps_Int;
+    Matrix<IntCompute> OtherSupps_Int;
     convert(OtherSupps_Int, OtherSupps);
     // OtherSupps_Int.debug_print('O');
 
-    Matrix<Int> DimEquations_Int(0, dim);
+    Matrix<IntCompute> DimEquations_Int(0, dim);
     // DimEquations.debug_print('D');
     for(size_t i = 0; i < DimEquations.nr_of_rows(); ++i){
 
-        /* bool critical = false;
-        if(DimEquations[i][1] < 0)
-            critical = true; */
-
         vector<renf_elem_class> summands = DimEquations[i];
         summands.pop_back();
-        Matrix<Int> Split = SplitRepresentation(- DimEquations[i].back(), summands);
+        Matrix<IntCompute> Split = SplitRepresentation(- DimEquations[i].back(), summands);
         DimEquations_Int.append(Split);
-
-        /* if(critical){
-            cout << DimEquations[i];
-            Split.debug_print('C');
-
-        }*/
 
         bool upper_inequality = true;
         for(size_t j = 1; j < DimEquations.nr_of_columns(); ++j){
@@ -3960,58 +3979,32 @@ void project_and_lift(Cone<renf_elem_class>&  C, const ConeProperties& ToCompute
         if(is_positive_already)
             continue;
 
-        /* cout << " NNNNNNNNNNNNNNNNN " << endl;
-        cout << DimEquations[i];
-        cout << positive_maker(DimEquations[i]); */
-
         // We need the positive_maker to ensure the patching algporithm
-        DimEquations_Int.append(positive_maker(DimEquations[i]));
+        DimEquations_Int.append(positive_maker<IntCompute>(DimEquations[i]));
     }
-    // DimEquations_Int.debug_print('I');
 
     auto TotalSupps_Int = DimEquations_Int;
     TotalSupps_Int.append(OtherSupps_Int);
 
-    // cout << " ZZ " << TotalSupps_Int.nr_of_rows() << " ------ " << TotalSupps_Int.nr_of_columns() << endl;
-
-    // TotalSupps_Int.debug_print('T');
-
-    // vector<Int> res_v = TotalSupps_Int.MxV(test_v);
-
-    // cout << "RRRRRRRRRRRRR " << res_v;
-
-    auto PL = ProjectAndLift<long long, long long>(TotalSupps_Int, Dummy, rank);
+    auto PL = ProjectAndLift<IntCompute, IntCompute>(TotalSupps_Int, Dummy, rank);
 
     PL.setFusion(C.getFusionBasicCone());
     PL.setOptions(ToCompute, primitive, C.getVerbose());
 
     OurPolynomialSystem<long long> PolyEqus_Int;
     convert(PolyEqus_Int, PolyEqus);
-
-    // cout << "CCCCCCCC " << PolyEqus_Int.check(test_v, false, true) << endl;
-
     PL.set_PolyEquations(PolyEqus_Int, ToCompute.test(ConeProperty::MinimizePolyEquations));
     PL.compute(all_points, false, count_only);
 
-    Matrix<Int> Deg1_Int(0,Supps.nr_of_columns());
-
-    if(all_points){
-            PL.put_eg1Points_into(Deg1_Int);
-            C.setNumberLatticePoints(PL.getNumberLatticePoints());
-        }
-    else{
-        vector<long long> SLP_Int;
-        PL.put_single_point_into(SLP_Int);
-        if(SLP_Int.size() > 0){
-            Deg1_Int.append(SLP_Int);
-        }
-    }
-
+    vector<num_t> dummy;
+    size_t NRLP;
+    Matrix<IntCompute> Deg1_Int(0,Supps.nr_of_columns());
+    PL.getResults(Deg1_Int, NRLP, dummy, dummy);
+    C.setNumberLatticePoints(NRLP);
     convert(Deg1, Deg1_Int);
 }
 
-
-// special version to avoid problems with machine integer etc.
+// special version since renf_elem_class can't be IntgereRet
 template <>
 void project_and_lift(Cone<renf_elem_class>&  C, const ConeProperties& ToCompute,
                                              Matrix<renf_elem_class>& Deg1,
@@ -4023,69 +4016,34 @@ void project_and_lift(Cone<renf_elem_class>&  C, const ConeProperties& ToCompute
                                              const OurPolynomialSystem<renf_elem_class>& PolyEqus,
                                              const OurPolynomialSystem<renf_elem_class>& PolyInequs) {   // no primitive vgersion yet for renf
 
-
+    // we go to an integer computation for FusionRings
     if(ToCompute.test(ConeProperty::FusionRings) || ToCompute.test(ConeProperty::SimpleFusionRings)
         || ToCompute.test(ConeProperty::SingleFusionRing) ){
-        project_and_lift(C, ToCompute,Deg1, Supps, PolyEqus);
+        project_and_lift<long long>(C, ToCompute,Deg1, Supps, PolyEqus);
         return;
     }
-
 
     bool count_only = ToCompute.test(ConeProperty::NumberLatticePoints);
     bool all_points = !( ToCompute.test(ConeProperty::SingleLatticePoint) ||ToCompute.test(ConeProperty::SingleFusionRing) );
 
     vector<dynamic_bitset> Ind;
-    if(!primitive){
-        Ind = vector<dynamic_bitset>(Supps.nr_of_rows(), dynamic_bitset(Gens.nr_of_rows()));
-        for (size_t i = 0; i < Supps.nr_of_rows(); ++i)
-            for (size_t j = 0; j < Gens.nr_of_rows(); ++j)
-                if (v_scalar_product(Supps[i], Gens[j]) == 0)
-                    Ind[i][j] = true;
-    }
-
-    size_t rank = C.getRankRaw();
-
     Matrix<renf_elem_class> Verts;
-    if(!primitive){
-        if (C.isComputed(ConeProperty::Generators)) {
-            vector<key_t> choice = identity_key(Gens.nr_of_rows());  // Gens.max_rank_submatrix_lex();
-            if (choice.size() >= C.getEmbeddingDim())
-                Verts = Gens.submatrix(choice);
-        }
-    }
-
-    // Matrix<mpz_class> Raw(0, Gens.nr_of_columns());
+    if(!primitive)
+        make_Ind_Verts(C,Supps, Gens,Ind, Verts);
+    size_t rank = C.getRankRaw();
 
     vector<renf_elem_class> Dummy;
     ProjectAndLift<renf_elem_class, mpz_class> PL;
     PL = ProjectAndLift<renf_elem_class, mpz_class>(Supps, Ind, rank);
-
-    PL.setFusion(C.getFusionBasicCone());
-    PL.setOptions(ToCompute, primitive, C.getVerbose());
-
-    PL.set_grading_denom(1);
-    PL.set_vertices(Verts);
-    OurPolynomialSystem<mpz_class> PolyEqus_mpz;
-    convert(PolyEqus_mpz, PolyEqus);
-    PL.set_PolyEquations(PolyEqus_mpz, ToCompute.test(ConeProperty::MinimizePolyEquations));
-    OurPolynomialSystem<mpz_class> PolyInequs_mpz;
-    convert(PolyInequs_mpz, PolyInequs);
-    PL.set_PolyInequalities(PolyInequs_mpz);
+    setData(PL, C, ToCompute, Verts, Congs, GradingOnPolytope, primitive, verbose, PolyEqus, PolyInequs);
     PL.compute(all_points, false, count_only);
 
+    vector<num_t> dummy;
+    size_t NRLP;
     Matrix<mpz_class> Deg1_mpz(0,Supps.nr_of_columns());
+    PL.getResults(Deg1_mpz, NRLP, dummy, dummy);
+    C.setNumberLatticePoints(NRLP);
 
-    if(all_points){
-            PL.put_eg1Points_into(Deg1_mpz);
-            C.setNumberLatticePoints(PL.getNumberLatticePoints());
-        }
-    else{
-        vector<mpz_class> SLP;
-        PL.put_single_point_into(SLP);
-        if(SLP.size() > 0){
-            Deg1_mpz.append(SLP);
-        }
-    }
 
     convert(Deg1, Deg1_mpz);
 
@@ -4108,28 +4066,14 @@ void project_and_lift(Cone<Integer>&  C, const ConeProperties& ToCompute,
     bool float_projection = ToCompute.test(ConeProperty::ProjectionFloat);
     bool count_only = ToCompute.test(ConeProperty::NumberLatticePoints);
     bool all_points = !( ToCompute.test(ConeProperty::SingleLatticePoint) ||ToCompute.test(ConeProperty::SingleFusionRing) );
+
     vector<dynamic_bitset> Ind;
-
-    if (!primitive && !C.isParallelotope()) {
-        Ind = vector<dynamic_bitset>(Supps.nr_of_rows(), dynamic_bitset(Gens.nr_of_rows()));
-        for (size_t i = 0; i < Supps.nr_of_rows(); ++i)
-            for (size_t j = 0; j < Gens.nr_of_rows(); ++j)
-                if (v_scalar_product(Supps[i], Gens[j]) == 0)
-                    Ind[i][j] = true;
-    }
-
-    size_t rank = C.getRankRaw();
-
     Matrix<Integer> Verts;
-        if(!primitive){
-        if (C.isComputed(ConeProperty::Generators)) {
-            vector<key_t> choice = identity_key(Gens.nr_of_rows());  // Gens.max_rank_submatrix_lex();
-            if (choice.size() >= C.getEmbeddingDim())
-                Verts = Gens.submatrix(choice);
-        }
-    }
-
+    if(!primitive)
+        make_Ind_Verts(C,Supps, Gens,Ind, Verts);
+    size_t rank = C.getRankRaw();
     vector<num_t> h_vec_pos, h_vec_neg;
+    size_t NRLP;
 
     if (float_projection) {  // conversion to float inside project-and-lift
         // vector<Integer> Dummy;
@@ -4138,78 +4082,33 @@ void project_and_lift(Cone<Integer>&  C, const ConeProperties& ToCompute,
             PL = ProjectAndLift<Integer, MachineInteger>(Supps, Ind, rank);
         else
             PL = ProjectAndLift<Integer, MachineInteger>(Supps, C.getPair(), C.getParaInPair(), rank);
-        Matrix<MachineInteger> CongsMI;
-        convert(CongsMI, Congs);
-        PL.set_congruences(CongsMI);
-        PL.set_grading_denom(convertTo<MachineInteger>(C.getGradingDenomRaw()));
-        vector<MachineInteger> GOPMI;
-        convert(GOPMI, GradingOnPolytope);
-        PL.set_grading(GOPMI);
-        PL.set_verbose(verbose);
-        PL.set_LLL(!ToCompute.test(ConeProperty::NoLLL));
-        PL.set_no_relax(ToCompute.test(ConeProperty::NoRelax));
-        PL.set_vertices(Verts);
+        setData(PL, C, ToCompute, Verts, Congs, GradingOnPolytope, primitive, verbose, PolyEqus, PolyInequs);
 
         PL.compute(true, true, count_only);  // the first true for all_points, the second for float
         Matrix<MachineInteger> Deg1MI(0, Deg1.nr_of_columns());
-        PL.put_eg1Points_into(Deg1MI);
+        PL.getResults(Deg1MI, NRLP, h_vec_pos, h_vec_neg);
+        C.setNumberLatticePoints(NRLP);
         convert(Deg1, Deg1MI);
-        C.setNumberLatticePoints(PL.getNumberLatticePoints());
-        PL.get_h_vectors(h_vec_pos, h_vec_neg);
     }
     else {
         if (C.getChangeIntegerType()) {
             Matrix<MachineInteger> Deg1MI(0, Deg1.nr_of_columns());
             // Matrix<MachineInteger> GensMI;
-            Matrix<MachineInteger> SuppsMI;
             try {
                 // convert(GensMI,Gens);
+                Matrix<MachineInteger> SuppsMI;
                 convert(SuppsMI, Supps);
-                MachineInteger GDMI = convertTo<MachineInteger>(C.getGradingDenomRaw());
                 ProjectAndLift<MachineInteger, MachineInteger> PL;
                 if (!C.isParallelotope() || primitive)
                     PL = ProjectAndLift<MachineInteger, MachineInteger>(SuppsMI, Ind, rank);
                 else
                     PL = ProjectAndLift<MachineInteger, MachineInteger>(SuppsMI, C.getPair(), C.getParaInPair(), rank);
-                Matrix<MachineInteger> CongsMI;
-                convert(CongsMI, Congs);
-                PL.set_congruences(CongsMI);
-
-                PL.setFusion(C.getFusionBasicCone());
-                PL.setOptions(ToCompute, primitive, C.getVerbose());
-
-                PL.set_grading_denom(GDMI);
-                vector<MachineInteger> GOPMI;
-                convert(GOPMI, GradingOnPolytope);
-                PL.set_grading(GOPMI);
-                Matrix<MachineInteger> VertsMI;
-                convert(VertsMI, Verts);
-                PL.set_vertices(VertsMI);
-
-                OurPolynomialSystem<MachineInteger> PolyEqus_MI;
-                OurPolynomialSystem<MachineInteger> PolyInequs_MI;
-                convert(PolyEqus_MI, PolyEqus);
-                convert(PolyInequs_MI, PolyInequs);
-                PL.set_PolyEquations(PolyEqus_MI, ToCompute.test(ConeProperty::MinimizePolyEquations));
-                PL.set_PolyInequalities(PolyInequs_MI);
-                if(PolyInequs.size() > 0 || PolyEqus.size() > 0)
-                    PL.set_LLL(false);
+                setData(PL, C, ToCompute, Verts, Congs, GradingOnPolytope, primitive, verbose, PolyEqus, PolyInequs);
 
                 PL.compute(all_points, false, count_only);
+                PL.getResults(Deg1MI, NRLP, h_vec_pos, h_vec_neg);
+                C.setNumberLatticePoints(NRLP);
 
-                if(all_points){
-                    PL.put_eg1Points_into(Deg1MI);
-                    C.setNumberLatticePoints(PL.getNumberLatticePoints());
-                }
-                else{
-                    vector<MachineInteger> SLP_MI;
-                    PL.put_single_point_into(SLP_MI);
-                    if(SLP_MI.size() > 0){
-                        Deg1MI.append(SLP_MI);
-                    }
-                }
-
-                PL.get_h_vectors(h_vec_pos, h_vec_neg);
             } catch (const ArithmeticException& e) {
                 if (verbose) {
                     verboseOutput() << e.what() << endl;
@@ -4228,34 +4127,11 @@ void project_and_lift(Cone<Integer>&  C, const ConeProperties& ToCompute,
                 PL = ProjectAndLift<Integer, Integer>(Supps, Ind, rank);
             else
                 PL = ProjectAndLift<Integer, Integer>(Supps, C.getPair(), C.getParaInPair(), rank);
-            PL.set_congruences(Congs);
-
-            PL.setFusion(C.getFusionBasicCone());
-            PL.setOptions(ToCompute, primitive, C.getVerbose());
-
-            PL.set_grading_denom(C.getGradingDenomRaw());
-            PL.set_grading(GradingOnPolytope);
-            PL.set_vertices(Verts);
-            PL.set_PolyEquations(PolyEqus, ToCompute.test(ConeProperty::MinimizePolyEquations));
-            PL.set_PolyInequalities(PolyInequs);
-            if(PolyInequs.size() > 0 || PolyEqus.size() > 0)
-                PL.set_LLL(false);
+            setData(PL, C, ToCompute, Verts, Congs, GradingOnPolytope, primitive, verbose, PolyEqus, PolyInequs);
 
             PL.compute(all_points, false, count_only);
-
-            if(all_points){
-                    PL.put_eg1Points_into(Deg1);
-                    C.setNumberLatticePoints(PL.getNumberLatticePoints());
-                }
-            else{
-                vector<Integer> SLP;
-                PL.put_single_point_into(SLP);
-                if(SLP.size() > 0){
-                    Deg1.append(SLP);
-                }
-            }
-
-            PL.get_h_vectors(h_vec_pos, h_vec_neg);
+            PL.getResults(Deg1, NRLP, h_vec_pos, h_vec_neg);
+            C.setNumberLatticePoints(NRLP);
         }
     }
 

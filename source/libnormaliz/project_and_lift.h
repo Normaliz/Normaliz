@@ -290,8 +290,8 @@ class ProjectAndLift {
     void put_single_point_into(vector<IntegerRet>& LattPoint);
     void get_h_vectors(vector<num_t>& pos, vector<num_t>& neg) const;
 
-    void getResults(Matrix<IntegerRet>& Deg1Ret, vector<IntegerRet> SLPRet, size_t& NrLPRet,
-                                                       vector<num_t>& h_vec_pos, vector<num_t>& h_vec_neg);
+    void getResults(Matrix<IntegerRet>& Deg1Ret, size_t& NrLPRet,
+                                vector<num_t>& h_vec_pos, vector<num_t>& h_vec_neg);
 
     size_t getNumberLatticePoints() const;
 
@@ -345,6 +345,20 @@ vector<Integer> FM_comb(Integer c1, const vector<Integer>& v1, Integer c2, const
 
 // setup function
 
+/*
+template <typename IntegerPL, typename IntegerRet, typename IntegerCone>
+void setData(ProjectAndLift<IntegerPL, IntegerRet>& PL,Cone<IntegerCone>&  C,
+                                     const ConeProperties& ToCompute,
+                                     const Matrix<IntegerCone>& Verts,
+                                     const Matrix<IntegerCone>& Congs,
+                                     const vector<IntegerCone>& GradingOnPolytope,
+                                     const bool primitive,
+                                     const bool prverbose,
+                                     const OurPolynomialSystem<IntegerCone>& PolyEqus,
+                                     const OurPolynomialSystem<IntegerCone>& PolyInequs );
+*/
+
+// interface from/to cone
 template <typename Integer>
 void project_and_lift(Cone<Integer>&  C, const ConeProperties& ToCompute,
                                      Matrix<Integer>& Deg1,
