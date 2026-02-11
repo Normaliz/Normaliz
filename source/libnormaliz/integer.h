@@ -446,9 +446,10 @@ inline nmz_float convertTo_nmz_float(const mpq_class& val) {
     return mpq_to_nmz_float(val);
 }
 
+//---------------------------------------------------------------------------
+//                    ow the try_convert
+//---------------------------------------------------------------------------
 
-
-// Now the try_convert
 
 inline bool try_convert(mpz_class& ret, const mpq_class&) {
     assert(false);  // must never be used
@@ -462,15 +463,16 @@ inline bool try_convert(renf_elem_class& ret, const mpz_class& val) {
 }
 
 inline bool try_convert(mpz_class& ret, const renf_elem_class& val) {
-    renf_elem_class help = val;
-    if (!help.is_integer())
+    // renf_elem_class help = val;
+    if (!val.is_integer())
         throw ArithmeticException(". Field element cannot be converted to integer");
-    ret = help.num();
+    ret = val.num();
     return true;
 }
 
 inline bool try_convert(renf_elem_class& ret, const long long& val) {
-    ret = convertTo<long>(val);
+    //ret = convertTo<long>(val);
+    ret = val;
     return true;
 }
 
@@ -491,9 +493,16 @@ inline bool try_convert(long& ret, const renf_elem_class& val) {
     return try_convert(ret, bridge);
 }
 
-inline bool try_convert(mpq_class& ret, const renf_elem_class& val) {
+/*inline bool try_convert(mpq_class& ret, const renf_elem_class& val) {
     nmz_float ret_double = static_cast<double>(val);
     ret = mpq_class(ret_double);
+    return true;
+}*/
+
+inline bool try_convert(mpq_class& ret, const renf_elem_class& val) {
+    if (!val.is_rational())
+        throw ArithmeticException(". Field element cannot be converted to fraction");
+    ret = val.num()/val.den();
     return true;
 }
 
@@ -593,11 +602,24 @@ inline bool try_convert(long long& ret, const nmz_float& val) {
 }
 
 
-/*
+
 inline bool fits_short_range(long long a) {
     return  (a <= SHRT_MAX && a >= SHRT_MIN);
 }
 
+template<typename Integer>
+inline bool try_convert(short& ret, const Integer& val) {
+    long long bridge = convertTo<long long>(val);
+    return try_convert(ret,bridge);
+}
+
+template<typename Integer>
+inline bool try_convert(Integer& ret, const short& val) {
+    long long bridge = convertTo<long long>(val);
+    return try_convert(ret,bridge);
+}
+
+template <>
 inline bool try_convert(short& ret, const long long& val) {
     if(!fits_short_range(val))
        return false;
@@ -605,13 +627,9 @@ inline bool try_convert(short& ret, const long long& val) {
     return true;
 }
 
-inline bool try_convert(short& ret, const mpz_class& val) {
-    long long bridge = convertTo<long long>(val);
-    return try_convert(ret,bridge);
-}
-*/
+//---------------------------------------------------------------------------//----------------------------------------
+//                    Imlementation odf special functions
 //---------------------------------------------------------------------------
-
 template <typename Integer>
 Integer gcd(const Integer& a, const Integer& b) {
     if (a == 0) {
@@ -1069,8 +1087,10 @@ inline nmz_float mpq_to_nmz_float(const mpq_class& val) {
     return num / den;
 }
 
+// Conversion functions with direct throws of exceptions
+
 template <typename Integer>
-long convertToLong(const Integer& val) {
+long long convertToLong(const Integer& val) {
     long ret;
     try {
         ret = convertTo<long>(val);

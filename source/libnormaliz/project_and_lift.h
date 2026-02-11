@@ -343,21 +343,6 @@ ProjectAndLift<IntegerPL, IntegerRet>::ProjectAndLift(const ProjectAndLift<Integ
 template <typename Integer>
 vector<Integer> FM_comb(Integer c1, const vector<Integer>& v1, Integer c2, const vector<Integer>& v2, bool& is_zero);
 
-// setup function
-
-/*
-template <typename IntegerPL, typename IntegerRet, typename IntegerCone>
-void setData(ProjectAndLift<IntegerPL, IntegerRet>& PL,Cone<IntegerCone>&  C,
-                                     const ConeProperties& ToCompute,
-                                     const Matrix<IntegerCone>& Verts,
-                                     const Matrix<IntegerCone>& Congs,
-                                     const vector<IntegerCone>& GradingOnPolytope,
-                                     const bool primitive,
-                                     const bool prverbose,
-                                     const OurPolynomialSystem<IntegerCone>& PolyEqus,
-                                     const OurPolynomialSystem<IntegerCone>& PolyInequs );
-*/
-
 // interface from/to cone
 template <typename Integer>
 void project_and_lift(Cone<Integer>&  C, const ConeProperties& ToCompute,

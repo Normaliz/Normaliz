@@ -4044,7 +4044,6 @@ void project_and_lift(Cone<renf_elem_class>&  C, const ConeProperties& ToCompute
     PL.getResults(Deg1_mpz, NRLP, dummy, dummy);
     C.setNumberLatticePoints(NRLP);
 
-
     convert(Deg1, Deg1_mpz);
 
 }
