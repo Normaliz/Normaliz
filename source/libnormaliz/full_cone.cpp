@@ -5920,7 +5920,8 @@ void Full_Cone<Integer>::compute_hsop() {
             verboseOutput() << "Heights vector: " << ideal_heights;
         }
         vector<Integer> er_deg = ER.MxV(Grading);
-        hsop_deg = convertTo<vector<long>>(degrees_hsop(er_deg, ideal_heights));
+        // hsop_deg = convertTo<vector<long>>(degrees_hsop(er_deg, ideal_heights));
+        convert(hsop_deg, degrees_hsop(er_deg, ideal_heights));
     }
     if (verbose) {
         verboseOutput() << "Degrees of HSOP: " << hsop_deg;

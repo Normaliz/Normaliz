@@ -844,9 +844,9 @@ template void Sublattice_Representation<long>::convert_from_sublattice_dual<long
                                                                                        const Matrix<long long>& val) const;
 template void Sublattice_Representation<long>::convert_from_sublattice<long long>(Matrix<long>& ret,
                                                                                   const Matrix<long long>& val) const;
-
 #endif
 template class Sublattice_Representation<long long>;
+template class Sublattice_Representation<short>;
 template class Sublattice_Representation<mpz_class>;
 template void Sublattice_Representation<mpz_class>::convert_from_sublattice_dual<long long>(Matrix<mpz_class>& ret,
                                                                                             const Matrix<long long>& val) const;

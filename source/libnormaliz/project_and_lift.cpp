@@ -517,6 +517,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
 
 
         // Now we can set up the local project-and-lift
+        // LocalSuppsReordered.debug_print();
         vector<dynamic_bitset> DummyInd;
         LocalSuppsReordered.remove_duplicate_and_zero_rows();
         ProjectAndLift<IntegerPL, IntegerRet> PL(LocalSuppsReordered, DummyInd, 0); // 0 is dummy
@@ -1014,7 +1015,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_covers() {
             if(!AllPatches[i][j])
                 continue;
             double num = convertTo<nmz_float>(DefiningSupps[i][0]);
-            double den = convertTo<nmz_float>(-DefiningSupps[i][j]);
+            double den = convertTo<nmz_float>(DefiningSupps[i][j]);
+            den = -den;
             WeightOfCoord[i][j] = num/den;
         }
     }
@@ -1975,6 +1977,13 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                         store_new_vector(NewLattPoint,tn);
                     }
                 }
+                if(talkative && nr_extensions % 100000000 == 0){
+#pragma omp critical(PROGRESS)
+                {
+                    verboseOutput() << "ext&cgr " << nr_extensions << " equ " << nr_caught_by_equations <<
+                        " ine " << nr_caught_by_restricted << "aut " << nr_caught_by_automs << endl;
+                }
+                }
 
             } // for i (inner for loop)
 
@@ -2282,7 +2291,7 @@ vector<size_t> ProjectAndLift<IntegerPL, IntegerRet>::order_supps(const Matrix<I
             NewNeutr.emplace_back(make_pair(0.0, i));
             continue;
         }
-        nmz_float num, den;
+        nmz_float num = 0, den = 0;  // to make g++ happy
         convert(num, Supps[i][0]);
         convert(den, Supps[i][dim - 1]);
         nmz_float quot = num / den;
@@ -2414,6 +2423,8 @@ void ProjectAndLift<IntegerPL, IntegerRet>::compute_projections_primitive(size_t
 
     if (verbose)
         verboseOutput() << "embdim " << dim << " inequalities " << SuppsProj.nr_of_rows() << endl;
+    //if(dim == 3)
+     //   SuppsProj.debug_print();
 
     AllOrders[dim1] = order_supps(SuppsProj);
     swap(AllSupps[dim1], SuppsProj);
@@ -2884,15 +2895,15 @@ void ProjectAndLift<IntegerPL, IntegerRet>::finalize_latt_point(vector<IntegerRe
         Deg1Thread[tn].emplace_back(NewPoint);
 
     if (Grading.size() > 0) {
-        long deg = convertToLong(v_scalar_product(Grading, NewPoint));
+        long long deg = convertToLong(v_scalar_product(Grading, NewPoint));
         if (deg >= 0) {
-            if (deg >= (long)h_vec_pos_thread[tn].size())
+            if (deg >= (long long)h_vec_pos_thread[tn].size())
                 h_vec_pos_thread[tn].resize(deg + 1);
             h_vec_pos_thread[tn][deg]++;
         }
         else {
             deg *= -1;
-            if (deg >= (long)h_vec_neg_thread[tn].size())
+            if (deg >= (long long)h_vec_neg_thread[tn].size())
                 h_vec_neg_thread[tn].resize(deg + 1);
             h_vec_neg_thread[tn][deg]++;
         }
@@ -2956,6 +2967,8 @@ size_t our_counter = 0;
 ///---------------------------------------------------------------------------
 template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL, IntegerRet>::lift_points_to_this_dim(list<vector<IntegerRet> >& Deg1Proj) {
+
+    // Matrix<IntegerRet>(Deg1Proj).debug_print();
     if (Deg1Proj.empty())
         return;
 
@@ -3791,6 +3804,7 @@ template class ProjectAndLift<mpz_class, mpz_class>;
 template class ProjectAndLift<long long, long long>;
 template class ProjectAndLift<nmz_float, mpz_class>;
 template class ProjectAndLift<nmz_float, long long>;
+template class ProjectAndLift<short, short>;
 #ifndef NMZ_MIC_OFFLOAD  // offload with long is not supported
 template class ProjectAndLift<long, long>;
 template class ProjectAndLift<nmz_float, long>;
@@ -3861,10 +3875,6 @@ void make_Ind_Verts(const Cone<IntegerCone>& C,const Matrix<IntegerCone>& Supps,
 
 
 #ifdef ENFNORMALIZ
-
-
-// typedef long long Int;
-
 
 template <typename IntCompute>
 vector<IntCompute> positive_maker(const vector<renf_elem_class>& inequ ){
@@ -3941,7 +3951,9 @@ void project_and_lift(Cone<renf_elem_class>&  C, const ConeProperties& ToCompute
 
         vector<renf_elem_class> summands = DimEquations[i];
         summands.pop_back();
-        Matrix<IntCompute> Split = SplitRepresentation(- DimEquations[i].back(), summands);
+        Matrix<long long> Split_ll = SplitRepresentation(- DimEquations[i].back(), summands);
+        Matrix<IntCompute> Split;
+        convert(Split, Split_ll);
         DimEquations_Int.append(Split);
 
         bool upper_inequality = true;
@@ -3986,12 +3998,14 @@ void project_and_lift(Cone<renf_elem_class>&  C, const ConeProperties& ToCompute
     auto TotalSupps_Int = DimEquations_Int;
     TotalSupps_Int.append(OtherSupps_Int);
 
+    // TotalSupps_Int.debug_print();
+
     auto PL = ProjectAndLift<IntCompute, IntCompute>(TotalSupps_Int, Dummy, rank);
 
     PL.setFusion(C.getFusionBasicCone());
     PL.setOptions(ToCompute, primitive, C.getVerbose());
 
-    OurPolynomialSystem<long long> PolyEqus_Int;
+    OurPolynomialSystem<IntCompute> PolyEqus_Int;
     convert(PolyEqus_Int, PolyEqus);
     PL.set_PolyEquations(PolyEqus_Int, ToCompute.test(ConeProperty::MinimizePolyEquations));
     PL.compute(all_points, false, count_only);
@@ -4019,7 +4033,25 @@ void project_and_lift(Cone<renf_elem_class>&  C, const ConeProperties& ToCompute
     // we go to an integer computation for FusionRings
     if(ToCompute.test(ConeProperty::FusionRings) || ToCompute.test(ConeProperty::SimpleFusionRings)
         || ToCompute.test(ConeProperty::SingleFusionRing) ){
-        project_and_lift<long long>(C, ToCompute,Deg1, Supps, PolyEqus);
+        bool short_allowed = false;
+        if(ToCompute.test(ConeProperty::ShortInt)){
+            short_allowed = true;
+            for(size_t i = 0; i < Supps.nr_of_rows(); ++i){
+                if(Iabs(Supps[i][0]).ceil() >= 256){
+                    short_allowed = false;
+                    if(verbose)
+                        verboseOutput() << "Input does not allow complete project-and-lift with integer type short" << endl;
+                    break;
+                }
+            }
+            if(short_allowed){
+                if(verbose)
+                    verboseOutput() << "Running complete project-and-lift with integer type short" << endl;
+                project_and_lift<short>(C, ToCompute,Deg1, Supps, PolyEqus);
+            }
+        }
+        if(!short_allowed)
+            project_and_lift<long long>(C, ToCompute,Deg1, Supps, PolyEqus);
         return;
     }
 

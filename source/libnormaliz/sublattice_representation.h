@@ -163,7 +163,7 @@ class Sublattice_Representation {
 
     template <typename ToType, typename FromType>
     void convert_from_sublattice(ToType& ret, const FromType& val) const {
-        ret = from_sublattice(convertTo<ToType>(val));
+        ret = from_sublattice(convert_VectorTo<ToType>(val));
     }
 
     template <typename FromType>
@@ -188,7 +188,7 @@ class Sublattice_Representation {
 
     template <typename ToType, typename FromType>
     void convert_from_sublattice_dual(ToType& ret, const FromType& val) const {
-        ret = from_sublattice_dual(convertTo<ToType>(val));
+        ret = from_sublattice_dual(convert_VectorTo<ToType>(val));
     }
 
     template <typename FromType>

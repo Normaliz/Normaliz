@@ -4314,6 +4314,12 @@ vector<nmz_float> Matrix<nmz_float>::optimal_subdivision_point_inner() const {
     return {};
 }
 
+template <>
+vector<short> Matrix<short>::optimal_subdivision_point_inner() const {
+    assert(false);
+    return vector<short>(0);
+}
+
 #ifdef ENFNORMALIZ
 template <>
 vector<renf_elem_class> Matrix<renf_elem_class>::optimal_subdivision_point_inner() const {
@@ -4339,7 +4345,7 @@ void Matrix<Integer>::GramSchmidt(Matrix<nmz_float>& B, Matrix<nmz_float>& M, in
         for (int j = 0; j < i; ++j) {
             nmz_float sp = 0;
             for (size_t k = 0; k < dim; ++k) {
-                nmz_float fact;
+                nmz_float fact = 0;
                 convert(fact, elem[i][k]);
                 sp += fact * B[j][k];
             }
@@ -4506,6 +4512,7 @@ template class Matrix<long long>;
 template class Matrix<mpz_class>;
 template class Matrix<mpq_class>;
 template class Matrix<nmz_float>;
+template class Matrix<short>;
 #ifdef ENFNORMALIZ
 template class Matrix<renf_elem_class>;
 #endif

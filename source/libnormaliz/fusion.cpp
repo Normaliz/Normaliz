@@ -1890,6 +1890,7 @@ vector<key_t> fusion_coincidence_pattern(const vector<Integer>& v){
 template class FusionComp<mpz_class>;
 template class FusionComp<long long>;
 template class FusionComp<long>;
+template class FusionComp<short>;
 #ifdef ENFNORMALIZ
 template class FusionComp<renf_elem_class>;
 #endif

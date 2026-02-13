@@ -136,6 +136,30 @@ bool try_convert(mpq_class& ret, const renf_elem_class& val);
 bool try_convert(nmz_float& ret, const renf_elem_class& val);
 #endif
 
+bool try_convert(short& ret, const long long& val);
+bool try_convert(short& ret, const long & val);
+bool try_convert(short& ret, const mpz_class & val);
+bool try_convert(short& ret, const nmz_float & val);
+bool try_convert(long long& ret, short val);
+bool try_convert(long& ret, short val);
+bool try_convert(mpz_class& ret, short val);
+bool try_convert(nmz_float& ret, short val);
+#ifdef ENFNORMALIZ
+bool try_convert(short& ret, const renf_elem_class & val);
+bool try_convert(renf_elem_class& ret, const short & val);
+#endif
+
+// template<typename Ret, typename Val>
+// void convert_via_string(Ret& V, const Val& W);
+
+template<typename Val, typename Ret>
+void convert_via_string(Ret& V, const Val& W){
+
+    stringstream bridge;
+    bridge << W;
+    bridge >> V;
+}
+
 // template for same type "conversion"
 template <typename Type>
 inline bool try_convert(Type& ret, const Type& val) {
@@ -154,6 +178,7 @@ inline bool try_convert(mpq_class& ret, const long& val) {
 }
 
 bool fits_long_range(long long a);
+
 
 //--------------------------------------------------------------------
 template <typename Integer>
@@ -252,6 +277,11 @@ inline bool check_range<mpq_class>(const mpq_class&) {
     return true;
 }
 
+template <>
+inline bool check_range<short>(const short&) {
+    return true;
+}
+
 #ifdef ENFNORMALIZ
 template <>
 inline bool check_range<renf_elem_class>(const renf_elem_class&) {
@@ -303,6 +333,7 @@ inline string toString(mpq_class a) {
 
 bool int_quotient(long long& Quot, const mpz_class& Num, const mpz_class& Den);
 bool int_quotient(long& Quot, const long& Num, const long& Den);
+bool int_quotient(short & Quot, const short& Num, const short& Den);
 bool int_quotient(long long& Quot, const long long& Num, const long long& Den);
 bool int_quotient(mpz_class& Quot, const mpz_class& Num, const mpz_class& Den);
 template <typename IntegerRet>
@@ -419,18 +450,25 @@ template <typename ToType, typename FromType>
 inline void convert(vector<ToType>& ret_vect, const vector<FromType>& from_vect) {
     size_t s = from_vect.size();
     ret_vect.resize(s);
-    for (size_t i = 0; i < s; ++i)
+    for (size_t i = 0; i < s; ++i){
         convert(ret_vect[i], from_vect[i]);
+    }
+}
+
+template <typename ToType, typename FromType>
+ToType convert_VectorTo(const FromType& val) {
+    ToType copy = {};
+    convert(copy, val);
+    return copy;
 }
 
 // general conversion with return, throws ArithmeticException if conversion fails
 template <typename ToType, typename FromType>
 ToType convertTo(const FromType& val) {
-    ToType copy;
+    ToType copy = 0;
     convert(copy, val);
     return copy;
 }
-
 
 // Conversion of mpq_classs to nmz_float needs its own function
 // since we did not manage to do it via templates alone
@@ -607,25 +645,65 @@ inline bool fits_short_range(long long a) {
     return  (a <= SHRT_MAX && a >= SHRT_MIN);
 }
 
-template<typename Integer>
-inline bool try_convert(short& ret, const Integer& val) {
-    long long bridge = convertTo<long long>(val);
-    return try_convert(ret,bridge);
-}
-
-template<typename Integer>
-inline bool try_convert(Integer& ret, const short& val) {
-    long long bridge = convertTo<long long>(val);
-    return try_convert(ret,bridge);
-}
-
-template <>
 inline bool try_convert(short& ret, const long long& val) {
     if(!fits_short_range(val))
        return false;
     ret = val;
     return true;
 }
+
+inline bool try_convert(short& ret, const long & val) {
+    long long bridge = val;
+    return try_convert(ret, bridge);
+}
+
+inline bool try_convert(short& ret, const mpz_class & val) {
+    long long bridge;
+    if(!try_convert(bridge, val))
+        return false;
+    return try_convert(ret, bridge);
+}
+
+inline bool try_convert(short& ret, const nmz_float & val) {
+    long long bridge;
+    if(!try_convert(bridge, val))
+        return false;
+    return try_convert(ret, bridge);
+}
+
+
+inline bool try_convert(long long& ret, short val){
+    ret = val;
+    return true;
+}
+
+inline bool try_convert(long& ret, short val){
+    ret = val;
+    return true;
+}
+
+inline bool try_convert(mpz_class& ret, short val){
+    return true;
+}
+
+inline bool try_convert(nmz_float& ret, short val){
+    ret = val;
+    return true;
+}
+
+#ifdef ENFNORMALIZ
+inline bool try_convert(short& ret, const renf_elem_class & val) {
+    long long bridge;
+    if(!try_convert(bridge, val))
+        return false;
+    return try_convert(ret, bridge);
+}
+
+inline bool try_convert(renf_elem_class& ret, const short & val){
+    ret = val;
+    return true;
+}
+#endif
 
 //---------------------------------------------------------------------------//----------------------------------------
 //                    Imlementation odf special functions
@@ -697,13 +775,6 @@ inline renf_elem_class lcm<renf_elem_class>(const renf_elem_class& a, const renf
 }
 #endif
 
-template<typename Val, typename Ret>
-void convert_via_string(Ret& V, const Val& W){
-
-    stringstream bridge;
-    bridge << W;
-    bridge >> V;
-}
 
 //---------------------------------------------------------------------------
 
@@ -954,6 +1025,12 @@ inline mpq_class dec_fraction_to_mpq(string s) {
 //----------------------------------------------------------------------
 // the next function produce an integer quotient and determine whether
 // there is a remainder
+
+inline bool int_quotient(short& Quot, const short& Num, const short& Den) {
+    Quot = Iabs(Num) / Iabs(Den);
+    return Quot * Iabs(Den) != Iabs(Num);
+}
+
 
 inline bool int_quotient(long& Quot, const long& Num, const long& Den) {
     Quot = Iabs(Num) / Iabs(Den);

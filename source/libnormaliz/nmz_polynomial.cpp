@@ -753,6 +753,7 @@ OurPolynomialSystem<Number> OurPolynomialSystem<Number>::minimize_equations(cons
 template class OurTerm<long>;
 template class OurTerm<long long>;
 template class OurTerm<mpz_class>;
+template class OurTerm<short>;
 #ifdef ENFNORMALIZ
 template class OurTerm<renf_elem_class>;
 #endif
@@ -760,6 +761,7 @@ template class OurTerm<renf_elem_class>;
 template class OurPolynomial<long>;
 template class OurPolynomial<long long>;
 template class OurPolynomial<mpz_class>;
+template class OurPolynomial<short>;
 #ifdef ENFNORMALIZ
 template class OurPolynomial<renf_elem_class>;
 #endif
@@ -767,6 +769,7 @@ template class OurPolynomial<renf_elem_class>;
 template class OurPolynomialCong<long>;
 template class OurPolynomialCong<long long>;
 template class OurPolynomialCong<mpz_class>;
+template class OurPolynomialCong<short>;
 #ifdef ENFNORMALIZ
 template class OurPolynomialCong<renf_elem_class>;
 #endif
@@ -774,6 +777,7 @@ template class OurPolynomialCong<renf_elem_class>;
 template class OurPolynomialSystem<long>;
 template class OurPolynomialSystem<long long>;
 template class OurPolynomialSystem<mpz_class>;
+template class OurPolynomialSystem<short>;
 #ifdef ENFNORMALIZ
 template class OurPolynomialSystem<renf_elem_class>;
 #endif
