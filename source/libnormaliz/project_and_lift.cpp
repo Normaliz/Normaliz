@@ -1981,7 +1981,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
 #pragma omp critical(PROGRESS)
                 {
                     verboseOutput() << "ext&cgr " << nr_extensions << " equ " << nr_caught_by_equations <<
-                        " ine " << nr_caught_by_restricted << "aut " << nr_caught_by_automs << endl;
+                        " ine " << nr_caught_by_restricted << " aut " << nr_caught_by_automs << endl;
                 }
                 }
 
@@ -3804,7 +3804,7 @@ template class ProjectAndLift<mpz_class, mpz_class>;
 template class ProjectAndLift<long long, long long>;
 template class ProjectAndLift<nmz_float, mpz_class>;
 template class ProjectAndLift<nmz_float, long long>;
-template class ProjectAndLift<short, short>;
+// template class ProjectAndLift<short, short>;
 #ifndef NMZ_MIC_OFFLOAD  // offload with long is not supported
 template class ProjectAndLift<long, long>;
 template class ProjectAndLift<nmz_float, long>;
@@ -3875,6 +3875,9 @@ void make_Ind_Verts(const Cone<IntegerCone>& C,const Matrix<IntegerCone>& Supps,
 
 
 #ifdef ENFNORMALIZ
+
+// functions that help converting a renf calculation into integer. Possible forc
+// fusion rings.
 
 template <typename IntCompute>
 vector<IntCompute> positive_maker(const vector<renf_elem_class>& inequ ){
@@ -4034,10 +4037,12 @@ void project_and_lift(Cone<renf_elem_class>&  C, const ConeProperties& ToCompute
     if(ToCompute.test(ConeProperty::FusionRings) || ToCompute.test(ConeProperty::SimpleFusionRings)
         || ToCompute.test(ConeProperty::SingleFusionRing) ){
         bool short_allowed = false;
+    /* // it does not real oay in terms of RAM to use short integers whose range is diffoicult to control.
         if(ToCompute.test(ConeProperty::ShortInt)){
             short_allowed = true;
             for(size_t i = 0; i < Supps.nr_of_rows(); ++i){
-                if(Iabs(Supps[i][0]).ceil() >= 256){
+                cout << Iabs(Supps[i][0]) << endl;
+                if(Iabs(Supps[i][0]).ceil() >= SHRT_MAX){
                     short_allowed = false;
                     if(verbose)
                         verboseOutput() << "Input does not allow complete project-and-lift with integer type short" << endl;
@@ -4049,7 +4054,7 @@ void project_and_lift(Cone<renf_elem_class>&  C, const ConeProperties& ToCompute
                     verboseOutput() << "Running complete project-and-lift with integer type short" << endl;
                 project_and_lift<short>(C, ToCompute,Deg1, Supps, PolyEqus);
             }
-        }
+        } */
         if(!short_allowed)
             project_and_lift<long long>(C, ToCompute,Deg1, Supps, PolyEqus);
         return;
