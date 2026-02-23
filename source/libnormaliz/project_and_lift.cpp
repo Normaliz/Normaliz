@@ -220,7 +220,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
 
     Indicator.resize(nr_all_supps); // indicaor of nonzero coordinates in inequality
     upper_bounds.resize(nr_all_supps); // indicator of inequalities giving upper boounds
-    max_sparse.resize(nr_all_supps); // indicator of inequalities used in covering by "sparse" inequalities
+    // max_sparse.resize(nr_all_supps); // indicator of inequalities used in covering by "sparse" inequalities
 
     // Congs.debug_print();
 
@@ -263,10 +263,19 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
     }
 
     // now we want to find the sparse upper bounds with maximal support
-    // Good idea ? Not Complete clear, but we do it
-    dynamic_bitset max_sparse;
+    // Good idea ? Not Completely clear, but we do it
+    vector<dynamic_bitset> UpperBoundsIndicator;
+    for(size_t i = 0; i < nr_all_supps; ++i){
+        if(upper_bounds[i])
+            UpperBoundsIndicator.emplace_back(Indicator[i]);
+        else
+            UpperBoundsIndicator.emplace_back(dynamic_bitset(EmbDim));
+    }
+
     // cout << Indicator;
-    maximal_subsets(Indicator, max_sparse);
+    dynamic_bitset max_sparse;
+    maximal_subsets(UpperBoundsIndicator, max_sparse);
+    // cout << "MMMMMM " << bitset_to_key(max_sparse);
     if(max_sparse.count() == 1 && !fusion_rings_computation && !forced_patching){
         sparse = false;
         if(verbose)
@@ -322,7 +331,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
     AllCoveredKey.resize(EmbDim);
     AllCoveredKeyInverse.resize(EmbDim);
     AllPatches.resize(EmbDim);
-    active_coords.resize(EmbDim);
+    // active_coords.resize(EmbDim);
 
     AllCongsRestricted.resize(EmbDim);
     AllPolyEqus.resize(EmbDim);
@@ -361,12 +370,14 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
 
     // First we compute the patches
     for(size_t coord = 1; coord < EmbDim; coord++){
+
         if(covered[coord] == 1)
             continue;
 
+
         INTERRUPT_COMPUTATION_BY_EXCEPTION
 
-        active_coords[coord] = 1;
+        // active_coords[coord] = 1;
 
         key_t next_supp = 0; //  the next inequality we will use // = 0 to makemgcc happy
 
@@ -1025,6 +1036,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_covers() {
     double min_weight = 0, max_weight= 0;
     bool first = true;
     for(size_t i = 1; i< EmbDim; ++i){
+
+        // cout << " iiii " << i << endl;
         if(AllPatches[i].size() == 0)
             continue;
         for(size_t j = 1; j < EmbDim; ++j){
@@ -1043,6 +1056,11 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_covers() {
             if(TotalWeights[i] > max_weight)
                 max_weight = TotalWeights[i];
         }
+
+        /* if(i == 303 || i == 1 || i == 79 || i == 13 || i == 245){
+            cout << "WWWWWWWWWWW " << i << " --- " <<  TotalWeights[i] << endl;
+            cout << DefiningSupps[i] << "==================================" << endl;
+        }*/
     }
 
     if(max_weight / min_weight > 4 && !no_weights && !use_coord_weights){
@@ -3928,7 +3946,7 @@ void project_and_lift(Cone<renf_elem_class>&  C, const ConeProperties& ToCompute
     renf_elem_class Zero = 0;
 
     // Fhe dimension equations have been split into pairs of inequalities.
-    // The following keeps this structure, even if we treat thgemn as equations
+    // The following keeps this structure, even if we treat them as equations
     // for the passage to Int.
     for(size_t i = 0; i < Supps.nr_of_rows(); ++i){
         bool other = true;
@@ -3952,13 +3970,6 @@ void project_and_lift(Cone<renf_elem_class>&  C, const ConeProperties& ToCompute
     // DimEquations.debug_print('D');
     for(size_t i = 0; i < DimEquations.nr_of_rows(); ++i){
 
-        vector<renf_elem_class> summands = DimEquations[i];
-        summands.pop_back();
-        Matrix<long long> Split_ll = SplitRepresentation(- DimEquations[i].back(), summands);
-        Matrix<IntCompute> Split;
-        convert(Split, Split_ll);
-        DimEquations_Int.append(Split);
-
         bool upper_inequality = true;
         for(size_t j = 1; j < DimEquations.nr_of_columns(); ++j){
             if(DimEquations[i][j] > 0){
@@ -3966,36 +3977,18 @@ void project_and_lift(Cone<renf_elem_class>&  C, const ConeProperties& ToCompute
                 break;
             }
         }
+        if(upper_inequality)
+            DimEquations_Int.append(positive_maker<IntCompute>(DimEquations[i]));
+
+        vector<renf_elem_class> summands = DimEquations[i];
+        summands.pop_back();
+        Matrix<long long> Split_ll = SplitRepresentation(- DimEquations[i].back(), summands);
+        Matrix<IntCompute> Split;
+        convert(Split, Split_ll);
+        DimEquations_Int.append(Split);
+
         if(!upper_inequality)
             continue;
-
-        dynamic_bitset negative_entries(DimEquations.nr_of_columns());
-        for(size_t j = 1; j < negative_entries.size(); ++j){
-            if(DimEquations[i][j] < 0)
-                negative_entries[j] = true;
-        }
-
-        bool is_positive_already = false;
-        for(size_t j = 0; j < Split.nr_of_rows(); ++j){
-            bool this_positive = true;
-            for(size_t k = 1; k < Split.nr_of_columns(); ++k){
-                if(!negative_entries[k])
-                    continue;
-                if(Split[j][k] >= 0){
-                    this_positive = false; // we are trying to find a good upper inequality
-                    break;
-                }
-            }
-            if(this_positive){
-                is_positive_already = true;
-                break;
-            }
-        }
-        if(is_positive_already)
-            continue;
-
-        // We need the positive_maker to ensure the patching algporithm
-        DimEquations_Int.append(positive_maker<IntCompute>(DimEquations[i]));
     }
 
     auto TotalSupps_Int = DimEquations_Int;

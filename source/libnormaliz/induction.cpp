@@ -494,6 +494,7 @@ void Induction<renf_elem_class>::make_divisors(){
     // Hyp.debug_print();
     Cone<long long> CandCone(Type::inhom_inequalities, Hyp);
     CandCone.setNonnegative();
+    CandCone.setVerbose(false);
     CandCone.setPolynomialInequalities(BoundsPolys);
     Matrix<long long> RawCands = CandCone.getLatticePointsMatrix();
     set<renf_elem_class> CandSet;

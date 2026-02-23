@@ -149,7 +149,7 @@ class ProjectAndLift {
     // data for patching method
     vector<dynamic_bitset> Indicator; // indicaor of nonzero coordinates in inequality
     dynamic_bitset upper_bounds; // indicator of inequalities giving upper boounds
-    dynamic_bitset max_sparse; // indicator of inequalities used in covering by "sparse" inequalities
+    // dynamic_bitset max_sparse; // indicator of inequalities used in covering by "sparse" inequalities
 
     // data for patching depending on coordinates
     vector<key_t> InsertionOrderPatches;
@@ -166,7 +166,7 @@ class ProjectAndLift {
     vector<vector<key_t > > AllCoveredKeyInverse;  // ionverse key
     vector<dynamic_bitset > AllPatches; // patches associated with the coordinates
     vector<ProjectAndLift<IntegerPL, IntegerRet> > AllLocalPL;
-    dynamic_bitset active_coords;
+    // dynamic_bitset active_coords;
 
     vector<vector<OurPolynomialCong<IntegerRet> > > AllCongsRestricted; // the congruences that can be restrictd to the unions of patches built successively
     vector< vector < pair<OurPolynomial<IntegerRet>, OurPolynomial<IntegerRet> > > > AllPolyEqus; // indexed by coord, poly equs (split into two components) applied with this coord
