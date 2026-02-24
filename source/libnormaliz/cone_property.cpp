@@ -932,6 +932,7 @@ ConeProperties all_Q_permissible(){
     ret.set(ConeProperty::CongOrderPatches);
     ret.set(ConeProperty::NoWeights);
     ret.set(ConeProperty::LinearOrderPatches);
+    ret.set(ConeProperty::DistributedComp);
     return ret;
 }
 

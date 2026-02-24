@@ -173,8 +173,8 @@ class ProjectAndLift {
     vector<OurPolynomialSystem<IntegerRet> > AllPolyInequs; // ditto for inequalities
     vector<vector<key_t> > AllAutoms; // ditto for automorphisms where the key is the index
 
-    vector<vector<vector < pair<OurPolynomial<IntegerRet>, OurPolynomial<IntegerRet> > > > > AllPolyEqusThread; // a copy for each thread
-    vector<vector<OurPolynomialSystem<IntegerRet> > > AllPolyInequsThread; // ditto for inequalities
+    // vector<vector<vector < pair<OurPolynomial<IntegerRet>, OurPolynomial<IntegerRet> > > > > AllPolyEqusThread; // a copy for each thread
+    // vector<vector<OurPolynomialSystem<IntegerRet> > > AllPolyInequsThread; // ditto for inequalities
 
     dynamic_bitset used_supps; // registers which inequalities are used in the patching process
     dynamic_bitset poly_equs_minimized; // redisters whether the polynomial equations at a coord have been minimized
