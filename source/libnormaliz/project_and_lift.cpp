@@ -480,14 +480,6 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
         vector<key_t> LocalKey = bitset_to_key(AllPatches[coord]);
         Matrix<IntegerPL> LocalSuppsRaw; // could be avoided, only for convenience
         LocalSuppsRaw = AllSupps[EmbDim].submatrix(relevant_supps_now);
-        /* vector<IntegerPL> test_v(EmbDim);
-        test_v[0] = -1;
-        for(size_t kkn = 0; kkn < LocalSuppsRaw.nr_of_rows(); ++kkn)
-            if(test_v == LocalSuppsRaw[kkn])
-                assert(false);*/
-        // LocalSuppsRaw.debug_print('+');
-        // convert(LocalSuppsRaw, AllSupps[EmbDim].submatrix(relevant_supps_now));
-        // Matrix<IntegerPL> Localsupps = LocalSuppsRaw.transpose().submatrix(LocalKey).transpose(); // select columns
 
         // in For the "local" project-and-lift we must put the intersection coordinates first
         // then the new coordinates
@@ -526,7 +518,6 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
         }
         // Congs done
 
-
         // Now we can set up the local project-and-lift
         // LocalSuppsReordered.debug_print();
         vector<dynamic_bitset> DummyInd;
@@ -551,6 +542,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
         dynamic_bitset new_covered = covered | AllPatches[coord];
 
         // first we check whether the simplicity test can be done at this point
+        // simplicity refers to fusion rings
         if(check_simplicity_cand){
             if(critical_coord_simplicity == -1){
                 if(fusion.coords_to_check_ind[0].is_subset_of(new_covered) ){
@@ -687,11 +679,6 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
         for(size_t i = 0; i < ExtraInequalities.nr_of_rows(); ++i){
             AllPolyInequs[coord].emplace_back(OurPolynomial<IntegerRet>(ExtraInequalities[i]));
         }
-
-
-        /* for(auto& T: AllPolyInequsThread[coord]){ // vcopy for each thread
-            T = AllPolyInequs[coord];
-        }*/
 
         AllAutoms[coord] =identity_key(fusion.Automorphisms.size()); // initialized with all automorphisms in the given order
 
