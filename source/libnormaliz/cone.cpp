@@ -10150,13 +10150,15 @@ void Cone<Integer>::make_modular_gradings(ConeProperties& ToCompute){
 template <typename Integer>
 void Cone<Integer>::add_fusion_ass_and_grading_constraints(ConeProperties& ToCompute){
 
+    /* we
     if(!(ToCompute.test(ConeProperty::FusionRings) || ToCompute.test(ConeProperty::SimpleFusionRings)
         || ToCompute.test(ConeProperty::NonsimpleFusionRings) || ToCompute.test(ConeProperty::SingleFusionRing)
         || ToCompute.test(ConeProperty::ModularGradings)  || ToCompute.test(ConeProperty::LatticePoints)
         || ToCompute.test(ConeProperty::SingleLatticePoint)  || ToCompute.test(ConeProperty::Deg1Elements)
-        || ToCompute.test(ConeProperty::HilbertBasis) ) )
+        || ToCompute.test(ConeProperty::HilbertBasis) || ToCompute.test(ConeProperty::ModuleGenerators) ) )
 
     return;
+    */
 
     FusionComp<Integer> OurFusion(FusionBasicCone);
 

@@ -554,10 +554,6 @@ void ConeProperties::set_preconditions(bool inhomogeneous, bool numberfield) {
     if (CPs.test(ConeProperty::UnimodularTriangulation))
         CPs.set(ConeProperty::HilbertBasis);
 
-    // lattice point  triangulation ==> LatticePoints
-    if (CPs.test(ConeProperty::LatticePointTriangulation))
-        CPs.set(ConeProperty::LatticePoints);
-
     // RenfVolume ==> Volume
     if (CPs.test(ConeProperty::RenfVolume)) {
         CPs.set(ConeProperty::Volume);
