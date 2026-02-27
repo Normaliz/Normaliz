@@ -66,6 +66,8 @@ public:
 
     double total_FPdim;
 
+    size_t max_number_automs;
+
     vector<vector<dynamic_bitset> > ModularGradings;
     size_t group_order;
     string group_type;
@@ -156,6 +158,8 @@ public:
     set<vector<key_t> > ZeroCoords; // made 0 by grading
 
     double total_FPdim;
+
+    size_t max_number_automs;
 
     void initialize();
     void import_global_data();

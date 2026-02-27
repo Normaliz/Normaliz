@@ -169,11 +169,9 @@ vector<vector<shortkey_t> > super_impose(const vector<vector<shortkey_t> >& set_
     return total;
 }
 
-const size_t max_number_automs = 500000;
-
 template <typename Integer>
 vector<vector<shortkey_t> > make_all_full_permutations(const vector<key_t>& type, const vector<key_t>& duality,
-                        const  Matrix<Integer>& fusion_ring_map){
+                        const  Matrix<Integer>& fusion_ring_map, const size_t max_number_automs){
 
     auto type_1 = type;
     type_1[0] = 0; // to single out the unit
@@ -276,6 +274,7 @@ FusionBasic::FusionBasic(){
     type_and_duality_set = false;
     type_automs_made = false;
     total_FPdim = 0;
+    max_number_automs = 500000;
 }
 
 template<typename Integer>
@@ -292,6 +291,7 @@ FusionBasic::FusionBasic(const FusionComp<Integer>& FC){
     subring_base_key = FC.subring_base_key;
     type_automs_made = FC.type_automs_made;
     type_automs = FC.type_automs;
+    max_number_automs = FC.max_number_automs;
     if(FC.fusion_ring_map.nr_of_rows() > 0){
         assert(!using_renf<Integer>());
         convert(fusion_image_type, FC.fusion_image_type);
@@ -371,7 +371,7 @@ void FusionBasic::make_type_automs(){
         return;
     if(libnormaliz::verbose)
         verboseOutput() << "Making type automorphisms" << endl;
-    type_automs = make_all_full_permutations(fusion_type,duality, fusion_ring_map);
+    type_automs = make_all_full_permutations(fusion_type,duality, fusion_ring_map, max_number_automs);
     if(verbose)
         verboseOutput() << type_automs.size() << " type automorphisms made" << endl;
     type_automs_made = true;
@@ -848,6 +848,7 @@ FusionComp<Integer>::FusionComp(const FusionBasic& basic){
     // Automorphisms = basic.Automorphisms;
     type_automs = basic.type_automs;
     type_automs_made = basic.type_automs_made;
+    max_number_automs = basic.max_number_automs;
     // automorphisms_mde = basic.automorphisms_mde;
     chosen_modular_grading = basic.chosen_modular_grading;
     if(basic.fusion_ring_map.nr_of_rows() > 0){
@@ -876,6 +877,7 @@ void FusionComp<Integer>::initialize(){
     use_modular_grading = false;
     nr_coordinates = 0;
     total_FPdim = 0;
+    max_number_automs = 500000;
 }
 
 template <typename Integer>
@@ -889,7 +891,7 @@ void FusionComp<Integer>::make_automorphisms(){
     if(!type_automs_made){
         if(libnormaliz::verbose)
             verboseOutput() << "Making type automorphisms" << endl;
-        type_automs = make_all_full_permutations(fusion_type,duality, fusion_ring_map);
+        type_automs = make_all_full_permutations(fusion_type,duality, fusion_ring_map, max_number_automs);
         if(libnormaliz::verbose)
             verboseOutput() << type_automs.size() << " type automorphisms" << endl;
         type_automs_made =true;
