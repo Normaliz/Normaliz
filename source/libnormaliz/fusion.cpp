@@ -169,9 +169,11 @@ vector<vector<shortkey_t> > super_impose(const vector<vector<shortkey_t> >& set_
     return total;
 }
 
+const size_t max_number_automs = 500000;
+
 template <typename Integer>
-vector<vector<shortkey_t> > make_all_full_permutations(const vector<key_t>& type,const vector<key_t>& duality,
-                                                  const  Matrix<Integer>& fusion_ring_map){
+vector<vector<shortkey_t> > make_all_full_permutations(const vector<key_t>& type, const vector<key_t>& duality,
+                        const  Matrix<Integer>& fusion_ring_map){
 
     auto type_1 = type;
     type_1[0] = 0; // to single out the unit
@@ -192,15 +194,48 @@ vector<vector<shortkey_t> > make_all_full_permutations(const vector<key_t>& type
         FullPermsByCoinc.push_back(ThisFullPerms);
     }
 
-    vector<vector<shortkey_t> > AllFullPerms;
+    multimap<size_t, int> factor_sizes;
     for(size_t i = 0; i < coincidence_keys.size(); ++i){
-        if(i == 0){
-            AllFullPerms=FullPermsByCoinc[0];
-        }
-        else{
-            AllFullPerms = super_impose(AllFullPerms, FullPermsByCoinc[i]);
+        factor_sizes.insert(make_pair<size_t, int>(FullPermsByCoinc[i].size(), i));
+    }
+
+    size_t collected_size = 1;
+    size_t full_size_automs = 1;
+    dynamic_bitset collected_factors(coincidence_keys.size());
+
+    for(auto it = factor_sizes.rbegin(); it != factor_sizes.rend(); ++it){
+        full_size_automs *= it-> first;
+        if(it->first * collected_size <= max_number_automs){
+            collected_factors[it->second] = 1;
+            collected_size *= it->first;
         }
     }
+
+    // cout << bitset_to_key(collected_factors);
+
+    vector<vector<shortkey_t> > AllFullPerms;
+    bool first = true;
+    for(size_t i = 0; i < coincidence_keys.size(); ++i){
+        if(collected_factors[i]){
+            if(first){
+                AllFullPerms=FullPermsByCoinc[i];
+                first = false;
+            }
+            else{
+                AllFullPerms = super_impose(AllFullPerms, FullPermsByCoinc[i]);
+            }
+        }
+    }
+
+    for(auto& p: AllFullPerms){
+        for(size_t j = 1; j < p.size(); ++j){
+            if(p[j] == 0)
+                p[j] = j;
+        }
+    }
+
+    if(full_size_automs > AllFullPerms.size())
+        verboseOutput() << "WARNING: Only partial autimorphism group!" << endl;
 
     return AllFullPerms;
 }
