@@ -104,7 +104,8 @@ int main(int argc, char* argv[]) {
             supp_hyps_moved[i][polytope_dim] += -polytope_dim + (widths[i]) * (polytope_dim - 2);
         vector<vector<mpz_class> > mpz_supp_hyps;
         convert(mpz_supp_hyps, supp_hyps_moved);
-        vector<mpz_class> mpz_grading = convertTo<vector<mpz_class> >(grading);
+        vector<mpz_class> mpz_grading;
+        convert(mpz_grading,grading);
 #ifdef _OPENMP
         omp_set_num_threads(4);
 #endif
