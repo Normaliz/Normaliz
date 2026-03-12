@@ -5,9 +5,9 @@ min_poly (a^2 - 2*a - 2) embedding [2.7320508075688772935274463415 +/- 5.19e-29]
 1 simple fusion rings up to isomorphism
 0 nonsimple fusion rings up to isomorphism
 
-Embedding dimension = 5
+embedding dimension = 5
 
-dehomogenization
+dehomogenization:
 0 0 0 0 1 
 
 ***********************************************************************

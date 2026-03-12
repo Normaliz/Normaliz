@@ -191,17 +191,6 @@ void SplitData::write_data() const{
     new_split_control.close();
 }
 
-/*
-long SplitData::necessary_rounds() const{
-
-    long requird_rounds = nr_splits_to_do / max_nr_splits_per_round;
-    if(nr_splits_to_do % max_nr_splits_per_round != 0)
-        requird_rounds++;
-    long rounds_done = this_round +1;
-    return requird_rounds - rounds_done;
-}
-*/
-
 
 //selects the split data for the given undex from the full data set
 void SplitData::set_this_split(const long& given_index){
@@ -230,26 +219,6 @@ void SplitData::set_this_split(const long& given_index){
         this_split_done_indices = refinement_done_indices[this_split_index];
     }
 }
-
-/*
-void next_round(const string& project) {
-
-    SplitData our_split;
-    our_split.read_data(project);
-    if(our_split.necessary_rounds() <= 0)
-        throw BadInputException("All rounds done. No next round!");
-    // archive <project>.spli.data that was jiust read
-    string command = "cp " + project + ".split.data " + project + "." + to_string(our_split.this_refinement) + "." + to_string(our_split.this_round) + ".split.data";
-    int dummy = system(command.c_str());
-    if(dummy > 0)
-        throw NoComputationException("Problem in archiving <project.split.data");
-    // now mwrite updated split data
-    our_split.this_round++;
-    our_split.write_data();
-    if(verbose)
-        verboseOutput() << "New round " << our_split.this_round << endl;
-}
-*/
 
 void read_prel_lat_file(ifstream& lat_in, const string& lat_name, size_t& min_return,  size_t& total_indices, size_t& done_indices,Matrix<long long>& TotalLat){
 

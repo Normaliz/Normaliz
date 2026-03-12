@@ -1135,6 +1135,7 @@ void Cone<Integer>::finish_standard_input(const ConeProperties& ToCompute){
         else
             Standard_Input[Type::inequalities] = Matrix<Integer>(dim);
     }
+
     if(set_total_degree){
         if(Grading.size() >0)
             throw BadInputException("Total degree not available if grading has been set.");
@@ -1798,6 +1799,7 @@ void Cone<Integer>::find_lower_and_upper_bounds(){
                     Equations.append(CoordZero);
                 }
         }
+
         BoundingInequalitiesLattP.append(BoundingIE[i]); // to be used in algorithms
         for(size_t j = 0; j < dim; ++j){
             if(j == dehom_coord)
@@ -2012,7 +2014,10 @@ void Cone<Integer>::process_lattice_data(const Matrix<Integer>& LatticeGenerator
 
     INTERRUPT_COMPUTATION_BY_EXCEPTION
 
-    if (Equations.nr_of_rows() > 0) {
+    // for fusion input cootr5dinate transformations are supoerfluous since only projer-and-lift will
+    // be used. It is possible at this point that Equations have been produced expressing
+    // that certain coordinates are 0.
+    if (Equations.nr_of_rows() > 0 && !is_fusion) {
         Matrix<Integer> Ker_Basis = BasisChange.to_sublattice_dual(Equations).kernel(allow_lll_here && !using_renf<Integer>());
         Sublattice_Representation<Integer> Basis_Change(Ker_Basis, false, allow_lll_here); // kernel is saturated
         compose_basis_change(Basis_Change);
@@ -3420,6 +3425,12 @@ template <typename Integer>
 bool Cone<Integer>::isReesPrimary() {
     compute(ConeProperty::IsReesPrimary);
     return rees_primary;
+}
+
+
+template <typename Integer>
+bool Cone<Integer>::isFusionInput(){
+    return is_fusion;
 }
 
 template <typename Integer>

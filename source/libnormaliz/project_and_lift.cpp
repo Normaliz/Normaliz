@@ -48,6 +48,44 @@ void write_control_file(const size_t split_level, const size_t nr_vectors){
 }
 
 template <typename Integer>
+void write_latt_points(const Matrix<Integer>& StoredLattPoints, const vector<key_t>& CoveredKey){
+    string name = global_project + ".split.vec";
+    ofstream out(name);
+    out<< CoveredKey.size() << endl;
+    out << CoveredKey;
+    out << StoredLattPoints.nr_of_rows() << endl;
+    StoredLattPoints.pretty_print(out);
+    out.close();
+}
+
+template <typename Integer>
+bool read_latt_points(list<vector<Integer> >& ReadLattPoints, size_t EmbDim){
+    string name = global_project + ".split.vec";
+    ifstream in(name);
+    if(!in.is_open())
+        return false;
+    size_t nr_covered_coords;
+    in >> nr_covered_coords;
+    vector<key_t> CoveredKey(nr_covered_coords);
+
+    for(size_t i = 0; i < nr_covered_coords; ++i){
+        in >> CoveredKey[i];
+    }
+    size_t nr_latt_points;
+    in >> nr_latt_points;
+    for(size_t i = 0; i < nr_latt_points; ++i){
+        vector<Integer> lp(EmbDim);
+        for(size_t j = 0; j < nr_covered_coords; ++j){
+            in >> lp[CoveredKey[j]];
+        }
+        ReadLattPoints.emplace_back(lp);
+    }
+    if(!in.good())
+        throw BadInputException("File" + name + " corrupt");
+    return true;
+}
+
+template <typename Integer>
 void write_local_solutions(const size_t level, const vector<vector<Integer> >& Sols){
     string file_name = global_project;
     file_name += "." + to_string(level) + ".sls";
@@ -577,7 +615,6 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
          Matrix<IntegerRet> ExtraInequalities(0, EmbDim);
          dynamic_bitset new_covered_0 = new_covered;
          new_covered_0[0] = 0;
-
 
          for(size_t i = 0; i <nr_all_supps ; ++i){
             if(used_supps[i])
@@ -1210,11 +1247,17 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_latt_points_by_patching() {
         throw NoComputationException("No output with SavedLocalSolutions");
     }
 
-    vector<IntegerRet> start(EmbDim);
-    start[0] = GD;
     list<vector<IntegerRet> > start_list;
-    start_list.emplace_back(start);
-    extend_points_to_next_coord(start_list, 0);
+    if(is_split_patching &&  read_latt_points(start_list, EmbDim)){
+        extend_points_to_next_coord(start_list, our_split.this_split_levels[0]);
+    }
+    else{
+        vector<IntegerRet> start(EmbDim);
+        start[0] = GD;
+        start_list.emplace_back(start);
+        extend_points_to_next_coord(start_list, 0);
+    }
+
     NrLP[EmbDim] = TotalNrLP;
     if(verbose){
         verboseOutput() << endl << "=======================================" << endl;
@@ -1625,6 +1668,14 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
     dynamic_bitset covered = AllCovered[coord];
 
     auto& CongsRestricted = AllCongsRestricted[coord];
+
+    Matrix<IntegerRet> StoredLattPoints; // given lattice ppoints to be used for distributed comp
+    if(distributed_computation){
+        StoredLattPoints.resize(0, CoveredKey.size());
+        for(auto& p: LatticePoints){
+                StoredLattPoints.append(v_select_coordinates(p, CoveredKey));
+        }
+    }
 
     /*
      * size_t max_nr_per_thread = 4000 / omp_get_max_threads(); //max_nr_new_latt_points_total/ omp_get_max_threads();
@@ -2108,9 +2159,10 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
        NrRemainingLP[this_patch] = nr_to_match - nr_points_matched;
 
        if(distributed_computation && NrRemainingLP[this_patch] > 0){
+           write_latt_points(StoredLattPoints, CoveredKey);
             write_control_file(this_patch, LatticePoints.size());
             throw NoComputationException("No output with DistribitedComp for patching");
-       }
+            }
 
        if(min_fall_back == 0 && NrRemainingLP[this_patch] == 0){ // no return to this level
             LocalSolutions_by_intersection_and_cong.clear();  // save memory
@@ -3749,7 +3801,9 @@ void ProjectAndLift<IntegerPL, IntegerRet>::setOptions(const ConeProperties& ToC
     if(is_split_patching)
         StartTime(stop_ckeck_begin);
 
-    if(ToCompute.test(ConeProperty::FusionRings) || ToCompute.test(ConeProperty::SimpleFusionRings)){
+    if(ToCompute.test(ConeProperty::FusionRings) || ToCompute.test(ConeProperty::SimpleFusionRings)
+         || ToCompute.test(ConeProperty::SingleFusionRing)
+    ){
         fusion_rings_computation = true;
         fusion.set_options(ToCompute, our_verbose);
     }
@@ -4020,8 +4074,7 @@ void project_and_lift(Cone<renf_elem_class>&  C, const ConeProperties& ToCompute
                                              const OurPolynomialSystem<renf_elem_class>& PolyInequs) {   // no primitive vgersion yet for renf
 
     // we go to an integer computation for FusionRings
-    if(ToCompute.test(ConeProperty::FusionRings) || ToCompute.test(ConeProperty::SimpleFusionRings)
-        || ToCompute.test(ConeProperty::SingleFusionRing) ){
+    if(C.isFusionInput()){
         bool short_allowed = false;
     /* // it does not real oay in terms of RAM to use short integers whose range is diffoicult to control.
         if(ToCompute.test(ConeProperty::ShortInt)){

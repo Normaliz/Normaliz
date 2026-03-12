@@ -62,17 +62,23 @@ vector<dynamic_bitset> make_all_subsets(const size_t card){
 }
 
 vector<vector<shortkey_t> > make_all_permutations(const size_t n){
+
+    size_t nn = n;
+    if(n > 9){
+        verboseOutput() << "WARNUNG: Perhaps only partial automorphism group." << endl;
+        nn = 9;
+    }
     vector<vector <vector<shortkey_t> > > Perms(1);
     Perms[0].resize(1);
     Perms[0][0].resize(1);
     Perms[0][0][0] = 0;
-    for(shortkey_t i=1; i<n; ++i){
+    for(shortkey_t i=1; i < nn; ++i){
         Perms.resize(i+1);
         for(shortkey_t j=0;j<=i;++j){
 
             INTERRUPT_COMPUTATION_BY_EXCEPTION
 
-            for(shortkey_t k=0; k< (shortkey_t) Perms[i-1].size(); ++k){
+            for(size_t  k=0; k< Perms[i-1].size(); ++k){
                 vector<shortkey_t> new_perm = Perms[i-1][k];
                 new_perm.resize(i+1);
                 new_perm[i] = i;
@@ -80,9 +86,17 @@ vector<vector<shortkey_t> > make_all_permutations(const size_t n){
                 Perms[i].push_back(new_perm);
             }
         }
+     }
+    sort(Perms[nn-1].begin(),Perms[nn-1].end());
+    if( n > 9){
+        for(auto& p: Perms[nn-1]){
+            p.resize(n);
+            for(shortkey_t j = nn; j < n; ++j)
+                p[j] = j;
+        }
     }
-    sort(Perms[n-1].begin(),Perms[n-1].end());
-    return Perms[n-1];
+
+    return Perms[nn-1];
 }
 
 template <typename Integer>
@@ -215,7 +229,7 @@ vector<vector<shortkey_t> > make_all_full_permutations(const vector<key_t>& type
     bool first = true;
     for(size_t i = 0; i < coincidence_keys.size(); ++i){
         if(collected_factors[i]){
-            if(first){
+             if(first){
                 AllFullPerms=FullPermsByCoinc[i];
                 first = false;
             }
@@ -624,6 +638,9 @@ void all_partitions(vector<dynamic_bitset>& Partitions, dynamic_bitset partition
     }
 
     for(size_t i = index; i < subsets_FPdim.size(); ++i){
+
+        INTERRUPT_COMPUTATION_BY_EXCEPTION
+
         dynamic_bitset intersect = already_covered & subsets_FPdim[i];
         if(intersect.any())
             continue;
@@ -658,6 +675,9 @@ vector<vector<dynamic_bitset> > make_FPdim_partitions(const vector<Integer>& d, 
 
     vector<vector<dynamic_bitset> > FPdimParts;
     for(auto& p :Partitions){
+
+        INTERRUPT_COMPUTATION_BY_EXCEPTION
+
         vector<key_t> selection = bitset_to_key(p);
         vector<dynamic_bitset> FPdimPart;
         vector<dynamic_bitset> FPdimPart_sorted;
@@ -970,7 +990,8 @@ void FusionComp<Integer>::set_options(const ConeProperties& ToCompute, const boo
 
     verbose = verb;
     check_simplicity= ToCompute.test(ConeProperty::SimpleFusionRings);
-    use_automorphisms = ToCompute.test(ConeProperty::FusionRings) || ToCompute.test(ConeProperty::SimpleFusionRings);
+    use_automorphisms = ToCompute.test(ConeProperty::FusionRings) || ToCompute.test(ConeProperty::SimpleFusionRings)
+            ||ToCompute.test(ConeProperty::SingleFusionRing);
     if(check_simplicity)
         prepare_simplicity_check();
     if(use_automorphisms)

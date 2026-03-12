@@ -470,7 +470,6 @@ void make_full_input(FusionBasic& FusionInput, InputMap<Integer>& input_data) {
     input_data.clear();
     input_data[Type::inhom_inequalities] = InEqu;
     input_data[Type::inequalities] = Matrix<Integer>(InEqu.nr_of_columns()-1);
-
 }
 
 template <typename Integer>
