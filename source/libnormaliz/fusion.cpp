@@ -1436,7 +1436,7 @@ Matrix<Integer> FusionComp<Integer>::make_homomorphism_constraints(){
     Image.fusion_type = fusion_image_type;
     Image.duality = fusion_image_duality;
     Image.fusion_rank = fusion_image_rank;
-    Image.commutative = commutative;
+    Image.commutative = fusion_image_commutative;
 
     FusionComp<Integer> ImageComp(Image);
     ImageComp.make_CoordMap();
