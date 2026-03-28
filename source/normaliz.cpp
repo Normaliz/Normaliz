@@ -468,7 +468,7 @@ void compute_and_output(OptionsHandler& options,
         cout << "Computation was interrupted." << endl;
         cout << e.what() << endl;
         if(!output_on_interrupt){
-            cout << "No output on inmterrupt" << endl;
+            cout << "No output on interrupt" << endl;
             exit(10);
         }
         cout << "Output on interrupt activated. Writing available data." << endl;

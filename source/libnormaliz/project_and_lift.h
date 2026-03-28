@@ -43,7 +43,7 @@ const size_t max_nr_new_latt_points_total = 100000; // before we go one level up
 const size_t max_nr_new_latt_points_patching = 4000; // the same for patching
 const size_t nr_extensions_for_elimination_equs = 10000;
 const size_t nr_extensions_for_elimination_inequs = 10000;
-const size_t nr_extensions_for_elimination_automs = 10000;
+const size_t nr_extensions_for_elimination_automs = 1000;
 
 // the project-and-lift algorithm for lattice points in a polytope
 
@@ -183,6 +183,11 @@ class ProjectAndLift {
     vector<dynamic_bitset> CongIndicator; // stores supports of congruences
     Matrix<double> WeightOfCoord;
     Matrix<IntegerPL> DefiningSupps;
+
+    // Measures for efficienvcy of equations, inequalities and automorphisms
+    vector< vector<size_t> > TotalEqusStat;
+    vector< vector<size_t> > TotalInequsStat;
+    vector< vector<size_t> > TotalAutomsStat;
 
     // Matrix<IntegerRet> SavedLocalSolutions;
 

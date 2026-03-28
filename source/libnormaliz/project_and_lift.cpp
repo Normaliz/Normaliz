@@ -34,7 +34,7 @@ using std::list;
 using std::pair;
 //---------------------------------------------------------------------------
 
-vector<long long> test_v ={ 1,1,1,0,0,0,1,0,1,0,0,1,1,1,1,2,1,1,1,1,1,1,2,2,3,3,1,2,2,3,3,4,4,5,6,7};
+// vector<long long> test_v ={ 1,1,1,0,0,0,1,0,1,0,0,1,1,1,1,2,1,1,1,1,1,1,2,2,3,3,1,2,2,3,3,4,4,5,6,7};
 
 // classless functions
 
@@ -406,6 +406,10 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
     // poly_congs_minimized.resize(EmbDim);
     automs_minimized.resize(EmbDim);
 
+    TotalEqusStat.resize(EmbDim);;
+    TotalInequsStat.resize(EmbDim);
+    TotalAutomsStat.resize(EmbDim);;
+
     // First we compute the patches
     for(size_t coord = 1; coord < EmbDim; coord++){
 
@@ -642,6 +646,13 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
                 }
              }
         }
+
+        for(size_t i = 0; i < ExtraInequalities.nr_of_rows(); ++i){
+            v_make_prime(ExtraInequalities[i]);
+
+        }
+        ExtraInequalities.remove_duplicate_and_zero_rows();
+
         // Collect relevant polynomial constraints
         // The keys are used for terminal output
         vector<key_t> PolyEqusKey, PolyInequsKey, RestrictablePolyInequsKey;
@@ -651,6 +662,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
          * congruiences.
          * Not yet implemented further since it is unclear whether it makes sense.
          *  TODO don't delete
+         *
 
         size_t linear_in_new_covered = 0;
         for(size_t i = 0; i < PolyEquations.size(); ++i){
@@ -669,16 +681,20 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
 
         // first the equations
         // bool first_rest = true;
+
+        // CoCoA::GlobalManager CoCoAFoundations;
+        // CoCoA::SparsePolyRing RQQ = CoCoA::NewPolyRing_DMPI(CoCoA::RingQQ(), EmbDim + 1, CoCoA::lex);
         for(size_t i = 0; i < PolyEquations.size(); ++i){
             if(!PolyEquations[i].support.is_subset_of(new_covered)) // not yet usable
                 continue;
             if(PolyEquations[i].support.is_subset_of(covered)) // already used
                 continue;
-            OurPolynomial<IntegerRet> Restrict = PolyEquations[i].restrict_to(covered);
+            // OurPolynomial<IntegerRet> Restrict = PolyEquations[i].restrict_to(covered);
             /* if(first_rest){
                 cout << "Rest " << i << " --- " <<  Restrict.size() << " of " << PolyEquations[i].size() << endl;
                 first_rest = false;
             }*/
+            // cout << PolyEquations[i].ToCoCoA(RQQ) << ";" << endl;
             AllPolyEqus[coord].emplace_back(PolyEquations[i].split(covered));
             AllPolyEqus[coord].back().first.vectorize_deg_2();
             AllPolyEqus[coord].back().second.vectorize_deg_2();
@@ -1005,8 +1021,9 @@ bool ProjectAndLift<IntegerPL,IntegerRet>::order_patches_user_defined() {
         for(size_t i = 0; i < nr_patch; ++i){
             size_t j;
             in_order >> j;
-            if(j >= EmbDim || AllPatches[j].empty() )
+            if(j >= EmbDim || AllPatches[j].empty() ){
                 throw BadInputException("File defining insertion order corrupt");
+            }
             if(used_patches[j])
                 throw BadInputException("<project>.order.patches contains " + to_string(j) + " more than once");
             used_patches[j] = true;
@@ -1659,6 +1676,39 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
     auto&& CoveredKeyInverse = AllCoveredKeyInverse[coord];
     auto&  Automorphisms = fusion.Automorphisms;
 
+    auto& poly_equs_stat_total = TotalEqusStat[coord];
+    vector<vector<size_t> > poly_equs_stat;
+    if(!poly_equs_minimized[coord]){
+        poly_equs_stat.resize(omp_get_max_threads());  // counts the number of "successful". i.e. != 0,
+        for(auto& p:poly_equs_stat)                    // evaluations of a mpolynomial erquation
+            // p.resize(PolyEqusThread[0].size());
+            p.resize(PolyEqus.size());
+        if(poly_equs_stat_total.size() == 0)
+            poly_equs_stat_total.resize(poly_equs_stat[0].size());
+    }
+
+
+    auto& poly_inequs_stat_total = TotalInequsStat[coord];
+    vector<vector<size_t> > poly_inequs_stat;
+    if(!poly_inequs_minimized[coord]){
+        poly_inequs_stat.resize(omp_get_max_threads());  // counts the number of "successful". i.e. < 0,
+        for(auto& p:poly_inequs_stat)                    // evaluations of a restricted mpolynomial inequalities
+            // p.resize(PolyInequsThread[0].size());
+            p.resize(PolyInequs.size());
+        if(poly_inequs_stat_total.size() == 0)
+            poly_inequs_stat_total.resize(poly_inequs_stat[0].size());
+    }
+
+    auto& automs_stat_total = TotalAutomsStat[coord];
+    vector<vector<size_t> > automs_stat;
+    if(!automs_minimized[coord]){
+        automs_stat.resize(omp_get_max_threads());  // counts the number of "successful". i.e. < 0,
+        for(auto& p:automs_stat)                    // evaluations of a restricted mpolynomial inequalities
+            p.resize(Automs.size());
+        if(automs_stat_total.size() == 0)
+            automs_stat_total.resize(automs_stat[0].size());
+    }
+
     // auto& LocalPL = AllLocalPL[coord];
     auto&& LocalSolutions_by_intersection_and_cong =
             AllLocalSolutions_by_intersection_and_cong[coord];
@@ -1777,8 +1827,23 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         apply_automorphisms = true;
     }
 
+    size_t nr_extensions = 0;  //statistics for this run of the while loop
+    size_t nr_caught_by_restricted = 0;  //restricted inequalities
+    size_t nr_caught_by_simplicity = 0;  // caught by simplicity check
+    size_t nr_caught_by_equations = 0;  //statistics for this run of the while loop
+    size_t nr_caught_by_automs = 0;  //statistics for this run of the while loop
+    size_t nr_points_done_in_this_round = 0;
+
+    size_t nr_intersect = intersection_key.size();
+    dynamic_bitset full_support(EmbDim);
+    full_support.flip();
+
+    size_t nr_latt_points_processed = 0;
 
     while (true) {
+
+
+    size_t nr_new_latt_points = 0;  // counts number of new lattice points produced in the loop
 
         /* if(talkative){
             if(nr_rounds > 0 && verbose){
@@ -1796,12 +1861,16 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         struct timeval step_time_begin;
         StartTime(step_time_begin);
 
-        if(talkative){
-            verboseOutput() << "----" << endl;
-            verboseOutput() <<  LevelPatches[coord] << " / " << coord << " left " << nr_to_match - nr_points_matched;
-                if(min_fall_back > 0)
-                    verboseOutput() << " min " << min_fall_back << " max " << max_fall_back;
-            verboseOutput()    << endl;
+        if(verbose){
+            if(talkative){
+                verboseOutput() << "----" << endl;
+                verboseOutput() <<  LevelPatches[coord] << " / " << coord << " left " << nr_to_match - nr_points_matched;
+                    if(min_fall_back > 0)
+                        verboseOutput() << " min " << min_fall_back << " max " << max_fall_back;
+                verboseOutput()    << endl;
+            }
+            else
+                verboseOutput() << LevelPatches[coord] << " m " << min_fall_back << " M " << max_fall_back << endl;
         }
 
         bool skip_remaining;
@@ -1810,49 +1879,6 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         skip_remaining = false;
         int omp_start_level = omp_get_level();
 
-
-        size_t nr_new_latt_points = 0;  // counts number of new lattice points produced in the loop
-        size_t nr_extensions = 0;  //statistics for this run of the while loop
-        size_t nr_caught_by_restricted = 0;  //restricted inequalities
-        size_t nr_caught_by_simplicity = 0;  // caught by simplicity check
-        size_t nr_caught_by_equations = 0;  //statistics for this run of the while loop
-        size_t nr_caught_by_automs = 0;  //statistics for this run of the while loop
-        size_t nr_points_done_in_this_round = 0;
-
-        vector<vector<size_t> > poly_equs_stat; // TODO make macro
-        vector<size_t> poly_equs_stat_total;
-        if(!poly_equs_minimized[coord]){
-            poly_equs_stat.resize(omp_get_max_threads());  // counts the number of "successful". i.e. != 0,
-            for(auto& p:poly_equs_stat)                    // evaluations of a mpolynomial erquation
-                // p.resize(PolyEqusThread[0].size());
-                p.resize(PolyEqus.size());
-            poly_equs_stat_total.resize(poly_equs_stat[0].size());
-        }
-
-        vector<vector<size_t> > poly_inequs_stat;
-        vector<size_t> poly_inequs_stat_total;
-        if(!poly_inequs_minimized[coord]){
-            poly_inequs_stat.resize(omp_get_max_threads());  // counts the number of "successful". i.e. < 0,
-            for(auto& p:poly_inequs_stat)                    // evaluations of a restricted mpolynomial inequalities
-                // p.resize(PolyInequsThread[0].size());
-                p.resize(PolyInequs.size());
-            poly_inequs_stat_total.resize(poly_inequs_stat[0].size());
-        }
-
-        vector<vector<size_t> > automs_stat;
-        vector<size_t> automs_stat_total;
-        if(!automs_minimized[coord]){
-            automs_stat.resize(omp_get_max_threads());  // counts the number of "successful". i.e. < 0,
-            for(auto& p:automs_stat)                    // evaluations of a restricted mpolynomial inequalities
-                p.resize(Automs.size());
-            automs_stat_total.resize(automs_stat[0].size());
-        }
-
-        size_t nr_intersect = intersection_key.size();
-        dynamic_bitset full_support(EmbDim);
-        full_support.flip();
-
-        size_t nr_latt_points_processed = 0;
 
 #pragma omp parallel
         {
@@ -2068,7 +2094,11 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         if (!(tmp_exception == 0))
             std::rethrow_exception(tmp_exception);
 
-        list<vector<IntegerRet> > NewLatticePoints;  // lattice points computed in this round
+            // *******************************************
+        // Collect statistical data from threads
+        // *******************************************
+
+       list<vector<IntegerRet> > NewLatticePoints;  // lattice points computed in this round
 
         if(!poly_equs_minimized[coord]){
             for(size_t i = 0; i< poly_equs_stat.size(); ++i){
@@ -2084,17 +2114,15 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
             }
         }
 
-        assert(NewLatticePoints.empty());
-
-        for (size_t i = 0; i < Deg1Thread.size(); ++i)
-            NewLatticePoints.splice(NewLatticePoints.end(), Deg1Thread[i]);
-
         if(!automs_minimized[coord]){
             for(size_t i = 0; i< automs_stat.size(); ++i){
                     for(size_t j = 0; j < automs_stat[0].size(); ++j)
                         automs_stat_total[j] += automs_stat[i][j];
             }
         }
+
+        for(size_t i = 0; i < Deg1Thread.size(); ++i)
+            NewLatticePoints.splice(NewLatticePoints.end(), Deg1Thread[i]);
 
         if(last_coord)
             collect_results(NewLatticePoints); // clears NewLatticePoints
@@ -2104,9 +2132,10 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         // *******************************************
         // Heuristic minimization of equations etc.
         // *******************************************
-        if(!poly_equs_minimized[coord] &&  nr_extensions > nr_extensions_for_elimination_equs){
+
+        if(!poly_equs_minimized[coord] &&  NrDoneLP[coord] > nr_extensions_for_elimination_equs){
             poly_equs_minimized[coord] = true;
-             vector < pair<OurPolynomial<IntegerRet>, OurPolynomial<IntegerRet> > > EffectivePolys;
+            vector < pair<OurPolynomial<IntegerRet>, OurPolynomial<IntegerRet> > > EffectivePolys;
             for(size_t i = 0; i < PolyEqus.size(); ++i){
                 if(poly_equs_stat_total[i] > 0){
                     EffectivePolys.emplace_back(PolyEqus[i]);
@@ -2119,10 +2148,10 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
 
             /* for(size_t thr = 0; thr < PolyEqusThread.size(); ++thr)
                     PolyEqusThread[thr] = EffectivePolys;*/
-            PolyEqus = EffectivePolys;
+            swap(PolyEqus,EffectivePolys);
         }
 
-        if(!automs_minimized[coord] &&  nr_extensions > nr_extensions_for_elimination_automs &&!last_coord){
+        if(!automs_minimized[coord] &&  NrDoneLP[coord] > nr_extensions_for_elimination_automs &&!last_coord){
             automs_minimized[coord] = true;
             vector<key_t> EffectiveAutoms;
             for(size_t i = 0; i < Automs.size(); ++i){
@@ -2134,11 +2163,11 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                 verboseOutput() << LevelPatches[coord] << " / " << coord << " active automorphisms "
                   << EffectiveAutoms.size() << " of " << Automorphisms.size() << endl;
             }
-             Automs = EffectiveAutoms;
+            swap(Automs, EffectiveAutoms);
         }
 
         //Discard ineffective restrictable plolynjomial inequalities
-        if(!poly_inequs_minimized[coord] &&  nr_extensions > nr_extensions_for_elimination_inequs){
+        if(!poly_inequs_minimized[coord] &&  NrDoneLP[coord] > nr_extensions_for_elimination_inequs &&!last_coord){
             poly_inequs_minimized[coord] = true;
             OurPolynomialSystem<IntegerRet> EffectivePolyInequs;
             for(size_t i = 0; i < PolyInequs.size(); ++i){
@@ -2153,7 +2182,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
 
              /* for(size_t thr = 0; thr < PolyEqusThread.size(); ++thr)
                 PolyInequsThread[thr] = EffectivePolyInequs;*/
-             PolyInequs = EffectivePolyInequs;
+             swap(PolyInequs , EffectivePolyInequs);
         }
 
        NrRemainingLP[this_patch] = nr_to_match - nr_points_matched;
@@ -2228,14 +2257,14 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         double time_to_ascent = 0;
 
         if(!last_coord && NewLatticePoints.size() > 0){ // we must go up
-            if(verbose && !talkative){
+            /*if(verbose && !talkative){
                 verboseOutput() << "+" << flush;
                 verb_length++;
                 if(verb_length == 50){
                     verboseOutput() << endl;
                     verb_length = 0;
                 }
-            }
+            }*/
 
             if(NrNodes[this_patch + 1] == 1 || this_patch == min_return_patch)
                 NrNodes[this_patch +1] = NrNodes[this_patch] * (expected_number_of_rounds +1);
@@ -2243,19 +2272,20 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
             for(size_t i = this_patch + 2; i < NrNodes.size(); ++i)
                 NrNodes[i] = 1;
 
-            // ***********************************   ascent to next patch
+            // ***********************************
+            // ascent to next patch
             time_to_ascent = MeasureTime(time_begin);
             extend_points_to_next_coord(NewLatticePoints, this_patch + 1);
             // ****************************************** down from next patch
 
-            if(verbose && !talkative){
+            /*if(verbose && !talkative){
                 verboseOutput() << "-" << flush;
                 verb_length++;
                 if(verb_length == 50){
                     verboseOutput() << endl;
                     verb_length = 0;
                  }
-            }
+            }*/
         }
 
         FreeVect.splice(FreeVect.end(), NewLatticePoints);
@@ -2264,7 +2294,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         if(single_point_found)
             break;
 
-        double expected_time = 0; // to make gcc happy
+        // double expected_time = 0; // to make gcc happy
         double total_expected_time = 0;
 
         bool time_measured = false;
@@ -2273,7 +2303,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         if(nr_points_done_in_this_round > 0 && NrRemainingLP[this_patch] > 0 && nr_rounds == 1){
             time_measured = true;
             double time_spent = MeasureTime(time_begin);
-            expected_time = time_spent*expected_number_of_rounds;
+            // expected_time = time_spent*expected_number_of_rounds;
 
             // -------------------------------
 
@@ -2283,14 +2313,10 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         }
 
         if(time_measured){
-            if(((talkative || nr_time_printed <= 10) ||  this_patch == min_return_patch)
-                            && verbose && (nr_rounds ==1 || this_patch == min_return_patch) ){
-                nr_time_printed++;
-                if(verbose){
+            if(verbose && (nr_rounds ==1 || this_patch == min_return_patch)){
+                if(talkative)
                     verboseOutput() << "---------" << endl;
-                    verboseOutput() << "expected future time on level  " << LevelPatches[coord] << "  " << expected_time;
-                    verboseOutput() << " / total " << total_expected_time << endl;
-                }
+                verboseOutput() << "expected time " << total_expected_time << endl;
             }
         }
 
