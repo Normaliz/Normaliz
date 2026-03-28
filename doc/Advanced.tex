@@ -260,7 +260,7 @@ Finally it is possible to define the patching order by hand. To this end one use
 \begin{itemize}
 	\itemtta[<project>.order.patches]{project>.order.patches}
 \end{itemize}
-It contains a sequence of numbers: the first is the number \verb|<n>| of patches that follow, and then the first \verb|<n>| patches are inserted in this order. The remaining ones are inserted linearly.
+It starts with the string \verb*|nr_patches|, followed by a sequence of numbers: the first is the number \verb|<n>| of patches, and these  \verb|<n>| patches are inserted in the given order. The remaining patches are inserted linearly. However, it is difficult to beat the order chosen by Normaliz.
 
 The system of polynomial equations or inequalities  can be highly overdetermined. For example, this true for the associativity conditions of fusion rings (see Appendix \ref{fusion_rings}). In very rare cases it could be useful to use
 \begin{itemize}
@@ -358,7 +358,7 @@ The main advantage is that it does not store the lattice points and therefore ca
 
 \verb|NumberLatticePoints| uses project-and-lift (with floating point if \verb|ProjectionFloat| is set). Therefore don't block it. If the number of lattice points is so large that memory becomes a problem, then the primal and the dual algorithm will most likely not be able to compute them.
 
-\subsubsection{A single lattice oint}\label{single_latt_point}
+\subsubsection{A single lattice point}\label{single_latt_point}
 
 One can ask for a single lattice point by 
 \begin{itemize}

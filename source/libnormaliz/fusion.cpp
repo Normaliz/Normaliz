@@ -1653,20 +1653,30 @@ set<map<vector<key_t>, Integer> > FusionComp<Integer>::make_associativity_constr
                         prod(t_3, t_4);
                         subtracct(P, t_3);
                     }
-                    bool nonzero = false;
+                    bool nonzero = false, negative = false;
                     for(auto& pp: P){
                         if(pp.second != 0){
                             // cout << pp.second << " -- " << pp.first;
                             nonzero = true;
+                            if(pp.second < 0)
+                                negative = true;
+                            break;
                         }
                     }
-                    if(nonzero)
-
+                    if(nonzero){
+                        if(negative){
+                            for(auto& pp: P){
+                                pp.second *= -1;
+                            }
+                        }
                         Polys.insert(P);
+                    }
                 }
             }
         }
     }
+
+
 
     if(libnormaliz::verbose)
         verboseOutput() << "Made " << Polys.size() << " associativity constraints for fusion rings" << endl;
