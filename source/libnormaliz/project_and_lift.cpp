@@ -834,6 +834,9 @@ vector<pair<size_t, vector<key_t> > > ProjectAndLift<IntegerPL,IntegerRet>::
         }
     }
 
+    // for(auto& e: covering_equations)
+        // cout << e.second;
+
     return covering_equations;
 }
 
@@ -1401,6 +1404,8 @@ void select_and_split(list<vector<Integer> >& LatticePoints, const key_t& this_p
         verboseOutput() << Selection.size() << " lattice points after splitting" << endl;
 
     swap(LatticePoints, Selection);
+
+    // Matrix<Integer>(LatticePoints).debug_print();
 }
 
 //--------------------------------------------------------------------------
