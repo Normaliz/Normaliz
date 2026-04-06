@@ -1024,6 +1024,7 @@ bool ProjectAndLift<IntegerPL,IntegerRet>::order_patches_user_defined() {
         for(size_t i = 0; i < nr_patch; ++i){
             size_t j;
             in_order >> j;
+            cout << j << endl;
             if(j >= EmbDim || AllPatches[j].empty() ){
                 throw BadInputException("File defining insertion order corrupt");
             }
@@ -1770,6 +1771,13 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
     if(min_fall_back == 0)
         sort_lattice_points_by_overlap(LatticePoints, intersection_key);
 
+    if(min_fall_back != old_min_fall_back){
+        if(verbose && !talkative){
+            verboseOutput() << "min fall back " << min_fall_back << endl;
+        }
+        old_min_fall_back = min_fall_back;
+    }
+
     INTERRUPT_COMPUTATION_BY_EXCEPTION
 
     // We extract the "intersection coordinates" from the LatticePoints
@@ -1875,7 +1883,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                 verboseOutput()    << endl;
             }
             else
-                verboseOutput() << LevelPatches[coord] << " m " << min_fall_back << " M " << max_fall_back << endl;
+                verboseOutput() << LevelPatches[coord] << " M " << max_fall_back << endl;
         }
 
         bool skip_remaining;
@@ -3385,6 +3393,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::initialize(const Matrix<IntegerPL>& 
     min_return_patch = 0;
     NrLP.resize(EmbDim + 1);
     nr_time_printed = 0;
+    old_min_fall_back = 0;
 
     Congs = Matrix<IntegerRet>(0, EmbDim + 1);
 

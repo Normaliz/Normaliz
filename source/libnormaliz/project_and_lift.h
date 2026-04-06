@@ -61,6 +61,8 @@ class ProjectAndLift {
     size_t nr_extensions_for_elimination_inequs;
     size_t nr_extensions_for_elimination_automs;
 
+    size_t old_min_fall_back;
+
     list<vector<IntegerRet> > start_list; // list of lattice points to start from
                                           // and to be lifted to full dimension
 
