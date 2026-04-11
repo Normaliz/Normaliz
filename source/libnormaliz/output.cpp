@@ -2101,12 +2101,12 @@ void write_fusion_files(const FusionBasic fusion_basic, const string& name, cons
 
     if(embdim > 0){
 
-        vector<Integer> dehom(embdim);
-        dehom.back() = 1;
+        //vector<Integer> dehom(embdim);
+        // dehom.back() = 1;
         out << "embedding dimension = " << embdim << endl;
-        out << endl;
-        out << "dehomogenization:" << endl;
-        out << dehom;
+        // out << endl;
+        // out << "dehomogenization:" << endl;
+        //out << dehom;
     }
 
     out << endl;
