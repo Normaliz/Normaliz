@@ -389,6 +389,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
     AllLocalSolutions.resize(EmbDim);
     AllShortLocalSolutions.resize(EmbDim);
 
+    All_AMV_constraint_keys.resize(EmbDim);
+
     DefiningSupps.resize(EmbDim);
 
     if(fusion.check_simplicity){
@@ -481,6 +483,51 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
     //  Indicator[next_supp] ersetzen durch AllPatches
 
     vector<key_t> old_coord_key;
+
+    //
+    // Making of the AMV constraints
+    //
+
+    has_AMV_constraints = false;
+
+    if(fusion.Spins.nr_of_rows() > 0){
+
+        has_AMV_constraints = true;
+        if(verbose)
+            verboseOutput() << "Prepating Anderson-Moore-Vafa constraints" << endl;
+
+        AMV_constraints = fusion.make_AndersonMooreVafa();
+        if(verbose)
+            verboseOutput() << "Prepared " << AMV_constraints.size() << " Anderson-Moore-Vafa constraints" << endl;
+
+        for(auto& c: AMV_constraints){
+            dynamic_bitset supp(EmbDim);
+            // the last polynomial is t_i + t_j + t_k + t_l
+            for(size_t i = 0; i < c.size() - 1; ++i)
+                supp |= c[i].support;
+            AMV_Supps.push_back(supp);
+        }
+
+        mpz_class SpinDenom_mpz = 1;
+        for(size_t i = 0; i < fusion.Spins.nr_of_rows(); ++i){
+            for(size_t j = 0; j < fusion.Spins.nr_of_columns(); ++j){
+                SpinDenom_mpz = libnormaliz::lcm(SpinDenom_mpz, fusion.Spins[i][j].get_den());
+            }
+        }
+        Spins.resize(fusion.Spins.nr_of_rows(), EmbDim);
+        for(size_t i = 0; i < fusion.Spins.nr_of_rows(); ++i){
+            for(size_t j = 0; j < fusion.Spins.nr_of_columns(); ++j){
+                mpq_class h = fusion.Spins[i][j] * SpinDenom_mpz ;
+                Spins[i][j] = convertTo<IntegerRet>(h.get_num());
+            }
+        }
+        SpinDenom = convertTo<IntegerRet>(SpinDenom_mpz);
+        cout << "DDDDDDDDD " << SpinDenom << endl;
+        fusion.Spins.debug_print('F');
+        Spins.debug_print();
+
+    }
+    // AMV_constraints done
 
     for(auto& coord: InsertionOrderPatches){
 
@@ -735,6 +782,17 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
 
         AllAutoms[coord] =identity_key(fusion.Automorphisms.size()); // initialized with all automorphisms in the given order
 
+        if(has_AMV_constraints){
+            for(size_t i = 0; i < AMV_constraints.size(); ++i){
+                if(AMV_Supps[i].is_subset_of(covered) )
+                    continue;
+                if(!AMV_Supps[i].is_subset_of(new_covered))
+                    continue;
+                // auto Blabla = AMV_constraints[i];
+                All_AMV_constraint_keys[coord].push_back(i);
+            }
+        }
+
         if(talkative){
                 verboseOutput() << "index coord " << coord << " nr covered coordinates " << new_covered.count() << endl;
             if(coord == critical_coord_simplicity)
@@ -745,6 +803,9 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
                 verboseOutput() << "nr poly inequalities " << AllPolyInequs[coord].size() << endl;
             if(verbose && AllCongsRestricted[coord].size() > 0){
                 verboseOutput() <<  "nr congruences " << AllCongsRestricted[coord].size() << endl;
+            }
+            if(has_AMV_constraints){
+                verboseOutput() << "nr AMV constraints " << All_AMV_constraint_keys[coord].size() << endl;
             }
             if(verbose)
                 verboseOutput() << "---------------------------------------------------------------" << endl;
@@ -1507,7 +1568,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::store_new_vector(const vector<Integer
         Deg1Thread[tn].push_front(new_vect);
 }
 
-//--------------------------------------------------------------------------
+// //-------------------------------------------------------------------------
 
 template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL,IntegerRet>::compute_local_solutions(const key_t this_patch,
@@ -1638,7 +1699,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_local_solutions(const key_t t
 
     // if(talkative){
     //    verboseOutput() << "Local solutions sorted" << endl;
-    // }
+    //
+
 }
 
 //---------------------------------------------------------------------------
@@ -1845,6 +1907,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
     size_t nr_caught_by_simplicity = 0;  // caught by simplicity check
     size_t nr_caught_by_equations = 0;  //statistics for this run of the while loop
     size_t nr_caught_by_automs = 0;  //statistics for this run of the while loop
+    size_t nr_caught_by_AMV = 0;  //statistics for this run of the while loop
     size_t nr_points_done_in_this_round = 0;
 
     size_t nr_intersect = intersection_key.size();
@@ -2066,6 +2129,13 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                         }
                     }
                 }
+                if(has_AMV_constraints && can_be_inserted){
+                    can_be_inserted = check_AMV_constraints(NewLattPoint, coord);
+                    if(!can_be_inserted)
+#pragma omp atomic
+                        nr_caught_by_AMV++;
+                }
+
                 if(can_be_inserted){
 #pragma omp atomic
                     nr_new_latt_points++;
@@ -2234,6 +2304,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                 verboseOutput() << " smp " << nr_caught_by_simplicity;
             if(nr_caught_by_automs > 0)
                 verboseOutput() << " aut " << nr_caught_by_automs;
+            if(nr_caught_by_AMV > 0)
+                verboseOutput() << " AMV " << nr_caught_by_AMV;
             if(nr_points_done_in_this_round > 0)
                 verboseOutput() << " exp rnd " << expected_number_of_rounds;
             ExpectedNrRounds[this_patch] = expected_number_of_rounds;
@@ -2424,6 +2496,42 @@ vector<size_t> ProjectAndLift<IntegerPL, IntegerRet>::order_supps(const Matrix<I
     assert(Order.size() == Supps.nr_of_rows());
 
     return Order;
+}
+
+//---------------------------------------------------------------------------
+
+template <typename IntegerPL, typename IntegerRet>
+bool ProjectAndLift<IntegerPL,IntegerRet>::check_AMV_constraints(const vector<IntegerRet>& LattPoint, const size_t coord) {
+
+        // CoCoA::GlobalManager CoCoAFoundations;
+        // CoCoA::SparsePolyRing RQQ = CoCoA::NewPolyRing_DMPI(CoCoA::RingQQ(), EmbDim + 1, CoCoA::lex);
+
+        // cout << "KEYS " << All_AMV_constraint_keys[coord];
+
+    for(auto& c: All_AMV_constraint_keys[coord]){
+
+        // cout << "****************************" << endl;
+        IntegerRet LHS_1 = AMV_constraints[c][0].evaluate(LattPoint);
+        IntegerRet LHS_2 = AMV_constraints[c].back().evaluate(Spins[0]);
+        IntegerRet LHS = LHS_1 * LHS_2;
+        IntegerRet RHS = 0;
+        for(size_t i = 0; i < fusion.fusion_rank; ++i){
+            // cout << "iiiiiiii " << i << " ";
+            // cout << AMV_constraints[c][i + 1].ToCoCoA(RQQ) << ";" << endl;
+            IntegerRet Help = AMV_constraints[c][i + 1].evaluate(LattPoint) * Spins[0][i];
+            RHS += Help;
+        }
+        // cout << "LHS " << LHS << " RHS " << RHS;
+        IntegerRet Diff = LHS - RHS;
+        // cout << " Diff " << Diff << endl;
+        if(Diff % SpinDenom != 0){
+            // cout << "FALSE "<< endl;
+            return false;
+        }
+    }
+    // ncout << "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$" << endl;
+    // cout << "TRUE " << endl;
+    return true;
 }
 
 //---------------------------------------------------------------------------
@@ -4019,7 +4127,8 @@ void project_and_lift(Cone<renf_elem_class>&  C, const ConeProperties& ToCompute
                                              const OurPolynomialSystem<renf_elem_class>& PolyEqus) {
 
     bool count_only = ToCompute.test(ConeProperty::NumberLatticePoints);
-    bool all_points = !ToCompute.test(ConeProperty::SingleFusionRing);
+    bool all_points = !ToCompute.test(ConeProperty::SingleFusionRing)
+                      && !ToCompute.test(ConeProperty::SingleLatticePoint);
     // Supps.debug_print();
 
     size_t rank = C.getRankRaw();
@@ -4114,7 +4223,7 @@ void project_and_lift(Cone<renf_elem_class>&  C, const ConeProperties& ToCompute
                                              const OurPolynomialSystem<renf_elem_class>& PolyInequs) {   // no primitive vgersion yet for renf
 
     // we go to an integer computation for FusionRings
-    if(C.isFusionInput()){
+    if(C.isFusionInput() || C.isFusionPartitionInput()){
         bool short_allowed = false;
     /* // it does not real oay in terms of RAM to use short integers whose range is diffoicult to control.
         if(ToCompute.test(ConeProperty::ShortInt)){

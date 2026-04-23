@@ -3429,6 +3429,11 @@ bool Cone<Integer>::isReesPrimary() {
 
 
 template <typename Integer>
+bool Cone<Integer>::isFusionPartitionInput(){
+    return is_fusion_partition;
+}
+
+template <typename Integer>
 bool Cone<Integer>::isFusionInput(){
     return is_fusion;
 }

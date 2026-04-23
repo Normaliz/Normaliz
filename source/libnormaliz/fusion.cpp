@@ -29,6 +29,7 @@
 #include "libnormaliz/vector_operations.h"
 #include "libnormaliz/list_and_map_operations.h"
 #include "libnormaliz/input.h"
+#include "nmz_polynomial.h"
 
 namespace libnormaliz{
 using std::vector;
@@ -315,6 +316,7 @@ FusionBasic::FusionBasic(const FusionComp<Integer>& FC){
         fusion_image_commutative = FC.fusion_image_commutative;
         fusion_image_type_string = FC.fusion_image_type_string;
     }
+    Spins = FC.Spins;
 
     //Automorphisms = FC.Automorphisms; // not needed at pressent
     //type_automs = F:type_automs;
@@ -880,6 +882,8 @@ FusionComp<Integer>::FusionComp(const FusionBasic& basic){
         fusion_image_commutative = basic.fusion_image_commutative;
         fusion_image_type_string = basic.fusion_image_type_string;
     }
+
+    Spins = basic.Spins;
 }
 
 template <typename Integer>
@@ -1081,6 +1085,12 @@ key_t FusionComp<Integer>::coord(vector<key_t>& ind_tuple){
 }
 
 template <typename Integer>
+key_t FusionComp<Integer>::coord(const key_t ind_1, const key_t ind_2, const key_t ind_3){
+    vector<key_t> ind_tuple = {ind_1, ind_2, ind_3};
+    return coord(ind_tuple);
+}
+
+template <typename Integer>
 key_t FusionComp<Integer>::coord_cone(vector<key_t>& ind_tuple){
     key_t coord_compute = coord(ind_tuple);
     if(coord_compute == 0)
@@ -1092,6 +1102,7 @@ template <typename Integer>
 key_t FusionComp<Integer>::coord(set<vector<key_t> >& FR){
     return CoordMap[FR];
 }
+
 
 
 // makes the critical coordinates for the simplicity check
@@ -1512,7 +1523,7 @@ Matrix<Integer> FusionComp<Integer>::make_linear_constraints_partition(const vec
 
     if(libnormaliz::verbose){
         verboseOutput() << "Making linear constraints for fusion rings partition" << endl;
-        verboseOutput() << "Total FPdim " << total_FPdim << endl;
+        // verboseOutput() << "Total FPdim " << total_FPdim << endl;
     }
 
     Matrix<Integer> Equ(0, nr_coordinates + 1); // mudst accomodate right hand side in last coordinate
@@ -1621,7 +1632,7 @@ pair<Integer, vector<key_t> >  FusionComp<Integer>::term(const key_t& i, const k
 }
 
 template <typename Integer>
-set<map<vector<key_t>, Integer> > FusionComp<Integer>::make_associativity_constraints(){
+set<map<vector<key_t>, Integer>> FusionComp<Integer>::make_associativity_constraints(){
 
     if(libnormaliz::verbose)
         verboseOutput() << "Making associativity constraints for fusion rings" << endl;
@@ -1682,6 +1693,76 @@ set<map<vector<key_t>, Integer> > FusionComp<Integer>::make_associativity_constr
         verboseOutput() << "Made " << Polys.size() << " associativity constraints for fusion rings" << endl;
 
     return Polys;
+}
+
+template <typename Integer>
+vector<vector<OurPolynomial<Integer> > >  FusionComp<Integer>::make_AndersonMooreVafa(){
+
+    make_CoordMap();
+
+    vector<vector<OurPolynomial<Integer> > > AMV_constraints;
+    // CoCoA::GlobalManager CoCoAFoundations;
+    //CoCoA::SparsePolyRing RQQ = CoCoA::NewPolyRing_DMPI(CoCoA::RingQQ(), nr_coordinates + 1, CoCoA::lex);
+
+    for(key_t i = 0; i < fusion_rank; ++i){
+        for(key_t j = i; j < fusion_rank; ++j){
+            // cout << i << " " << j<< endl;
+            for(key_t k = 0; k < fusion_rank; ++k){
+                for(key_t l = 0; l < fusion_rank; ++l){
+
+                    INTERRUPT_COMPUTATION_BY_EXCEPTION
+
+                    vector<OurPolynomial<Integer> > this_AMV_constaint;
+                    // left hand side \sum mN_ij^p N_pk^l
+                    map<vector<key_t>, Integer> P; // similar procedure as for associativity constraints
+                    for(key_t p = 0; p < fusion_rank; ++p){
+                        pair<Integer, vector<key_t> > t_1 = term(i,j,p);
+                        pair<Integer, vector<key_t> > t_2 = term(p,k,l);
+                        prod(t_1,t_2);
+                        add(P, t_1);
+                    }
+                    OurPolynomial<Integer> LHS(P, nr_coordinates + 1);
+                    // cout << LHS.ToCoCoA(RQQ) << ";" << endl;
+                    this_AMV_constaint.push_back(LHS);
+
+                    // rhs for allp: N_ij^pN_pk^l + N_ik^pN_jp^l + N_jk^pN_ip^l
+                    for(key_t p = 0; p < fusion_rank; ++p){
+                        map<vector<key_t>, Integer> P;
+                        pair<Integer, vector<key_t> > t_1 = term(i,j,p);
+                        pair<Integer, vector<key_t> > t_2 = term(p,k,l);
+                        prod(t_1,t_2);
+                        add(P,t_1);
+                        // --------------------------
+                        t_1 = term(i,k,p);
+                        t_2 = term(j,p,l);
+                        prod(t_1,t_2);
+                        add(P,t_1);
+                        // --------------------------
+                        t_1 = term(j,k,p);
+                        t_2 = term(i,p,l);
+                        prod(t_1,t_2);
+                        add(P,t_1);
+                        OurPolynomial<Integer> RHS(P, nr_coordinates + 1);
+                        // cout << "---------------------" << endl;
+                        // cout << RHS.ToCoCoA(RQQ) << ";" << endl;
+                        this_AMV_constaint.push_back(RHS);
+                    }
+                    // How t_i + t_j + t_k + t_l
+                    // We give it the same number of variables for easier handling lter
+                    vector<Integer> lin(nr_coordinates + 1);
+                    lin[i] = 1;
+                    lin[j] += 1;
+                    lin[k]+= 1;
+                    lin[l]+= 1;
+                    OurPolynomial<Integer> LinPol(lin);
+                    this_AMV_constaint.push_back(LinPol);
+                    AMV_constraints.push_back(this_AMV_constaint);
+                }
+            }
+        }
+    }
+
+    return AMV_constraints;
 }
 
 void FusionBasic::do_write_input_file(InputMap<mpq_class>&  input) const{
@@ -1899,6 +1980,10 @@ void make_full_input_partition(InputMap<Integer>& input_data){
     full_type[0] = 0; // tpo separate the neutral element
     map<Integer, long> blocks = count_in_map<Integer, long>(full_type);
     full_type[0] = 1; // restored;
+
+    if(verbose){
+        verboseOutput() << "Original rank " << full_type.size() << " partition rank " << blocks.size() << endl;
+    }
 
     vector<Integer> d;
     vector<long> card;

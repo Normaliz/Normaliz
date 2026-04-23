@@ -1174,6 +1174,9 @@ void Induction<Integer>::augment_induction_matrices(){
     for(auto& M: InductionMatrices){
         vector<Integer> type = M.MxV(fusion_type);
         Matrix<Integer> AllowedTranspositions = make_allowed_transpositions(M);
+        Matrix<Integer> Rank(1,1);
+        Rank[0][0] = M.nr_of_rows();
+        InductionMatWithType.emplace_back(Rank);
         InductionMatWithType.emplace_back(std::move(M));
         InductionMatWithType.emplace_back(Matrix<Integer>(type));
         InductionMatWithType.emplace_back(AllowedTranspositions);

@@ -561,6 +561,7 @@ class Cone {
     bool isIntHullCone();
     bool isPolynomiallyConstrained();
     bool isFusionInput();
+    bool isFusionPartitionInput();
 
     Integer getReesPrimaryMultiplicity();
     const Matrix<Integer>& getOriginalMonoidGeneratorsMatrix();

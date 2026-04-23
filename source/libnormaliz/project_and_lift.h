@@ -96,6 +96,9 @@ class ProjectAndLift {
     vector<IntegerRet> excluded_point;
     IntegerRet GD;
 
+    IntegerRet SpinDenom;
+    Matrix<IntegerRet> Spins;
+
     OurPolynomialSystem<IntegerRet> PolyEquations;
     OurPolynomialSystem<IntegerRet> PolyInequalities;
     OurPolynomialSystem<IntegerRet> RestrictablePolyInequs;
@@ -128,6 +131,7 @@ class ProjectAndLift {
     bool stored_local_solutions;
     bool use_short_int;
     bool no_heuristic_minimization;
+    bool has_AMV_constraints;
 
     bool system_unsolvable;
 
@@ -174,6 +178,11 @@ class ProjectAndLift {
     vector< vector < pair<OurPolynomial<IntegerRet>, OurPolynomial<IntegerRet> > > > AllPolyEqus; // indexed by coord, poly equs (split into two components) applied with this coord
     vector<OurPolynomialSystem<IntegerRet> > AllPolyInequs; // ditto for inequalities
     vector<vector<key_t> > AllAutoms; // ditto for automorphisms where the key is the index
+
+    // the dynamic_bitset is the joint support of the components of the vector
+    vector< vector<OurPolynomial<IntegerRet> > > AMV_constraints;
+    vector< dynamic_bitset> AMV_Supps;
+    vector<vector< key_t > > All_AMV_constraint_keys;
 
     // vector<vector<vector < pair<OurPolynomial<IntegerRet>, OurPolynomial<IntegerRet> > > > > AllPolyEqusThread; // a copy for each thread
     // vector<vector<OurPolynomialSystem<IntegerRet> > > AllPolyInequsThread; // ditto for inequalities
@@ -252,6 +261,8 @@ class ProjectAndLift {
     void compute_local_solutions(const key_t this_patch, list<vector<IntegerRet> >& start_list);
     void compute_local_solutions_for_saving();
     dynamic_bitset ImportedLocalSolutions; // registers the levels with imported local solutions
+
+    bool check_AMV_constraints(const vector<IntegerRet>& LattPoint, const size_t coord);
 
     // void make_LLL_coordinates();
 
