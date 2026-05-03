@@ -2503,6 +2503,22 @@ vector<size_t> ProjectAndLift<IntegerPL, IntegerRet>::order_supps(const Matrix<I
 template <typename IntegerPL, typename IntegerRet>
 bool ProjectAndLift<IntegerPL,IntegerRet>::check_AMV_constraints(const vector<IntegerRet>& LattPoint, const size_t coord) {
 
+    // PRELIMINARY for 1 spin
+
+    for(size_t i = 0; i < Spins.nr_of_rows(); ++i){
+        return check_AMV_constraints_inner(LattPoint, Spins[i], coord);
+    }
+
+}
+
+
+//---------------------------------------------------------------------------
+
+template <typename IntegerPL, typename IntegerRet>
+bool ProjectAndLift<IntegerPL,IntegerRet>::check_AMV_constraints_inner(const vector<IntegerRet>& LattPoint,
+                                                                       const vector<IntegerRet>& spin_candidate,
+                                                                       const size_t coord) {
+
         // CoCoA::GlobalManager CoCoAFoundations;
         // CoCoA::SparsePolyRing RQQ = CoCoA::NewPolyRing_DMPI(CoCoA::RingQQ(), EmbDim + 1, CoCoA::lex);
 
@@ -2512,13 +2528,13 @@ bool ProjectAndLift<IntegerPL,IntegerRet>::check_AMV_constraints(const vector<In
 
         // cout << "****************************" << endl;
         IntegerRet LHS_1 = AMV_constraints[c][0].evaluate(LattPoint);
-        IntegerRet LHS_2 = AMV_constraints[c].back().evaluate(Spins[0]);
+        IntegerRet LHS_2 = AMV_constraints[c].back().evaluate(spin_candidate);
         IntegerRet LHS = LHS_1 * LHS_2;
         IntegerRet RHS = 0;
         for(size_t i = 0; i < fusion.fusion_rank; ++i){
             // cout << "iiiiiiii " << i << " ";
             // cout << AMV_constraints[c][i + 1].ToCoCoA(RQQ) << ";" << endl;
-            IntegerRet Help = AMV_constraints[c][i + 1].evaluate(LattPoint) * Spins[0][i];
+            IntegerRet Help = AMV_constraints[c][i + 1].evaluate(LattPoint) *spin_candidate[i];
             RHS += Help;
         }
         // cout << "LHS " << LHS << " RHS " << RHS;
