@@ -481,7 +481,12 @@ void ConeProperties::set_fusion_default(const bool has_subring) {
 
 void ConeProperties::set_fusion_partition_default() {
 
-    if(CPs.test(ConeProperty::LatticePoints))
+    if(CPs.test(ConeProperty::FusionRings) || CPs.test(ConeProperty::SimpleFusionRings)
+        || CPs.test(ConeProperty::SingleFusionRing) || CPs.test(ConeProperty::FusionData)
+    )
+        throw BadInputException("FusionRings and variants not allowed with partition input" );
+
+    if(CPs.test(ConeProperty::LatticePoints) || CPs.test(ConeProperty::SingleLatticePoint))
         return;
     if(CPs.test(ConeProperty::DefaultMode)){
         CPs.set(ConeProperty::SingleLatticePoint);

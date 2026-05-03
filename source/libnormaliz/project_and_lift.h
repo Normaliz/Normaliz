@@ -45,6 +45,12 @@ const size_t nr_extensions_for_elimination_equs = 10000;
 const size_t nr_extensions_for_elimination_inequs = 10000;
 const size_t nr_extensions_for_elimination_automs = 1000;
 
+template <typename Integer>
+struct latt_spin {
+    vector<Integer> latt;
+    dynamic_bitset active_spins;
+};
+
 // the project-and-lift algorithm for lattice points in a polytope
 
 template <typename Integer>
@@ -263,6 +269,8 @@ class ProjectAndLift {
     dynamic_bitset ImportedLocalSolutions; // registers the levels with imported local solutions
 
     bool check_AMV_constraints(const vector<IntegerRet>& LattPoint, const size_t coord);
+    bool check_AMV_constraints_inner(const vector<IntegerRet>& LattPoint,
+                            const vector<IntegerRet>& spin_candidate,const size_t coord);
 
     // void make_LLL_coordinates();
 
