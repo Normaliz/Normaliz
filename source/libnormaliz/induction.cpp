@@ -832,22 +832,23 @@ Matrix<Integer> Induction<Integer>::make_allowed_transpositions(Matrix<Integer> 
     for(long i = 0; i < Blocks.size(); ++i){
         if(DualBlock[i] != 0)
             continue;
-        bool dual_exists = false;
+        bool dual_found = false;
+        bool dual_card_fits = true;
         for(long j = i; j < Blocks.size(); ++j){
             if(DualBlock[j] != 0){
-                dual_exists = true;
                 continue;
             }
             if(Dual[i] == FusionMap[Blocks[j][0]]){
+                dual_found = true;
                 DualBlock[i] = j;
                 DualBlock[j] = i;
-                if(Blocks[i].size() == Blocks[j].size())
-                    dual_exists = true;
+                if(Blocks[i].size() != Blocks[j].size())
+                    dual_card_fits = false;
                 break;
             }
-            if(!dual_exists)
-                return AllowedDualities;
         }
+        if(!dual_found || !dual_card_fits)
+            return AllowedDualities;
     }
 
     // cout << "DDDDD " << DualBlock;
