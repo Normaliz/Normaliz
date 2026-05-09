@@ -828,16 +828,14 @@ Matrix<Integer> Induction<Integer>::make_allowed_transpositions(Matrix<Integer> 
     // Dual.debug_print('D');
 
     // find duals
-    vector<long> DualBlock(Blocks.size());
+    vector<long> DualBlock(Blocks.size(), -1);
     for(long i = 0; i < Blocks.size(); ++i){
-        if(DualBlock[i] != 0)
+        if(DualBlock[i] !=  -1){ // dual known
             continue;
+        }
         bool dual_found = false;
         bool dual_card_fits = true;
         for(long j = i; j < Blocks.size(); ++j){
-            if(DualBlock[j] != 0){
-                continue;
-            }
             if(Dual[i] == FusionMap[Blocks[j][0]]){
                 dual_found = true;
                 DualBlock[i] = j;
@@ -847,13 +845,10 @@ Matrix<Integer> Induction<Integer>::make_allowed_transpositions(Matrix<Integer> 
                 break;
             }
         }
-        if(!dual_found || !dual_card_fits)
+        if(!dual_found || !dual_card_fits){
             return AllowedDualities;
+        }
     }
-
-    // cout << "DDDDD " << DualBlock;
-    // TODO What if a block has no dual ?
-    // Or: dual blocks don't have the same size ??
 
     vector<long> UpperBounds;
     for(size_t i = 0; i < Blocks.size(); ++i){

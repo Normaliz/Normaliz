@@ -26,6 +26,8 @@
 #include "libnormaliz/cone.h"
 #include "libnormaliz/input.h"
 #include "libnormaliz/induction.h"
+#include "libnormaliz/nmz_hash.h"
+
 
 namespace libnormaliz{
 using std::vector;
@@ -1337,6 +1339,11 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_latt_points_by_patching() {
         vector<IntegerRet> start(EmbDim);
         start[0] = GD;
         start_list.emplace_back(start);
+        if(has_AMV_constraints){
+            dynamic_bitset start_active_spins(Spins.nr_of_rows());
+            start_active_spins.flip();
+            set_active_spins(start,start_active_spins);
+        }
         extend_points_to_next_coord(start_list, 0);
     }
 
@@ -1706,6 +1713,30 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_local_solutions(const key_t t
 //---------------------------------------------------------------------------
 
 template <typename IntegerPL, typename IntegerRet>
+dynamic_bitset ProjectAndLift<IntegerPL,IntegerRet>::get_active_spins(const vector<IntegerRet>& LattPoint) {
+
+    ostringstream VecStream;
+    VecStream << LattPoint;
+    auto HashValue = sha256hexvec(VecStream.str());
+    return ActiveSpins[HashValue];
+}
+
+//---------------------------------------------------------------------------
+
+
+template <typename IntegerPL, typename IntegerRet>
+void ProjectAndLift<IntegerPL,IntegerRet>::set_active_spins(const vector<IntegerRet>& LattPoint, const dynamic_bitset active_spins) {
+
+    ostringstream VecStream;
+    VecStream << LattPoint;
+    auto HashValue = sha256hexvec(VecStream.str());
+    ActiveSpins[HashValue] = active_spins;
+}
+
+
+//---------------------------------------------------------------------------
+
+template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vector<IntegerRet> >& LatticePoints, const key_t this_patch) {
 
     if(is_split_patching && only_single_point){
@@ -1988,6 +2019,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         for(key_t k = 0; k < Automs.size(); ++k)
             order_automs.emplace_back(k);
 
+        dynamic_bitset this_active_spins;
+
 
 
 #pragma omp for schedule(dynamic)
@@ -2021,6 +2054,9 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
             nr_points_done_in_this_round++;
 
         NewLattPoint = std::move(*P);
+
+        if(has_AMV_constraints)
+            this_active_spins = get_active_spins(NewLattPoint);
 
         overlap = v_select_coordinates(NewLattPoint, intersection_key);
         for(size_t k = 0; k < CongsRestricted.size(); ++k)
@@ -2130,10 +2166,14 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                     }
                 }
                 if(has_AMV_constraints && can_be_inserted){
-                    can_be_inserted = check_AMV_constraints(NewLattPoint, coord);
+                    dynamic_bitset new_active_spins;
+                    can_be_inserted = check_AMV_constraints(NewLattPoint, coord,this_active_spins, new_active_spins);
                     if(!can_be_inserted)
 #pragma omp atomic
                         nr_caught_by_AMV++;
+                    else
+#pragma omp critical(ACTIVESPLITS)
+                        set_active_spins(NewLattPoint, new_active_spins);
                 }
 
                 if(can_be_inserted){
@@ -2501,19 +2541,100 @@ vector<size_t> ProjectAndLift<IntegerPL, IntegerRet>::order_supps(const Matrix<I
 //---------------------------------------------------------------------------
 
 template <typename IntegerPL, typename IntegerRet>
-bool ProjectAndLift<IntegerPL,IntegerRet>::check_AMV_constraints(const vector<IntegerRet>& LattPoint, const size_t coord) {
+bool ProjectAndLift<IntegerPL,IntegerRet>::check_AMV_constraints(const vector<IntegerRet>& LattPoint,
+                                                                 const size_t coord,
+                                                                 const dynamic_bitset& old_active_spins, dynamic_bitset& new_active_spins) {
 
-    // PRELIMINARY for 1 spin
+    new_active_spins = old_active_spins;
+
+    /*
+
+    // cout << LattPoint;
+    // cout << "OOOOOOOOOO --- " << old_active_spins.size() << endl;
+    bool at_least_one_works = false;
 
     for(size_t i = 0; i < Spins.nr_of_rows(); ++i){
-        return check_AMV_constraints_inner(LattPoint, Spins[i], coord);
+        if(!old_active_spins[i])
+            continue;
+        bool spin_works = check_AMV_constraints_inner(LattPoint, Spins[i], coord);
+        if(!spin_works)
+            new_active_spins[i] = 0;
+        else
+            at_least_one_works = true;
     }
+    return at_least_one_works;
+
+    */
+
+
+    bool at_least_one_works;
+
+    for(auto& c: All_AMV_constraint_keys[coord]){
+        IntegerRet LHS_1 = AMV_constraints[c][0].evaluate(LattPoint);
+        vector<IntegerRet> RHS_vec(fusion.fusion_rank);
+        for(size_t i = 0; i < fusion.fusion_rank; ++i){
+            // cout << "iiiiiiii " << i << " ";
+            // cout << AMV_constraints[c][i + 1].ToCoCoA(RQQ) << ";" << endl;
+            RHS_vec[i] = AMV_constraints[c][i + 1].evaluate(LattPoint);
+        }
+        at_least_one_works = check_AMV_constraints_inner(AMV_constraints[c],new_active_spins, LHS_1, RHS_vec);
+        if(!at_least_one_works)
+            break;
+    }
+    return at_least_one_works;
+
 
 }
 
+//---------------------------------------------------------------------------
+template <typename IntegerRet>
+bool checkAMVspin(const vector<IntegerRet>& spin, const IntegerRet& LHS_1,   const IntegerRet& LHS_2,
+                  const vector<IntegerRet>& RHS_vec, const IntegerRet& SpinDenom){
+
+    IntegerRet LHS = LHS_1 * LHS_2;
+    IntegerRet RHS = 0;
+    for(size_t i = 0; i < RHS_vec.size(); ++i){
+        // cout << "iiiiiiii " << i << " ";
+        // cout << AMV_constraints[c][i + 1].ToCoCoA(RQQ) << ";" << endl;
+        RHS += RHS_vec[i] * spin[i];
+    }
+    // cout << "LHS " << LHS << " RHS " << RHS;
+    IntegerRet Diff = LHS - RHS;
+    // cout << " Diff " << Diff << endl;
+    if(Diff % SpinDenom != 0){
+        // cout << "FALSE "<< endl;
+        return false;
+    }
+
+    // ncout << "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$" << endl;
+    // cout << "TRUE " << endl;
+    return true;
+}
+//---------------------------------------------------------------------------
+
+template <typename IntegerPL, typename IntegerRet>
+bool ProjectAndLift<IntegerPL,IntegerRet>::check_AMV_constraints_inner(const vector<OurPolynomial<IntegerRet> >& AMV_c,
+                                                                       dynamic_bitset& active_spins,
+                                                                       const IntegerRet& LHS_1,
+                                                                       const vector<IntegerRet>& RHS_vec){
+
+    bool at_least_one_works = false;
+
+    for(size_t i = 0; i < Spins.nr_of_rows(); ++i){
+        if(!active_spins[i])
+            continue;
+        IntegerRet LHS_2 = AMV_c.back().evaluate(Spins[i]);
+        active_spins[i] = checkAMVspin(Spins[i], LHS_1, LHS_2, RHS_vec, SpinDenom);
+        if(active_spins[i])
+            at_least_one_works = true;
+    }
+    return at_least_one_works;
+}
 
 //---------------------------------------------------------------------------
 
+
+/*
 template <typename IntegerPL, typename IntegerRet>
 bool ProjectAndLift<IntegerPL,IntegerRet>::check_AMV_constraints_inner(const vector<IntegerRet>& LattPoint,
                                                                        const vector<IntegerRet>& spin_candidate,
@@ -2549,6 +2670,7 @@ bool ProjectAndLift<IntegerPL,IntegerRet>::check_AMV_constraints_inner(const vec
     // cout << "TRUE " << endl;
     return true;
 }
+*/
 
 //---------------------------------------------------------------------------
 

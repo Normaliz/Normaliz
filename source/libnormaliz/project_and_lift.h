@@ -190,6 +190,8 @@ class ProjectAndLift {
     vector< dynamic_bitset> AMV_Supps;
     vector<vector< key_t > > All_AMV_constraint_keys;
 
+    map<vector<unsigned char>, dynamic_bitset> ActiveSpins;
+
     // vector<vector<vector < pair<OurPolynomial<IntegerRet>, OurPolynomial<IntegerRet> > > > > AllPolyEqusThread; // a copy for each thread
     // vector<vector<OurPolynomialSystem<IntegerRet> > > AllPolyInequsThread; // ditto for inequalities
 
@@ -268,9 +270,17 @@ class ProjectAndLift {
     void compute_local_solutions_for_saving();
     dynamic_bitset ImportedLocalSolutions; // registers the levels with imported local solutions
 
-    bool check_AMV_constraints(const vector<IntegerRet>& LattPoint, const size_t coord);
-    bool check_AMV_constraints_inner(const vector<IntegerRet>& LattPoint,
-                            const vector<IntegerRet>& spin_candidate,const size_t coord);
+    bool check_AMV_constraints(const vector<IntegerRet>& LattPoint, const size_t coord,
+                               const dynamic_bitset& old_active_spins,
+                               dynamic_bitset& new_active_spins);
+
+    bool check_AMV_constraints_inner(const vector<OurPolynomial<IntegerRet> >& AMV_c,
+                                dynamic_bitset& active_spins,const IntegerRet& LHS_1,
+                                const vector<IntegerRet>& RHS_vec);
+    /* bool check_AMV_constraints_inner(const vector<IntegerRet>& LattPoint,
+                           const vector<IntegerRet>& spin_candidate,const size_t coord); */
+    dynamic_bitset get_active_spins(const vector<IntegerRet>& LattPoint);
+    void set_active_spins(const vector<IntegerRet>& LattPoint, const dynamic_bitset active_spins);
 
     // void make_LLL_coordinates();
 
