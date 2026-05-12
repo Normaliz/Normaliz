@@ -181,10 +181,6 @@ void Output<Number>::set_renf(const renf_class_ptr renf, bool is_int_hull) {
 #ifdef ENFNORMALIZ
 template <>
 void Output<renf_elem_class>::write_renf(ostream& os) const {
-
-    return;
-
-
     if (print_renf) {
         // auto polyemb = Cone<renf_elem_class>::getRenfData(&*Renf);
         auto polyemb = Result->getRenfData();
@@ -1586,7 +1582,7 @@ void Output<Integer>::write_files() {
         if (Result->isComputed(ConeProperty::TriangulationSize)) {
             out << endl;
         }
-        if (false){ //Result->isComputed(ConeProperty::Dehomogenization)) {
+        if (Result->isComputed(ConeProperty::Dehomogenization)) {
             out << "dehomogenization:" << endl << Result->getDehomogenization() << endl;
         }
 
@@ -2059,7 +2055,7 @@ void write_fusion_files(const FusionBasic fusion_basic, const string& name, cons
     if (out.fail()) {
         throw BadInputException("Cannot write to output file. Typo in directory name?");
     }
-    if(false){ //!RenfDataOutput.empty()){
+    if(!RenfDataOutput.empty()){
         out << "Real embedded number field" << endl;
         out << "min_poly (" << RenfDataOutput[0] << ") embedding " << RenfDataOutput[1] << std::endl
            << std::endl;
@@ -2105,12 +2101,12 @@ void write_fusion_files(const FusionBasic fusion_basic, const string& name, cons
 
     if(embdim > 0){
 
-        //vector<Integer> dehom(embdim);
-        // dehom.back() = 1;
+        vector<Integer> dehom(embdim);
+        dehom.back() = 1;
         out << "embedding dimension = " << embdim << endl;
-        // out << endl;
-        // out << "dehomogenization:" << endl;
-        //out << dehom;
+        out << endl;
+        out << "dehomogenization:" << endl;
+        out << dehom;
     }
 
     out << endl;
