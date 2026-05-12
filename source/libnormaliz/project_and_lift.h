@@ -69,6 +69,8 @@ class ProjectAndLift {
 
     size_t old_min_fall_back;
 
+    vector<size_t> latt_poimts_reaching_level;
+
     list<vector<IntegerRet> > start_list; // list of lattice points to start from
                                           // and to be lifted to full dimension
 
@@ -280,6 +282,13 @@ class ProjectAndLift {
     /* bool check_AMV_constraints_inner(const vector<IntegerRet>& LattPoint,
                            const vector<IntegerRet>& spin_candidate,const size_t coord); */
     dynamic_bitset get_active_spins(const vector<IntegerRet>& LattPoint);
+    // for debugging
+    void check_all_spins(const vector<IntegerRet>& LattPoint, const size_t coord,
+                         const dynamic_bitset& old_active_spins,
+                         const dynamic_bitset& new_active_spins);
+    bool check_spin_inner(const vector<IntegerRet>& LattPoint,
+                          const vector<IntegerRet>& spin_candidate, const size_t coord);
+
     void set_active_spins(const vector<IntegerRet>& LattPoint, const dynamic_bitset active_spins);
 
     // void make_LLL_coordinates();

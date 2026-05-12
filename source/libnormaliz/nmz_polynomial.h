@@ -61,6 +61,7 @@ public:
     Number coeff;
     map<key_t, long> monomial; // key_t is variable, long is exponent
     vector<key_t> vars; // each variable repeated repetitions if expo > 1 --- sometimes better
+    size_t vars_size;
     dynamic_bitset support;
 
     Number evaluate(const vector<Number>& argument) const;
