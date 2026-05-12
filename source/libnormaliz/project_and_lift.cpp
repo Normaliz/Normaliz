@@ -505,8 +505,11 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
         for(auto& c: AMV_constraints){
             dynamic_bitset supp(EmbDim);
             // the last polynomial is t_i + t_j + t_k + t_l
-            for(size_t i = 0; i < c.size() - 1; ++i)
+            for(size_t i = 0; i < c.size() - 1; ++i){
                 supp |= c[i].support;
+                /* if(i < c.size() -1)
+                    c[i].vectorize_deg_2(); */
+            }
             AMV_Supps.push_back(supp);
         }
 
@@ -834,8 +837,11 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
         AllCovered[coord] = new_covered;
         covered = new_covered;
 
-        if(fusion.total_FPdim == 0 || no_heuristic_minimization) // no discarding of equations if not fusion
+        if(fusion.total_FPdim == 0 || no_heuristic_minimization || has_AMV_constraints){ // no discarding of equations if not fusion
             poly_equs_minimized[coord] = true;
+            poly_inequs_minimized[coord] = true;
+            automs_minimized[coord] = true;
+        }
 
     } // coord
 
@@ -1059,6 +1065,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::finalize_order(const dynamic_bitset& 
         verboseOutput() << "Insertion order linear patches " << endl;
         verboseOutput() << InsertionOrderPatches << endl;
     }
+
+    latt_poimts_reaching_level.resize(InsertionOrderPatches.size() + 1);
 
     for(size_t k = 0; k < InsertionOrderPatches.size(); ++k)
         LevelPatches[InsertionOrderPatches[k]] = k;
@@ -1351,6 +1359,15 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_latt_points_by_patching() {
     if(verbose){
         verboseOutput() << endl << "=======================================" << endl;
         verboseOutput() << "Final number of lattice points "  << NrLP[EmbDim] << endl;
+    }
+    if(talkative){
+        verboseOutput() << "Lattice ppoints reaching levels ";
+        for(auto& c: latt_poimts_reaching_level){
+            if(c == 0)
+                break;
+            verboseOutput()  << c << " ";
+        }
+        verboseOutput() << endl;
     }
 
     if(!only_single_point && !distributed_computation){
@@ -1738,6 +1755,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::set_active_spins(const vector<Integer
 
 template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vector<IntegerRet> >& LatticePoints, const key_t this_patch) {
+
+    latt_poimts_reaching_level[this_patch] += LatticePoints.size();
 
     if(is_split_patching && only_single_point){
         double time_spent = MeasureTime(stop_ckeck_begin);
@@ -2168,6 +2187,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                 if(has_AMV_constraints && can_be_inserted){
                     dynamic_bitset new_active_spins;
                     can_be_inserted = check_AMV_constraints(NewLattPoint, coord,this_active_spins, new_active_spins);
+                    // check_all_spins(NewLattPoint, coord, this_active_spins, new_active_spins); // only for debugging
                     if(!can_be_inserted)
 #pragma omp atomic
                         nr_caught_by_AMV++;
@@ -2539,34 +2559,13 @@ vector<size_t> ProjectAndLift<IntegerPL, IntegerRet>::order_supps(const Matrix<I
 }
 
 //---------------------------------------------------------------------------
-
+// includes computation of data that depend only on the AMV constraint and the lattice point
 template <typename IntegerPL, typename IntegerRet>
 bool ProjectAndLift<IntegerPL,IntegerRet>::check_AMV_constraints(const vector<IntegerRet>& LattPoint,
                                                                  const size_t coord,
                                                                  const dynamic_bitset& old_active_spins, dynamic_bitset& new_active_spins) {
 
     new_active_spins = old_active_spins;
-
-    /*
-
-    // cout << LattPoint;
-    // cout << "OOOOOOOOOO --- " << old_active_spins.size() << endl;
-    bool at_least_one_works = false;
-
-    for(size_t i = 0; i < Spins.nr_of_rows(); ++i){
-        if(!old_active_spins[i])
-            continue;
-        bool spin_works = check_AMV_constraints_inner(LattPoint, Spins[i], coord);
-        if(!spin_works)
-            new_active_spins[i] = 0;
-        else
-            at_least_one_works = true;
-    }
-    return at_least_one_works;
-
-    */
-
-
     bool at_least_one_works;
 
     for(auto& c: All_AMV_constraint_keys[coord]){
@@ -2582,8 +2581,6 @@ bool ProjectAndLift<IntegerPL,IntegerRet>::check_AMV_constraints(const vector<In
             break;
     }
     return at_least_one_works;
-
-
 }
 
 //---------------------------------------------------------------------------
@@ -2611,7 +2608,7 @@ bool checkAMVspin(const vector<IntegerRet>& spin, const IntegerRet& LHS_1,   con
     return true;
 }
 //---------------------------------------------------------------------------
-
+// includes the computation of data that also depend on the spin
 template <typename IntegerPL, typename IntegerRet>
 bool ProjectAndLift<IntegerPL,IntegerRet>::check_AMV_constraints_inner(const vector<OurPolynomial<IntegerRet> >& AMV_c,
                                                                        dynamic_bitset& active_spins,
@@ -2633,10 +2630,25 @@ bool ProjectAndLift<IntegerPL,IntegerRet>::check_AMV_constraints_inner(const vec
 
 //---------------------------------------------------------------------------
 
-
-/*
+// for testing the spins and AMV vonsztisants
 template <typename IntegerPL, typename IntegerRet>
-bool ProjectAndLift<IntegerPL,IntegerRet>::check_AMV_constraints_inner(const vector<IntegerRet>& LattPoint,
+void ProjectAndLift<IntegerPL,IntegerRet>::check_all_spins(const vector<IntegerRet>& LattPoint,
+                                                                 const size_t coord,
+                                                                 const dynamic_bitset& old_active_spins,
+                                                                 const dynamic_bitset& new_active_spins) {
+    for(size_t i = 0; i < Spins.nr_of_rows(); ++i){
+        if(!old_active_spins[i])
+            continue;
+        bool check = check_spin_inner(LattPoint, Spins[i], coord);
+        if(new_active_spins[i] != check){
+            cout << "iiiiii " << i << endl;
+            assert(false);
+        }
+    }
+}
+
+template <typename IntegerPL, typename IntegerRet>
+bool ProjectAndLift<IntegerPL,IntegerRet>::check_spin_inner(const vector<IntegerRet>& LattPoint,
                                                                        const vector<IntegerRet>& spin_candidate,
                                                                        const size_t coord) {
 
@@ -2670,7 +2682,6 @@ bool ProjectAndLift<IntegerPL,IntegerRet>::check_AMV_constraints_inner(const vec
     // cout << "TRUE " << endl;
     return true;
 }
-*/
 
 //---------------------------------------------------------------------------
 

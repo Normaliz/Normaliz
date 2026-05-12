@@ -76,13 +76,14 @@ void OurTerm<Number>::mon2vars_expos(){
         for(size_t i = 0; i < M.second; ++i)
             vars.push_back(M.first);
     }
+    vars_size = vars.size();
 }
 
 template<typename Number>
 Number OurTerm<Number>::evaluate(const vector<Number>& argument) const{
 
     Number value = coeff;
-    for(size_t i = 0; i < vars.size(); ++i)
+    for(size_t i = 0; i < vars_size; ++i)
         value *= argument[vars[i]];
     return value;
 }
