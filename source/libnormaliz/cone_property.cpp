@@ -190,6 +190,8 @@ ConeProperties all_options() {
     ret.set(ConeProperty::DistributedComp);
     ret.set(ConeProperty::UseModularGrading);
     ret.set(ConeProperty::ExploitAutomsVectors);
+    ret.set(ConeProperty::FusionData);
+    ret.set(ConeProperty::InductionMatrices);
     return ret;
 }
 
@@ -464,17 +466,21 @@ size_t ConeProperties::count() const {
     return CPs.count();
 }
 
-void ConeProperties::set_fusion_default(const bool has_subring) {
+void ConeProperties::set_fusion_default(const bool has_subring, const bool has_spins) {
 
     if(CPs.test(ConeProperty::LatticePoints) || CPs.test(ConeProperty::FusionRings)
         || CPs.test(ConeProperty::SimpleFusionRings) || CPs.test(ConeProperty::NonsimpleFusionRings)
-         || CPs.test(ConeProperty::FusionData) || CPs.test(ConeProperty::SingleFusionRing) || CPs.test(ConeProperty::InductionMatrices) )
+          || CPs.test(ConeProperty::SingleFusionRing) )
         return;
     if(CPs.test(ConeProperty::DefaultMode)){
         if(has_subring)
             CPs.set(ConeProperty::SimpleFusionRings);
-        else
-            CPs.set(ConeProperty::FusionRings);
+        else{
+            if(has_spins)
+                CPs.set(ConeProperty::LatticePoints);
+            else
+                CPs.set(ConeProperty::FusionRings);
+        }
         CPs.reset(ConeProperty::DefaultMode);
     }
 }
@@ -483,6 +489,7 @@ void ConeProperties::set_fusion_partition_default() {
 
     if(CPs.test(ConeProperty::FusionRings) || CPs.test(ConeProperty::SimpleFusionRings)
         || CPs.test(ConeProperty::SingleFusionRing) || CPs.test(ConeProperty::FusionData)
+        || CPs.test(ConeProperty::InductionMatrices)
     )
         throw BadInputException("FusionRings and variants not allowed with partition input" );
 
@@ -517,14 +524,6 @@ void ConeProperties::set_preconditions(bool inhomogeneous, bool numberfield) {
     }
 
     if(CPs.test(ConeProperty::SingleFusionRing)){
-        CPs.set(ConeProperty::FusionRings);
-    }
-
-    if(CPs.test(ConeProperty::InductionMatrices) && !CPs.test(ConeProperty::SimpleFusionRings)){
-        CPs.set(ConeProperty::FusionRings);
-    }
-
-    if(CPs.test(ConeProperty::FusionData) && !CPs.test(ConeProperty::SimpleFusionRings)){
         CPs.set(ConeProperty::FusionRings);
     }
 
