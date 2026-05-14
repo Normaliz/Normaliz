@@ -527,9 +527,9 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
             }
         }
         SpinDenom = convertTo<IntegerRet>(SpinDenom_mpz);
-        cout << "DDDDDDDDD " << SpinDenom << endl;
-        fusion.Spins.debug_print('F');
-        Spins.debug_print();
+        // cout << "DDDDDDDDD " << SpinDenom << endl;
+        // fusion.Spins.debug_print('F');
+        // Spins.debug_print();
 
     }
     // AMV_constraints done
