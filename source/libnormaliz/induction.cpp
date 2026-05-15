@@ -450,8 +450,15 @@ void Induction<renf_elem_class>::make_divisors_near_integral(){
     d_plus = fusion_type.back();
     d_minus = kkk - d_plus;
 
+    // cout << "+++++++++++++++++++++ " << d_plus << "-------------------" << d_minus << endl;
+
     for(long long n = 0; n < FPdim; ++n){
-        for(long long m = 0; m < (FPdim-n)/d_plus; ++m){
+
+        renf_elem_class upper_bound = 1;
+        if(!d_plus.is_integer())
+            upper_bound = (FPdim-n)/d_plus;
+
+        for(long long m = 0; m < upper_bound; ++m){
 
              INTERRUPT_COMPUTATION_BY_EXCEPTION
 
@@ -468,6 +475,7 @@ void Induction<renf_elem_class>::make_divisors_near_integral(){
             }
         }
     }
+    // cout << "DDDDDDDDDDDDDDDDDDDDDDDDDD " << divisors << endl;
 }
 
 template<>
@@ -1101,6 +1109,8 @@ void Induction<Integer>::from_low_to_full(){
 
         // if(HighRepsHere.nr_of_rows() != 343)
         //   continue;
+
+        // HighRepsHere.debug_print('K');
 
         sort(HighRepsHere.access_elements().begin(), HighRepsHere.access_elements().end());
         // HighRepsHere.debug_print('H');
