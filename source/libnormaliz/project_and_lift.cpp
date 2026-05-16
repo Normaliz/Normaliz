@@ -1340,7 +1340,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_latt_points_by_patching() {
     }
 
     list<vector<IntegerRet> > start_list;
-    if(is_split_patching &&  read_latt_points(start_list, EmbDim)){
+    if(is_split_patching && fusion.Spins.nr_of_rows() == 0 && read_latt_points(start_list, EmbDim)){
         extend_points_to_next_coord(start_list, our_split.this_split_levels[0]);
     }
     else{
