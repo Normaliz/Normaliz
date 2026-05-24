@@ -7646,8 +7646,7 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
     if (!primitive && !is_parallelotope && !ToCompute.test(ConeProperty ::Projection) && !ToCompute.test(ConeProperty::Approximate) &&
         SupportHyperplanes.nr_of_rows() > 100 * ExtremeRays.nr_of_rows())
         return;
-
-    if (!primitive && !is_parallelotope && !ToCompute.test(ConeProperty::Approximate)) {  // we try again
+    if (!primitive && !is_parallelotope && !ToCompute.test(ConeProperty::Approximate) &&  BasisChange.getEquationsMatrix().nr_of_rows() == 0) {  // we try again
         is_parallelotope = check_parallelotope();
         if (is_parallelotope) {
             if (verbose)
