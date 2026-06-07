@@ -35,8 +35,6 @@ name: Run Sage CI
 ## systems/configurations.
 
 on:
-  pull_request:
-    types: [opened, synchronize]
   push:
     branches:
       - master
