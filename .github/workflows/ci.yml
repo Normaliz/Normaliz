@@ -107,6 +107,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install libgmp-dev libmpfr-dev libboost-all-dev
+          python -m pip install gcovr
           ./install_scripts_opt/install_nmz_nauty.sh
           ./install_scripts_opt/install_eantic_with_prerequisites.sh
           ./install_scripts_opt/install_nmz_cocoa.sh
@@ -124,10 +125,31 @@ jobs:
         run: .github/workflows/.github-ci-build_check.sh
       # - name: "Setup tmate session"
       #   uses: mxschmitt/action-tmate@v3
+      - name: "Collect coverage data"
+        run: |
+          gcovr --version
+          rm -f *-conftest.gcno
+          find . -type f \( -name '*.gcno' -o -name '*.gcda' \) -print
+          # The 'suspicious_hits.warn_once_per_file' line is meant to
+          # handle GCC bug 68080 without hiding unrelated parse errors
+          gcovr \
+            --root . \
+            --filter 'source/' \
+            --exclude 'source/maxsimplex/' \
+            --exclude 'source/dynamic/' \
+            --exclude-throw-branches \
+            --gcov-ignore-parse-errors suspicious_hits.warn_once_per_file \
+            --xml-pretty \
+            --output coverage.xml \
+            --print-summary
       - name: "Upload coverage data to Codecov"
         uses: codecov/codecov-action@v6
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
+          files: coverage.xml
+          disable_search: true
+          fail_ci_if_error: true
+          verbose: true
 
   eantic-nauty-notls-cocoa:
     runs-on: ubuntu-latest
