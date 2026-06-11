@@ -479,6 +479,7 @@ dnl Output everything
 dnl
 AC_CONFIG_FILES([
     Makefile
+    normaliz.pc
 	example/Makefile
 	source/libnormaliz/nmz_config.h
 	source/libnormaliz/version.h
