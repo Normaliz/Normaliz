@@ -46,6 +46,7 @@ rerun_sigill_probe() {
     local test_dir="$2"
     local input="$3"
     local debug_normaliz="$4"
+    local debug_libdir
 
     if [ ! -x "${normaliz}" ] || [ ! -d "${test_dir}" ]; then
         return
@@ -58,6 +59,7 @@ rerun_sigill_probe() {
     echo "==== SIGILL probe: ${input} ===="
     (
         set +e
+        debug_libdir="$(cd "$(dirname "${debug_normaliz}")" && pwd)"
         cd "${test_dir}" || exit 0
         if /usr/bin/time -v true > /dev/null 2>&1; then
             /usr/bin/time -v "${normaliz}" -c --inv "${input}" > /dev/null
@@ -82,7 +84,9 @@ rerun_sigill_probe() {
 
         if command -v gdb > /dev/null 2>&1; then
             echo "gdb executable: ${debug_normaliz}"
+            echo "gdb library path: ${debug_libdir}"
             gdb -batch \
+                -ex "set environment LD_LIBRARY_PATH=${debug_libdir}:${LD_LIBRARY_PATH}" \
                 -ex 'run > /dev/null' \
                 -ex 'x/i $pc' \
                 -ex bt \
