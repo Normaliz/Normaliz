@@ -16,6 +16,16 @@ find_normaliz_binary() {
     fi
 }
 
+find_normaliz_debug_binary() {
+    if [ -x "${PWD}/source/.libs/normaliz" ]; then
+        echo "${PWD}/source/.libs/normaliz"
+    elif [ -x "${PWD}/../source/.libs/normaliz" ]; then
+        echo "${PWD}/../source/.libs/normaliz"
+    else
+        find_normaliz_binary
+    fi
+}
+
 print_failed_diffs() {
     local test_dir="$1"
 
@@ -35,6 +45,7 @@ rerun_sigill_probe() {
     local normaliz="$1"
     local test_dir="$2"
     local input="$3"
+    local debug_normaliz="$4"
 
     if [ ! -x "${normaliz}" ] || [ ! -d "${test_dir}" ]; then
         return
@@ -70,11 +81,12 @@ rerun_sigill_probe() {
         fi
 
         if command -v gdb > /dev/null 2>&1; then
+            echo "gdb executable: ${debug_normaliz}"
             gdb -batch \
                 -ex 'run > /dev/null' \
                 -ex 'x/i $pc' \
                 -ex bt \
-                --args "${normaliz}" -c --inv "${input}"
+                --args "${debug_normaliz}" -c --inv "${input}"
         else
             echo "gdb not available"
         fi
@@ -84,6 +96,7 @@ rerun_sigill_probe() {
 diagnose_check_failure() {
     local status="$1"
     local normaliz
+    local debug_normaliz
     local test_dir="test/run_tests"
 
     set +e
@@ -97,13 +110,18 @@ diagnose_check_failure() {
     fi
 
     normaliz="$(find_normaliz_binary)"
+    debug_normaliz="$(find_normaliz_debug_binary)"
     if [ -n "${normaliz}" ]; then
         echo "==== normaliz binary ===="
         file "${normaliz}"
+        if [ "${debug_normaliz}" != "${normaliz}" ]; then
+            echo "==== normaliz debug binary ===="
+            file "${debug_normaliz}"
+        fi
         if [[ $OSTYPE == darwin* ]]; then
-            otool -L "${normaliz}"
+            otool -L "${debug_normaliz}"
         else
-            ldd "${normaliz}"
+            ldd "${debug_normaliz}"
         fi
     else
         echo "normaliz binary not found"
@@ -111,9 +129,9 @@ diagnose_check_failure() {
 
     print_failed_diffs "${test_dir}"
 
-    rerun_sigill_probe "${normaliz}" "${test_dir}" "test-/rational_inhom_H"
-    rerun_sigill_probe "${normaliz}" "${test_dir}" "test-/rational_inhom_full"
-    rerun_sigill_probe "${normaliz}" "${test_dir}" "test-/rational_inhom_hedron"
+    rerun_sigill_probe "${normaliz}" "${test_dir}" "test-/rational_inhom_H" "${debug_normaliz}"
+    rerun_sigill_probe "${normaliz}" "${test_dir}" "test-/rational_inhom_full" "${debug_normaliz}"
+    rerun_sigill_probe "${normaliz}" "${test_dir}" "test-/rational_inhom_hedron" "${debug_normaliz}"
 
     exit "${status}"
 }
