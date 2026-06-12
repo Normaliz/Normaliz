@@ -7657,8 +7657,7 @@ void Cone<Integer>::try_approximation_or_projection(ConeProperties& ToCompute) {
     if (!primitive && !is_parallelotope && !ToCompute.test(ConeProperty ::Projection) && !ToCompute.test(ConeProperty::Approximate) &&
         SupportHyperplanes.nr_of_rows() > 100 * ExtremeRays.nr_of_rows())
         return;
-
-    if (!primitive && !is_parallelotope && !ToCompute.test(ConeProperty::Approximate)) {  // we try again
+    if (!primitive && !is_parallelotope && !ToCompute.test(ConeProperty::Approximate) &&  BasisChange.getEquationsMatrix().nr_of_rows() == 0) {  // we try again
         is_parallelotope = check_parallelotope();
         if (is_parallelotope) {
             if (verbose)
@@ -8976,9 +8975,10 @@ void Cone<renf_elem_class>::try_multiplicity_by_descent(ConeProperties& ToComput
 
 template <typename Integer>
 void Cone<Integer>::try_multiplicity_of_para(ConeProperties& ToCompute) {
+
     if ((using_renf<Integer>() || (!inhomogeneous && !ToCompute.test(ConeProperty::Multiplicity)) ||
          (inhomogeneous && !ToCompute.test(ConeProperty::Volume))) ||
-        !check_parallelotope())
+        !check_parallelotope() || BasisChange.getEquationsMatrix().nr_of_rows() > 0)
         return;
 
     // if(ToCompute.test(ConeProperty::Descent) || ToCompute.test(ConeProperty::SignedDec))
