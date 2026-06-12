@@ -540,7 +540,8 @@ inline bool try_convert(long& ret, const renf_elem_class& val) {
 inline bool try_convert(mpq_class& ret, const renf_elem_class& val) {
     if (!val.is_rational())
         throw ArithmeticException(". Field element cannot be converted to fraction");
-    ret = val.num()/val.den();
+    ret = val.num();
+    ret /= val.den();
     return true;
 }
 

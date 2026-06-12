@@ -26,6 +26,8 @@
 #include "libnormaliz/cone.h"
 #include "libnormaliz/input.h"
 #include "libnormaliz/induction.h"
+#include "libnormaliz/nmz_hash.h"
+
 
 namespace libnormaliz{
 using std::vector;
@@ -34,7 +36,7 @@ using std::list;
 using std::pair;
 //---------------------------------------------------------------------------
 
-vector<long long> test_v ={ 1,1,1,0,0,0,1,0,1,0,0,1,1,1,1,2,1,1,1,1,1,1,2,2,3,3,1,2,2,3,3,4,4,5,6,7};
+// vector<long long> test_v ={ 1,1,1,0,0,0,1,0,1,0,0,1,1,1,1,2,1,1,1,1,1,1,2,2,3,3,1,2,2,3,3,4,4,5,6,7};
 
 // classless functions
 
@@ -389,6 +391,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
     AllLocalSolutions.resize(EmbDim);
     AllShortLocalSolutions.resize(EmbDim);
 
+    All_AMV_constraint_keys.resize(EmbDim);
+
     DefiningSupps.resize(EmbDim);
 
     if(fusion.check_simplicity){
@@ -405,6 +409,10 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
     poly_inequs_minimized.resize(EmbDim);
     // poly_congs_minimized.resize(EmbDim);
     automs_minimized.resize(EmbDim);
+
+    TotalEqusStat.resize(EmbDim);;
+    TotalInequsStat.resize(EmbDim);
+    TotalAutomsStat.resize(EmbDim);;
 
     // First we compute the patches
     for(size_t coord = 1; coord < EmbDim; coord++){
@@ -477,6 +485,54 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
     //  Indicator[next_supp] ersetzen durch AllPatches
 
     vector<key_t> old_coord_key;
+
+    //
+    // Making of the AMV constraints
+    //
+
+    has_AMV_constraints = false;
+
+    if(fusion.Spins.nr_of_rows() > 0){
+
+        has_AMV_constraints = true;
+        if(verbose)
+            verboseOutput() << "Prepating Anderson-Moore-Vafa constraints" << endl;
+
+        AMV_constraints = fusion.make_AndersonMooreVafa();
+        if(verbose)
+            verboseOutput() << "Prepared " << AMV_constraints.size() << " Anderson-Moore-Vafa constraints" << endl;
+
+        for(auto& c: AMV_constraints){
+            dynamic_bitset supp(EmbDim);
+            // the last polynomial is t_i + t_j + t_k + t_l
+            for(size_t i = 0; i < c.size() - 1; ++i){
+                supp |= c[i].support;
+                /* if(i < c.size() -1)
+                    c[i].vectorize_deg_2(); */
+            }
+            AMV_Supps.push_back(supp);
+        }
+
+        mpz_class SpinDenom_mpz = 1;
+        for(size_t i = 0; i < fusion.Spins.nr_of_rows(); ++i){
+            for(size_t j = 0; j < fusion.Spins.nr_of_columns(); ++j){
+                SpinDenom_mpz = libnormaliz::lcm(SpinDenom_mpz, fusion.Spins[i][j].get_den());
+            }
+        }
+        Spins.resize(fusion.Spins.nr_of_rows(), EmbDim);
+        for(size_t i = 0; i < fusion.Spins.nr_of_rows(); ++i){
+            for(size_t j = 0; j < fusion.Spins.nr_of_columns(); ++j){
+                mpq_class h = fusion.Spins[i][j] * SpinDenom_mpz ;
+                Spins[i][j] = convertTo<IntegerRet>(h.get_num());
+            }
+        }
+        SpinDenom = convertTo<IntegerRet>(SpinDenom_mpz);
+        // cout << "DDDDDDDDD " << SpinDenom << endl;
+        // fusion.Spins.debug_print('F');
+        // Spins.debug_print();
+
+    }
+    // AMV_constraints done
 
     for(auto& coord: InsertionOrderPatches){
 
@@ -642,6 +698,13 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
                 }
              }
         }
+
+        for(size_t i = 0; i < ExtraInequalities.nr_of_rows(); ++i){
+            v_make_prime(ExtraInequalities[i]);
+
+        }
+        ExtraInequalities.remove_duplicate_and_zero_rows();
+
         // Collect relevant polynomial constraints
         // The keys are used for terminal output
         vector<key_t> PolyEqusKey, PolyInequsKey, RestrictablePolyInequsKey;
@@ -651,6 +714,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
          * congruiences.
          * Not yet implemented further since it is unclear whether it makes sense.
          *  TODO don't delete
+         *
 
         size_t linear_in_new_covered = 0;
         for(size_t i = 0; i < PolyEquations.size(); ++i){
@@ -669,16 +733,20 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
 
         // first the equations
         // bool first_rest = true;
+
+        // CoCoA::GlobalManager CoCoAFoundations;
+        // CoCoA::SparsePolyRing RQQ = CoCoA::NewPolyRing_DMPI(CoCoA::RingQQ(), EmbDim + 1, CoCoA::lex);
         for(size_t i = 0; i < PolyEquations.size(); ++i){
             if(!PolyEquations[i].support.is_subset_of(new_covered)) // not yet usable
                 continue;
             if(PolyEquations[i].support.is_subset_of(covered)) // already used
                 continue;
-            OurPolynomial<IntegerRet> Restrict = PolyEquations[i].restrict_to(covered);
+            // OurPolynomial<IntegerRet> Restrict = PolyEquations[i].restrict_to(covered);
             /* if(first_rest){
                 cout << "Rest " << i << " --- " <<  Restrict.size() << " of " << PolyEquations[i].size() << endl;
                 first_rest = false;
             }*/
+            // cout << PolyEquations[i].ToCoCoA(RQQ) << ";" << endl;
             AllPolyEqus[coord].emplace_back(PolyEquations[i].split(covered));
             AllPolyEqus[coord].back().first.vectorize_deg_2();
             AllPolyEqus[coord].back().second.vectorize_deg_2();
@@ -719,6 +787,17 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
 
         AllAutoms[coord] =identity_key(fusion.Automorphisms.size()); // initialized with all automorphisms in the given order
 
+        if(has_AMV_constraints){
+            for(size_t i = 0; i < AMV_constraints.size(); ++i){
+                if(AMV_Supps[i].is_subset_of(covered) )
+                    continue;
+                if(!AMV_Supps[i].is_subset_of(new_covered))
+                    continue;
+                // auto Blabla = AMV_constraints[i];
+                All_AMV_constraint_keys[coord].push_back(i);
+            }
+        }
+
         if(talkative){
                 verboseOutput() << "index coord " << coord << " nr covered coordinates " << new_covered.count() << endl;
             if(coord == critical_coord_simplicity)
@@ -729,6 +808,9 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
                 verboseOutput() << "nr poly inequalities " << AllPolyInequs[coord].size() << endl;
             if(verbose && AllCongsRestricted[coord].size() > 0){
                 verboseOutput() <<  "nr congruences " << AllCongsRestricted[coord].size() << endl;
+            }
+            if(has_AMV_constraints){
+                verboseOutput() << "nr AMV constraints " << All_AMV_constraint_keys[coord].size() << endl;
             }
             if(verbose)
                 verboseOutput() << "---------------------------------------------------------------" << endl;
@@ -755,8 +837,11 @@ void ProjectAndLift<IntegerPL,IntegerRet>::check_and_prepare_sparse() {
         AllCovered[coord] = new_covered;
         covered = new_covered;
 
-        if(fusion.total_FPdim == 0 || no_heuristic_minimization) // no discarding of equations if not fusion
+        if(fusion.total_FPdim == 0 || no_heuristic_minimization || has_AMV_constraints){ // no discarding of equations if not fusion
             poly_equs_minimized[coord] = true;
+            poly_inequs_minimized[coord] = true;
+            automs_minimized[coord] = true;
+        }
 
     } // coord
 
@@ -817,6 +902,9 @@ vector<pair<size_t, vector<key_t> > > ProjectAndLift<IntegerPL,IntegerRet>::
             }
         }
     }
+
+    // for(auto& e: covering_equations)
+        // cout << e.second;
 
     return covering_equations;
 }
@@ -978,6 +1066,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::finalize_order(const dynamic_bitset& 
         verboseOutput() << InsertionOrderPatches << endl;
     }
 
+    latt_poimts_reaching_level.resize(InsertionOrderPatches.size() + 1);
+
     for(size_t k = 0; k < InsertionOrderPatches.size(); ++k)
         LevelPatches[InsertionOrderPatches[k]] = k;
 
@@ -1005,8 +1095,10 @@ bool ProjectAndLift<IntegerPL,IntegerRet>::order_patches_user_defined() {
         for(size_t i = 0; i < nr_patch; ++i){
             size_t j;
             in_order >> j;
-            if(j >= EmbDim || AllPatches[j].empty() )
+            cout << j << endl;
+            if(j >= EmbDim || AllPatches[j].empty() ){
                 throw BadInputException("File defining insertion order corrupt");
+            }
             if(used_patches[j])
                 throw BadInputException("<project>.order.patches contains " + to_string(j) + " more than once");
             used_patches[j] = true;
@@ -1248,13 +1340,18 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_latt_points_by_patching() {
     }
 
     list<vector<IntegerRet> > start_list;
-    if(is_split_patching &&  read_latt_points(start_list, EmbDim)){
+    if(is_split_patching && fusion.Spins.nr_of_rows() == 0 && read_latt_points(start_list, EmbDim)){
         extend_points_to_next_coord(start_list, our_split.this_split_levels[0]);
     }
     else{
         vector<IntegerRet> start(EmbDim);
         start[0] = GD;
         start_list.emplace_back(start);
+        if(has_AMV_constraints){
+            dynamic_bitset start_active_spins(Spins.nr_of_rows());
+            start_active_spins.flip();
+            set_active_spins(start,start_active_spins);
+        }
         extend_points_to_next_coord(start_list, 0);
     }
 
@@ -1262,6 +1359,15 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_latt_points_by_patching() {
     if(verbose){
         verboseOutput() << endl << "=======================================" << endl;
         verboseOutput() << "Final number of lattice points "  << NrLP[EmbDim] << endl;
+    }
+    if(talkative){
+        verboseOutput() << "Lattice ppoints reaching levels ";
+        for(auto& c: latt_poimts_reaching_level){
+            if(c == 0)
+                break;
+            verboseOutput()  << c << " ";
+        }
+        verboseOutput() << endl;
     }
 
     if(!only_single_point && !distributed_computation){
@@ -1384,6 +1490,8 @@ void select_and_split(list<vector<Integer> >& LatticePoints, const key_t& this_p
         verboseOutput() << Selection.size() << " lattice points after splitting" << endl;
 
     swap(LatticePoints, Selection);
+
+    // Matrix<Integer>(LatticePoints).debug_print();
 }
 
 //--------------------------------------------------------------------------
@@ -1484,7 +1592,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::store_new_vector(const vector<Integer
         Deg1Thread[tn].push_front(new_vect);
 }
 
-//--------------------------------------------------------------------------
+// //-------------------------------------------------------------------------
 
 template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL,IntegerRet>::compute_local_solutions(const key_t this_patch,
@@ -1615,13 +1723,40 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_local_solutions(const key_t t
 
     // if(talkative){
     //    verboseOutput() << "Local solutions sorted" << endl;
-    // }
+    //
+
 }
 
 //---------------------------------------------------------------------------
 
 template <typename IntegerPL, typename IntegerRet>
+dynamic_bitset ProjectAndLift<IntegerPL,IntegerRet>::get_active_spins(const vector<IntegerRet>& LattPoint) {
+
+    ostringstream VecStream;
+    VecStream << LattPoint;
+    auto HashValue = sha256hexvec(VecStream.str());
+    return ActiveSpins[HashValue];
+}
+
+//---------------------------------------------------------------------------
+
+
+template <typename IntegerPL, typename IntegerRet>
+void ProjectAndLift<IntegerPL,IntegerRet>::set_active_spins(const vector<IntegerRet>& LattPoint, const dynamic_bitset active_spins) {
+
+    ostringstream VecStream;
+    VecStream << LattPoint;
+    auto HashValue = sha256hexvec(VecStream.str());
+    ActiveSpins[HashValue] = active_spins;
+}
+
+
+//---------------------------------------------------------------------------
+
+template <typename IntegerPL, typename IntegerRet>
 void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vector<IntegerRet> >& LatticePoints, const key_t this_patch) {
+
+    latt_poimts_reaching_level[this_patch] += LatticePoints.size();
 
     if(is_split_patching && only_single_point){
         double time_spent = MeasureTime(stop_ckeck_begin);
@@ -1658,6 +1793,39 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
     auto&& CoveredKey = AllCoveredKey[coord];
     auto&& CoveredKeyInverse = AllCoveredKeyInverse[coord];
     auto&  Automorphisms = fusion.Automorphisms;
+
+    auto& poly_equs_stat_total = TotalEqusStat[coord];
+    vector<vector<size_t> > poly_equs_stat;
+    if(!poly_equs_minimized[coord]){
+        poly_equs_stat.resize(omp_get_max_threads());  // counts the number of "successful". i.e. != 0,
+        for(auto& p:poly_equs_stat)                    // evaluations of a mpolynomial erquation
+            // p.resize(PolyEqusThread[0].size());
+            p.resize(PolyEqus.size());
+        if(poly_equs_stat_total.size() == 0)
+            poly_equs_stat_total.resize(poly_equs_stat[0].size());
+    }
+
+
+    auto& poly_inequs_stat_total = TotalInequsStat[coord];
+    vector<vector<size_t> > poly_inequs_stat;
+    if(!poly_inequs_minimized[coord]){
+        poly_inequs_stat.resize(omp_get_max_threads());  // counts the number of "successful". i.e. < 0,
+        for(auto& p:poly_inequs_stat)                    // evaluations of a restricted mpolynomial inequalities
+            // p.resize(PolyInequsThread[0].size());
+            p.resize(PolyInequs.size());
+        if(poly_inequs_stat_total.size() == 0)
+            poly_inequs_stat_total.resize(poly_inequs_stat[0].size());
+    }
+
+    auto& automs_stat_total = TotalAutomsStat[coord];
+    vector<vector<size_t> > automs_stat;
+    if(!automs_minimized[coord]){
+        automs_stat.resize(omp_get_max_threads());  // counts the number of "successful". i.e. < 0,
+        for(auto& p:automs_stat)                    // evaluations of a restricted mpolynomial inequalities
+            p.resize(Automs.size());
+        if(automs_stat_total.size() == 0)
+            automs_stat_total.resize(automs_stat[0].size());
+    }
 
     // auto& LocalPL = AllLocalPL[coord];
     auto&& LocalSolutions_by_intersection_and_cong =
@@ -1714,6 +1882,13 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
 
     if(min_fall_back == 0)
         sort_lattice_points_by_overlap(LatticePoints, intersection_key);
+
+    if(min_fall_back != old_min_fall_back){
+        if(verbose && !talkative){
+            verboseOutput() << "min fall back " << min_fall_back << endl;
+        }
+        old_min_fall_back = min_fall_back;
+    }
 
     INTERRUPT_COMPUTATION_BY_EXCEPTION
 
@@ -1777,8 +1952,24 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         apply_automorphisms = true;
     }
 
+    size_t nr_extensions = 0;  //statistics for this run of the while loop
+    size_t nr_caught_by_restricted = 0;  //restricted inequalities
+    size_t nr_caught_by_simplicity = 0;  // caught by simplicity check
+    size_t nr_caught_by_equations = 0;  //statistics for this run of the while loop
+    size_t nr_caught_by_automs = 0;  //statistics for this run of the while loop
+    size_t nr_caught_by_AMV = 0;  //statistics for this run of the while loop
+    size_t nr_points_done_in_this_round = 0;
+
+    size_t nr_intersect = intersection_key.size();
+    dynamic_bitset full_support(EmbDim);
+    full_support.flip();
+
+    size_t nr_latt_points_processed = 0;
 
     while (true) {
+
+
+    size_t nr_new_latt_points = 0;  // counts number of new lattice points produced in the loop
 
         /* if(talkative){
             if(nr_rounds > 0 && verbose){
@@ -1796,12 +1987,16 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         struct timeval step_time_begin;
         StartTime(step_time_begin);
 
-        if(talkative){
-            verboseOutput() << "----" << endl;
-            verboseOutput() <<  LevelPatches[coord] << " / " << coord << " left " << nr_to_match - nr_points_matched;
-                if(min_fall_back > 0)
-                    verboseOutput() << " min " << min_fall_back << " max " << max_fall_back;
-            verboseOutput()    << endl;
+        if(verbose){
+            if(talkative){
+                verboseOutput() << "----" << endl;
+                verboseOutput() <<  LevelPatches[coord] << " / " << coord << " left " << nr_to_match - nr_points_matched;
+                    if(min_fall_back > 0)
+                        verboseOutput() << " min " << min_fall_back << " max " << max_fall_back;
+                verboseOutput()    << endl;
+            }
+            else
+                verboseOutput() << LevelPatches[coord] << " M " << max_fall_back << endl;
         }
 
         bool skip_remaining;
@@ -1810,49 +2005,6 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         skip_remaining = false;
         int omp_start_level = omp_get_level();
 
-
-        size_t nr_new_latt_points = 0;  // counts number of new lattice points produced in the loop
-        size_t nr_extensions = 0;  //statistics for this run of the while loop
-        size_t nr_caught_by_restricted = 0;  //restricted inequalities
-        size_t nr_caught_by_simplicity = 0;  // caught by simplicity check
-        size_t nr_caught_by_equations = 0;  //statistics for this run of the while loop
-        size_t nr_caught_by_automs = 0;  //statistics for this run of the while loop
-        size_t nr_points_done_in_this_round = 0;
-
-        vector<vector<size_t> > poly_equs_stat; // TODO make macro
-        vector<size_t> poly_equs_stat_total;
-        if(!poly_equs_minimized[coord]){
-            poly_equs_stat.resize(omp_get_max_threads());  // counts the number of "successful". i.e. != 0,
-            for(auto& p:poly_equs_stat)                    // evaluations of a mpolynomial erquation
-                // p.resize(PolyEqusThread[0].size());
-                p.resize(PolyEqus.size());
-            poly_equs_stat_total.resize(poly_equs_stat[0].size());
-        }
-
-        vector<vector<size_t> > poly_inequs_stat;
-        vector<size_t> poly_inequs_stat_total;
-        if(!poly_inequs_minimized[coord]){
-            poly_inequs_stat.resize(omp_get_max_threads());  // counts the number of "successful". i.e. < 0,
-            for(auto& p:poly_inequs_stat)                    // evaluations of a restricted mpolynomial inequalities
-                // p.resize(PolyInequsThread[0].size());
-                p.resize(PolyInequs.size());
-            poly_inequs_stat_total.resize(poly_inequs_stat[0].size());
-        }
-
-        vector<vector<size_t> > automs_stat;
-        vector<size_t> automs_stat_total;
-        if(!automs_minimized[coord]){
-            automs_stat.resize(omp_get_max_threads());  // counts the number of "successful". i.e. < 0,
-            for(auto& p:automs_stat)                    // evaluations of a restricted mpolynomial inequalities
-                p.resize(Automs.size());
-            automs_stat_total.resize(automs_stat[0].size());
-        }
-
-        size_t nr_intersect = intersection_key.size();
-        dynamic_bitset full_support(EmbDim);
-        full_support.flip();
-
-        size_t nr_latt_points_processed = 0;
 
 #pragma omp parallel
         {
@@ -1885,6 +2037,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         list<key_t> order_automs;
         for(key_t k = 0; k < Automs.size(); ++k)
             order_automs.emplace_back(k);
+
+        dynamic_bitset this_active_spins;
 
 
 
@@ -1919,6 +2073,9 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
             nr_points_done_in_this_round++;
 
         NewLattPoint = std::move(*P);
+
+        if(has_AMV_constraints)
+            this_active_spins = get_active_spins(NewLattPoint);
 
         overlap = v_select_coordinates(NewLattPoint, intersection_key);
         for(size_t k = 0; k < CongsRestricted.size(); ++k)
@@ -2027,6 +2184,18 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                         }
                     }
                 }
+                if(has_AMV_constraints && can_be_inserted){
+                    dynamic_bitset new_active_spins;
+                    can_be_inserted = check_AMV_constraints(NewLattPoint, coord,this_active_spins, new_active_spins);
+                    // check_all_spins(NewLattPoint, coord, this_active_spins, new_active_spins); // only for debugging
+                    if(!can_be_inserted)
+#pragma omp atomic
+                        nr_caught_by_AMV++;
+                    else
+#pragma omp critical(ACTIVESPLITS)
+                        set_active_spins(NewLattPoint, new_active_spins);
+                }
+
                 if(can_be_inserted){
 #pragma omp atomic
                     nr_new_latt_points++;
@@ -2068,7 +2237,11 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         if (!(tmp_exception == 0))
             std::rethrow_exception(tmp_exception);
 
-        list<vector<IntegerRet> > NewLatticePoints;  // lattice points computed in this round
+            // *******************************************
+        // Collect statistical data from threads
+        // *******************************************
+
+       list<vector<IntegerRet> > NewLatticePoints;  // lattice points computed in this round
 
         if(!poly_equs_minimized[coord]){
             for(size_t i = 0; i< poly_equs_stat.size(); ++i){
@@ -2084,17 +2257,15 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
             }
         }
 
-        assert(NewLatticePoints.empty());
-
-        for (size_t i = 0; i < Deg1Thread.size(); ++i)
-            NewLatticePoints.splice(NewLatticePoints.end(), Deg1Thread[i]);
-
         if(!automs_minimized[coord]){
             for(size_t i = 0; i< automs_stat.size(); ++i){
                     for(size_t j = 0; j < automs_stat[0].size(); ++j)
                         automs_stat_total[j] += automs_stat[i][j];
             }
         }
+
+        for(size_t i = 0; i < Deg1Thread.size(); ++i)
+            NewLatticePoints.splice(NewLatticePoints.end(), Deg1Thread[i]);
 
         if(last_coord)
             collect_results(NewLatticePoints); // clears NewLatticePoints
@@ -2104,9 +2275,10 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         // *******************************************
         // Heuristic minimization of equations etc.
         // *******************************************
-        if(!poly_equs_minimized[coord] &&  nr_extensions > nr_extensions_for_elimination_equs){
+
+        if(!poly_equs_minimized[coord] &&  NrDoneLP[coord] > nr_extensions_for_elimination_equs){
             poly_equs_minimized[coord] = true;
-             vector < pair<OurPolynomial<IntegerRet>, OurPolynomial<IntegerRet> > > EffectivePolys;
+            vector < pair<OurPolynomial<IntegerRet>, OurPolynomial<IntegerRet> > > EffectivePolys;
             for(size_t i = 0; i < PolyEqus.size(); ++i){
                 if(poly_equs_stat_total[i] > 0){
                     EffectivePolys.emplace_back(PolyEqus[i]);
@@ -2119,10 +2291,10 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
 
             /* for(size_t thr = 0; thr < PolyEqusThread.size(); ++thr)
                     PolyEqusThread[thr] = EffectivePolys;*/
-            PolyEqus = EffectivePolys;
+            swap(PolyEqus,EffectivePolys);
         }
 
-        if(!automs_minimized[coord] &&  nr_extensions > nr_extensions_for_elimination_automs &&!last_coord){
+        if(!automs_minimized[coord] &&  NrDoneLP[coord] > nr_extensions_for_elimination_automs &&!last_coord){
             automs_minimized[coord] = true;
             vector<key_t> EffectiveAutoms;
             for(size_t i = 0; i < Automs.size(); ++i){
@@ -2134,11 +2306,11 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                 verboseOutput() << LevelPatches[coord] << " / " << coord << " active automorphisms "
                   << EffectiveAutoms.size() << " of " << Automorphisms.size() << endl;
             }
-             Automs = EffectiveAutoms;
+            swap(Automs, EffectiveAutoms);
         }
 
         //Discard ineffective restrictable plolynjomial inequalities
-        if(!poly_inequs_minimized[coord] &&  nr_extensions > nr_extensions_for_elimination_inequs){
+        if(!poly_inequs_minimized[coord] &&  NrDoneLP[coord] > nr_extensions_for_elimination_inequs &&!last_coord){
             poly_inequs_minimized[coord] = true;
             OurPolynomialSystem<IntegerRet> EffectivePolyInequs;
             for(size_t i = 0; i < PolyInequs.size(); ++i){
@@ -2153,7 +2325,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
 
              /* for(size_t thr = 0; thr < PolyEqusThread.size(); ++thr)
                 PolyInequsThread[thr] = EffectivePolyInequs;*/
-             PolyInequs = EffectivePolyInequs;
+             swap(PolyInequs , EffectivePolyInequs);
         }
 
        NrRemainingLP[this_patch] = nr_to_match - nr_points_matched;
@@ -2192,6 +2364,8 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
                 verboseOutput() << " smp " << nr_caught_by_simplicity;
             if(nr_caught_by_automs > 0)
                 verboseOutput() << " aut " << nr_caught_by_automs;
+            if(nr_caught_by_AMV > 0)
+                verboseOutput() << " AMV " << nr_caught_by_AMV;
             if(nr_points_done_in_this_round > 0)
                 verboseOutput() << " exp rnd " << expected_number_of_rounds;
             ExpectedNrRounds[this_patch] = expected_number_of_rounds;
@@ -2228,14 +2402,14 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         double time_to_ascent = 0;
 
         if(!last_coord && NewLatticePoints.size() > 0){ // we must go up
-            if(verbose && !talkative){
+            /*if(verbose && !talkative){
                 verboseOutput() << "+" << flush;
                 verb_length++;
                 if(verb_length == 50){
                     verboseOutput() << endl;
                     verb_length = 0;
                 }
-            }
+            }*/
 
             if(NrNodes[this_patch + 1] == 1 || this_patch == min_return_patch)
                 NrNodes[this_patch +1] = NrNodes[this_patch] * (expected_number_of_rounds +1);
@@ -2243,19 +2417,20 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
             for(size_t i = this_patch + 2; i < NrNodes.size(); ++i)
                 NrNodes[i] = 1;
 
-            // ***********************************   ascent to next patch
+            // ***********************************
+            // ascent to next patch
             time_to_ascent = MeasureTime(time_begin);
             extend_points_to_next_coord(NewLatticePoints, this_patch + 1);
             // ****************************************** down from next patch
 
-            if(verbose && !talkative){
+            /*if(verbose && !talkative){
                 verboseOutput() << "-" << flush;
                 verb_length++;
                 if(verb_length == 50){
                     verboseOutput() << endl;
                     verb_length = 0;
                  }
-            }
+            }*/
         }
 
         FreeVect.splice(FreeVect.end(), NewLatticePoints);
@@ -2264,7 +2439,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         if(single_point_found)
             break;
 
-        double expected_time = 0; // to make gcc happy
+        // double expected_time = 0; // to make gcc happy
         double total_expected_time = 0;
 
         bool time_measured = false;
@@ -2273,7 +2448,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         if(nr_points_done_in_this_round > 0 && NrRemainingLP[this_patch] > 0 && nr_rounds == 1){
             time_measured = true;
             double time_spent = MeasureTime(time_begin);
-            expected_time = time_spent*expected_number_of_rounds;
+            // expected_time = time_spent*expected_number_of_rounds;
 
             // -------------------------------
 
@@ -2283,14 +2458,10 @@ void ProjectAndLift<IntegerPL,IntegerRet>::extend_points_to_next_coord(list<vect
         }
 
         if(time_measured){
-            if(((talkative || nr_time_printed <= 10) ||  this_patch == min_return_patch)
-                            && verbose && (nr_rounds ==1 || this_patch == min_return_patch) ){
-                nr_time_printed++;
-                if(verbose){
+            if(verbose && (nr_rounds ==1 || this_patch == min_return_patch)){
+                if(talkative)
                     verboseOutput() << "---------" << endl;
-                    verboseOutput() << "expected future time on level  " << LevelPatches[coord] << "  " << expected_time;
-                    verboseOutput() << " / total " << total_expected_time << endl;
-                }
+                verboseOutput() << "expected time " << total_expected_time << endl;
             }
         }
 
@@ -2385,6 +2556,131 @@ vector<size_t> ProjectAndLift<IntegerPL, IntegerRet>::order_supps(const Matrix<I
     assert(Order.size() == Supps.nr_of_rows());
 
     return Order;
+}
+
+//---------------------------------------------------------------------------
+// includes computation of data that depend only on the AMV constraint and the lattice point
+template <typename IntegerPL, typename IntegerRet>
+bool ProjectAndLift<IntegerPL,IntegerRet>::check_AMV_constraints(const vector<IntegerRet>& LattPoint,
+                                                                 const size_t coord,
+                                                                 const dynamic_bitset& old_active_spins, dynamic_bitset& new_active_spins) {
+
+    new_active_spins = old_active_spins;
+    bool at_least_one_works;
+
+    for(auto& c: All_AMV_constraint_keys[coord]){
+        IntegerRet LHS_1 = AMV_constraints[c][0].evaluate(LattPoint);
+        vector<IntegerRet> RHS_vec(fusion.fusion_rank);
+        for(size_t i = 0; i < fusion.fusion_rank; ++i){
+            // cout << "iiiiiiii " << i << " ";
+            // cout << AMV_constraints[c][i + 1].ToCoCoA(RQQ) << ";" << endl;
+            RHS_vec[i] = AMV_constraints[c][i + 1].evaluate(LattPoint);
+        }
+        at_least_one_works = check_AMV_constraints_inner(AMV_constraints[c],new_active_spins, LHS_1, RHS_vec);
+        if(!at_least_one_works)
+            break;
+    }
+    return at_least_one_works;
+}
+
+//---------------------------------------------------------------------------
+template <typename IntegerRet>
+bool checkAMVspin(const vector<IntegerRet>& spin, const IntegerRet& LHS_1,   const IntegerRet& LHS_2,
+                  const vector<IntegerRet>& RHS_vec, const IntegerRet& SpinDenom){
+
+    IntegerRet LHS = LHS_1 * LHS_2;
+    IntegerRet RHS = 0;
+    for(size_t i = 0; i < RHS_vec.size(); ++i){
+        // cout << "iiiiiiii " << i << " ";
+        // cout << AMV_constraints[c][i + 1].ToCoCoA(RQQ) << ";" << endl;
+        RHS += RHS_vec[i] * spin[i];
+    }
+    // cout << "LHS " << LHS << " RHS " << RHS;
+    IntegerRet Diff = LHS - RHS;
+    // cout << " Diff " << Diff << endl;
+    if(Diff % SpinDenom != 0){
+        // cout << "FALSE "<< endl;
+        return false;
+    }
+
+    // ncout << "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$" << endl;
+    // cout << "TRUE " << endl;
+    return true;
+}
+//---------------------------------------------------------------------------
+// includes the computation of data that also depend on the spin
+template <typename IntegerPL, typename IntegerRet>
+bool ProjectAndLift<IntegerPL,IntegerRet>::check_AMV_constraints_inner(const vector<OurPolynomial<IntegerRet> >& AMV_c,
+                                                                       dynamic_bitset& active_spins,
+                                                                       const IntegerRet& LHS_1,
+                                                                       const vector<IntegerRet>& RHS_vec){
+
+    bool at_least_one_works = false;
+
+    for(size_t i = 0; i < Spins.nr_of_rows(); ++i){
+        if(!active_spins[i])
+            continue;
+        IntegerRet LHS_2 = AMV_c.back().evaluate(Spins[i]);
+        active_spins[i] = checkAMVspin(Spins[i], LHS_1, LHS_2, RHS_vec, SpinDenom);
+        if(active_spins[i])
+            at_least_one_works = true;
+    }
+    return at_least_one_works;
+}
+
+//---------------------------------------------------------------------------
+
+// for testing the spins and AMV vonsztisants
+template <typename IntegerPL, typename IntegerRet>
+void ProjectAndLift<IntegerPL,IntegerRet>::check_all_spins(const vector<IntegerRet>& LattPoint,
+                                                                 const size_t coord,
+                                                                 const dynamic_bitset& old_active_spins,
+                                                                 const dynamic_bitset& new_active_spins) {
+    for(size_t i = 0; i < Spins.nr_of_rows(); ++i){
+        if(!old_active_spins[i])
+            continue;
+        bool check = check_spin_inner(LattPoint, Spins[i], coord);
+        if(new_active_spins[i] != check){
+            cout << "iiiiii " << i << endl;
+            assert(false);
+        }
+    }
+}
+
+template <typename IntegerPL, typename IntegerRet>
+bool ProjectAndLift<IntegerPL,IntegerRet>::check_spin_inner(const vector<IntegerRet>& LattPoint,
+                                                                       const vector<IntegerRet>& spin_candidate,
+                                                                       const size_t coord) {
+
+        // CoCoA::GlobalManager CoCoAFoundations;
+        // CoCoA::SparsePolyRing RQQ = CoCoA::NewPolyRing_DMPI(CoCoA::RingQQ(), EmbDim + 1, CoCoA::lex);
+
+        // cout << "KEYS " << All_AMV_constraint_keys[coord];
+
+    for(auto& c: All_AMV_constraint_keys[coord]){
+
+        // cout << "****************************" << endl;
+        IntegerRet LHS_1 = AMV_constraints[c][0].evaluate(LattPoint);
+        IntegerRet LHS_2 = AMV_constraints[c].back().evaluate(spin_candidate);
+        IntegerRet LHS = LHS_1 * LHS_2;
+        IntegerRet RHS = 0;
+        for(size_t i = 0; i < fusion.fusion_rank; ++i){
+            // cout << "iiiiiiii " << i << " ";
+            // cout << AMV_constraints[c][i + 1].ToCoCoA(RQQ) << ";" << endl;
+            IntegerRet Help = AMV_constraints[c][i + 1].evaluate(LattPoint) *spin_candidate[i];
+            RHS += Help;
+        }
+        // cout << "LHS " << LHS << " RHS " << RHS;
+        IntegerRet Diff = LHS - RHS;
+        // cout << " Diff " << Diff << endl;
+        if(Diff % SpinDenom != 0){
+            // cout << "FALSE "<< endl;
+            return false;
+        }
+    }
+    // ncout << "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$" << endl;
+    // cout << "TRUE " << endl;
+    return true;
 }
 
 //---------------------------------------------------------------------------
@@ -3354,6 +3650,7 @@ void ProjectAndLift<IntegerPL, IntegerRet>::initialize(const Matrix<IntegerPL>& 
     min_return_patch = 0;
     NrLP.resize(EmbDim + 1);
     nr_time_printed = 0;
+    old_min_fall_back = 0;
 
     Congs = Matrix<IntegerRet>(0, EmbDim + 1);
 
@@ -3979,7 +4276,8 @@ void project_and_lift(Cone<renf_elem_class>&  C, const ConeProperties& ToCompute
                                              const OurPolynomialSystem<renf_elem_class>& PolyEqus) {
 
     bool count_only = ToCompute.test(ConeProperty::NumberLatticePoints);
-    bool all_points = !ToCompute.test(ConeProperty::SingleFusionRing);
+    bool all_points = !ToCompute.test(ConeProperty::SingleFusionRing)
+                      && !ToCompute.test(ConeProperty::SingleLatticePoint);
     // Supps.debug_print();
 
     size_t rank = C.getRankRaw();
@@ -4074,7 +4372,7 @@ void project_and_lift(Cone<renf_elem_class>&  C, const ConeProperties& ToCompute
                                              const OurPolynomialSystem<renf_elem_class>& PolyInequs) {   // no primitive vgersion yet for renf
 
     // we go to an integer computation for FusionRings
-    if(C.isFusionInput()){
+    if(C.isFusionInput() || C.isFusionPartitionInput()){
         bool short_allowed = false;
     /* // it does not real oay in terms of RAM to use short integers whose range is diffoicult to control.
         if(ToCompute.test(ConeProperty::ShortInt)){

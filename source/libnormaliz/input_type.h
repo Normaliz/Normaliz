@@ -98,6 +98,7 @@ enum InputType {
     fusion_image_type,
     fusion_image_ring,
     fusion_image_duality,
+    spins,
     //
     // precomputed data
     //
@@ -363,6 +364,9 @@ inline InputType to_type(const string& type_string) {
 
     if (type_string == "fusion_type") {
         return Type::fusion_type;
+    }
+    if (type_string == "spins") {
+        return Type::spins;
     }
 
     if (type_string == "fusion_type_for_partition") {

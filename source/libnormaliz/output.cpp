@@ -595,7 +595,7 @@ void Output<Integer>::write_precomp() const {
         out << "grading" << endl;
         out << Result->getGrading();
     }
-    if (Result->isComputed(ConeProperty::Dehomogenization)) {
+    if(Result->isComputed(ConeProperty::Dehomogenization)) {
         out << "dehomogenization" << endl;
         out << Result->getDehomogenization();
     }

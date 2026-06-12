@@ -43,7 +43,13 @@ const size_t max_nr_new_latt_points_total = 100000; // before we go one level up
 const size_t max_nr_new_latt_points_patching = 4000; // the same for patching
 const size_t nr_extensions_for_elimination_equs = 10000;
 const size_t nr_extensions_for_elimination_inequs = 10000;
-const size_t nr_extensions_for_elimination_automs = 10000;
+const size_t nr_extensions_for_elimination_automs = 1000;
+
+template <typename Integer>
+struct latt_spin {
+    vector<Integer> latt;
+    dynamic_bitset active_spins;
+};
 
 // the project-and-lift algorithm for lattice points in a polytope
 
@@ -60,6 +66,10 @@ class ProjectAndLift {
     size_t nr_extensions_for_elimination_equs;
     size_t nr_extensions_for_elimination_inequs;
     size_t nr_extensions_for_elimination_automs;
+
+    size_t old_min_fall_back;
+
+    vector<size_t> latt_poimts_reaching_level;
 
     list<vector<IntegerRet> > start_list; // list of lattice points to start from
                                           // and to be lifted to full dimension
@@ -94,6 +104,9 @@ class ProjectAndLift {
     vector<IntegerRet> excluded_point;
     IntegerRet GD;
 
+    IntegerRet SpinDenom;
+    Matrix<IntegerRet> Spins;
+
     OurPolynomialSystem<IntegerRet> PolyEquations;
     OurPolynomialSystem<IntegerRet> PolyInequalities;
     OurPolynomialSystem<IntegerRet> RestrictablePolyInequs;
@@ -126,6 +139,7 @@ class ProjectAndLift {
     bool stored_local_solutions;
     bool use_short_int;
     bool no_heuristic_minimization;
+    bool has_AMV_constraints;
 
     bool system_unsolvable;
 
@@ -173,6 +187,13 @@ class ProjectAndLift {
     vector<OurPolynomialSystem<IntegerRet> > AllPolyInequs; // ditto for inequalities
     vector<vector<key_t> > AllAutoms; // ditto for automorphisms where the key is the index
 
+    // the dynamic_bitset is the joint support of the components of the vector
+    vector< vector<OurPolynomial<IntegerRet> > > AMV_constraints;
+    vector< dynamic_bitset> AMV_Supps;
+    vector<vector< key_t > > All_AMV_constraint_keys;
+
+    map<vector<unsigned char>, dynamic_bitset> ActiveSpins;
+
     // vector<vector<vector < pair<OurPolynomial<IntegerRet>, OurPolynomial<IntegerRet> > > > > AllPolyEqusThread; // a copy for each thread
     // vector<vector<OurPolynomialSystem<IntegerRet> > > AllPolyInequsThread; // ditto for inequalities
 
@@ -183,6 +204,11 @@ class ProjectAndLift {
     vector<dynamic_bitset> CongIndicator; // stores supports of congruences
     Matrix<double> WeightOfCoord;
     Matrix<IntegerPL> DefiningSupps;
+
+    // Measures for efficienvcy of equations, inequalities and automorphisms
+    vector< vector<size_t> > TotalEqusStat;
+    vector< vector<size_t> > TotalInequsStat;
+    vector< vector<size_t> > TotalAutomsStat;
 
     // Matrix<IntegerRet> SavedLocalSolutions;
 
@@ -245,6 +271,25 @@ class ProjectAndLift {
     void compute_local_solutions(const key_t this_patch, list<vector<IntegerRet> >& start_list);
     void compute_local_solutions_for_saving();
     dynamic_bitset ImportedLocalSolutions; // registers the levels with imported local solutions
+
+    bool check_AMV_constraints(const vector<IntegerRet>& LattPoint, const size_t coord,
+                               const dynamic_bitset& old_active_spins,
+                               dynamic_bitset& new_active_spins);
+
+    bool check_AMV_constraints_inner(const vector<OurPolynomial<IntegerRet> >& AMV_c,
+                                dynamic_bitset& active_spins,const IntegerRet& LHS_1,
+                                const vector<IntegerRet>& RHS_vec);
+    /* bool check_AMV_constraints_inner(const vector<IntegerRet>& LattPoint,
+                           const vector<IntegerRet>& spin_candidate,const size_t coord); */
+    dynamic_bitset get_active_spins(const vector<IntegerRet>& LattPoint);
+    // for debugging
+    void check_all_spins(const vector<IntegerRet>& LattPoint, const size_t coord,
+                         const dynamic_bitset& old_active_spins,
+                         const dynamic_bitset& new_active_spins);
+    bool check_spin_inner(const vector<IntegerRet>& LattPoint,
+                          const vector<IntegerRet>& spin_candidate, const size_t coord);
+
+    void set_active_spins(const vector<IntegerRet>& LattPoint, const dynamic_bitset active_spins);
 
     // void make_LLL_coordinates();
 

@@ -34,6 +34,7 @@
 #include "libnormaliz/matrix.h"
 #include "libnormaliz/input_type.h"
 #include "libnormaliz/list_and_map_operations.h"
+#include "libnormaliz/nmz_polynomial.h"
 
 namespace libnormaliz {
 using std::vector;
@@ -83,6 +84,8 @@ public:
 
     vector<vector<shortkey_t> > type_automs; // permutations of the basis vectors
     bool type_automs_made;
+
+    Matrix<mpq_class> Spins;
 
     // pair<bool, bool> read_data(const bool only_test);
 
@@ -176,6 +179,10 @@ public:
 
     vector<vector<Matrix<Integer> > > AllTables;
 
+    // set<dynamic_bitset> AVM_suports; // just for testing applicability of Anderson-Moore-Vafa
+
+    Matrix<mpq_class> Spins;
+
     FusionComp();
     FusionComp(const FusionBasic&);
     void set_options(const ConeProperties& ToCompute, const bool verb);
@@ -186,6 +193,7 @@ public:
     set<vector<key_t> > FrobRec(const vector<key_t>& ind_tuple);
     set<vector<key_t> > FrobRec_6(const vector<key_t>& ind_tuple);
     set<vector<key_t> > FrobRec_12(const vector<key_t>& ind_tuple);
+    key_t coord(const key_t ind_1, const key_t ind_2, const key_t ind_3);
     key_t coord(set<vector<key_t> >& FR);
     key_t coord(vector<key_t>& ind_tuple);
     key_t coord_cone(vector<key_t>& ind_tuple);
@@ -227,6 +235,8 @@ public:
     Matrix<Integer> data_table(const vector<Integer>& ring, const size_t i);
 
     Matrix<Integer> make_homomorphism_constraints();
+
+    vector<vector<OurPolynomial<Integer> > >   make_AndersonMooreVafa();
 };
 
 // helpers
@@ -395,6 +405,10 @@ void FusionBasic::read_data_from_input(InputMap<Integer>& input_data){
     }
 
     type_and_duality_set = true;
+
+    if(contains(input_data, Type::spins)){
+        convert(Spins, input_data[Type::spins]);
+    }
 
     bool has_fusion_image = false;
     if(contains(input_data, Type::fusion_image_ring)) {

@@ -450,8 +450,15 @@ void Induction<renf_elem_class>::make_divisors_near_integral(){
     d_plus = fusion_type.back();
     d_minus = kkk - d_plus;
 
+    // cout << "+++++++++++++++++++++ " << d_plus << "-------------------" << d_minus << endl;
+
     for(long long n = 0; n < FPdim; ++n){
-        for(long long m = 0; m < (FPdim-n)/d_plus; ++m){
+
+        renf_elem_class upper_bound = 1;
+        if(!d_plus.is_integer())
+            upper_bound = (FPdim-n)/d_plus;
+
+        for(long long m = 0; m < upper_bound; ++m){
 
              INTERRUPT_COMPUTATION_BY_EXCEPTION
 
@@ -468,6 +475,7 @@ void Induction<renf_elem_class>::make_divisors_near_integral(){
             }
         }
     }
+    // cout << "DDDDDDDDDDDDDDDDDDDDDDDDDD " << divisors << endl;
 }
 
 template<>
@@ -800,9 +808,123 @@ void Induction<Integer>::build_low_parts(){
 template<typename Integer>
 Matrix<Integer> Induction<Integer>::make_allowed_transpositions(Matrix<Integer> FusionMap){
 
+    size_t rank_ZR = FusionMap.nr_of_rows();
+    Matrix<Integer> AllowedDualities(0,rank_ZR);
+
+    // FusionMap.debug_print('F');
+
+    // Subdivide into blocks
+    vector<vector<long> > Blocks;
+    for(long i = 1; i < rank_ZR; ++i){
+        if(i ==1 || FusionMap[i] != FusionMap[i - 1]){
+            Blocks.push_back(vector<long>(0));
+        }
+        Blocks.back().push_back(i);
+    }
+
+    // cout << Blocks;
+
+    // make duals
+    Matrix<Integer> Dual(0, fusion_rank);
+    for(long i = 0; i < Blocks.size(); ++i){
+        vector<Integer> this_dual(fusion_rank);
+        for(long j = 0; j < fusion_rank; ++j)
+            this_dual[j] = FusionMap[Blocks[i][0]][duality[j]];
+        Dual.append(this_dual);
+    }
+
+    // Dual.debug_print('D');
+
+    // find duals
+    vector<long> DualBlock(Blocks.size(), -1);
+    for(long i = 0; i < Blocks.size(); ++i){
+        if(DualBlock[i] !=  -1){ // dual known
+            continue;
+        }
+        bool dual_found = false;
+        bool dual_card_fits = true;
+        for(long j = i; j < Blocks.size(); ++j){
+            if(Dual[i] == FusionMap[Blocks[j][0]]){
+                dual_found = true;
+                DualBlock[i] = j;
+                DualBlock[j] = i;
+                if(Blocks[i].size() != Blocks[j].size())
+                    dual_card_fits = false;
+                break;
+            }
+        }
+        if(!dual_found || !dual_card_fits){
+            return AllowedDualities;
+        }
+    }
+
+    vector<long> UpperBounds;
+    for(size_t i = 0; i < Blocks.size(); ++i){
+        if(DualBlock[i] == i)
+            UpperBounds.push_back(Blocks[i].size()/2);
+    }
+
+    // Prepare choice of transpositions
+    vector<long> choice(UpperBounds.size());
+    vector<vector<long> > trans_help;
+    while(true){
+        trans_help.push_back(choice);
+        long increase = -1;
+        for(long i = choice.size() - 1; i >=0; i--){
+            if(choice[i] < UpperBounds[i]){
+                increase = i;
+                break;
+            }
+        }
+        if(increase == -1)
+            break;
+        choice[increase]++;
+        for(size_t i = increase +1; i < choice.size(); ++i)
+            choice[i]= 0;
+    }
+
+
+    // cout << Blocks;
+
+    // make dualuties
+    for(auto& help: trans_help){
+        vector<Integer> this_duality(rank_ZR);
+        this_duality[0] = -1;
+        for(long i = 1; i < rank_ZR; ++i)
+            this_duality[i] = i;
+        long kk = 0;
+        for(size_t i = 0; i < Blocks.size(); ++i){
+            if(DualBlock[i] !=i){
+                for(long j = 0; j < Blocks[i].size(); ++j){
+                    this_duality[Blocks[i][j]] = Blocks[DualBlock[i]][j];
+                }
+            }
+            else{
+
+                for(long j = 0; j < help[kk]; ++j){
+                    this_duality[Blocks[i][2*j+1]] = Blocks[i][2*j];
+                    this_duality[Blocks[i][2*j]] = Blocks[i][2*j+1];
+                }
+                kk++;
+
+            }
+        }
+        vector<Integer> this_duality_integer;
+        convert(this_duality_integer, this_duality);
+        AllowedDualities.append(this_duality_integer);
+    }
+
+    // cout << "NNNNN " << AllowedDualities.nr_of_rows() << endl;
+    return AllowedDualities;
+}
+
+/*
+template<typename Integer>
+Matrix<Integer> Induction<Integer>::make_allowed_transpositions(Matrix<Integer> FusionMap){
+
     vector<Integer> type = FusionMap.MxV(fusion_type);
 
-    Matrix<Integer> AllowedTranspositions(0,2);
+    Matrix<Integer> AllowedDualities(0,2);
 
     size_t rank_ZR = FusionMap.nr_of_rows();
     for(long i = 1; i < rank_ZR; ++i){
@@ -820,13 +942,14 @@ Matrix<Integer> Induction<Integer>::make_allowed_transpositions(Matrix<Integer> 
                 vector<long> Help = {i,j};
                 vector<Integer> HelpInt;
                 convert(HelpInt, Help);
-                AllowedTranspositions.append(HelpInt);
+                AllowedDualities.append(HelpInt);
             }
 
         }
     }
-    return AllowedTranspositions;
+    return AllowedDualities;
 }
+*/
 
 
 template<typename Integer>
@@ -978,14 +1101,16 @@ void Induction<Integer>::from_low_to_full(){
             if(check_bounds(HighRepresentations[i], Remaining))
                 HighRepsHere.append(HighRepresentations[i]);
         }
-        if(verbose)
-            verboseOutput() << "Old " << HighRepresentations.nr_of_rows() << " New " << HighRepsHere.nr_of_rows() << endl;
+        /* if(verbose)
+            verboseOutput() << "Old " << HighRepresentations.nr_of_rows() << " New " << HighRepsHere.nr_of_rows() << endl;*/
 
         if(HighRepsHere.nr_of_rows() == 0)
             continue;
 
         // if(HighRepsHere.nr_of_rows() != 343)
         //   continue;
+
+        // HighRepsHere.debug_print('K');
 
         sort(HighRepsHere.access_elements().begin(), HighRepsHere.access_elements().end());
         // HighRepsHere.debug_print('H');
@@ -1166,6 +1291,7 @@ void Induction<Integer>::augment_induction_matrices(){
     InductionMatricesByType.clear();
 
     // Add additional info
+    size_t total_nr_dualities = 0;
     if(verbose)
         verboseOutput()<< "Augmenting induction matrices by fusion types and duality info" << endl;
     vector<Matrix<Integer> > InductionMatWithType;
@@ -1173,11 +1299,18 @@ void Induction<Integer>::augment_induction_matrices(){
     InductionMatWithType.emplace_back(ImageRing);
     for(auto& M: InductionMatrices){
         vector<Integer> type = M.MxV(fusion_type);
-        Matrix<Integer> AllowedTranspositions = make_allowed_transpositions(M);
+        Matrix<Integer> AllowedDualities = make_allowed_transpositions(M);
+        total_nr_dualities += AllowedDualities.nr_of_rows();
+        //Matrix<Integer> Rank(1,1);
+        // Rank[0][0] = M.nr_of_rows();
+        //InductionMatWithType.emplace_back(Rank);
         InductionMatWithType.emplace_back(std::move(M));
         InductionMatWithType.emplace_back(Matrix<Integer>(type));
-        InductionMatWithType.emplace_back(AllowedTranspositions);
+        InductionMatWithType.emplace_back(AllowedDualities);
     }
+
+    if(verbose)
+        verboseOutput() << "Total number of dualities " << total_nr_dualities << endl;
 
     swap(InductionMatrices, InductionMatWithType);
 

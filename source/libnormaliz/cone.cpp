@@ -835,11 +835,14 @@ void Cone<Integer>::process_standard_input() {
     if(contains(Standard_Input, Type::fusion_type)) {
         if(Standard_Input[Type::fusion_type].nr_of_rows() == 0)
             throw BadInputException("Empty fusion type");
+        if(contains(Standard_Input, Type::spins))
+            is_fusion_spins = true;
         fusion_type_input =Standard_Input[Type::fusion_type][0];
         make_full_input(FusionBasicCone, Standard_Input);
         // only linear equations done here, associativity later
         is_fusion = true;
         polynomially_constrained = true;
+
     }
     if(contains(Standard_Input, Type::fusion_type_for_partition)){
         if(contains(Standard_Input, Type::fusion_type) || contains(Standard_Input, Type::fusion_duality)
@@ -2278,6 +2281,7 @@ void Cone<Integer>::initialize() {
     is_fusion = false;
     is_fusion_partition = false;
     is_fusion_candidate_subring = false;
+    is_fusion_spins = false;
 
     positive_orthant = false;
     zero_one = false;
@@ -3429,8 +3433,18 @@ bool Cone<Integer>::isReesPrimary() {
 
 
 template <typename Integer>
+bool Cone<Integer>::isFusionPartitionInput(){
+    return is_fusion_partition;
+}
+
+template <typename Integer>
 bool Cone<Integer>::isFusionInput(){
     return is_fusion;
+}
+
+template <typename Integer>
+bool Cone<Integer>::isFusionInputSpins(){
+    return is_fusion_spins;
 }
 
 template <typename Integer>
@@ -4774,7 +4788,7 @@ ConeProperties Cone<Integer>::compute(ConeProperties ToCompute) {
     }
 
     if(is_fusion){
-        ToCompute.set_fusion_default(is_fusion_candidate_subring);
+        ToCompute.set_fusion_default(is_fusion_candidate_subring, is_fusion_spins);
     }
 
     if(is_fusion_partition)
