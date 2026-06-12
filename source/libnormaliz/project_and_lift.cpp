@@ -1361,7 +1361,7 @@ void ProjectAndLift<IntegerPL,IntegerRet>::compute_latt_points_by_patching() {
         verboseOutput() << "Final number of lattice points "  << NrLP[EmbDim] << endl;
     }
     if(talkative){
-        verboseOutput() << "Lattice ppoints reaching levels ";
+        verboseOutput() << "Lattice points reaching levels ";
         for(auto& c: latt_poimts_reaching_level){
             if(c == 0)
                 break;
