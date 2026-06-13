@@ -28,6 +28,9 @@
 
 #ifdef NMZ_COCOA
 #include "libnormaliz/nmz_integrate.h"
+#include "CoCoA/GlobalManager.H"
+#include "CoCoA/RingQQ.H"
+#include "CoCoA/RingZZ.H"
 #endif
 
 #include "libnormaliz/nmz_polynomial.h"
