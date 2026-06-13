@@ -24,7 +24,13 @@
 #define LIBNORMALIZ_NMZ_INTEGRATE_H
 
 #ifdef NMZ_COCOA
-#include "CoCoA/library.H"
+#include <deque>
+#include "CoCoA/factor.H"
+#include "CoCoA/BigRatOps.H"
+#include "CoCoA/RingDistrMPolyInlPP.H"
+#include "CoCoA/RingQQ.H"
+#include "CoCoA/SparsePolyIter.H"
+#include "CoCoA/SparsePolyOps-RingElem.H"
 #endif
 
 #include <fstream>

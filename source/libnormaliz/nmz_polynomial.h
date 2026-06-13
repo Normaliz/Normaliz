@@ -36,7 +36,7 @@
 #include "libnormaliz/matrix.h"
 
 #ifdef NMZ_COCOA
-#include "CoCoA/library.H"
+#include "CoCoA/SparsePolyRing.H"
 #endif
 
 namespace libnormaliz {

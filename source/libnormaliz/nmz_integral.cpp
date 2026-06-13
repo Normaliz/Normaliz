@@ -34,6 +34,10 @@
 #include "libnormaliz/dynamic_bitset.h"
 #include "libnormaliz/list_and_map_operations.h"
 
+#include "CoCoA/GlobalManager.H"
+#include "CoCoA/NumTheory-gcd.H"
+#include "CoCoA/RingZZ.H"
+
 using namespace CoCoA;
 
 #include "../libnormaliz/my_omp.h"
