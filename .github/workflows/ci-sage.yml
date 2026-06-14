@@ -85,6 +85,7 @@ jobs:
   linux:
     uses: passagemath/passagemath/.github/workflows/docker.yml@main
     with:
+      extra_sage_packages: curl
       targets: SAGE_CHECK=no SAGE_CHECK_PACKAGES=e_antic,normaliz,pynormaliz pynormaliz
       # Standard setting: Test the current HEAD of passagemath:
       sage_repo: passagemath/passagemath
