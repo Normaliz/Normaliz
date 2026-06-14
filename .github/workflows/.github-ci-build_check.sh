@@ -86,8 +86,9 @@ rerun_sigill_probe() {
             echo "gdb executable: ${debug_normaliz}"
             echo "gdb library path: ${debug_libdir}"
             gdb -batch \
-                -ex "set environment LD_LIBRARY_PATH=${debug_libdir}:${LD_LIBRARY_PATH}" \
-                -ex 'run > /dev/null' \
+                -ex "set environment LD_LIBRARY_PATH=${debug_libdir}:${LD_LIBRARY_PATH:-}" \
+                -ex 'set debuginfod enabled off' \
+                -ex run \
                 -ex 'x/i $pc' \
                 -ex bt \
                 --args "${debug_normaliz}" -c --inv "${input}"
