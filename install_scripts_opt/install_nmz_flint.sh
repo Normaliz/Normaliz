@@ -18,6 +18,8 @@ if [ "$GMP_INSTALLDIR" != "" ]; then
     CONFIGURE_FLAGS="${CONFIGURE_FLAGS} --with-gmp=${GMP_INSTALLDIR}"
 fi
 
+FLINT_CFLAGS="${FLINT_CFLAGS:--O2 -g}"
+
 ## script for the installation of Flint for the use in libnormaliz
 
 FLINT_VERSION="3.3.1"
@@ -34,7 +36,11 @@ if [ ! -d flint-${FLINT_VERSION} ]; then
 fi
 cd flint-${FLINT_VERSION}
 if [ ! -f Makefile ]; then
-    ./configure ${CONFIGURE_FLAGS}
+    ./configure ${CONFIGURE_FLAGS} CFLAGS="${FLINT_CFLAGS}"
+fi
+if grep -E '(^|[^[:alnum:]_])-m(arch|tune|avx)' Makefile; then
+    echo "error: FLINT configure emitted CPU-specific compiler flags"
+    exit 1
 fi
 # patch to avoid PIE clash in Ubuntu >= 16-10
 ## if [[ $OSTYPE == "linux-gnu" ]]; then
