@@ -60,7 +60,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out ${{ env.SPKG }}
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           path: build/pkgs/${{ env.SPKG }}/src
       - name: Install prerequisites
